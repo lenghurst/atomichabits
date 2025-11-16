@@ -18,8 +18,13 @@ import 'package:flutter/foundation.dart';
 /// 3. Always returns suggestions - never crashes on errors
 class AiSuggestionService {
   // Remote LLM endpoint configuration
-  // TODO: Replace with your actual LLM proxy endpoint
-  static const String _remoteLlmEndpoint = 'https://example.com/api/habit-suggestions';
+  //
+  // LOCAL DEVELOPMENT: Points to the Node.js backend running locally
+  // Run the backend with: cd backend && npm run dev
+  //
+  // PRODUCTION: Change this to your deployed backend URL
+  // Example: 'https://your-backend-domain.com/api/habit-suggestions'
+  static const String _remoteLlmEndpoint = 'http://localhost:3000/api/habit-suggestions';
   static const Duration _remoteTimeout = Duration(seconds: 5);
   
   /// Returns 3 temptation bundling suggestions (async with remote LLM + local fallback)
@@ -230,15 +235,22 @@ class AiSuggestionService {
 
   // ========== REMOTE LLM INTEGRATION ==========
 
-  /// Fetches suggestions from remote LLM endpoint
-  /// 
-  /// Returns empty list on failure (caller will use local fallback)
-  /// 
-  /// TODO: Replace endpoint URL with your actual LLM proxy
-  /// Expected JSON response format:
+  /// Fetches suggestions from remote LLM endpoint (backend/src/routes/habitSuggestions.ts)
+  ///
+  /// CONTRACT WITH BACKEND:
+  /// - Sends POST request to /api/habit-suggestions
+  /// - Request body uses snake_case field names (matches backend expectations)
+  /// - suggestion_type must be one of: "temptation_bundle", "pre_habit_ritual",
+  ///   "environment_cue", "environment_distraction"
+  /// - Required fields: suggestion_type, habit_name, time (HH:MM format)
+  /// - Optional fields: identity, two_minute_version, location, existing_*
+  ///
+  /// Expected JSON response format from backend:
   /// {
   ///   "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
   /// }
+  ///
+  /// Returns empty list on failure (caller will use local fallback)
   Future<List<String>> _fetchRemoteSuggestions({
     required String suggestionType,
     required String identity,
@@ -252,18 +264,20 @@ class AiSuggestionService {
     String? existingEnvironmentDistraction,
   }) async {
     try {
-      // Build request payload
+      // Build request payload matching backend's HabitContext interface
+      // (backend/src/services/suggestionService.ts)
+      // All field names use snake_case to match backend expectations
       final payload = {
-        'suggestion_type': suggestionType,
-        'identity': identity,
-        'habit_name': habitName,
-        'two_minute_version': tinyVersion,
-        'time': implementationTime,
-        'location': implementationLocation,
-        'existing_temptation_bundle': existingTemptationBundle,
-        'existing_pre_ritual': existingPreRitual,
-        'existing_environment_cue': existingEnvironmentCue,
-        'existing_environment_distraction': existingEnvironmentDistraction,
+        'suggestion_type': suggestionType,  // Required: "temptation_bundle" | "pre_habit_ritual" | "environment_cue" | "environment_distraction"
+        'identity': identity,                // Optional: user's identity statement
+        'habit_name': habitName,             // Required: the habit name
+        'two_minute_version': tinyVersion,   // Optional: simplified 2-min version
+        'time': implementationTime,          // Required: HH:MM format (e.g., "08:00", "22:30")
+        'location': implementationLocation,  // Optional: where the habit takes place
+        'existing_temptation_bundle': existingTemptationBundle,       // Optional: current bundle
+        'existing_pre_ritual': existingPreRitual,                     // Optional: current ritual
+        'existing_environment_cue': existingEnvironmentCue,           // Optional: current cue
+        'existing_environment_distraction': existingEnvironmentDistraction,  // Optional: current distraction
       };
 
       if (kDebugMode) {

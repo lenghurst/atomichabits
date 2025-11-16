@@ -8,13 +8,16 @@ const router = Router();
  *
  * Generate AI-powered suggestions for habit formation based on Atomic Habits principles
  *
- * Request body:
+ * CLIENT CONTRACT: This endpoint is consumed by the Flutter app's AiSuggestionService
+ * (lib/data/ai_suggestion_service.dart). The request/response format must stay aligned.
+ *
+ * Request body (all field names in snake_case):
  * {
  *   "suggestion_type": "temptation_bundle" | "pre_habit_ritual" | "environment_cue" | "environment_distraction",
  *   "identity": "string (optional)",
  *   "habit_name": "string (required)",
  *   "two_minute_version": "string (optional)",
- *   "time": "HH:MM (required)",
+ *   "time": "HH:MM (required, e.g., '08:00', '22:30')",
  *   "location": "string (optional)",
  *   "existing_temptation_bundle": "string (optional)",
  *   "existing_pre_ritual": "string (optional)",
@@ -58,7 +61,7 @@ router.post('/api/habit-suggestions', async (req: Request, res: Response) => {
       });
     }
 
-    // Build HabitContext from request body
+    // Build HabitContext from request body (maps snake_case from Flutter to interface)
     const context: HabitContext = {
       suggestionType: suggestion_type,
       identity: req.body.identity,
