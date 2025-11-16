@@ -12,6 +12,21 @@ class Habit {
   // Implementation intentions (James Clear)
   final String implementationTime; // "22:00" - when to do the habit
   final String implementationLocation; // "In bed before sleep" - where to do it
+  
+  // Make it Attractive (James Clear's 2nd Law)
+  final String? temptationBundle; // Enjoyable thing to pair with habit
+  // e.g., "Have herbal tea while reading"
+  
+  // Pre-habit ritual (motivation/mindset ritual)
+  final String? preHabitRitual; // Short 10-30 second ritual before habit
+  // e.g., "3 deep breaths", "Put phone on airplane mode"
+  
+  // Environment design (Make it Obvious)
+  final String? environmentCue; // Concrete environmental reminder
+  // e.g., "Put book on pillow at 21:45"
+  
+  final String? environmentDistraction; // Distraction to remove/hide
+  // e.g., "Charge phone in kitchen"
 
   Habit({
     required this.id,
@@ -23,6 +38,10 @@ class Habit {
     required this.createdAt,
     required this.implementationTime,
     required this.implementationLocation,
+    this.temptationBundle,
+    this.preHabitRitual,
+    this.environmentCue,
+    this.environmentDistraction,
   });
 
   /// Creates a copy of this habit with some fields updated
@@ -34,6 +53,10 @@ class Habit {
     DateTime? lastCompletedDate,
     String? implementationTime,
     String? implementationLocation,
+    String? temptationBundle,
+    String? preHabitRitual,
+    String? environmentCue,
+    String? environmentDistraction,
   }) {
     return Habit(
       id: id,
@@ -45,6 +68,10 @@ class Habit {
       createdAt: createdAt,
       implementationTime: implementationTime ?? this.implementationTime,
       implementationLocation: implementationLocation ?? this.implementationLocation,
+      temptationBundle: temptationBundle ?? this.temptationBundle,
+      preHabitRitual: preHabitRitual ?? this.preHabitRitual,
+      environmentCue: environmentCue ?? this.environmentCue,
+      environmentDistraction: environmentDistraction ?? this.environmentDistraction,
     );
   }
 
@@ -60,10 +87,16 @@ class Habit {
       'createdAt': createdAt.toIso8601String(),
       'implementationTime': implementationTime,
       'implementationLocation': implementationLocation,
+      // New "Make it Attractive" and environment design fields
+      'temptationBundle': temptationBundle,
+      'preHabitRitual': preHabitRitual,
+      'environmentCue': environmentCue,
+      'environmentDistraction': environmentDistraction,
     };
   }
 
   /// Creates habit from JSON
+  /// Handles backward compatibility - new fields default to null if missing
   factory Habit.fromJson(Map<String, dynamic> json) {
     return Habit(
       id: json['id'] as String,
@@ -77,6 +110,11 @@ class Habit {
       createdAt: DateTime.parse(json['createdAt'] as String),
       implementationTime: json['implementationTime'] as String? ?? '09:00',
       implementationLocation: json['implementationLocation'] as String? ?? '',
+      // New fields - safe to be null (backward compatible)
+      temptationBundle: json['temptationBundle'] as String?,
+      preHabitRitual: json['preHabitRitual'] as String?,
+      environmentCue: json['environmentCue'] as String?,
+      environmentDistraction: json['environmentDistraction'] as String?,
     );
   }
 }

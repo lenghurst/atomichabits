@@ -45,6 +45,15 @@ dependencies:
   shared_preferences: 2.5.3
   hive: 2.2.3
   hive_flutter: 1.1.0
+  
+  # Notifications for daily habit reminders
+  flutter_local_notifications: ^18.0.1
+  
+  # Timezone support for scheduled notifications
+  timezone: ^0.9.4
+  
+  # Confetti animation for rewards
+  confetti: ^0.7.0
 
 dev_dependencies:
   flutter_test:

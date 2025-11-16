@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
+import '../../widgets/suggestion_dialog.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
@@ -22,6 +23,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _tinyVersionController = TextEditingController();
   final _locationController = TextEditingController();
   
+  // New "Make it Attractive" and environment design controllers
+  final _temptationBundleController = TextEditingController();
+  final _preHabitRitualController = TextEditingController();
+  final _environmentCueController = TextEditingController();
+  final _environmentDistractionController = TextEditingController();
+  
   // Implementation intention: Time
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
 
@@ -32,6 +39,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _habitNameController.dispose();
     _tinyVersionController.dispose();
     _locationController.dispose();
+    _temptationBundleController.dispose();
+    _preHabitRitualController.dispose();
+    _environmentCueController.dispose();
+    _environmentDistractionController.dispose();
     super.dispose();
   }
 
@@ -66,6 +77,169 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return '$hour:$minute';
   }
 
+  // Helper: Show suggestion dialog for temptation bundle
+  void _showTemptationBundleSuggestions() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    
+    // Create temporary habit to get suggestions
+    final tempHabit = Habit(
+      id: 'temp',
+      name: _habitNameController.text.trim().isEmpty 
+          ? 'your habit' 
+          : _habitNameController.text.trim(),
+      identity: _identityController.text.trim().isEmpty 
+          ? 'achieves their goals' 
+          : _identityController.text.trim(),
+      tinyVersion: _tinyVersionController.text.trim().isEmpty 
+          ? 'start small' 
+          : _tinyVersionController.text.trim(),
+      createdAt: DateTime.now(),
+      implementationTime: _formatTime(_selectedTime),
+      implementationLocation: _locationController.text.trim().isEmpty 
+          ? 'at home' 
+          : _locationController.text.trim(),
+    );
+    
+    // Save current habit temporarily to get suggestions
+    final originalHabit = appState.currentHabit;
+    appState.createHabit(tempHabit).then((_) {
+      final suggestions = appState.getTemptationBundleSuggestionsForCurrentHabit();
+      
+      // Restore original habit
+      if (originalHabit != null) {
+        appState.createHabit(originalHabit);
+      }
+      
+      showDialog(
+        context: context,
+        builder: (context) => SuggestionDialog(
+          title: 'Temptation Bundling Ideas',
+          subtitle: 'Pair your habit with something you enjoy',
+          suggestions: suggestions,
+          onSuggestionSelected: (suggestion) {
+            setState(() {
+              _temptationBundleController.text = suggestion;
+            });
+          },
+        ),
+      );
+    });
+  }
+  
+  // Helper: Show suggestion dialog for pre-habit ritual
+  void _showPreHabitRitualSuggestions() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    
+    final tempHabit = Habit(
+      id: 'temp',
+      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+      createdAt: DateTime.now(),
+      implementationTime: _formatTime(_selectedTime),
+      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    );
+    
+    final originalHabit = appState.currentHabit;
+    appState.createHabit(tempHabit).then((_) {
+      final suggestions = appState.getPreHabitRitualSuggestionsForCurrentHabit();
+      
+      if (originalHabit != null) {
+        appState.createHabit(originalHabit);
+      }
+      
+      showDialog(
+        context: context,
+        builder: (context) => SuggestionDialog(
+          title: 'Pre-Habit Ritual Ideas',
+          subtitle: '10-30 second rituals to prime your mindset',
+          suggestions: suggestions,
+          onSuggestionSelected: (suggestion) {
+            setState(() {
+              _preHabitRitualController.text = suggestion;
+            });
+          },
+        ),
+      );
+    });
+  }
+  
+  // Helper: Show suggestion dialog for environment cue
+  void _showEnvironmentCueSuggestions() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    
+    final tempHabit = Habit(
+      id: 'temp',
+      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+      createdAt: DateTime.now(),
+      implementationTime: _formatTime(_selectedTime),
+      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    );
+    
+    final originalHabit = appState.currentHabit;
+    appState.createHabit(tempHabit).then((_) {
+      final suggestions = appState.getEnvironmentCueSuggestionsForCurrentHabit();
+      
+      if (originalHabit != null) {
+        appState.createHabit(originalHabit);
+      }
+      
+      showDialog(
+        context: context,
+        builder: (context) => SuggestionDialog(
+          title: 'Environment Cue Ideas',
+          subtitle: 'Make your habit obvious with visual triggers',
+          suggestions: suggestions,
+          onSuggestionSelected: (suggestion) {
+            setState(() {
+              _environmentCueController.text = suggestion;
+            });
+          },
+        ),
+      );
+    });
+  }
+  
+  // Helper: Show suggestion dialog for environment distraction
+  void _showEnvironmentDistractionSuggestions() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    
+    final tempHabit = Habit(
+      id: 'temp',
+      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+      createdAt: DateTime.now(),
+      implementationTime: _formatTime(_selectedTime),
+      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    );
+    
+    final originalHabit = appState.currentHabit;
+    appState.createHabit(tempHabit).then((_) {
+      final suggestions = appState.getEnvironmentDistractionSuggestionsForCurrentHabit();
+      
+      if (originalHabit != null) {
+        appState.createHabit(originalHabit);
+      }
+      
+      showDialog(
+        context: context,
+        builder: (context) => SuggestionDialog(
+          title: 'Remove Distractions',
+          subtitle: 'Make bad habits harder by removing obstacles',
+          suggestions: suggestions,
+          onSuggestionSelected: (suggestion) {
+            setState(() {
+              _environmentDistractionController.text = suggestion;
+            });
+          },
+        ),
+      );
+    });
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
@@ -77,7 +251,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         createdAt: DateTime.now(),
       );
 
-      // Create first habit with implementation intentions
+      // Create first habit with implementation intentions + Make it Attractive
       final habit = Habit(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _habitNameController.text.trim(),
@@ -86,6 +260,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         createdAt: DateTime.now(),
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim(),
+        // New "Make it Attractive" and environment design fields
+        temptationBundle: _temptationBundleController.text.trim().isEmpty 
+            ? null 
+            : _temptationBundleController.text.trim(),
+        preHabitRitual: _preHabitRitualController.text.trim().isEmpty 
+            ? null 
+            : _preHabitRitualController.text.trim(),
+        environmentCue: _environmentCueController.text.trim().isEmpty 
+            ? null 
+            : _environmentCueController.text.trim(),
+        environmentDistraction: _environmentDistractionController.text.trim().isEmpty 
+            ? null 
+            : _environmentDistractionController.text.trim(),
       );
 
       // Save to state (now with persistence!)
@@ -271,6 +458,179 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 32),
+
+                // === MAKE IT ATTRACTIVE SECTION ===
+                
+                Text(
+                  '✨ Make it Attractive (Optional)',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Bundle your habit with something you enjoy!',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+
+                // Temptation bundling field with "Get ideas" button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _temptationBundleController,
+                        decoration: const InputDecoration(
+                          labelText: 'What will you pair this habit with that you enjoy?',
+                          hintText: 'e.g., "Have herbal tea while reading"',
+                          helperText: 'Examples:\n'
+                              '• Listen to a podcast while walking\n'
+                              '• Play your favourite playlist while tidying',
+                          helperMaxLines: 3,
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.favorite),
+                        ),
+                        maxLines: 2,
+                        // Optional field - no validator
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: OutlinedButton.icon(
+                        onPressed: _showTemptationBundleSuggestions,
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: const Text('Ideas'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Pre-habit ritual field with "Get ideas" button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _preHabitRitualController,
+                        decoration: const InputDecoration(
+                          labelText: 'Pre-habit ritual (10-30 seconds, optional)',
+                          hintText: 'e.g., "3 deep breaths before reading"',
+                          helperText: 'A short ritual to get into the right mindset:\n'
+                              '• 3 deep breaths\n'
+                              '• Put phone on airplane mode\n'
+                              '• Play 1 song',
+                          helperMaxLines: 4,
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.self_improvement),
+                        ),
+                        maxLines: 2,
+                        // Optional field - no validator
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: OutlinedButton.icon(
+                        onPressed: _showPreHabitRitualSuggestions,
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: const Text('Ideas'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // === ENVIRONMENT DESIGN SECTION ===
+                
+                Text(
+                  '🏠 Design Your Environment (Optional)',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Set up your space to make the habit obvious and distractions invisible.',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+
+                // Environment cue field with "Get ideas" button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _environmentCueController,
+                        decoration: const InputDecoration(
+                          labelText: 'What cue will you place in your environment?',
+                          hintText: 'e.g., "Put your book on your pillow at 21:45"',
+                          helperText: 'A visual reminder to trigger your habit',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.lightbulb),
+                        ),
+                        maxLines: 2,
+                        // Optional field - no validator
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: OutlinedButton.icon(
+                        onPressed: _showEnvironmentCueSuggestions,
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: const Text('Ideas'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Environment distraction field with "Get ideas" button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _environmentDistractionController,
+                        decoration: const InputDecoration(
+                          labelText: 'What distraction will you move or hide?',
+                          hintText: 'e.g., "Charge your phone in the kitchen"',
+                          helperText: 'Remove obstacles to make bad habits harder',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.block),
+                        ),
+                        maxLines: 2,
+                        // Optional field - no validator
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: OutlinedButton.icon(
+                        onPressed: _showEnvironmentDistractionSuggestions,
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        label: const Text('Ideas'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
 

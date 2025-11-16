@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'notification_service.dart';
+import 'ai_suggestion_service.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
 /// Now includes Hive persistence for data that survives app restarts
+/// Handles Hook Model: Trigger (notifications) → Action → Reward → Investment
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
@@ -21,22 +24,43 @@ class AppState extends ChangeNotifier {
   
   // Loading state
   bool _isLoading = true;
+  
+  // Reward + Investment flow state
+  bool _shouldShowRewardFlow = false;
+  
+  // Notification service
+  final NotificationService _notificationService = NotificationService();
+  
+  // AI Suggestion service (local heuristics for now)
+  final AiSuggestionService _aiSuggestionService = AiSuggestionService();
 
   // Getters to access state
   UserProfile? get userProfile => _userProfile;
   Habit? get currentHabit => _currentHabit;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
+  bool get shouldShowRewardFlow => _shouldShowRewardFlow;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
   Future<void> initialize() async {
     try {
+      // Initialize notification service first
+      await _notificationService.initialize();
+      
+      // Set up notification action handler
+      _notificationService.onNotificationAction = _handleNotificationAction;
+      
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
       
       // Load saved data from Hive
       await _loadFromStorage();
+      
+      // Schedule notifications if onboarding completed
+      if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
+        await _scheduleNotifications();
+      }
       
       _isLoading = false;
       notifyListeners();
@@ -116,8 +140,9 @@ class AppState extends ChangeNotifier {
   }
 
   /// Marks habit as completed for today
-  Future<void> completeHabitForToday() async {
-    if (_currentHabit == null) return;
+  /// Returns true if this was a new completion (triggers reward flow)
+  Future<bool> completeHabitForToday({bool fromNotification = false}) async {
+    if (_currentHabit == null) return false;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -133,7 +158,10 @@ class AppState extends ChangeNotifier {
       
       if (lastDate == today) {
         // Already completed today
-        return;
+        if (kDebugMode) {
+          debugPrint('Habit already completed today');
+        }
+        return false;
       }
     }
 
@@ -167,13 +195,27 @@ class AppState extends ChangeNotifier {
     );
     
     await _saveToStorage(); // Persist the updated streak
+    
+    // Trigger Reward + Investment flow
+    _shouldShowRewardFlow = true;
+    
     notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('✅ Habit completed! New streak: $newStreak');
+    }
+    
+    return true; // New completion
   }
 
   /// Marks onboarding as complete
   Future<void> completeOnboarding() async {
     _hasCompletedOnboarding = true;
     await _saveToStorage(); // Persist to storage
+    
+    // Schedule daily notifications
+    await _scheduleNotifications();
+    
     notifyListeners();
   }
 
@@ -201,6 +243,183 @@ class AppState extends ChangeNotifier {
     _userProfile = null;
     _currentHabit = null;
     _hasCompletedOnboarding = false;
+    await _notificationService.cancelAllNotifications();
     notifyListeners();
+  }
+  
+  // ========== Notification Methods ==========
+  
+  /// Schedule daily notifications for habit reminder
+  Future<void> _scheduleNotifications() async {
+    if (_currentHabit == null || _userProfile == null) return;
+    
+    await _notificationService.scheduleDailyHabitReminder(
+      habit: _currentHabit!,
+      profile: _userProfile!,
+    );
+  }
+  
+  /// Handle notification action buttons (Mark Done, Snooze)
+  void _handleNotificationAction(String action) {
+    if (kDebugMode) {
+      debugPrint('📱 Notification action: $action');
+    }
+    
+    if (action == 'mark_done') {
+      // Mark habit as complete from notification
+      completeHabitForToday(fromNotification: true);
+    } else if (action == 'snooze') {
+      // Schedule snooze notification
+      if (_currentHabit != null && _userProfile != null) {
+        _notificationService.scheduleSnoozeNotification(
+          habit: _currentHabit!,
+          profile: _userProfile!,
+        );
+      }
+    }
+  }
+  
+  /// Update reminder time and reschedule notifications
+  /// Called from Investment flow
+  Future<void> updateReminderTime(String newTime) async {
+    if (_currentHabit == null) return;
+    
+    _currentHabit = _currentHabit!.copyWith(
+      implementationTime: newTime,
+    );
+    
+    await _saveToStorage();
+    
+    // Reschedule notifications with new time
+    await _scheduleNotifications();
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('⏰ Reminder time updated to: $newTime');
+    }
+  }
+  
+  /// Show test notification (for debugging)
+  Future<void> showTestNotification() async {
+    await _notificationService.showTestNotification();
+  }
+  
+  // ========== Reward + Investment Flow Methods ==========
+  
+  /// Dismiss the reward flow
+  void dismissRewardFlow() {
+    _shouldShowRewardFlow = false;
+    notifyListeners();
+  }
+  
+  /// Check if we should show reward flow when app comes to foreground
+  bool checkAndTriggerRewardFlow() {
+    // If habit was just completed and we haven't shown reward yet
+    if (_shouldShowRewardFlow) {
+      return true;
+    }
+    return false;
+  }
+  
+  // ========== AI Suggestion Methods ==========
+  
+  /// Get temptation bundling suggestions for current habit
+  /// Returns empty list if habit data is incomplete
+  List<String> getTemptationBundleSuggestionsForCurrentHabit() {
+    if (_currentHabit == null || _userProfile == null) {
+      return [];
+    }
+    
+    try {
+      return _aiSuggestionService.getTemptationBundleSuggestions(
+        identity: _userProfile!.identity,
+        habitName: _currentHabit!.name,
+        implementationTime: _currentHabit!.implementationTime,
+        implementationLocation: _currentHabit!.implementationLocation,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting temptation bundle suggestions: $e');
+      }
+      return [];
+    }
+  }
+  
+  /// Get pre-habit ritual suggestions for current habit
+  /// Returns empty list if habit data is incomplete
+  List<String> getPreHabitRitualSuggestionsForCurrentHabit() {
+    if (_currentHabit == null || _userProfile == null) {
+      return [];
+    }
+    
+    try {
+      return _aiSuggestionService.getPreHabitRitualSuggestions(
+        identity: _userProfile!.identity,
+        habitName: _currentHabit!.name,
+        implementationTime: _currentHabit!.implementationTime,
+        implementationLocation: _currentHabit!.implementationLocation,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting pre-habit ritual suggestions: $e');
+      }
+      return [];
+    }
+  }
+  
+  /// Get environment cue suggestions for current habit
+  /// Returns empty list if habit data is incomplete
+  List<String> getEnvironmentCueSuggestionsForCurrentHabit() {
+    if (_currentHabit == null || _userProfile == null) {
+      return [];
+    }
+    
+    try {
+      return _aiSuggestionService.getEnvironmentCueSuggestions(
+        identity: _userProfile!.identity,
+        habitName: _currentHabit!.name,
+        implementationTime: _currentHabit!.implementationTime,
+        implementationLocation: _currentHabit!.implementationLocation,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting environment cue suggestions: $e');
+      }
+      return [];
+    }
+  }
+  
+  /// Get environment distraction removal suggestions for current habit
+  /// Returns empty list if habit data is incomplete
+  List<String> getEnvironmentDistractionSuggestionsForCurrentHabit() {
+    if (_currentHabit == null || _userProfile == null) {
+      return [];
+    }
+    
+    try {
+      return _aiSuggestionService.getEnvironmentDistractionSuggestions(
+        identity: _userProfile!.identity,
+        habitName: _currentHabit!.name,
+        implementationTime: _currentHabit!.implementationTime,
+        implementationLocation: _currentHabit!.implementationLocation,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting environment distraction suggestions: $e');
+      }
+      return [];
+    }
+  }
+  
+  /// Get combined suggestions for "Improve this habit" feature
+  /// Returns a map with all suggestion types
+  Map<String, List<String>> getAllSuggestionsForCurrentHabit() {
+    return {
+      'temptationBundle': getTemptationBundleSuggestionsForCurrentHabit(),
+      'preHabitRitual': getPreHabitRitualSuggestionsForCurrentHabit(),
+      'environmentCue': getEnvironmentCueSuggestionsForCurrentHabit(),
+      'environmentDistraction': getEnvironmentDistractionSuggestionsForCurrentHabit(),
+    };
   }
 }
