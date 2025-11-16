@@ -1,20 +1,327 @@
-/// Local AI-like suggestion service for Atomic Habits principles
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+
+/// AI-powered suggestion service for Atomic Habits principles
 /// 
-/// This service provides contextual suggestions for:
+/// This service provides contextual suggestions with:
+/// - Remote LLM integration (with fallback to local heuristics)
 /// - Temptation bundling (pairing habits with enjoyable activities)
 /// - Pre-habit rituals (mental preparation before action)
 /// - Environment cues (visual triggers to start habits)
 /// - Environment distractions (friction to remove)
 ///
-/// FUTURE ITERATION: Replace the heuristic methods below with real LLM API calls
-/// (e.g., OpenAI, Google Gemini, Anthropic Claude) to generate personalized,
-/// natural language suggestions based on user context.
+/// ARCHITECTURE:
+/// 1. Tries to fetch suggestions from remote LLM endpoint (with 5s timeout)
+/// 2. Falls back to local heuristic suggestions if remote fails
+/// 3. Always returns suggestions - never crashes on errors
 class AiSuggestionService {
-  /// Returns 3 temptation bundling suggestions
+  // Remote LLM endpoint configuration
+  // TODO: Replace with your actual LLM proxy endpoint
+  static const String _remoteLlmEndpoint = 'https://example.com/api/habit-suggestions';
+  static const Duration _remoteTimeout = Duration(seconds: 5);
+  
+  /// Returns 3 temptation bundling suggestions (async with remote LLM + local fallback)
   /// 
   /// Temptation bundling: Pair a habit you need to do with something you enjoy.
-  /// Strategy: Match time of day, habit type, and identity to suggest enjoyable pairings.
-  List<String> getTemptationBundleSuggestions({
+  /// 
+  /// Flow:
+  /// 1. Try remote LLM (5s timeout)
+  /// 2. If remote fails/empty → use local heuristics
+  /// 3. Always returns 3 suggestions
+  Future<List<String>> getTemptationBundleSuggestions({
+    required String identity,
+    required String habitName,
+    required String implementationTime,
+    required String implementationLocation,
+    String? tinyVersion,
+    String? existingTemptationBundle,
+    String? existingPreRitual,
+    String? existingEnvironmentCue,
+    String? existingEnvironmentDistraction,
+  }) async {
+    try {
+      // Attempt remote LLM call
+      final remoteSuggestions = await _fetchRemoteSuggestions(
+        suggestionType: 'temptation_bundle',
+        identity: identity,
+        habitName: habitName,
+        tinyVersion: tinyVersion,
+        implementationTime: implementationTime,
+        implementationLocation: implementationLocation,
+        existingTemptationBundle: existingTemptationBundle,
+        existingPreRitual: existingPreRitual,
+        existingEnvironmentCue: existingEnvironmentCue,
+        existingEnvironmentDistraction: existingEnvironmentDistraction,
+      );
+      
+      // Use remote suggestions if available
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('✅ Using remote LLM suggestions for temptation bundle');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Remote LLM failed for temptation bundle: $e');
+      }
+    }
+    
+    // Fallback to local heuristics
+    if (kDebugMode) {
+      debugPrint('🔄 Using local fallback for temptation bundle');
+    }
+    return _localTemptationBundleSuggestions(
+      identity: identity,
+      habitName: habitName,
+      implementationTime: implementationTime,
+      implementationLocation: implementationLocation,
+    );
+  }
+
+  /// Returns 3 pre-habit ritual suggestions (async with remote LLM + local fallback)
+  Future<List<String>> getPreHabitRitualSuggestions({
+    required String identity,
+    required String habitName,
+    required String implementationTime,
+    required String implementationLocation,
+    String? tinyVersion,
+    String? existingTemptationBundle,
+    String? existingPreRitual,
+    String? existingEnvironmentCue,
+    String? existingEnvironmentDistraction,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchRemoteSuggestions(
+        suggestionType: 'pre_habit_ritual',
+        identity: identity,
+        habitName: habitName,
+        tinyVersion: tinyVersion,
+        implementationTime: implementationTime,
+        implementationLocation: implementationLocation,
+        existingTemptationBundle: existingTemptationBundle,
+        existingPreRitual: existingPreRitual,
+        existingEnvironmentCue: existingEnvironmentCue,
+        existingEnvironmentDistraction: existingEnvironmentDistraction,
+      );
+      
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('✅ Using remote LLM suggestions for pre-habit ritual');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Remote LLM failed for pre-habit ritual: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      debugPrint('🔄 Using local fallback for pre-habit ritual');
+    }
+    return _localPreHabitRitualSuggestions(
+      identity: identity,
+      habitName: habitName,
+      implementationTime: implementationTime,
+      implementationLocation: implementationLocation,
+    );
+  }
+
+  /// Returns 3 environment cue suggestions (async with remote LLM + local fallback)
+  Future<List<String>> getEnvironmentCueSuggestions({
+    required String identity,
+    required String habitName,
+    required String implementationTime,
+    required String implementationLocation,
+    String? tinyVersion,
+    String? existingTemptationBundle,
+    String? existingPreRitual,
+    String? existingEnvironmentCue,
+    String? existingEnvironmentDistraction,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchRemoteSuggestions(
+        suggestionType: 'environment_cue',
+        identity: identity,
+        habitName: habitName,
+        tinyVersion: tinyVersion,
+        implementationTime: implementationTime,
+        implementationLocation: implementationLocation,
+        existingTemptationBundle: existingTemptationBundle,
+        existingPreRitual: existingPreRitual,
+        existingEnvironmentCue: existingEnvironmentCue,
+        existingEnvironmentDistraction: existingEnvironmentDistraction,
+      );
+      
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('✅ Using remote LLM suggestions for environment cue');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Remote LLM failed for environment cue: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      debugPrint('🔄 Using local fallback for environment cue');
+    }
+    return _localEnvironmentCueSuggestions(
+      identity: identity,
+      habitName: habitName,
+      implementationTime: implementationTime,
+      implementationLocation: implementationLocation,
+    );
+  }
+
+  /// Returns 3 environment distraction removal suggestions (async with remote LLM + local fallback)
+  Future<List<String>> getEnvironmentDistractionSuggestions({
+    required String identity,
+    required String habitName,
+    required String implementationTime,
+    required String implementationLocation,
+    String? tinyVersion,
+    String? existingTemptationBundle,
+    String? existingPreRitual,
+    String? existingEnvironmentCue,
+    String? existingEnvironmentDistraction,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchRemoteSuggestions(
+        suggestionType: 'environment_distraction',
+        identity: identity,
+        habitName: habitName,
+        tinyVersion: tinyVersion,
+        implementationTime: implementationTime,
+        implementationLocation: implementationLocation,
+        existingTemptationBundle: existingTemptationBundle,
+        existingPreRitual: existingPreRitual,
+        existingEnvironmentCue: existingEnvironmentCue,
+        existingEnvironmentDistraction: existingEnvironmentDistraction,
+      );
+      
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('✅ Using remote LLM suggestions for environment distraction');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Remote LLM failed for environment distraction: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      debugPrint('🔄 Using local fallback for environment distraction');
+    }
+    return _localEnvironmentDistractionSuggestions(
+      identity: identity,
+      habitName: habitName,
+      implementationTime: implementationTime,
+      implementationLocation: implementationLocation,
+    );
+  }
+
+  // ========== REMOTE LLM INTEGRATION ==========
+
+  /// Fetches suggestions from remote LLM endpoint
+  /// 
+  /// Returns empty list on failure (caller will use local fallback)
+  /// 
+  /// TODO: Replace endpoint URL with your actual LLM proxy
+  /// Expected JSON response format:
+  /// {
+  ///   "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
+  /// }
+  Future<List<String>> _fetchRemoteSuggestions({
+    required String suggestionType,
+    required String identity,
+    required String habitName,
+    String? tinyVersion,
+    required String implementationTime,
+    required String implementationLocation,
+    String? existingTemptationBundle,
+    String? existingPreRitual,
+    String? existingEnvironmentCue,
+    String? existingEnvironmentDistraction,
+  }) async {
+    try {
+      // Build request payload
+      final payload = {
+        'suggestion_type': suggestionType,
+        'identity': identity,
+        'habit_name': habitName,
+        'two_minute_version': tinyVersion,
+        'time': implementationTime,
+        'location': implementationLocation,
+        'existing_temptation_bundle': existingTemptationBundle,
+        'existing_pre_ritual': existingPreRitual,
+        'existing_environment_cue': existingEnvironmentCue,
+        'existing_environment_distraction': existingEnvironmentDistraction,
+      };
+
+      if (kDebugMode) {
+        debugPrint('📡 Attempting remote LLM call for $suggestionType...');
+      }
+
+      // Make HTTP POST request with timeout
+      // TODO: Replace _remoteLlmEndpoint with your actual LLM proxy URL
+      final response = await http.post(
+        Uri.parse(_remoteLlmEndpoint),
+        headers: {
+          'Content-Type': 'application/json',
+          // TODO: Add authentication headers if needed
+          // 'Authorization': 'Bearer YOUR_API_KEY',
+        },
+        body: jsonEncode(payload),
+      ).timeout(_remoteTimeout);
+
+      // Parse response
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        
+        // TODO: Adjust parsing based on your actual API response format
+        // Expected format: {"suggestions": ["item1", "item2", "item3"]}
+        if (data.containsKey('suggestions') && data['suggestions'] is List) {
+          final suggestions = (data['suggestions'] as List)
+              .map((item) => item.toString())
+              .toList();
+          
+          if (suggestions.length >= 3) {
+            return suggestions.take(3).toList();
+          }
+        }
+      }
+
+      if (kDebugMode) {
+        debugPrint('⚠️ Remote LLM returned invalid response (status ${response.statusCode})');
+      }
+      return [];
+      
+    } on TimeoutException {
+      if (kDebugMode) {
+        debugPrint('⏱️ Remote LLM timeout after ${_remoteTimeout.inSeconds}s');
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Remote LLM error: $e');
+      }
+      return [];
+    }
+  }
+
+  // ========== LOCAL HEURISTIC FALLBACKS ==========
+  // These methods contain the original local suggestion logic
+
+  /// Local heuristic temptation bundling suggestions
+  List<String> _localTemptationBundleSuggestions({
     required String identity,
     required String habitName,
     required String implementationTime,
@@ -22,7 +329,6 @@ class AiSuggestionService {
   }) {
     final timeOfDay = _parseTimeOfDay(implementationTime);
     final habitLower = habitName.toLowerCase();
-    // locationLower reserved for future location-based suggestions
 
     // Reading habits
     if (habitLower.contains('read')) {
@@ -118,18 +424,14 @@ class AiSuggestionService {
     }
   }
 
-  /// Returns 3 pre-habit ritual suggestions
-  /// 
-  /// Pre-habit rituals: 10-30 second actions that prime your brain for the habit.
-  /// Strategy: Suggest simple, calming actions appropriate for the habit type.
-  List<String> getPreHabitRitualSuggestions({
+  /// Local heuristic pre-habit ritual suggestions
+  List<String> _localPreHabitRitualSuggestions({
     required String identity,
     required String habitName,
     required String implementationTime,
     required String implementationLocation,
   }) {
     final habitLower = habitName.toLowerCase();
-    // locationLower reserved for future location-based suggestions
 
     // Reading habits
     if (habitLower.contains('read')) {
@@ -194,11 +496,8 @@ class AiSuggestionService {
     ];
   }
 
-  /// Returns 3 environment cue suggestions
-  /// 
-  /// Environment cues: Make the habit obvious by designing visible triggers.
-  /// Strategy: Suggest placement strategies based on location and time.
-  List<String> getEnvironmentCueSuggestions({
+  /// Local heuristic environment cue suggestions
+  List<String> _localEnvironmentCueSuggestions({
     required String identity,
     required String habitName,
     required String implementationTime,
@@ -297,11 +596,8 @@ class AiSuggestionService {
     ];
   }
 
-  /// Returns 3 environment distraction removal suggestions
-  /// 
-  /// Remove friction and distractions that compete with your habit.
-  /// Strategy: Suggest barriers to common distractions based on habit type.
-  List<String> getEnvironmentDistractionSuggestions({
+  /// Local heuristic environment distraction removal suggestions
+  List<String> _localEnvironmentDistractionSuggestions({
     required String identity,
     required String habitName,
     required String implementationTime,
@@ -337,7 +633,7 @@ class AiSuggestionService {
       return [
         'Charge your phone in the kitchen overnight',
         'Log out of Netflix and YouTube on weeknights',
-        'Set your router to disable Wi-Fi at ${implementationTime}',
+        'Set your router to disable Wi-Fi at $implementationTime',
       ];
     }
 
@@ -373,7 +669,9 @@ class AiSuggestionService {
     ];
   }
 
-  // Helper: Parse time string to time of day category
+  // ========== HELPER METHODS ==========
+
+  /// Parse time string to time of day category
   String _parseTimeOfDay(String time) {
     try {
       final parts = time.split(':');
@@ -395,7 +693,7 @@ class AiSuggestionService {
     }
   }
 
-  // Helper: Get time N minutes before a given time
+  /// Get time N minutes before a given time
   String _getTimeMinusMinutes(String time, int minutes) {
     try {
       final parts = time.split(':');

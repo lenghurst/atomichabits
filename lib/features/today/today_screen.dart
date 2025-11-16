@@ -77,24 +77,54 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _showImprovementSuggestions(AppState appState) {
-    final allSuggestions = appState.getAllSuggestionsForCurrentHabit();
-    
-    // Check if we have any suggestions
-    final hasSuggestions = allSuggestions.values.any((list) => list.isNotEmpty);
-    
-    if (!hasSuggestions) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No suggestions available. Please try again later.'),
-        ),
-      );
-      return;
-    }
-
+  Future<void> _showImprovementSuggestions(AppState appState) async {
+    // Show loading dialog
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting optimization tips...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    try {
+      // Fetch all suggestions (async)
+      final allSuggestions = await appState.getAllSuggestionsForCurrentHabit();
+      
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Check if we have any suggestions
+      final hasSuggestions = allSuggestions.values.any((list) => list.isNotEmpty);
+      
+      if (!hasSuggestions) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No suggestions available. Please try again later.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Show suggestions dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
         title: const Row(
           children: [
             Icon(Icons.tips_and_updates, color: Colors.deepPurple),
@@ -186,8 +216,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             child: const Text('Close'),
           ),
         ],
-      ),
-    );
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to get optimization tips. Please try again.'),
+          ),
+        );
+      }
+    }
   }
 
   @override

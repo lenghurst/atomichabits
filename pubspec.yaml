@@ -54,6 +54,9 @@ dependencies:
   
   # Confetti animation for rewards
   confetti: ^0.7.0
+  
+  # HTTP client for remote LLM suggestions
+  http: 1.5.0
 
 dev_dependencies:
   flutter_test:

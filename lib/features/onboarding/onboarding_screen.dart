@@ -77,167 +77,305 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return '$hour:$minute';
   }
 
-  // Helper: Show suggestion dialog for temptation bundle
-  void _showTemptationBundleSuggestions() {
+  // Helper: Show suggestion dialog for temptation bundle (async with loading state)
+  Future<void> _showTemptationBundleSuggestions() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
-    // Create temporary habit to get suggestions
-    final tempHabit = Habit(
-      id: 'temp',
-      name: _habitNameController.text.trim().isEmpty 
-          ? 'your habit' 
-          : _habitNameController.text.trim(),
-      identity: _identityController.text.trim().isEmpty 
-          ? 'achieves their goals' 
-          : _identityController.text.trim(),
-      tinyVersion: _tinyVersionController.text.trim().isEmpty 
-          ? 'start small' 
-          : _tinyVersionController.text.trim(),
-      createdAt: DateTime.now(),
-      implementationTime: _formatTime(_selectedTime),
-      implementationLocation: _locationController.text.trim().isEmpty 
-          ? 'at home' 
-          : _locationController.text.trim(),
+    // Show loading dialog immediately
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting suggestions...'),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
     
-    // Save current habit temporarily to get suggestions
-    final originalHabit = appState.currentHabit;
-    appState.createHabit(tempHabit).then((_) {
-      final suggestions = appState.getTemptationBundleSuggestionsForCurrentHabit();
+    try {
+      // Create temporary habit to get suggestions
+      final tempHabit = Habit(
+        id: 'temp',
+        name: _habitNameController.text.trim().isEmpty 
+            ? 'your habit' 
+            : _habitNameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty 
+            ? 'achieves their goals' 
+            : _identityController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty 
+            ? 'start small' 
+            : _tinyVersionController.text.trim(),
+        createdAt: DateTime.now(),
+        implementationTime: _formatTime(_selectedTime),
+        implementationLocation: _locationController.text.trim().isEmpty 
+            ? 'at home' 
+            : _locationController.text.trim(),
+      );
+      
+      // Save current habit temporarily to get suggestions
+      final originalHabit = appState.currentHabit;
+      await appState.createHabit(tempHabit);
+      
+      // Fetch suggestions (async - remote LLM with local fallback)
+      final suggestions = await appState.getTemptationBundleSuggestionsForCurrentHabit();
       
       // Restore original habit
       if (originalHabit != null) {
-        appState.createHabit(originalHabit);
+        await appState.createHabit(originalHabit);
       }
       
-      showDialog(
-        context: context,
-        builder: (context) => SuggestionDialog(
-          title: 'Temptation Bundling Ideas',
-          subtitle: 'Pair your habit with something you enjoy',
-          suggestions: suggestions,
-          onSuggestionSelected: (suggestion) {
-            setState(() {
-              _temptationBundleController.text = suggestion;
-            });
-          },
-        ),
-      );
-    });
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Show suggestions dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => SuggestionDialog(
+            title: 'Temptation Bundling Ideas',
+            subtitle: 'Pair your habit with something you enjoy',
+            suggestions: suggestions,
+            onSuggestionSelected: (suggestion) {
+              setState(() {
+                _temptationBundleController.text = suggestion;
+              });
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to get suggestions. Please try again.'),
+          ),
+        );
+      }
+    }
   }
   
-  // Helper: Show suggestion dialog for pre-habit ritual
-  void _showPreHabitRitualSuggestions() {
+  // Helper: Show suggestion dialog for pre-habit ritual (async with loading state)
+  Future<void> _showPreHabitRitualSuggestions() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
-    final tempHabit = Habit(
-      id: 'temp',
-      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-      createdAt: DateTime.now(),
-      implementationTime: _formatTime(_selectedTime),
-      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting suggestions...'),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
     
-    final originalHabit = appState.currentHabit;
-    appState.createHabit(tempHabit).then((_) {
-      final suggestions = appState.getPreHabitRitualSuggestionsForCurrentHabit();
+    try {
+      final tempHabit = Habit(
+        id: 'temp',
+        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+        createdAt: DateTime.now(),
+        implementationTime: _formatTime(_selectedTime),
+        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+      );
+      
+      final originalHabit = appState.currentHabit;
+      await appState.createHabit(tempHabit);
+      final suggestions = await appState.getPreHabitRitualSuggestionsForCurrentHabit();
       
       if (originalHabit != null) {
-        appState.createHabit(originalHabit);
+        await appState.createHabit(originalHabit);
       }
       
-      showDialog(
-        context: context,
-        builder: (context) => SuggestionDialog(
-          title: 'Pre-Habit Ritual Ideas',
-          subtitle: '10-30 second rituals to prime your mindset',
-          suggestions: suggestions,
-          onSuggestionSelected: (suggestion) {
-            setState(() {
-              _preHabitRitualController.text = suggestion;
-            });
-          },
-        ),
-      );
-    });
+      if (mounted) Navigator.of(context).pop();
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => SuggestionDialog(
+            title: 'Pre-Habit Ritual Ideas',
+            subtitle: '10-30 second rituals to prime your mindset',
+            suggestions: suggestions,
+            onSuggestionSelected: (suggestion) {
+              setState(() {
+                _preHabitRitualController.text = suggestion;
+              });
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to get suggestions. Please try again.')),
+        );
+      }
+    }
   }
   
-  // Helper: Show suggestion dialog for environment cue
-  void _showEnvironmentCueSuggestions() {
+  // Helper: Show suggestion dialog for environment cue (async with loading state)
+  Future<void> _showEnvironmentCueSuggestions() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
-    final tempHabit = Habit(
-      id: 'temp',
-      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-      createdAt: DateTime.now(),
-      implementationTime: _formatTime(_selectedTime),
-      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting suggestions...'),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
     
-    final originalHabit = appState.currentHabit;
-    appState.createHabit(tempHabit).then((_) {
-      final suggestions = appState.getEnvironmentCueSuggestionsForCurrentHabit();
+    try {
+      final tempHabit = Habit(
+        id: 'temp',
+        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+        createdAt: DateTime.now(),
+        implementationTime: _formatTime(_selectedTime),
+        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+      );
+      
+      final originalHabit = appState.currentHabit;
+      await appState.createHabit(tempHabit);
+      final suggestions = await appState.getEnvironmentCueSuggestionsForCurrentHabit();
       
       if (originalHabit != null) {
-        appState.createHabit(originalHabit);
+        await appState.createHabit(originalHabit);
       }
       
-      showDialog(
-        context: context,
-        builder: (context) => SuggestionDialog(
-          title: 'Environment Cue Ideas',
-          subtitle: 'Make your habit obvious with visual triggers',
-          suggestions: suggestions,
-          onSuggestionSelected: (suggestion) {
-            setState(() {
-              _environmentCueController.text = suggestion;
-            });
-          },
-        ),
-      );
-    });
+      if (mounted) Navigator.of(context).pop();
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => SuggestionDialog(
+            title: 'Environment Cue Ideas',
+            subtitle: 'Make your habit obvious with visual triggers',
+            suggestions: suggestions,
+            onSuggestionSelected: (suggestion) {
+              setState(() {
+                _environmentCueController.text = suggestion;
+              });
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to get suggestions. Please try again.')),
+        );
+      }
+    }
   }
   
-  // Helper: Show suggestion dialog for environment distraction
-  void _showEnvironmentDistractionSuggestions() {
+  // Helper: Show suggestion dialog for environment distraction (async with loading state)
+  Future<void> _showEnvironmentDistractionSuggestions() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
-    final tempHabit = Habit(
-      id: 'temp',
-      name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-      identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-      tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-      createdAt: DateTime.now(),
-      implementationTime: _formatTime(_selectedTime),
-      implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting suggestions...'),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
     
-    final originalHabit = appState.currentHabit;
-    appState.createHabit(tempHabit).then((_) {
-      final suggestions = appState.getEnvironmentDistractionSuggestionsForCurrentHabit();
+    try {
+      final tempHabit = Habit(
+        id: 'temp',
+        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
+        createdAt: DateTime.now(),
+        implementationTime: _formatTime(_selectedTime),
+        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+      );
+      
+      final originalHabit = appState.currentHabit;
+      await appState.createHabit(tempHabit);
+      final suggestions = await appState.getEnvironmentDistractionSuggestionsForCurrentHabit();
       
       if (originalHabit != null) {
-        appState.createHabit(originalHabit);
+        await appState.createHabit(originalHabit);
       }
       
-      showDialog(
-        context: context,
-        builder: (context) => SuggestionDialog(
-          title: 'Remove Distractions',
-          subtitle: 'Make bad habits harder by removing obstacles',
-          suggestions: suggestions,
-          onSuggestionSelected: (suggestion) {
-            setState(() {
-              _environmentDistractionController.text = suggestion;
-            });
-          },
-        ),
-      );
-    });
+      if (mounted) Navigator.of(context).pop();
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => SuggestionDialog(
+            title: 'Remove Distractions',
+            subtitle: 'Make bad habits harder by removing obstacles',
+            suggestions: suggestions,
+            onSuggestionSelected: (suggestion) {
+              setState(() {
+                _environmentDistractionController.text = suggestion;
+              });
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to get suggestions. Please try again.')),
+        );
+      }
+    }
   }
 
   Future<void> _completeOnboarding() async {

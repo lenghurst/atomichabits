@@ -322,21 +322,28 @@ class AppState extends ChangeNotifier {
     return false;
   }
   
-  // ========== AI Suggestion Methods ==========
+  // ========== AI Suggestion Methods (Async with Remote LLM + Local Fallback) ==========
   
-  /// Get temptation bundling suggestions for current habit
+  /// Get temptation bundling suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
-  List<String> getTemptationBundleSuggestionsForCurrentHabit() {
+  /// 
+  /// Flow: Remote LLM (5s timeout) → Local fallback if needed
+  Future<List<String>> getTemptationBundleSuggestionsForCurrentHabit() async {
     if (_currentHabit == null || _userProfile == null) {
       return [];
     }
     
     try {
-      return _aiSuggestionService.getTemptationBundleSuggestions(
+      return await _aiSuggestionService.getTemptationBundleSuggestions(
         identity: _userProfile!.identity,
         habitName: _currentHabit!.name,
+        tinyVersion: _currentHabit!.tinyVersion,
         implementationTime: _currentHabit!.implementationTime,
         implementationLocation: _currentHabit!.implementationLocation,
+        existingTemptationBundle: _currentHabit!.temptationBundle,
+        existingPreRitual: _currentHabit!.preHabitRitual,
+        existingEnvironmentCue: _currentHabit!.environmentCue,
+        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -346,19 +353,24 @@ class AppState extends ChangeNotifier {
     }
   }
   
-  /// Get pre-habit ritual suggestions for current habit
+  /// Get pre-habit ritual suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
-  List<String> getPreHabitRitualSuggestionsForCurrentHabit() {
+  Future<List<String>> getPreHabitRitualSuggestionsForCurrentHabit() async {
     if (_currentHabit == null || _userProfile == null) {
       return [];
     }
     
     try {
-      return _aiSuggestionService.getPreHabitRitualSuggestions(
+      return await _aiSuggestionService.getPreHabitRitualSuggestions(
         identity: _userProfile!.identity,
         habitName: _currentHabit!.name,
+        tinyVersion: _currentHabit!.tinyVersion,
         implementationTime: _currentHabit!.implementationTime,
         implementationLocation: _currentHabit!.implementationLocation,
+        existingTemptationBundle: _currentHabit!.temptationBundle,
+        existingPreRitual: _currentHabit!.preHabitRitual,
+        existingEnvironmentCue: _currentHabit!.environmentCue,
+        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -368,19 +380,24 @@ class AppState extends ChangeNotifier {
     }
   }
   
-  /// Get environment cue suggestions for current habit
+  /// Get environment cue suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
-  List<String> getEnvironmentCueSuggestionsForCurrentHabit() {
+  Future<List<String>> getEnvironmentCueSuggestionsForCurrentHabit() async {
     if (_currentHabit == null || _userProfile == null) {
       return [];
     }
     
     try {
-      return _aiSuggestionService.getEnvironmentCueSuggestions(
+      return await _aiSuggestionService.getEnvironmentCueSuggestions(
         identity: _userProfile!.identity,
         habitName: _currentHabit!.name,
+        tinyVersion: _currentHabit!.tinyVersion,
         implementationTime: _currentHabit!.implementationTime,
         implementationLocation: _currentHabit!.implementationLocation,
+        existingTemptationBundle: _currentHabit!.temptationBundle,
+        existingPreRitual: _currentHabit!.preHabitRitual,
+        existingEnvironmentCue: _currentHabit!.environmentCue,
+        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -390,19 +407,24 @@ class AppState extends ChangeNotifier {
     }
   }
   
-  /// Get environment distraction removal suggestions for current habit
+  /// Get environment distraction removal suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
-  List<String> getEnvironmentDistractionSuggestionsForCurrentHabit() {
+  Future<List<String>> getEnvironmentDistractionSuggestionsForCurrentHabit() async {
     if (_currentHabit == null || _userProfile == null) {
       return [];
     }
     
     try {
-      return _aiSuggestionService.getEnvironmentDistractionSuggestions(
+      return await _aiSuggestionService.getEnvironmentDistractionSuggestions(
         identity: _userProfile!.identity,
         habitName: _currentHabit!.name,
+        tinyVersion: _currentHabit!.tinyVersion,
         implementationTime: _currentHabit!.implementationTime,
         implementationLocation: _currentHabit!.implementationLocation,
+        existingTemptationBundle: _currentHabit!.temptationBundle,
+        existingPreRitual: _currentHabit!.preHabitRitual,
+        existingEnvironmentCue: _currentHabit!.environmentCue,
+        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -412,14 +434,22 @@ class AppState extends ChangeNotifier {
     }
   }
   
-  /// Get combined suggestions for "Improve this habit" feature
+  /// Get combined suggestions for "Improve this habit" feature (async)
   /// Returns a map with all suggestion types
-  Map<String, List<String>> getAllSuggestionsForCurrentHabit() {
+  Future<Map<String, List<String>>> getAllSuggestionsForCurrentHabit() async {
+    // Fetch all suggestions in parallel for better performance
+    final results = await Future.wait([
+      getTemptationBundleSuggestionsForCurrentHabit(),
+      getPreHabitRitualSuggestionsForCurrentHabit(),
+      getEnvironmentCueSuggestionsForCurrentHabit(),
+      getEnvironmentDistractionSuggestionsForCurrentHabit(),
+    ]);
+    
     return {
-      'temptationBundle': getTemptationBundleSuggestionsForCurrentHabit(),
-      'preHabitRitual': getPreHabitRitualSuggestionsForCurrentHabit(),
-      'environmentCue': getEnvironmentCueSuggestionsForCurrentHabit(),
-      'environmentDistraction': getEnvironmentDistractionSuggestionsForCurrentHabit(),
+      'temptationBundle': results[0],
+      'preHabitRitual': results[1],
+      'environmentCue': results[2],
+      'environmentDistraction': results[3],
     };
   }
 }
