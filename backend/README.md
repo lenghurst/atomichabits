@@ -2,6 +2,8 @@
 
 Backend API service for generating Atomic Habits-based suggestions using OpenAI LLM integration with automatic fallback to local heuristics.
 
+> **📚 For complete end-to-end testing instructions** (backend + Flutter app + OpenAI integration), see [E2E_TESTING_AND_DEBUGGING.md](../E2E_TESTING_AND_DEBUGGING.md)
+
 ## Features
 
 - **OpenAI LLM Integration**: Uses GPT-3.5-turbo for intelligent, context-aware suggestions

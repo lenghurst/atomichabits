@@ -9,6 +9,11 @@ A Flutter mobile habit-tracking app based on:
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
 
+## 🧪 Testing & Development
+
+- **[E2E Testing & Debugging Guide](E2E_TESTING_AND_DEBUGGING.md)** - Complete guide for running the full system (Flutter app + Node.js backend + OpenAI integration) with test scenarios and troubleshooting
+- **[Backend Documentation](backend/README.md)** - API documentation and setup for the suggestion service
+
 ## 📁 Project Structure
 
 ```
