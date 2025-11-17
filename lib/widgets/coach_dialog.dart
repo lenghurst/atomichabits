@@ -48,29 +48,29 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
   // Questions for the coach conversation
   final List<Map<String, String>> _questions = [
     {
-      'question': 'What type of person are you trying to become?',
-      'hint': 'e.g., "a reader", "a healthy person", "a writer"',
-      'example': 'I want to be someone who reads regularly',
+      'question': '1. Who are you trying to become?',
+      'hint': 'e.g., "a reader", "someone who moves every day", "a calmer person"',
+      'helper': 'Think about the type of person you\'d be proud to become, not just what you want to do.',
     },
     {
-      'question': 'What\'s one small habit that would support that identity?',
-      'hint': 'e.g., "read more", "exercise", "write every day"',
-      'example': 'I want to read more books',
+      'question': '2. What\'s one habit that would support that?',
+      'hint': 'e.g., "read more books", "go for a walk", "meditate", "write daily"',
+      'helper': 'Don\'t worry about getting it perfect. Just write the first habit that comes to mind.',
     },
     {
-      'question': 'When in your day does this realistically fit?',
-      'hint': 'e.g., "before bed", "morning coffee", "lunch break"',
-      'example': 'Before bed around 9pm',
+      'question': '3. When does this realistically fit into your day?',
+      'hint': 'e.g., "before bed around 10pm", "after breakfast", "just after work"',
+      'helper': 'Choose a moment that already exists in your routine. We\'ll turn it into a clear time.',
     },
     {
-      'question': 'Where will you usually be when doing it?',
-      'hint': 'e.g., "in bed", "at my desk", "on the couch"',
-      'example': 'In bed',
+      'question': '4. Where will you usually be when you do it?',
+      'hint': 'e.g., "in bed", "at my desk", "in the living room", "at the gym"',
+      'helper': 'A clear place makes the habit easier to see and remember.',
     },
     {
-      'question': 'What would make this more enjoyable or obvious?',
-      'hint': 'e.g., "having tea", "music", "visual reminder"',
-      'example': 'Having a cup of herbal tea',
+      'question': '5. What would make this feel easier or more enjoyable?',
+      'hint': 'e.g., "a cup of tea", "my favourite playlist", "laying my book on my pillow"',
+      'helper': 'This helps us build in a tiny ritual, a reward, or a clear cue.',
     },
   ];
 
@@ -145,9 +145,30 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
     } catch (e) {
       setState(() {
         _isGenerating = false;
-        _errorMessage = 'The coach is temporarily unavailable. '
-            'You can continue with the manual form or try again.';
       });
+
+      // Show error dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Coach is currently offline'),
+            content: const Text(
+              'Something went wrong while generating your plan.\n\n'
+              'You can still set up your habit manually – the form below will guide you.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close error dialog
+                  Navigator.of(context).pop(); // Close coach dialog
+                },
+                child: const Text('Continue without coach'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
@@ -251,7 +272,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                         children: [
                           if (_currentStep == 0) ...[
                             const Text(
-                              '👋 Hi! I\'m your Atomic Habits coach.',
+                              'Let\'s design a habit that fits your life.',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -259,8 +280,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'I\'ll ask you 5 quick questions to help design your first tiny habit. '
-                              'Then I\'ll generate a complete plan you can review and adjust.',
+                              'I\'ll ask 5 short questions. You can change anything later.',
                               style: TextStyle(fontSize: 14),
                             ),
                             const SizedBox(height: 16),
@@ -293,7 +313,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                       decoration: InputDecoration(
                         labelText: 'Your answer',
                         hintText: currentQ['hint'],
-                        helperText: 'Example: ${currentQ['example']}',
+                        helperText: currentQ['helper'],
                         helperMaxLines: 2,
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.edit),
@@ -364,13 +384,27 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                       label: const Text('Next'),
                     )
                   else
-                    FilledButton.icon(
-                      onPressed: _handleGeneratePlan,
-                      icon: const Icon(Icons.auto_awesome),
-                      label: const Text('Generate My Plan'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: _handleGeneratePlan,
+                          icon: const Icon(Icons.auto_awesome),
+                          label: const Text('Generate my habit plan'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'We\'ll create a tiny starting version that takes\nabout two minutes or less.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -392,13 +426,13 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
             CircularProgressIndicator(),
             SizedBox(height: 24),
             Text(
-              'The coach is designing your habit plan...',
-              style: TextStyle(fontSize: 16),
+              'The coach is designing your habit plan…',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
-              'This may take a few seconds',
+              'This usually takes a few seconds.\nWe\'re turning your answers into a tiny habit and system you can edit.',
               style: TextStyle(fontSize: 12, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
@@ -437,14 +471,14 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Your Habit Plan is Ready!',
+                          'Here\'s your suggested habit plan',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Review and adjust before applying',
+                          'This is a starting point based on your answers.',
                           style: TextStyle(fontSize: 12),
                         ),
                       ],
@@ -465,6 +499,15 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'You can adjust anything that doesn\'t feel realistic.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     // Identity
                     _buildPlanField('Identity', plan.identity, Icons.star),
                     const SizedBox(height: 16),
@@ -473,22 +516,22 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                     _buildPlanField('Habit', plan.habitName, Icons.check_circle),
                     const SizedBox(height: 16),
 
-                    // Tiny version
-                    _buildPlanField('Tiny Version', plan.tinyVersion, Icons.timer),
+                    // Tiny version (2-minute version)
+                    _buildPlanField('2-minute version', plan.tinyVersion, Icons.timer),
                     const SizedBox(height: 16),
 
-                    // Implementation intention
-                    _buildPlanField(
-                      'When & Where',
-                      '${plan.implementationTime} at ${plan.implementationLocation}',
-                      Icons.place,
-                    ),
+                    // Time
+                    _buildPlanField('Time', plan.implementationTime, Icons.schedule),
+                    const SizedBox(height: 16),
+
+                    // Place
+                    _buildPlanField('Place', plan.implementationLocation, Icons.place),
                     const SizedBox(height: 16),
 
                     // Optional fields
                     if (plan.temptationBundle != null) ...[
                       _buildPlanField(
-                        'Temptation Bundle',
+                        'Temptation bundle',
                         plan.temptationBundle!,
                         Icons.favorite,
                       ),
@@ -497,7 +540,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
 
                     if (plan.preHabitRitual != null) ...[
                       _buildPlanField(
-                        'Pre-Habit Ritual',
+                        'Pre-habit ritual',
                         plan.preHabitRitual!,
                         Icons.self_improvement,
                       ),
@@ -506,7 +549,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
 
                     if (plan.environmentCue != null) ...[
                       _buildPlanField(
-                        'Environment Cue',
+                        'Environment cue',
                         plan.environmentCue!,
                         Icons.lightbulb,
                       ),
@@ -515,9 +558,79 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
 
                     if (plan.environmentDistraction != null) ...[
                       _buildPlanField(
-                        'Remove Distraction',
+                        'Distraction guardrail',
                         plan.environmentDistraction!,
                         Icons.block,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Show missing fields warning if any
+                    if (metadata.missingFields != null && metadata.missingFields!.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: metadata.confidence >= 0.6
+                              ? Colors.orange.shade50
+                              : Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: metadata.confidence >= 0.6
+                                ? Colors.orange.shade200
+                                : Colors.red.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.warning_outlined,
+                              size: 20,
+                              color: metadata.confidence >= 0.6
+                                  ? Colors.orange.shade700
+                                  : Colors.red.shade700,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'The coach isn\'t sure about: ${metadata.missingFields!.join(", ")}.\n'
+                                'You\'ll want to double-check these before you start.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: metadata.confidence >= 0.6
+                                      ? Colors.orange.shade900
+                                      : Colors.red.shade900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Low confidence warning
+                    if (metadata.confidence < 0.6) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.info_outline, size: 20, color: Colors.amber.shade700),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'The coach had to guess some parts. Please review carefully and adjust before applying.',
+                                style: TextStyle(fontSize: 13, color: Colors.amber.shade900),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -533,7 +646,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.info_outline, size: 20),
+                            const Icon(Icons.lightbulb_outline, size: 20, color: Colors.blue),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -569,7 +682,7 @@ class _CoachOnboardingDialogState extends State<CoachOnboardingDialog> {
                     child: FilledButton.icon(
                       onPressed: _handleApplyPlan,
                       icon: const Icon(Icons.done),
-                      label: const Text('Apply to My Setup'),
+                      label: const Text('Apply to my setup'),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         padding: const EdgeInsets.symmetric(vertical: 16),

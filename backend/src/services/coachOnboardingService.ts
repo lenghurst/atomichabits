@@ -360,18 +360,46 @@ async function callOpenAI(
     messages: [
       {
         role: 'system',
-        content: `You are an expert Atomic Habits coach helping someone design their first tiny habit during onboarding.
-Your role is to synthesize the conversational context into a complete, structured habit plan.
+        content: `You are an Atomic Habits coach helping someone design their first tiny habit.
 
-Key principles:
-- Identity-first: Frame habits as "I am [identity]" not "I want to be"
-- 2-minute rule: Make the tiny version so easy they can't say no
-- Implementation intention: Specific time and place
-- Make it obvious: Clear environmental cues
-- Make it attractive: Temptation bundling
-- Make it easy: Remove friction and distractions
+CORE PRINCIPLES:
+1. Identity-first: Every habit starts with identity. Format: "I am a [type of person]" or "I am someone who [verb]"
+2. 2-minute rule: The tiny version must be doable in 2 minutes or less, even on a bad day. Ritualize the beginning, not the outcome.
+3. Four Laws of Behaviour Change:
+   - Make it Obvious: implementation_time, implementation_location, environment_cue
+   - Make it Attractive: temptation_bundle, pre_habit_ritual
+   - Make it Easy: tiny_version must be low-friction
+   - Make it Satisfying: the plan should feel achievable, not punishing
 
-Always respond with valid JSON only.`
+TONE:
+- Short and concrete (no essays)
+- Non-judgmental (no shaming, no overpromising)
+- Realistic and encouraging
+
+FIELD RULES:
+- identity: Convert to "I am a [X]" format. Max 80 chars.
+- habit_name: Short description of habit (not identity). Max 80 chars.
+- tiny_version: <= 2 minutes. The very first step. Max 80 chars. REQUIRED.
+- implementation_time: "HH:MM" 24h format. Parse from context or default: morning=07:00, afternoon=15:00, evening=21:00.
+- implementation_location: Specific place. If unknown, use "At home" and add "location" to missing_fields.
+- temptation_bundle: Pair with something enjoyable. Use context if available. Set null if nothing natural.
+- pre_habit_ritual: 10-30 second action to start. Set null if nothing obvious.
+- environment_cue: Visual cue 10-30 min before time. Set null if can't infer.
+- environment_distraction: Realistic friction removal. Set null if nothing safe to infer.
+
+CONFIDENCE SCORING:
+- 0.80-0.95: Have identity, habit idea, and time/location with minimal guessing
+- 0.60-0.79: Some elements inferred but reasonable
+- 0.40-0.59: Had to guess key elements
+- Never 1.0
+
+MISSING_FIELDS:
+Add human-readable tags for what user should double-check (e.g., "time", "location", "temptation_bundle")
+
+NOTES:
+1-2 short sentences explaining what to review. Tone: "This is a starting point; adjust anything that doesn't feel realistic."
+
+Always respond with strict JSON only. No markdown, no extra keys.`
       },
       {
         role: 'user',
@@ -441,43 +469,67 @@ Always respond with valid JSON only.`
  * Build the prompt for OpenAI coach onboarding
  */
 function buildPrompt(context: OnboardingCoachContext): string {
-  return `You are helping ${context.userName || 'a new user'} design their first Atomic Habit.
-Based on the conversation, generate a complete habit plan.
+  return `Design a tiny habit plan for ${context.userName || 'the user'} based on their answers.
 
-CONVERSATION CONTEXT:
+CONVERSATION ANSWERS:
 
-Q: "What type of person are you trying to become?"
+Q1: "Who are you trying to become?"
 A: ${context.desiredIdentity || 'Not provided'}
 
-Q: "What's one small habit that would support that?"
+Q2: "What habit would support that?"
 A: ${context.habitIdea || 'Not provided'}
 
-Q: "When in your day does this realistically fit?"
+Q3: "When does this fit in your day?"
 A: ${context.whenInDay || 'Not provided'}
 
-Q: "Where will you usually be when doing it?"
+Q4: "Where will you usually be?"
 A: ${context.whereLocation || 'Not provided'}
 
-Q: "What would make this more enjoyable or obvious?"
+Q5: "What makes it easier or more enjoyable?"
 A: ${context.whatMakesItEnjoyable || 'Not provided'}
 
-TASK:
-Generate a structured habit plan with ALL of the following fields:
+INSTRUCTIONS:
+Generate a complete habit_plan following the Four Laws and 2-minute rule.
 
-Required fields:
-- identity: Identity statement in "I am [identity]" format (not "I want to be")
-- habit_name: Clear habit name (e.g., "Read every day", "Exercise")
-- tiny_version: 2-minute version so easy they can't say no (e.g., "Read one page")
-- implementation_time: HH:MM format (e.g., "07:00", "21:30")
-- implementation_location: Specific place (e.g., "In bed", "At my desk")
+REQUIRED FIELDS:
+1. identity: Convert to "I am a [type of person]" or "I am someone who [verb]". Max 80 chars.
+   Examples: "I am a reader", "I am someone who moves every day"
 
-Optional fields (include if you can infer from context):
-- temptation_bundle: Pair habit with something enjoyable (e.g., "Have coffee while reading")
-- pre_habit_ritual: 10-30 second ritual to start (e.g., "Take 3 deep breaths")
-- environment_cue: Visual trigger in the environment (e.g., "Put book on pillow at 21:45")
-- environment_distraction: Friction to remove (e.g., "Charge phone in another room")
+2. habit_name: Short habit description (not the identity). Max 80 chars.
+   Examples: "Read every day", "Go for a walk", "Write in my journal"
 
-Return ONLY valid JSON in this exact format:
+3. tiny_version: <= 2 minutes. The first step only, not the full habit. Max 80 chars. REQUIRED.
+   Examples: "Read one page", "Put on trainers and walk to the end of the street", "Open journal and write one sentence"
+
+4. implementation_time: "HH:MM" 24h format. Parse natural language:
+   - "before bed around 9pm" → "21:00"
+   - "morning" → "07:00", "afternoon" → "15:00", "evening" → "21:00"
+   - If completely unknown → "20:00" and add "time" to missing_fields
+
+5. implementation_location: Specific place. Max 60 chars.
+   Examples: "In bed", "At my desk", "In the living room", "At the gym"
+   If unknown → "At home" and add "location" to missing_fields
+
+OPTIONAL FIELDS (set null if can't infer naturally):
+6. temptation_bundle: Pair with something enjoyable from Q5. Max 80 chars.
+   Examples: "Have herbal tea while reading", "Listen to favorite playlist while walking"
+
+7. pre_habit_ritual: 10-30 second action to start. Max 80 chars.
+   Examples: "Take 3 slow breaths and open book", "Fill a glass of water", "Put phone on Do Not Disturb"
+
+8. environment_cue: Visual reminder 10-30 min before time. Max 80 chars.
+   Examples: "Put book on pillow at 20:45", "Lay out trainers by the door at 06:45"
+
+9. environment_distraction: Realistic friction to remove. Max 80 chars.
+   Examples: "Charge phone in the kitchen", "Turn off TV before 21:00"
+   Don't suggest extreme digital detox unless user strongly hints.
+
+METADATA:
+- confidence: 0.40-0.95 based on how much you had to guess. Never 1.0.
+- missing_fields: Array of fields user should review (e.g., ["time", "location"])
+- notes: 1-2 sentences. What should they double-check? Encouraging tone.
+
+Return ONLY this JSON structure:
 {
   "habit_plan": {
     "identity": "I am a reader",
@@ -491,16 +543,11 @@ Return ONLY valid JSON in this exact format:
     "environment_distraction": "Charge phone in the kitchen"
   },
   "metadata": {
-    "confidence": 0.9,
-    "notes": "Great plan! Review and adjust before saving."
+    "confidence": 0.85,
+    "missing_fields": [],
+    "notes": "This is a starting point. Adjust anything that doesn't feel realistic."
   }
-}
-
-Make the plan:
-- Specific and actionable
-- Tailored to the user's context
-- Aligned with Atomic Habits principles
-- Encouraging and realistic`;
+}`;
 }
 
 /**

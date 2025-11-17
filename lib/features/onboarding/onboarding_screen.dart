@@ -402,47 +402,61 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final metadata = result.metadata;
 
     setState(() {
-      // Populate identity field
-      _identityController.text = plan.identity;
+      // Populate identity field (only if non-empty and valid)
+      if (plan.identity.isNotEmpty && plan.identity.length >= 5) {
+        _identityController.text = plan.identity;
+      }
 
-      // Populate habit name and tiny version
-      _habitNameController.text = plan.habitName;
-      _tinyVersionController.text = plan.tinyVersion;
+      // Populate habit name and tiny version (only if non-empty)
+      if (plan.habitName.isNotEmpty && plan.habitName.length >= 3) {
+        _habitNameController.text = plan.habitName;
+      }
+      if (plan.tinyVersion.isNotEmpty && plan.tinyVersion.length >= 3) {
+        _tinyVersionController.text = plan.tinyVersion;
+      }
 
-      // Parse and set time
+      // Parse and set time (with fallback to 20:00 if invalid)
       final timeParts = plan.implementationTime.split(':');
       if (timeParts.length == 2) {
-        final hour = int.tryParse(timeParts[0]) ?? 9;
-        final minute = int.tryParse(timeParts[1]) ?? 0;
-        _selectedTime = TimeOfDay(hour: hour, minute: minute);
+        final hour = int.tryParse(timeParts[0]);
+        final minute = int.tryParse(timeParts[1]);
+        if (hour != null && minute != null && hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
+          _selectedTime = TimeOfDay(hour: hour, minute: minute);
+        } else {
+          // Invalid time, fallback to 20:00
+          _selectedTime = const TimeOfDay(hour: 20, minute: 0);
+        }
+      } else {
+        // Malformed time, fallback to 20:00
+        _selectedTime = const TimeOfDay(hour: 20, minute: 0);
       }
 
-      // Populate location
-      _locationController.text = plan.implementationLocation;
+      // Populate location (only if non-empty and valid)
+      if (plan.implementationLocation.isNotEmpty && plan.implementationLocation.length >= 3) {
+        _locationController.text = plan.implementationLocation;
+      }
 
-      // Populate optional fields if present
-      if (plan.temptationBundle != null) {
+      // Populate optional fields only if present and non-empty
+      if (plan.temptationBundle != null && plan.temptationBundle!.isNotEmpty) {
         _temptationBundleController.text = plan.temptationBundle!;
       }
-      if (plan.preHabitRitual != null) {
+      if (plan.preHabitRitual != null && plan.preHabitRitual!.isNotEmpty) {
         _preHabitRitualController.text = plan.preHabitRitual!;
       }
-      if (plan.environmentCue != null) {
+      if (plan.environmentCue != null && plan.environmentCue!.isNotEmpty) {
         _environmentCueController.text = plan.environmentCue!;
       }
-      if (plan.environmentDistraction != null) {
+      if (plan.environmentDistraction != null && plan.environmentDistraction!.isNotEmpty) {
         _environmentDistractionController.text = plan.environmentDistraction!;
       }
     });
 
     // Show confirmation message
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          metadata.notes ?? 'Coach plan applied — feel free to edit before saving.',
-        ),
+      const SnackBar(
+        content: Text('Your habit plan has been applied. You can tweak any field before starting.'),
         backgroundColor: Colors.green,
-        duration: const Duration(seconds: 4),
+        duration: Duration(seconds: 4),
       ),
     );
   }
@@ -538,7 +552,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(width: 12),
                             const Expanded(
                               child: Text(
-                                'Talk to the Coach',
+                                'Talk to your habit coach',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -549,8 +563,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Not sure where to start? Let the coach ask you 5 quick questions and generate a personalized habit plan for you.',
+                          'Answer 5 quick questions and let the coach design a tiny habit and system for you.',
                           style: TextStyle(fontSize: 14, color: Colors.black87),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'You\'ll still be able to review and edit everything before you start.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -558,7 +577,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: FilledButton.icon(
                             onPressed: _showCoachDialog,
                             icon: const Icon(Icons.chat),
-                            label: const Text('Start Coach Conversation'),
+                            label: const Text('Start coach conversation'),
                             style: FilledButton.styleFrom(
                               backgroundColor: Colors.deepPurple,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -578,11 +597,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'OR FILL MANUALLY',
+                        'or fill in your plan manually',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
