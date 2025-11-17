@@ -333,18 +333,144 @@ curl -X POST http://localhost:3000/api/habit-review \
 }
 ```
 
+### POST /api/coach/onboarding
+
+Generate a structured habit plan from conversational context collected during coach-led onboarding.
+
+This endpoint powers the "Talk to the Coach" feature in the Flutter app, which helps users design their first habit through a short conversation.
+
+#### Request Body
+
+```json
+{
+  "desired_identity": "a reader",
+  "habit_idea": "read more books",
+  "when_in_day": "before bed around 9pm",
+  "where_location": "in bed",
+  "what_makes_it_enjoyable": "having tea",
+  "user_name": "Alex"
+}
+```
+
+**Optional Fields (all fields are optional):**
+- `desired_identity`: What type of person they want to become (e.g., "a reader", "a healthy person")
+- `habit_idea`: The habit they want to build (e.g., "read more", "exercise")
+- `when_in_day`: When they plan to do it (e.g., "before bed", "morning coffee")
+- `where_location`: Where they'll do it (e.g., "in bed", "at my desk")
+- `what_makes_it_enjoyable`: What would make it enjoyable/obvious (e.g., "having tea", "music")
+- `user_name`: User's name for personalization
+
+**Note**: At least one field should be provided to generate a meaningful plan.
+
+#### Response
+
+```json
+{
+  "habit_plan": {
+    "identity": "I am a reader",
+    "habit_name": "Read every day",
+    "tiny_version": "Read one page",
+    "implementation_time": "21:00",
+    "implementation_location": "In bed",
+    "temptation_bundle": "Have herbal tea while reading",
+    "pre_habit_ritual": "Take 3 deep breaths and open book",
+    "environment_cue": "Put book on pillow at 20:45",
+    "environment_distraction": "Charge phone in the kitchen"
+  },
+  "metadata": {
+    "confidence": 0.85,
+    "missing_fields": null,
+    "notes": "AI-generated plan. Review and adjust as needed."
+  }
+}
+```
+
+**Response Fields:**
+
+**`habit_plan` (required):**
+- `identity`: Identity statement in "I am [identity]" format
+- `habit_name`: Clear habit name (e.g., "Read every day")
+- `tiny_version`: 2-minute version (e.g., "Read one page")
+- `implementation_time`: HH:MM format (e.g., "21:00")
+- `implementation_location`: Specific place (e.g., "In bed")
+- `temptation_bundle`: Optional - enjoyable pairing
+- `pre_habit_ritual`: Optional - 10-30 second ritual
+- `environment_cue`: Optional - visual trigger
+- `environment_distraction`: Optional - friction to remove
+
+**`metadata` (required):**
+- `confidence`: 0.0-1.0 confidence score
+- `missing_fields`: Array of missing optional fields (or null)
+- `notes`: Helpful message for the user (or null)
+
+#### Error Responses
+
+**400 Bad Request** - No context provided:
+```json
+{
+  "error": "Insufficient context",
+  "message": "Please provide at least one answer to generate a habit plan"
+}
+```
+
+**503 Service Unavailable** - Coach temporarily unavailable:
+```json
+{
+  "error": "Service unavailable",
+  "message": "The coach is temporarily unavailable. Please try the manual form or try again later."
+}
+```
+
+#### Example Request
+
+```bash
+curl -X POST http://localhost:3000/api/coach/onboarding \
+  -H "Content-Type: application/json" \
+  -d '{
+    "desired_identity": "someone who exercises regularly",
+    "habit_idea": "go for a morning walk",
+    "when_in_day": "7am after waking up",
+    "where_location": "around the neighborhood",
+    "what_makes_it_enjoyable": "listening to podcasts"
+  }'
+```
+
+**Response:**
+```json
+{
+  "habit_plan": {
+    "identity": "I am someone who exercises regularly",
+    "habit_name": "Go for a morning walk",
+    "tiny_version": "Walk for 2 minutes",
+    "implementation_time": "07:00",
+    "implementation_location": "Around the neighborhood",
+    "temptation_bundle": "Listen to your favorite podcast",
+    "pre_habit_ritual": "Put on your workout clothes immediately",
+    "environment_cue": "Put running shoes by the door at night",
+    "environment_distraction": "Put phone on Do Not Disturb mode"
+  },
+  "metadata": {
+    "confidence": 0.9,
+    "missing_fields": null,
+    "notes": "Great plan! Review and adjust before saving."
+  }
+}
+```
+
 ## Project Structure
 
 ```
 backend/
 ├── src/
 │   ├── services/
-│   │   ├── suggestionService.ts   # Core LLM + heuristic logic for suggestions
-│   │   └── reviewService.ts       # Core LLM + heuristic logic for weekly reviews
+│   │   ├── suggestionService.ts        # Core LLM + heuristic logic for suggestions
+│   │   ├── reviewService.ts            # Core LLM + heuristic logic for weekly reviews
+│   │   └── coachOnboardingService.ts   # Core LLM + heuristic logic for coach onboarding
 │   ├── routes/
-│   │   ├── habitSuggestions.ts    # API route handler for suggestions
-│   │   └── habitReview.ts         # API route handler for weekly reviews
-│   └── server.ts                  # Express server setup
+│   │   ├── habitSuggestions.ts         # API route handler for suggestions
+│   │   ├── habitReview.ts              # API route handler for weekly reviews
+│   │   └── coachOnboarding.ts          # API route handler for coach onboarding
+│   └── server.ts                       # Express server setup
 ├── dist/                          # Compiled JavaScript (after build)
 ├── package.json
 ├── tsconfig.json
@@ -379,6 +505,18 @@ The review service analyzes completion patterns (weekday/weekend, streaks, compl
 - A short summary of the week
 - Concrete insights about behavior patterns
 - Actionable adjustments aligned with Atomic Habits (make it obvious, attractive, easy, satisfying)
+
+### Coach Onboarding Flow
+
+1. **Request arrives** at `/api/coach/onboarding`
+2. **Route handler** (`coachOnboarding.ts`) validates input and builds `OnboardingCoachContext`
+3. **Coach service** (`coachOnboardingService.ts`) is called:
+   - Checks if `OPENAI_API_KEY` exists
+   - If yes → tries OpenAI with 5s timeout to generate complete habit plan
+   - If no / fails → uses heuristic plan generation
+4. **Response sent** with `habit_plan` + `metadata`
+
+The coach service synthesizes conversational answers into a structured habit plan with all required fields (identity, habit name, tiny version, time, location) and optional fields (temptation bundle, pre-habit ritual, environment design).
 
 ### Key Components
 

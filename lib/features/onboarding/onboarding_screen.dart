@@ -5,6 +5,8 @@ import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../widgets/suggestion_dialog.dart';
+import '../../widgets/coach_dialog.dart';
+import '../../data/coach_service.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
@@ -378,6 +380,73 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  // ========== COACH ONBOARDING METHODS ==========
+
+  /// Show the coach onboarding dialog
+  Future<void> _showCoachDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => CoachOnboardingDialog(
+        userName: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
+        onPlanGenerated: _handleCoachPlanGenerated,
+      ),
+    );
+  }
+
+  /// Handle the generated plan from the coach and populate the form
+  void _handleCoachPlanGenerated(HabitPlanResult result) {
+    final plan = result.habitPlan;
+    final metadata = result.metadata;
+
+    setState(() {
+      // Populate identity field
+      _identityController.text = plan.identity;
+
+      // Populate habit name and tiny version
+      _habitNameController.text = plan.habitName;
+      _tinyVersionController.text = plan.tinyVersion;
+
+      // Parse and set time
+      final timeParts = plan.implementationTime.split(':');
+      if (timeParts.length == 2) {
+        final hour = int.tryParse(timeParts[0]) ?? 9;
+        final minute = int.tryParse(timeParts[1]) ?? 0;
+        _selectedTime = TimeOfDay(hour: hour, minute: minute);
+      }
+
+      // Populate location
+      _locationController.text = plan.implementationLocation;
+
+      // Populate optional fields if present
+      if (plan.temptationBundle != null) {
+        _temptationBundleController.text = plan.temptationBundle!;
+      }
+      if (plan.preHabitRitual != null) {
+        _preHabitRitualController.text = plan.preHabitRitual!;
+      }
+      if (plan.environmentCue != null) {
+        _environmentCueController.text = plan.environmentCue!;
+      }
+      if (plan.environmentDistraction != null) {
+        _environmentDistractionController.text = plan.environmentDistraction!;
+      }
+    });
+
+    // Show confirmation message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          metadata.notes ?? 'Coach plan applied — feel free to edit before saving.',
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
@@ -452,7 +521,75 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   'Every action you take is a vote for the type of person you want to become.',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // Coach onboarding option
+                Card(
+                  color: Colors.deepPurple.shade50,
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.psychology, color: Colors.deepPurple.shade700, size: 28),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                'Talk to the Coach',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Not sure where to start? Let the coach ask you 5 quick questions and generate a personalized habit plan for you.',
+                          style: TextStyle(fontSize: 14, color: Colors.black87),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _showCoachDialog,
+                            icon: const Icon(Icons.chat),
+                            label: const Text('Start Coach Conversation'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR FILL MANUALLY',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
                 // Name field
                 TextFormField(

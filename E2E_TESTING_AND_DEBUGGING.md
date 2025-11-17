@@ -634,6 +634,188 @@ For each "Ideas 💡" button tap:
 
 ---
 
+### Scenario E: Coach Onboarding Flow (LLM Mode)
+
+**Objective:** Test the "Talk to the Coach" conversational onboarding feature which generates a complete habit plan from user answers.
+
+#### Setup
+
+1. **Backend:** Run with valid `OPENAI_API_KEY`
+   ```bash
+   cd backend
+   export OPENAI_API_KEY=sk-your-real-key-here
+   npm run dev
+   ```
+
+2. **Flutter:** Start the app
+   ```bash
+   flutter run -d chrome
+   ```
+
+#### Steps
+
+1. **Start the app** and land on the onboarding screen
+2. **Tap "Start Coach Conversation"** button (purple card at the top)
+3. **Answer the 5 coach questions:**
+   - Q1: "What type of person are you trying to become?"
+     - Example: "a reader"
+   - Q2: "What's one small habit that would support that?"
+     - Example: "read more books"
+   - Q3: "When in your day does this realistically fit?"
+     - Example: "before bed around 9pm"
+   - Q4: "Where will you usually be when doing it?"
+     - Example: "in bed"
+   - Q5: "What would make this more enjoyable or obvious?"
+     - Example: "having herbal tea"
+4. **Tap "Generate My Plan"** and wait for the loading state
+5. **Review the generated plan** in the summary dialog
+6. **Tap "Apply to My Setup"** to populate the form
+
+#### Expected Backend Logs
+
+```
+📞 POST /api/coach/onboarding - Received request
+📝 Coach context: ✓ ✓ ✓ ✓ ✓
+🤖 Attempting OpenAI LLM call for coach onboarding...
+✅ Generated habit plan: "Read every day" (confidence: 0.85)
+```
+
+**Key indicators:**
+- `🤖 Attempting OpenAI LLM call for coach onboarding...` confirms API call
+- `✅ Generated habit plan:` confirms success
+- Confidence score shown (typically 0.7-0.95)
+
+#### Expected App Behavior
+
+- ✅ Loading dialog appears: "The coach is designing your habit plan..."
+- ✅ Plan summary dialog appears within 2-5 seconds
+- ✅ Plan shows all fields:
+  - Identity: "I am a reader"
+  - Habit: "Read every day"
+  - Tiny Version: "Read one page"
+  - Time & Location: "21:00 at In bed"
+  - Optional fields: temptation bundle, pre-habit ritual, environment cue, distraction
+- ✅ After "Apply to My Setup", onboarding form is fully populated
+- ✅ Green snackbar: "AI-generated plan. Review and adjust as needed."
+- ✅ All fields are editable - user can modify before saving
+
+#### Testing the Coach Endpoint Directly (curl)
+
+```bash
+curl -X POST http://localhost:3000/api/coach/onboarding \
+  -H "Content-Type: application/json" \
+  -d '{
+    "desired_identity": "a reader",
+    "habit_idea": "read more books",
+    "when_in_day": "before bed around 9pm",
+    "where_location": "in bed",
+    "what_makes_it_enjoyable": "having herbal tea"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "habit_plan": {
+    "identity": "I am a reader",
+    "habit_name": "Read every day",
+    "tiny_version": "Read one page",
+    "implementation_time": "21:00",
+    "implementation_location": "In bed",
+    "temptation_bundle": "Have herbal tea while reading",
+    "pre_habit_ritual": "Take 3 deep breaths and open book",
+    "environment_cue": "Put book on pillow at 20:45",
+    "environment_distraction": "Charge phone in the kitchen"
+  },
+  "metadata": {
+    "confidence": 0.85,
+    "missing_fields": null,
+    "notes": "AI-generated plan. Review and adjust as needed."
+  }
+}
+```
+
+---
+
+### Scenario F: Coach Onboarding Fallback (Heuristics)
+
+**Objective:** Verify the coach works without OpenAI using heuristic plan generation.
+
+#### Setup
+
+1. **Backend:** Run WITHOUT `OPENAI_API_KEY`
+   ```bash
+   cd backend
+   unset OPENAI_API_KEY
+   npm run dev
+   ```
+
+2. **Flutter:** Start the app
+   ```bash
+   flutter run -d chrome
+   ```
+
+#### Steps
+
+1. Follow the same coach conversation flow as Scenario E
+2. Observe the backend logs
+
+#### Expected Backend Logs
+
+```
+📞 POST /api/coach/onboarding - Received request
+📝 Coach context: ✓ ✓ ✓ ✓ ✓
+⚠️  OPENAI_API_KEY not set – using heuristic habit plan generation
+🔄 Generating heuristic habit plan from context
+✅ Generated habit plan: "Read every day" (confidence: 0.7)
+```
+
+**Key indicators:**
+- `⚠️  OPENAI_API_KEY not set` confirms no LLM
+- `🔄 Generating heuristic habit plan` confirms fallback
+- Lower confidence (typically 0.4-0.7)
+- Plan still generated successfully
+
+#### Expected App Behavior
+
+- ✅ Works identically to Scenario E from user's perspective
+- ✅ Plan may be less personalized but still valid
+- ✅ All required fields populated
+- ✅ Confidence may be lower (shown in metadata)
+- ✅ No error, no crash
+
+---
+
+### Scenario G: Coach Onboarding Error Handling
+
+**Objective:** Verify graceful error handling when coach service fails.
+
+#### Setup
+
+1. **Backend:** Stop the backend completely
+
+2. **Flutter:** Start the app
+   ```bash
+   flutter run -d chrome
+   ```
+
+#### Steps
+
+1. Start coach conversation
+2. Answer all 5 questions
+3. Tap "Generate My Plan"
+
+#### Expected App Behavior
+
+- ✅ Loading dialog appears
+- ✅ After timeout (~5 seconds), error dialog appears:
+  - "The coach is temporarily unavailable. You can continue with the manual form or try again."
+- ✅ User can close dialog and continue with manual form
+- ✅ No crash, no blank screen
+- ✅ Previously entered name is preserved in manual form if user typed it before opening coach
+
+---
+
 ## Debugging
 
 Common issues and how to fix them.

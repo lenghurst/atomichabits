@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import habitSuggestionsRouter from './routes/habitSuggestions';
 import habitReviewRouter from './routes/habitReview';
+import coachOnboardingRouter from './routes/coachOnboarding';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -32,6 +33,7 @@ app.get('/health', (req, res) => {
 // Mount routes
 app.use(habitSuggestionsRouter);
 app.use(habitReviewRouter);
+app.use(coachOnboardingRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -51,5 +53,6 @@ app.listen(PORT, () => {
   console.log(`💡 Health check: http://localhost:${PORT}/health`);
   console.log(`📡 Suggestions API: http://localhost:${PORT}/api/habit-suggestions`);
   console.log(`📊 Review API: http://localhost:${PORT}/api/habit-review`);
+  console.log(`🎯 Coach Onboarding API: http://localhost:${PORT}/api/coach/onboarding`);
   console.log('='.repeat(60));
 });

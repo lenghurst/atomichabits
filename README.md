@@ -91,6 +91,20 @@ context.go('/');
 - Creates first habit with a tiny version (2-minute rule)
 - Validates all inputs before proceeding
 
+### ✅ Coach-Led Onboarding (NEW!)
+- **"Talk to the Coach"** conversational habit discovery
+- 5 simple questions to understand your habit goals
+- **AI-powered habit plan generation** (OpenAI GPT-3.5 + heuristic fallback)
+- Auto-populates the entire onboarding form with a complete plan:
+  - Identity statement
+  - Habit name and 2-minute version
+  - Implementation time and location
+  - Temptation bundling, pre-habit ritual
+  - Environment cues and distraction removal
+- **Fully editable** - review and adjust before saving
+- **Graceful fallback** - works with or without OpenAI API
+- See [E2E Testing Guide - Scenario E](E2E_TESTING_AND_DEBUGGING.md#scenario-e-coach-onboarding-flow-llm-mode) for testing instructions
+
 ### ✅ Today Screen
 - Shows personalized greeting with identity reminder
 - Displays today's habit with the tiny version
