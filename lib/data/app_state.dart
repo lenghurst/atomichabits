@@ -139,6 +139,19 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates an existing habit and user profile
+  /// Called from Edit Habit screen
+  Future<void> updateHabit(Habit updatedHabit, UserProfile updatedProfile) async {
+    _currentHabit = updatedHabit;
+    _userProfile = updatedProfile;
+    await _saveToStorage(); // Persist to storage
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('✏️ Habit updated: ${updatedHabit.name}');
+    }
+  }
+
   /// Marks habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
   Future<bool> completeHabitForToday({bool fromNotification = false}) async {

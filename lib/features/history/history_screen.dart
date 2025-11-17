@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../data/app_state.dart';
 import '../../data/review_service.dart';
@@ -45,6 +46,10 @@ class HistoryScreen extends StatelessWidget {
 
                 // History list (last 30 days)
                 _buildHistoryList(habit),
+                const SizedBox(height: 16),
+
+                // Edit Habit button
+                _buildEditHabitCard(context),
                 const SizedBox(height: 16),
 
                 // Weekly Review section
@@ -191,6 +196,56 @@ class HistoryScreen extends StatelessWidget {
                   ),
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditHabitCard(BuildContext context) {
+    return Card(
+      color: Colors.deepPurple[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.edit, color: Colors.deepPurple[700], size: 28),
+                const SizedBox(width: 8),
+                const Text(
+                  'Adjust Habit & System',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Refine your habit details, implementation intention, environment design, and more.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  context.go('/edit-habit');
+                },
+                icon: const Icon(Icons.edit),
+                label: const Text('Edit Habit & System'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: Colors.deepPurple,
+                ),
+              ),
             ),
           ],
         ),

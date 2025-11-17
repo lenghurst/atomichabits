@@ -71,13 +71,10 @@ class SettingsScreen extends StatelessWidget {
             _buildSettingsTile(
               context,
               icon: Icons.edit,
-              title: 'Edit Habit',
-              subtitle: 'Modify your current habit',
+              title: 'Edit Habit & System',
+              subtitle: 'Refine your habit configuration',
               onTap: () {
-                // TODO: Navigate to habit edit screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Coming soon!')),
-                );
+                context.go('/edit-habit');
               },
             ),
             _buildSettingsTile(
