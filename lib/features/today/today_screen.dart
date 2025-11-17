@@ -253,6 +253,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 onPressed: () => appState.showTestNotification(),
                 tooltip: 'Test notification',
               ),
+              // History & Review button
+              IconButton(
+                icon: const Icon(Icons.history),
+                onPressed: () => context.go('/history'),
+                tooltip: 'History & Review',
+              ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () => context.go('/settings'),

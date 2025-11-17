@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import habitSuggestionsRouter from './routes/habitSuggestions';
+import habitReviewRouter from './routes/habitReview';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -30,6 +31,7 @@ app.get('/health', (req, res) => {
 
 // Mount routes
 app.use(habitSuggestionsRouter);
+app.use(habitReviewRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -47,6 +49,7 @@ app.listen(PORT, () => {
   console.log(`📍 Server running on: http://localhost:${PORT}`);
   console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Not set (will use heuristics only)'}`);
   console.log(`💡 Health check: http://localhost:${PORT}/health`);
-  console.log(`📡 API endpoint: http://localhost:${PORT}/api/habit-suggestions`);
+  console.log(`📡 Suggestions API: http://localhost:${PORT}/api/habit-suggestions`);
+  console.log(`📊 Review API: http://localhost:${PORT}/api/habit-review`);
   console.log('='.repeat(60));
 });

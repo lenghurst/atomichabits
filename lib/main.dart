@@ -6,6 +6,7 @@ import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/history/history_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -67,6 +68,10 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/today',
                 builder: (context, state) => const TodayScreen(),
+              ),
+              GoRoute(
+                path: '/history',
+                builder: (context, state) => const HistoryScreen(),
               ),
               GoRoute(
                 path: '/settings',

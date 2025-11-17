@@ -28,6 +28,12 @@ class Habit {
   final String? environmentDistraction; // Distraction to remove/hide
   // e.g., "Charge phone in kitchen"
 
+  // Completion history tracking
+  // Maps date string "yyyy-MM-dd" to completion status
+  // e.g., {"2025-11-10": true, "2025-11-09": false}
+  // Only stores explicit completions; missing dates are inferred as not completed
+  final Map<String, bool> completionHistory;
+
   Habit({
     required this.id,
     required this.name,
@@ -42,6 +48,7 @@ class Habit {
     this.preHabitRitual,
     this.environmentCue,
     this.environmentDistraction,
+    this.completionHistory = const {},
   });
 
   /// Creates a copy of this habit with some fields updated
@@ -57,6 +64,7 @@ class Habit {
     String? preHabitRitual,
     String? environmentCue,
     String? environmentDistraction,
+    Map<String, bool>? completionHistory,
   }) {
     return Habit(
       id: id,
@@ -72,6 +80,7 @@ class Habit {
       preHabitRitual: preHabitRitual ?? this.preHabitRitual,
       environmentCue: environmentCue ?? this.environmentCue,
       environmentDistraction: environmentDistraction ?? this.environmentDistraction,
+      completionHistory: completionHistory ?? this.completionHistory,
     );
   }
 
@@ -92,12 +101,25 @@ class Habit {
       'preHabitRitual': preHabitRitual,
       'environmentCue': environmentCue,
       'environmentDistraction': environmentDistraction,
+      // Completion history (date string -> bool map)
+      'completionHistory': completionHistory,
     };
   }
 
   /// Creates habit from JSON
   /// Handles backward compatibility - new fields default to null if missing
   factory Habit.fromJson(Map<String, dynamic> json) {
+    // Parse completion history with backward compatibility
+    Map<String, bool> history = {};
+    if (json.containsKey('completionHistory') && json['completionHistory'] != null) {
+      final rawHistory = json['completionHistory'] as Map<dynamic, dynamic>;
+      // Convert to Map<String, bool> safely
+      history = rawHistory.map((key, value) => MapEntry(
+        key.toString(),
+        value as bool? ?? false,
+      ));
+    }
+
     return Habit(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -115,6 +137,8 @@ class Habit {
       preHabitRitual: json['preHabitRitual'] as String?,
       environmentCue: json['environmentCue'] as String?,
       environmentDistraction: json['environmentDistraction'] as String?,
+      // Completion history - defaults to empty map if missing
+      completionHistory: history,
     );
   }
 }

@@ -167,7 +167,7 @@ class AppState extends ChangeNotifier {
 
     // Calculate new streak (check if yesterday was completed)
     int newStreak = _currentHabit!.currentStreak;
-    
+
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
       final yesterday = today.subtract(const Duration(days: 1));
@@ -176,7 +176,7 @@ class AppState extends ChangeNotifier {
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       // If last completion was yesterday, continue streak
       if (lastDate == yesterday) {
         newStreak = _currentHabit!.currentStreak + 1;
@@ -188,10 +188,16 @@ class AppState extends ChangeNotifier {
       // First completion
       newStreak = 1;
     }
-    
+
+    // Update completion history for today
+    final todayKey = _formatDateKey(today);
+    final updatedHistory = Map<String, bool>.from(_currentHabit!.completionHistory);
+    updatedHistory[todayKey] = true;
+
     _currentHabit = _currentHabit!.copyWith(
       currentStreak: newStreak,
       lastCompletedDate: now,
+      completionHistory: updatedHistory,
     );
     
     await _saveToStorage(); // Persist the updated streak
@@ -451,5 +457,14 @@ class AppState extends ChangeNotifier {
       'environmentCue': results[2],
       'environmentDistraction': results[3],
     };
+  }
+
+  // ========== HELPER METHODS ==========
+
+  /// Formats a DateTime to yyyy-MM-dd string for completion history keys
+  String _formatDateKey(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
   }
 }

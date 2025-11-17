@@ -214,15 +214,136 @@ curl -X POST http://localhost:3000/api/habit-suggestions \
   }'
 ```
 
+### POST /api/habit-review
+
+Generate AI-powered weekly review based on habit completion history.
+
+#### Request Body
+
+```json
+{
+  "habit": {
+    "identity": "a person who reads daily",
+    "habit_name": "Read for 10 minutes",
+    "two_minute_version": "Read one page",
+    "time": "22:00",
+    "location": "In bed before sleep",
+    "temptation_bundle": "Have herbal tea while reading",
+    "pre_habit_ritual": "Take 3 deep breaths",
+    "environment_cue": "Put book on pillow at 21:45",
+    "environment_distraction": "Charge phone in kitchen"
+  },
+  "history": [
+    { "date": "2025-11-10", "completed": true },
+    { "date": "2025-11-09", "completed": false },
+    { "date": "2025-11-08", "completed": true },
+    { "date": "2025-11-07", "completed": true },
+    { "date": "2025-11-06", "completed": false },
+    { "date": "2025-11-05", "completed": true },
+    { "date": "2025-11-04", "completed": true }
+  ]
+}
+```
+
+**Required Fields:**
+- `habit.habit_name`: The habit name (string)
+- `history`: Array of completion entries (last 7-14 days recommended)
+
+**Optional Fields:**
+- All other habit fields (identity, time, location, environment design fields)
+
+**History Format:**
+- `date`: yyyy-MM-dd string
+- `completed`: boolean (true = completed, false = missed)
+
+#### Response
+
+```json
+{
+  "summary": "You completed 'Read for 10 minutes' 5 out of 7 days this week (71%). Good progress! Keep building momentum.",
+  "insights": [
+    "Your longest streak was 3 days - you can maintain consistency!",
+    "Weekdays are stronger than weekends - your routine helps consistency."
+  ],
+  "suggested_adjustments": [
+    "Make it obvious: Set up a clear visual cue in your space.",
+    "Keep your current system - it's working well!",
+    "Focus on never missing twice in a row to maintain momentum."
+  ]
+}
+```
+
+**Response Fields:**
+- `summary`: 2-4 sentence summary of the week (max 350 characters)
+- `insights`: 2-4 concrete insights about patterns
+- `suggested_adjustments`: 2-4 tiny tweaks aligned with Atomic Habits principles
+
+#### Error Responses
+
+**400 Bad Request** - Missing or invalid parameters:
+```json
+{
+  "error": "Missing required field: habit.habit_name"
+}
+```
+
+**500 Internal Server Error** - Unexpected error:
+```json
+{
+  "error": "Could not generate weekly review"
+}
+```
+
+#### Example Request
+
+```bash
+curl -X POST http://localhost:3000/api/habit-review \
+  -H "Content-Type: application/json" \
+  -d '{
+    "habit": {
+      "habit_name": "Meditate for 5 minutes",
+      "identity": "a calm and mindful person",
+      "time": "07:00",
+      "location": "Living room corner"
+    },
+    "history": [
+      { "date": "2025-11-10", "completed": true },
+      { "date": "2025-11-09", "completed": true },
+      { "date": "2025-11-08", "completed": false },
+      { "date": "2025-11-07", "completed": true },
+      { "date": "2025-11-06", "completed": true },
+      { "date": "2025-11-05", "completed": true },
+      { "date": "2025-11-04", "completed": true }
+    ]
+  }'
+```
+
+**Response:**
+```json
+{
+  "summary": "You completed 'Meditate for 5 minutes' 6 out of 7 days this week (86%). Excellent consistency! Your habit is becoming automatic.",
+  "insights": [
+    "Your longest streak was 4 days - you can maintain consistency!",
+    "Building a habit takes time - focus on consistency over perfection."
+  ],
+  "suggested_adjustments": [
+    "Keep your current system - it's working well!",
+    "Focus on never missing twice in a row to maintain momentum."
+  ]
+}
+```
+
 ## Project Structure
 
 ```
 backend/
 ├── src/
 │   ├── services/
-│   │   └── suggestionService.ts   # Core LLM + heuristic logic
+│   │   ├── suggestionService.ts   # Core LLM + heuristic logic for suggestions
+│   │   └── reviewService.ts       # Core LLM + heuristic logic for weekly reviews
 │   ├── routes/
-│   │   └── habitSuggestions.ts    # API route handler
+│   │   ├── habitSuggestions.ts    # API route handler for suggestions
+│   │   └── habitReview.ts         # API route handler for weekly reviews
 │   └── server.ts                  # Express server setup
 ├── dist/                          # Compiled JavaScript (after build)
 ├── package.json
@@ -244,6 +365,21 @@ backend/
    - If no / fails → uses heuristic fallback
 4. **Response sent** with suggestions array
 
+### Weekly Review Flow
+
+1. **Request arrives** at `/api/habit-review`
+2. **Route handler** (`habitReview.ts`) validates input and builds `HabitInfo` + `HistoryEntry[]`
+3. **Review service** (`reviewService.ts`) is called:
+   - Checks if `OPENAI_API_KEY` exists
+   - If yes → tries OpenAI with 5s timeout
+   - If no / fails → uses heuristic review
+4. **Response sent** with summary, insights, and suggested adjustments
+
+The review service analyzes completion patterns (weekday/weekend, streaks, completion rate) and provides:
+- A short summary of the week
+- Concrete insights about behavior patterns
+- Actionable adjustments aligned with Atomic Habits (make it obvious, attractive, easy, satisfying)
+
 ### Key Components
 
 #### `suggestionService.ts`
@@ -257,6 +393,20 @@ backend/
 
 - Express route handler
 - Input validation (400 errors for missing/invalid fields)
+- Error handling (500 errors for unexpected failures)
+
+#### `reviewService.ts`
+
+- **`generateWeeklyReview(habit, history)`**: Main async function (LLM + fallback)
+- **`callOpenAI(apiKey, habit, history)`**: OpenAI API integration for reviews
+- **`generateHeuristicReview(habit, history)`**: Local fallback review logic
+- **`buildPrompt(habit, history)`**: Constructs OpenAI prompt with completion stats
+
+#### `habitReview.ts`
+
+- Express route handler for weekly reviews
+- Input validation (400 errors for missing/invalid fields)
+- Parses habit info and completion history
 - Error handling (500 errors for unexpected failures)
 
 #### `server.ts`
