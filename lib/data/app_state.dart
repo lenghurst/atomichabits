@@ -472,6 +472,25 @@ class AppState extends ChangeNotifier {
     };
   }
 
+  // ========== DAILY REFLECTION METHODS ==========
+
+  /// Save a reflection note for today
+  Future<void> saveReflectionForToday(String note) async {
+    if (_currentHabit == null) return;
+
+    final todayKey = _formatDateKey(DateTime.now());
+    final updatedReflection = Map<String, String>.from(_currentHabit!.reflectionNotes);
+    updatedReflection[todayKey] = note;
+
+    _currentHabit = _currentHabit!.copyWith(reflectionNotes: updatedReflection);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('📝 Saved reflection for $todayKey');
+    }
+  }
+
   // ========== HELPER METHODS ==========
 
   /// Formats a DateTime to yyyy-MM-dd string for completion history keys

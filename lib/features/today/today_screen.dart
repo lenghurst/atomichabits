@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/daily_coach_dialog.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -691,7 +692,79 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               ),
             ),
           const SizedBox(height: 24),
-          
+
+          // Daily Reflection card
+          Card(
+            elevation: 1,
+            color: Colors.purple.shade50,
+            child: InkWell(
+              onTap: () {
+                debugPrint('📝 Opening daily reflection dialog');
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => DailyCoachDialog(
+                    habit: habit,
+                    profile: profile!,
+                    onSaveReflection: (note) {
+                      debugPrint('💾 Saving reflection note');
+                      appState.saveReflectionForToday(note);
+                    },
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.psychology,
+                        color: Colors.purple.shade700,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Reflect on today',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Talk to the coach about how it went',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.purple.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.purple.shade400,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // "Improve this habit" button
           Center(
             child: OutlinedButton.icon(

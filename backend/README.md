@@ -457,6 +457,169 @@ curl -X POST http://localhost:3000/api/coach/onboarding \
 }
 ```
 
+### POST /api/coach/daily-reflection
+
+Generate personalized daily reflection insights based on today's habit completion status and user context.
+
+This endpoint powers the "Reflect on today" feature in the Flutter app, which helps users understand why their habit succeeded or failed and suggests tiny adjustments for tomorrow.
+
+#### Request Body
+
+```json
+{
+  "habit": {
+    "habit_name": "Read for 10 minutes",
+    "identity": "I am a reader",
+    "two_minute_version": "Read one page",
+    "time": "22:00",
+    "location": "In bed"
+  },
+  "date": "2025-11-17",
+  "status": "missed",
+  "reflection": {
+    "what_happened": "I scrolled my phone and fell asleep.",
+    "what_helped_or_blocked": "I was exhausted after work.",
+    "what_might_help_tomorrow": "Charge my phone outside the bedroom."
+  }
+}
+```
+
+**Required Fields:**
+- `habit.habit_name`: The habit name (string)
+- `date`: Date in yyyy-MM-dd format
+- `status`: One of `"completed"`, `"missed"`, or `"partial"`
+
+**Optional Fields:**
+- `habit.identity`: Identity statement
+- `habit.two_minute_version`: Simplified 2-minute version
+- `habit.time`: Implementation time (HH:MM format)
+- `habit.location`: Implementation location
+- `reflection.what_happened`: What happened today (user's observation)
+- `reflection.what_helped_or_blocked`: What helped or blocked them
+- `reflection.what_might_help_tomorrow`: User's ideas for improvement
+
+#### Response
+
+```json
+{
+  "coach_message": "Today didn't go as planned, but you're still a reader. Missing once doesn't undo your identity—it's the pattern that matters.",
+  "insights": [
+    "Phone scrolling competes with reading at bedtime.",
+    "Work exhaustion often blocks evening habits.",
+    "You've identified a clear solution: charge phone elsewhere."
+  ],
+  "suggested_adjustments": [
+    "Move your phone charger to the kitchen before 21:30.",
+    "Put your book on your pillow at 21:00 as a visual cue.",
+    "Start reading 30 minutes earlier, before exhaustion peaks."
+  ],
+  "suggested_tomorrow_experiment": "Tomorrow: Plug phone in kitchen at 21:15, read one page in bed."
+}
+```
+
+**Response Fields:**
+- `coach_message`: Personalized, non-judgmental message (2-3 sentences)
+- `insights`: 2-4 concrete insights about patterns
+- `suggested_adjustments`: 2-4 tiny tweaks aligned with Atomic Habits
+- `suggested_tomorrow_experiment`: One specific thing to try tomorrow
+
+**Coaching Principles:**
+- **Identity-first**: Reinforces identity regardless of outcome
+- **Non-judgmental**: Never shames, focuses on systems not willpower
+- **1% improvement**: Suggests smallest possible adjustments
+- **Atomic Habits alignment**: Focuses on cues, friction, environment design
+
+#### Error Responses
+
+**400 Bad Request** - Missing or invalid parameters:
+```json
+{
+  "error": "Invalid request",
+  "message": "Missing or invalid habit.habit_name"
+}
+```
+
+**503 Service Unavailable** - Coach temporarily unavailable:
+```json
+{
+  "error": "Service unavailable",
+  "message": "The coach is temporarily unavailable. Please try again later."
+}
+```
+
+#### Example Requests
+
+**Missed Habit:**
+```bash
+curl -X POST http://localhost:3000/api/coach/daily-reflection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "habit": {
+      "habit_name": "Meditate for 5 minutes",
+      "identity": "I am a calm person",
+      "time": "07:00"
+    },
+    "date": "2025-11-17",
+    "status": "missed",
+    "reflection": {
+      "what_happened": "I hit snooze and ran out of time.",
+      "what_helped_or_blocked": "Phone alarm was too far, I stayed in bed."
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "coach_message": "You're still a calm person, even when you miss. Systems matter more than single days.",
+  "insights": [
+    "Hitting snooze disrupts your morning routine.",
+    "Phone placement affects your ability to start."
+  ],
+  "suggested_adjustments": [
+    "Put your meditation cushion next to your alarm.",
+    "Do one breath exercise before touching your phone."
+  ],
+  "suggested_tomorrow_experiment": "Tomorrow: When alarm rings, do 3 deep breaths before anything else."
+}
+```
+
+**Completed Habit:**
+```bash
+curl -X POST http://localhost:3000/api/coach/daily-reflection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "habit": {
+      "habit_name": "Write in journal",
+      "identity": "I am a writer",
+      "time": "21:00",
+      "location": "Desk"
+    },
+    "date": "2025-11-17",
+    "status": "completed",
+    "reflection": {
+      "what_happened": "I wrote for 10 minutes after dinner.",
+      "what_helped_or_blocked": "My journal was already on my desk."
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "coach_message": "You showed up as a writer today. That's proof your identity is becoming real.",
+  "insights": [
+    "Having your journal visible makes starting easier.",
+    "Post-dinner timing works well for you."
+  ],
+  "suggested_adjustments": [
+    "Keep your journal on the desk permanently.",
+    "Consider adding a favorite pen as a temptation bundle."
+  ],
+  "suggested_tomorrow_experiment": "Tomorrow: Try the same routine. Consistency builds automaticity."
+}
+```
+
 ## Project Structure
 
 ```
@@ -465,11 +628,13 @@ backend/
 │   ├── services/
 │   │   ├── suggestionService.ts        # Core LLM + heuristic logic for suggestions
 │   │   ├── reviewService.ts            # Core LLM + heuristic logic for weekly reviews
-│   │   └── coachOnboardingService.ts   # Core LLM + heuristic logic for coach onboarding
+│   │   ├── coachOnboardingService.ts   # Core LLM + heuristic logic for coach onboarding
+│   │   └── dailyCoachService.ts        # Core LLM + heuristic logic for daily reflection
 │   ├── routes/
 │   │   ├── habitSuggestions.ts         # API route handler for suggestions
 │   │   ├── habitReview.ts              # API route handler for weekly reviews
-│   │   └── coachOnboarding.ts          # API route handler for coach onboarding
+│   │   ├── coachOnboarding.ts          # API route handler for coach onboarding
+│   │   └── dailyCoach.ts               # API route handler for daily reflection
 │   └── server.ts                       # Express server setup
 ├── dist/                          # Compiled JavaScript (after build)
 ├── package.json
@@ -517,6 +682,22 @@ The review service analyzes completion patterns (weekday/weekend, streaks, compl
 4. **Response sent** with `habit_plan` + `metadata`
 
 The coach service synthesizes conversational answers into a structured habit plan with all required fields (identity, habit name, tiny version, time, location) and optional fields (temptation bundle, pre-habit ritual, environment design).
+
+### Daily Coach Reflection Flow
+
+1. **Request arrives** at `/api/coach/daily-reflection`
+2. **Route handler** (`dailyCoach.ts`) validates input and builds `DailyReflectionRequest`
+3. **Daily coach service** (`dailyCoachService.ts`) is called:
+   - Checks if `OPENAI_API_KEY` exists
+   - If yes → tries OpenAI with 5s timeout to generate personalized reflection
+   - If no / fails → uses heuristic reflection
+4. **Response sent** with `coach_message`, `insights`, `suggested_adjustments`, `suggested_tomorrow_experiment`
+
+The daily coach service analyzes the day's outcome (completed/partial/missed) and user reflection notes to provide:
+- A personalized, identity-affirming message
+- Concrete insights about what worked or didn't work
+- Tiny adjustments aligned with Atomic Habits principles (make it obvious, easy, attractive)
+- One specific experiment to try tomorrow
 
 ### Key Components
 

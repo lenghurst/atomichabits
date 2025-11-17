@@ -34,6 +34,11 @@ class Habit {
   // Only stores explicit completions; missing dates are inferred as not completed
   final Map<String, bool> completionHistory;
 
+  // Reflection notes tracking
+  // Maps date string "yyyy-MM-dd" to free-text reflection note
+  // e.g., {"2025-11-10": "I was tired but did it anyway", "2025-11-09": "Phone distracted me"}
+  final Map<String, String> reflectionNotes;
+
   Habit({
     required this.id,
     required this.name,
@@ -49,6 +54,7 @@ class Habit {
     this.environmentCue,
     this.environmentDistraction,
     this.completionHistory = const {},
+    this.reflectionNotes = const {},
   });
 
   /// Creates a copy of this habit with some fields updated
@@ -65,6 +71,7 @@ class Habit {
     String? environmentCue,
     String? environmentDistraction,
     Map<String, bool>? completionHistory,
+    Map<String, String>? reflectionNotes,
   }) {
     return Habit(
       id: id,
@@ -81,6 +88,7 @@ class Habit {
       environmentCue: environmentCue ?? this.environmentCue,
       environmentDistraction: environmentDistraction ?? this.environmentDistraction,
       completionHistory: completionHistory ?? this.completionHistory,
+      reflectionNotes: reflectionNotes ?? this.reflectionNotes,
     );
   }
 
@@ -103,6 +111,8 @@ class Habit {
       'environmentDistraction': environmentDistraction,
       // Completion history (date string -> bool map)
       'completionHistory': completionHistory,
+      // Reflection notes (date string -> text map)
+      'reflectionNotes': reflectionNotes,
     };
   }
 
@@ -117,6 +127,17 @@ class Habit {
       history = rawHistory.map((key, value) => MapEntry(
         key.toString(),
         value as bool? ?? false,
+      ));
+    }
+
+    // Parse reflection notes with backward compatibility
+    Map<String, String> notes = {};
+    if (json.containsKey('reflectionNotes') && json['reflectionNotes'] != null) {
+      final rawNotes = json['reflectionNotes'] as Map<dynamic, dynamic>;
+      // Convert to Map<String, String> safely
+      notes = rawNotes.map((key, value) => MapEntry(
+        key.toString(),
+        value?.toString() ?? '',
       ));
     }
 
@@ -139,6 +160,8 @@ class Habit {
       environmentDistraction: json['environmentDistraction'] as String?,
       // Completion history - defaults to empty map if missing
       completionHistory: history,
+      // Reflection notes - defaults to empty map if missing
+      reflectionNotes: notes,
     );
   }
 }

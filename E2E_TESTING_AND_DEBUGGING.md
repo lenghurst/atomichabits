@@ -816,6 +816,243 @@ curl -X POST http://localhost:3000/api/coach/onboarding \
 
 ---
 
+### Scenario H: Daily Reflection Coach
+
+**Objective:** Test the "Reflect on today" feature which helps users understand why their habit succeeded or failed and get personalized coaching for tomorrow.
+
+#### Setup
+
+1. **Backend:** Run with valid `OPENAI_API_KEY`
+   ```bash
+   cd backend
+   export OPENAI_API_KEY=sk-your-real-key-here
+   npm run dev
+   ```
+
+2. **Flutter:** Start the app and complete onboarding to reach Today screen
+   ```bash
+   flutter run -d chrome
+   ```
+
+#### Steps
+
+1. **Complete onboarding** with any habit (or use existing habit)
+2. **Navigate to Today screen** (should show your habit and streak)
+3. **Locate the "Reflect on today" card** (purple card, after the completion status)
+4. **Tap the card** to open the Daily Coach Dialog
+5. **Step 1 - Select status:**
+   - Choose one of: "I did it! ✅", "Partial progress 🟡", or "Didn't happen today ⭕"
+   - Tap "Next"
+6. **Step 2 - Provide context (all optional):**
+   - "What happened?" → e.g., "I was too tired after work"
+   - "What helped or blocked you?" → e.g., "My phone distracted me"
+   - "What would make it 1% easier tomorrow?" → e.g., "Charge phone in kitchen"
+   - Tap "Get coach insights"
+7. **Wait for coach response** (loading state, 2-5 seconds)
+8. **Review coach insights:**
+   - Coach message (identity-affirming)
+   - Patterns noticed
+   - Tiny adjustments to try
+   - Tomorrow's experiment
+9. **Save reflection** (checkbox should be checked by default)
+10. **Tap "Done"** to close dialog
+
+#### Expected Backend Logs
+
+```
+📘 POST /api/coach/daily-reflection - Received request
+📝 Reflection for: Read for 10 minutes (missed)
+🤖 Attempting OpenAI LLM call for daily reflection...
+✅ Generated daily reflection (coach + insights + adjustments)
+✅ Generated reflection with 3 insights
+```
+
+**Key indicators:**
+- `🤖 Attempting OpenAI LLM call for daily reflection...` confirms API call
+- `✅ Generated daily reflection` confirms success
+- Number of insights shown
+
+#### Expected App Behavior
+
+- ✅ **Step 1:** Radio buttons work, "Next" button enabled only after selecting status
+- ✅ **Step 2:** All text fields optional, can skip all questions and still get insights
+- ✅ **Loading state:** Shows "The coach is reflecting on your day..."
+- ✅ **Results screen:** Shows all 4 sections:
+  - Coach message (2-3 sentences, non-judgmental, identity-first)
+  - Insights (2-4 bullet points with lightbulb icons)
+  - Suggested adjustments (2-4 bullet points with tune icons)
+  - Tomorrow's experiment (yellow card with science icon)
+- ✅ **Save checkbox:** Enabled by default, can be unchecked
+- ✅ **After closing:** Reflection note saved to habit history (check in AppState)
+
+#### Testing Different Statuses
+
+**Test with "completed" status:**
+```
+Expected coach message tone:
+- Affirming: "You showed up as [identity] today."
+- Celebrating systems: "That's proof your identity is becoming real."
+- Encouraging consistency: "This is how habits become automatic."
+```
+
+**Test with "missed" status:**
+```
+Expected coach message tone:
+- Identity-first: "You're still [identity], even when you miss."
+- Non-judgmental: "Missing once doesn't undo your identity."
+- Systems focus: "It's the pattern that matters, not single days."
+```
+
+**Test with "partial" status:**
+```
+Expected coach message tone:
+- Validating effort: "Partial progress is still progress."
+- Reducing friction: "What made it hard to finish today?"
+```
+
+#### Testing the Reflection Endpoint Directly (curl)
+
+**Missed habit:**
+```bash
+curl -X POST http://localhost:3000/api/coach/daily-reflection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "habit": {
+      "habit_name": "Read for 10 minutes",
+      "identity": "I am a reader",
+      "time": "22:00",
+      "location": "In bed"
+    },
+    "date": "2025-11-17",
+    "status": "missed",
+    "reflection": {
+      "what_happened": "I scrolled my phone and fell asleep.",
+      "what_helped_or_blocked": "I was exhausted after work.",
+      "what_might_help_tomorrow": "Charge my phone outside the bedroom."
+    }
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "coach_message": "Today didn't go as planned, but you're still a reader. Missing once doesn't undo your identity—it's the pattern that matters.",
+  "insights": [
+    "Phone scrolling competes with reading at bedtime.",
+    "Work exhaustion often blocks evening habits.",
+    "You've identified a clear solution: charge phone elsewhere."
+  ],
+  "suggested_adjustments": [
+    "Move your phone charger to the kitchen before 21:30.",
+    "Put your book on your pillow at 21:00 as a visual cue.",
+    "Start reading 30 minutes earlier, before exhaustion peaks."
+  ],
+  "suggested_tomorrow_experiment": "Tomorrow: Plug phone in kitchen at 21:15, read one page in bed."
+}
+```
+
+**Completed habit:**
+```bash
+curl -X POST http://localhost:3000/api/coach/daily-reflection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "habit": {
+      "habit_name": "Meditate for 5 minutes",
+      "identity": "I am a calm person",
+      "time": "07:00"
+    },
+    "date": "2025-11-17",
+    "status": "completed",
+    "reflection": {
+      "what_happened": "I meditated right after my alarm went off.",
+      "what_helped_or_blocked": "My meditation cushion was already visible."
+    }
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "coach_message": "You showed up as a calm person today. That's proof your identity is becoming real.",
+  "insights": [
+    "Starting immediately after your alarm works well.",
+    "Having your meditation cushion visible makes it easier to start."
+  ],
+  "suggested_adjustments": [
+    "Keep your meditation cushion in the same spot permanently.",
+    "Consider adding a morning ritual before meditating (e.g., 3 deep breaths)."
+  ],
+  "suggested_tomorrow_experiment": "Tomorrow: Try the same routine. Consistency builds automaticity."
+}
+```
+
+#### Testing Without OpenAI (Heuristic Fallback)
+
+1. **Stop backend and restart without API key:**
+   ```bash
+   unset OPENAI_API_KEY
+   npm run dev
+   ```
+
+2. **Follow same steps** as above
+
+#### Expected Backend Logs (Heuristics)
+
+```
+📘 POST /api/coach/daily-reflection - Received request
+📝 Reflection for: Read for 10 minutes (missed)
+⚠️  OPENAI_API_KEY not set – using heuristic daily reflection
+🔄 Generating heuristic daily reflection
+✅ Generated reflection with 2 insights
+```
+
+**Key indicators:**
+- `⚠️  OPENAI_API_KEY not set` confirms no LLM
+- `🔄 Generating heuristic daily reflection` confirms fallback
+- Still generates valid response
+
+#### Expected App Behavior (Heuristics)
+
+- ✅ Works identically from user's perspective
+- ✅ Coach messages are templated but still identity-first and non-judgmental
+- ✅ Insights are pattern-based (e.g., "Weekdays are often easier", "Evening habits can be blocked by tiredness")
+- ✅ Adjustments are generic but still aligned with Atomic Habits (make it obvious, easy, attractive)
+- ✅ No error, no crash
+
+#### Testing Error Handling
+
+1. **Stop backend completely**
+2. **Tap "Reflect on today"** and complete the flow
+3. **Tap "Get coach insights"**
+
+#### Expected App Behavior (Backend Offline)
+
+- ✅ Loading dialog appears
+- ✅ After timeout (~5 seconds), error dialog appears:
+  - "Coach is currently offline"
+  - "Something went wrong while generating your reflection."
+  - "Your habit data is still saved. You can try reflecting again later."
+- ✅ Button: "OK" → Closes both dialogs
+- ✅ No crash, reflection not saved
+
+#### Verifying Saved Reflections
+
+To verify reflections are being saved to the Habit model:
+
+1. **Open the reflection dialog** and complete it with "Save this reflection" checked
+2. **Check Flutter debug console** for:
+   ```
+   💾 Saving reflection note
+   📝 Saved reflection for 2025-11-17
+   ```
+3. **Check Hive storage** (if using Flutter DevTools):
+   - Open DevTools → "Hive" tab
+   - Look for `habit_data` box
+   - Check `currentHabit` → `reflectionNotes` map
+   - Should see entry: `"2025-11-17": "Status: missed\nWhat happened: ..."`
+
+---
+
 ## Debugging
 
 Common issues and how to fix them.

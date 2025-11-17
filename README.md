@@ -105,11 +105,31 @@ context.go('/');
 - **Graceful fallback** - works with or without OpenAI API
 - See [E2E Testing Guide - Scenario E](E2E_TESTING_AND_DEBUGGING.md#scenario-e-coach-onboarding-flow-llm-mode) for testing instructions
 
+### ✅ Daily Reflection Coach (NEW!)
+- **"Reflect on today"** post-habit coaching feature
+- Helps users understand why habits succeeded or failed
+- **3-step reflection process:**
+  1. Status selection (completed/partial/missed)
+  2. Context gathering (what happened, what helped/blocked, ideas for tomorrow)
+  3. AI-powered insights and suggestions
+- **Identity-first coaching:**
+  - Non-judgmental tone regardless of outcome
+  - Reinforces identity even on missed days
+  - Focuses on systems, not willpower
+- **Personalized suggestions:**
+  - Pattern insights from user's reflection
+  - Tiny 1% improvements aligned with Atomic Habits
+  - One specific experiment to try tomorrow
+- **Reflection history:** Saves notes to habit model for tracking patterns
+- **Graceful fallback** - works with or without OpenAI API
+- See [E2E Testing Guide - Scenario H](E2E_TESTING_AND_DEBUGGING.md#scenario-h-daily-reflection-coach) for testing instructions
+
 ### ✅ Today Screen
 - Shows personalized greeting with identity reminder
 - Displays today's habit with the tiny version
 - Shows current streak with fire icon
 - Big "Mark as Complete" button (or completed status)
+- **"Reflect on today" card** for daily coaching and insights
 - Quick access to Settings
 
 ### ✅ Settings Screen
