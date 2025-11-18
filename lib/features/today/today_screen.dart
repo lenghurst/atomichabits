@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
+import '../../data/models/habit.dart';
 import '../../data/identity_messages.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
@@ -60,23 +61,23 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   /// Builds the tiny action line from habit details
   /// Format: "[Tiny version] at [time] [in location]"
   /// Handles missing fields gracefully
-  String _buildTinyActionLine(dynamic habit) {
+  String _buildTinyActionLine(Habit habit) {
     final parts = <String>[];
 
     // Tiny version (required, but check anyway)
-    if (habit.tinyVersion != null && habit.tinyVersion!.isNotEmpty) {
-      parts.add(habit.tinyVersion!);
+    if (habit.tinyVersion.isNotEmpty) {
+      parts.add(habit.tinyVersion);
     } else {
       parts.add('Do your habit');
     }
 
     // Time
-    if (habit.implementationTime != null && habit.implementationTime!.isNotEmpty) {
+    if (habit.implementationTime.isNotEmpty) {
       parts.add('at ${habit.implementationTime}');
     }
 
     // Location
-    if (habit.implementationLocation != null && habit.implementationLocation!.isNotEmpty) {
+    if (habit.implementationLocation.isNotEmpty) {
       parts.add('in ${habit.implementationLocation}');
     }
 
@@ -84,16 +85,27 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   }
 
   /// Checks if yesterday was missed by looking at completion history
-  bool _wasYesterdayMissed(dynamic habit) {
-    final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    final yesterdayKey = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+  /// Uses the same date key format as AppState for consistency
+  bool _wasYesterdayMissed(Habit habit) {
+    // If this is the very first completion (empty history), treat as not a comeback
+    if (habit.completionHistory.isEmpty) {
+      return false;
+    }
 
-    // Check if yesterday is in completion history
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    // Match AppState's _formatDateKey format exactly
+    final yesterdayKey = '${yesterday.year.toString().padLeft(4, '0')}-'
+        '${yesterday.month.toString().padLeft(2, '0')}-'
+        '${yesterday.day.toString().padLeft(2, '0')}';
+
+    // Check if yesterday is explicitly in history
     if (habit.completionHistory.containsKey(yesterdayKey)) {
+      // If it's there and false, it was explicitly missed
       return habit.completionHistory[yesterdayKey] == false;
     }
 
-    // If not in history, consider it missed
+    // If yesterday is not in history but we have other entries, consider it missed
+    // (user has been tracking but didn't log yesterday)
     return true;
   }
 
