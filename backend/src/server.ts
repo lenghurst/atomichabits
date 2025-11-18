@@ -45,17 +45,22 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log('='.repeat(60));
-  console.log('🚀 Atomic Habits Backend Server');
-  console.log('='.repeat(60));
-  console.log(`📍 Server running on: http://localhost:${PORT}`);
-  console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Not set (will use heuristics only)'}`);
-  console.log(`💡 Health check: http://localhost:${PORT}/health`);
-  console.log(`📡 Suggestions API: http://localhost:${PORT}/api/habit-suggestions`);
-  console.log(`📊 Review API: http://localhost:${PORT}/api/habit-review`);
-  console.log(`🎯 Coach Onboarding API: http://localhost:${PORT}/api/coach/onboarding`);
-  console.log(`📘 Daily Coach API: http://localhost:${PORT}/api/coach/daily-reflection`);
-  console.log('='.repeat(60));
-});
+// Export app for testing
+export { app };
+
+// Only start server when run directly (not when imported by tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('='.repeat(60));
+    console.log('🚀 Atomic Habits Backend Server');
+    console.log('='.repeat(60));
+    console.log(`📍 Server running on: http://localhost:${PORT}`);
+    console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Not set (will use heuristics only)'}`);
+    console.log(`💡 Health check: http://localhost:${PORT}/health`);
+    console.log(`📡 Suggestions API: http://localhost:${PORT}/api/habit-suggestions`);
+    console.log(`📊 Review API: http://localhost:${PORT}/api/habit-review`);
+    console.log(`🎯 Coach Onboarding API: http://localhost:${PORT}/api/coach/onboarding`);
+    console.log(`📘 Daily Coach API: http://localhost:${PORT}/api/coach/daily-reflection`);
+    console.log('='.repeat(60));
+  });
+}
