@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
+import '../../data/identity_messages.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 import '../../widgets/daily_coach_dialog.dart';
@@ -17,12 +19,17 @@ class TodayScreen extends StatefulWidget {
 }
 
 class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
+  // Identity message state
+  String _identityMessage = '';
+  bool _showIdentityMessage = false;
+  int _messageIndex = 0;
+
   @override
   void initState() {
     super.initState();
     // Listen for app lifecycle changes to detect coming from background
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Check if we should show reward flow when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowRewardFlow();
@@ -48,6 +55,46 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     if (appState.shouldShowRewardFlow) {
       _showRewardInvestmentDialog(appState);
     }
+  }
+
+  /// Builds the tiny action line from habit details
+  /// Format: "[Tiny version] at [time] [in location]"
+  /// Handles missing fields gracefully
+  String _buildTinyActionLine(dynamic habit) {
+    final parts = <String>[];
+
+    // Tiny version (required, but check anyway)
+    if (habit.tinyVersion != null && habit.tinyVersion!.isNotEmpty) {
+      parts.add(habit.tinyVersion!);
+    } else {
+      parts.add('Do your habit');
+    }
+
+    // Time
+    if (habit.implementationTime != null && habit.implementationTime!.isNotEmpty) {
+      parts.add('at ${habit.implementationTime}');
+    }
+
+    // Location
+    if (habit.implementationLocation != null && habit.implementationLocation!.isNotEmpty) {
+      parts.add('in ${habit.implementationLocation}');
+    }
+
+    return parts.join(' ');
+  }
+
+  /// Checks if yesterday was missed by looking at completion history
+  bool _wasYesterdayMissed(dynamic habit) {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    final yesterdayKey = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
+    // Check if yesterday is in completion history
+    if (habit.completionHistory.containsKey(yesterdayKey)) {
+      return habit.completionHistory[yesterdayKey] == false;
+    }
+
+    // If not in history, consider it missed
+    return true;
   }
 
   void _showRewardInvestmentDialog(AppState appState) {
@@ -324,42 +371,27 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Identity reminder
-          if (profile != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.star, size: 32),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hello, ${profile.name}! 👋',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          profile.identity,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+          // Identity header - who you are becoming
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              habit.identity.isNotEmpty
+                  ? habit.identity
+                  : 'Your current habit',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.3,
               ),
             ),
-            const SizedBox(height: 32),
-          ],
+          ),
+          const SizedBox(height: 24),
 
           // Habit card
           Text(
@@ -397,43 +429,33 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  // Tiny action line - combines tiny version + time + location
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.timer, color: Colors.amber),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Start tiny: ${habit.tinyVersion}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                        Icon(
+                          Icons.light_mode,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Implementation intention display
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.access_time, color: Colors.blue, size: 20),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Planned: ${habit.implementationTime} in ${habit.implementationLocation}',
-                            style: const TextStyle(
+                            _buildTinyActionLine(habit),
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              height: 1.4,
                             ),
                           ),
                         ),
@@ -569,12 +591,23 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 const SizedBox(width: 16),
                 Column(
                   children: [
-                    Text(
-                      '${habit.currentStreak}',
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    // Animate streak number changes
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        );
+                      },
+                      child: Text(
+                        '${habit.currentStreak}',
+                        key: ValueKey<int>(habit.currentStreak),
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const Text(
@@ -627,21 +660,39 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ],
 
           // Complete button
-          if (!isCompleted)
+          if (!isCompleted) ...[
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
-                  debugPrint('🔘 Mark as Complete button pressed');
-                  
+                  debugPrint('🔘 Complete habit button pressed');
+
+                  // Light haptic feedback for tactile response
+                  HapticFeedback.lightImpact();
+
                   // Complete habit and check if it's a new completion
                   final wasNewCompletion = await appState.completeHabitForToday();
-                  
+
                   debugPrint('📊 Was new completion: $wasNewCompletion, mounted: $mounted');
-                  
+
                   // Show reward flow if this was a new completion
                   if (wasNewCompletion && mounted) {
+                    // Get identity message
+                    final wasPreviousDayMissed = _wasYesterdayMissed(habit);
+                    final message = IdentityMessages.getMessage(
+                      currentStreak: appState.currentHabit!.currentStreak,
+                      wasPreviousDayMissed: wasPreviousDayMissed,
+                      messageIndex: _messageIndex,
+                    );
+
+                    // Show identity message with fade-in
+                    setState(() {
+                      _identityMessage = message;
+                      _showIdentityMessage = true;
+                      _messageIndex++;
+                    });
+
                     debugPrint('✨ Triggering reward dialog');
                     _showRewardInvestmentDialog(appState);
                   } else if (!wasNewCompletion) {
@@ -658,15 +709,44 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text(
-                  'Mark as Complete ✓',
+                  'I did my 2-minute version',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            )
-          else
+            ),
+            const SizedBox(height: 12),
+            // Secondary nuance link
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  debugPrint('📝 Opening daily coach dialog from nuance link');
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => DailyCoachDialog(
+                      habit: habit,
+                      profile: profile!,
+                      onSaveReflection: (note) {
+                        debugPrint('💾 Saving reflection note');
+                        appState.saveReflectionForToday(note);
+                      },
+                    ),
+                  );
+                },
+                child: Text(
+                  'Today was tough',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            // Completed state
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -691,6 +771,33 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
+            // Identity message (fades in after completion)
+            const SizedBox(height: 16),
+            AnimatedOpacity(
+              opacity: _showIdentityMessage ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  ),
+                ),
+                child: Text(
+                  _identityMessage,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontStyle: FontStyle.italic,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
 
           // Daily Reflection card
@@ -735,7 +842,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Reflect on today',
+                            'Reflect with your coach',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -744,7 +851,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Talk to the coach about how it went',
+                            'Spend a minute understanding what helped or got in the way',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.purple.shade700,
