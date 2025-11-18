@@ -4,6 +4,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'notification_ids.dart';
 
 /// Notification Service for Daily Habit Reminders
 /// Implements the "Trigger" part of Nir Eyal's Hook Model
@@ -21,9 +22,12 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
-  
+
   // Callback for when notification actions are tapped
   Function(String action)? onNotificationAction;
+
+  // Callback for when notification body is tapped (for navigation)
+  Function()? onNotificationTap;
 
   /// Initialize notification system
   /// Called once when app starts in main.dart
@@ -99,7 +103,7 @@ class NotificationService {
   /// Handle notification tap (when user interacts with notification)
   void _onNotificationTapped(NotificationResponse response) {
     final String? payload = response.payload;
-    
+
     if (kDebugMode) {
       debugPrint('📱 Notification tapped - Action: ${response.actionId}, Payload: $payload');
     }
@@ -107,6 +111,9 @@ class NotificationService {
     // Handle action button presses
     if (response.actionId != null) {
       onNotificationAction?.call(response.actionId!);
+    } else {
+      // Notification body was tapped (not an action button) - navigate to Today screen
+      onNotificationTap?.call();
     }
   }
 
@@ -175,21 +182,15 @@ class NotificationService {
 
       final notificationDetails = NotificationDetails(android: androidDetails);
 
-      // Build notification body (include temptation bundle if present)
-      final String notificationBody;
-      if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
-      } else {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity}.';
-      }
+      // Build identity-aligned notification text (calm, supportive, British English)
+      final String notificationTitle = 'Your tiny proof for today';
+      final String notificationBody = _buildDailyReminderBody(profile, habit);
 
       // Schedule repeating daily notification
       await _notifications.zonedSchedule(
-        0, // Notification ID
-        'Time for your 2-minute ${habit.name}', // Title
-        notificationBody, // Body (with optional temptation bundle)
+        NotificationIds.dailyReminder,
+        notificationTitle,
+        notificationBody,
         scheduledDate,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -246,21 +247,15 @@ class NotificationService {
 
       final notificationDetails = NotificationDetails(android: androidDetails);
 
-      // Build notification body (include temptation bundle if present)
-      final String notificationBody;
-      if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
-      } else {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity}.';
-      }
+      // Build identity-aligned snooze reminder text
+      final String notificationTitle = 'Gentle nudge for your tiny habit';
+      final String notificationBody = _buildSnoozeReminderBody(profile, habit);
 
       // Schedule one-time notification (uses different ID to not conflict with daily)
       await _notifications.zonedSchedule(
-        1, // Different ID for snooze notifications
-        'Time for your 2-minute ${habit.name}',
-        notificationBody, // Body (with optional temptation bundle)
+        NotificationIds.snoozeReminder,
+        notificationTitle,
+        notificationBody,
         snoozeTime,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -339,8 +334,8 @@ class NotificationService {
       const notificationDetails = NotificationDetails(android: androidDetails);
 
       await _notifications.show(
-        99, // Test notification ID
-        'Test: Time for your habit!',
+        NotificationIds.test,
+        'Test: Your tiny proof for today',
         'This is a test notification with action buttons',
         notificationDetails,
       );
@@ -351,6 +346,46 @@ class NotificationService {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Failed to show test notification: $e');
+      }
+    }
+  }
+
+  /// Build identity-aligned body for daily reminder
+  /// Calm, supportive, British English
+  String _buildDailyReminderBody(UserProfile profile, Habit habit) {
+    // Extract the core identity (remove "I am " prefix if present)
+    String identity = profile.identity;
+    if (identity.toLowerCase().startsWith('i am ')) {
+      identity = identity.substring(5);
+    }
+
+    // Capitalise first letter if needed
+    if (identity.isNotEmpty) {
+      identity = identity[0].toUpperCase() + identity.substring(1);
+    }
+
+    // Build identity-first message with tiny version
+    return '$identity? Time for your tiny habit: ${habit.tinyVersion}.';
+  }
+
+  /// Build identity-aligned body for snooze reminder
+  /// Gentle nudge, not guilt-laden
+  String _buildSnoozeReminderBody(UserProfile profile, Habit habit) {
+    return 'A gentle reminder for your tiny habit: ${habit.tinyVersion}.';
+  }
+
+  /// Cancel a specific notification by ID
+  Future<void> cancelNotification(int id) async {
+    if (!_initialized) return;
+
+    try {
+      await _notifications.cancel(id);
+      if (kDebugMode) {
+        debugPrint('🚫 Notification $id cancelled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to cancel notification $id: $e');
       }
     }
   }

@@ -3,23 +3,45 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
+import 'data/notification_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/avatar/avatar_screen.dart';
 
+// Global navigator key for navigation from outside widget tree
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
-  
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Set up notification tap handler to navigate to Today screen
+    NotificationService().onNotificationTap = () {
+      // Navigate to Today screen when notification is tapped
+      _router.go('/today');
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +80,8 @@ class MyApp extends StatelessWidget {
           }
 
           // Configure navigation routes
-          final router = GoRouter(
+          _router = GoRouter(
+            navigatorKey: _navigatorKey,
             initialLocation: appState.hasCompletedOnboarding ? '/today' : '/',
             routes: [
               GoRoute(
@@ -94,7 +117,7 @@ class MyApp extends StatelessWidget {
                 margin: EdgeInsets.zero,
               ),
             ),
-            routerConfig: router,
+            routerConfig: _router,
           );
         },
       ),

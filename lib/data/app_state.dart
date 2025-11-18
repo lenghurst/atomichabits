@@ -261,9 +261,18 @@ class AppState extends ChangeNotifier {
   // ========== Notification Methods ==========
   
   /// Schedule daily notifications for habit reminder
+  /// Only schedules if notifications are enabled in user preferences
   Future<void> _scheduleNotifications() async {
     if (_currentHabit == null || _userProfile == null) return;
-    
+
+    // Phase 5: Check if notifications are enabled before scheduling
+    if (!_userProfile!.notificationsEnabled) {
+      if (kDebugMode) {
+        debugPrint('⏭️ Skipping notification scheduling (notifications disabled)');
+      }
+      return;
+    }
+
     await _notificationService.scheduleDailyHabitReminder(
       habit: _currentHabit!,
       profile: _userProfile!,
@@ -530,6 +539,33 @@ class AppState extends ChangeNotifier {
 
     if (kDebugMode) {
       debugPrint('🎁 Unlocked ${newlyUnlocked.length} new cosmetics: $newlyUnlocked');
+    }
+  }
+
+  // ========== Phase 5: Notification Preferences Methods ==========
+
+  /// Toggle notifications enabled/disabled
+  /// When enabled: schedules daily reminder
+  /// When disabled: cancels all notifications
+  Future<void> updateNotificationsEnabled(bool enabled) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(notificationsEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (enabled) {
+      // Re-schedule notifications
+      await _scheduleNotifications();
+      if (kDebugMode) {
+        debugPrint('✅ Notifications enabled and scheduled');
+      }
+    } else {
+      // Cancel all notifications
+      await _notificationService.cancelAllNotifications();
+      if (kDebugMode) {
+        debugPrint('🚫 Notifications disabled and cancelled');
+      }
     }
   }
 }

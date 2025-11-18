@@ -98,17 +98,31 @@ class SettingsScreen extends StatelessWidget {
             ),
             const Divider(),
 
-            // Phase 4: Avatar Settings
+            // Phase 4 & 5: Avatar and Notification Settings
             _buildSectionTitle(context, 'Personalisation'),
             Card(
-              child: SwitchListTile(
-                secondary: const Icon(Icons.person_outline),
-                title: const Text('Identity avatar'),
-                subtitle: const Text('Show a small visual that grows with your habit'),
-                value: appState.avatarEnabled,
-                onChanged: (bool value) {
-                  appState.updateAvatarEnabled(value);
-                },
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.person_outline),
+                    title: const Text('Identity avatar'),
+                    subtitle: const Text('Show a small visual that grows with your habit'),
+                    value: appState.avatarEnabled,
+                    onChanged: (bool value) {
+                      appState.updateAvatarEnabled(value);
+                    },
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.notifications_outlined),
+                    title: const Text('Habit reminders'),
+                    subtitle: const Text('Send a daily nudge when it\'s time for your tiny habit'),
+                    value: appState.userProfile?.notificationsEnabled ?? true,
+                    onChanged: (bool value) {
+                      appState.updateNotificationsEnabled(value);
+                    },
+                  ),
+                ],
               ),
             ),
             const Divider(),

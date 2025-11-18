@@ -10,6 +10,9 @@ class UserProfile {
   final List<String> unlockedCosmeticsIds; // IDs of unlocked cosmetics
   final Map<String, String> equippedCosmetics; // category → cosmetic id
 
+  // Phase 5: Notification preferences
+  final bool notificationsEnabled; // Daily habit reminders (default: true)
+
   UserProfile({
     required this.identity,
     required this.name,
@@ -17,6 +20,7 @@ class UserProfile {
     this.avatarEnabled = false,
     this.unlockedCosmeticsIds = const [],
     this.equippedCosmetics = const {},
+    this.notificationsEnabled = true,
   });
 
   /// Converts profile to JSON for storage
@@ -29,11 +33,13 @@ class UserProfile {
       'avatarEnabled': avatarEnabled,
       'unlockedCosmeticsIds': unlockedCosmeticsIds,
       'equippedCosmetics': equippedCosmetics,
+      // Phase 5: Notification preferences
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
   /// Creates profile from JSON
-  /// Handles backward compatibility - new avatar fields default if missing
+  /// Handles backward compatibility - new avatar and notification fields default if missing
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       identity: json['identity'] as String,
@@ -47,6 +53,8 @@ class UserProfile {
       equippedCosmetics: json['equippedCosmetics'] != null
           ? Map<String, String>.from(json['equippedCosmetics'] as Map)
           : {},
+      // Phase 5: Notification preferences (default: enabled)
+      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     );
   }
 
@@ -57,6 +65,7 @@ class UserProfile {
     bool? avatarEnabled,
     List<String>? unlockedCosmeticsIds,
     Map<String, String>? equippedCosmetics,
+    bool? notificationsEnabled,
   }) {
     return UserProfile(
       identity: identity ?? this.identity,
@@ -65,6 +74,7 @@ class UserProfile {
       avatarEnabled: avatarEnabled ?? this.avatarEnabled,
       unlockedCosmeticsIds: unlockedCosmeticsIds ?? this.unlockedCosmeticsIds,
       equippedCosmetics: equippedCosmetics ?? this.equippedCosmetics,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 }

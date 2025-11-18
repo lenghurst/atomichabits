@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
+import '../../data/notification_service.dart';
+import '../../data/notification_ids.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 
@@ -228,6 +230,46 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to get optimization tips. Please try again.'),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle "Remind me later" button tap
+  /// Schedules a one-off snooze notification 30 minutes from now
+  Future<void> _handleRemindMeLater(AppState appState, dynamic habit) async {
+    if (appState.currentHabit == null || appState.userProfile == null) return;
+
+    try {
+      // Schedule snooze notification
+      await NotificationService().scheduleSnoozeNotification(
+        habit: appState.currentHabit!,
+        profile: appState.userProfile!,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reminder set for 30 minutes from now'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      if (kDebugMode) {
+        debugPrint('⏰ Snooze notification scheduled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to schedule snooze: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to set reminder. Please try again.'),
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -630,9 +672,15 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   
                   // Complete habit and check if it's a new completion
                   final wasNewCompletion = await appState.completeHabitForToday();
-                  
+
+                  // Cancel any pending snooze notification since habit is now complete
+                  if (wasNewCompletion) {
+                    await NotificationService().cancelNotification(NotificationIds.snoozeReminder);
+                    debugPrint('🚫 Cancelled snooze notification (habit completed)');
+                  }
+
                   debugPrint('📊 Was new completion: $wasNewCompletion, mounted: $mounted');
-                  
+
                   // Show reward flow if this was a new completion
                   if (wasNewCompletion && mounted) {
                     debugPrint('✨ Triggering reward dialog');
@@ -655,6 +703,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+          // Phase 5: "Remind me later" button (only when not completed)
+          if (!isCompleted)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: TextButton.icon(
+                  onPressed: () => _handleRemindMeLater(appState, habit),
+                  icon: const Icon(Icons.schedule, size: 18),
+                  label: const Text('Not now – remind me in 30 minutes'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey.shade600,
                   ),
                 ),
               ),
