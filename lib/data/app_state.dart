@@ -152,6 +152,20 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Updates celebration style
+  /// Called from Settings screen
+  Future<void> updateCelebrationStyle(CelebrationStyle newStyle) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(celebrationStyle: newStyle);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('🎉 Celebration style updated to: ${newStyle.name}');
+    }
+  }
+
   /// Marks habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
   Future<bool> completeHabitForToday({bool fromNotification = false}) async {

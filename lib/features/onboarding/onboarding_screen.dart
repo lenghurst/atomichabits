@@ -461,15 +461,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// Determines celebration style based on habit time and location
+  /// Late evening (≥22:00) + quiet locations → Calm
+  /// Otherwise → Standard
+  CelebrationStyle _determineCelebrationStyle(String time, String location) {
+    // Parse hour from time (format: "HH:mm")
+    final hour = int.tryParse(time.split(':')[0]) ?? 12;
+
+    // Normalize location to lowercase for matching
+    final normalizedLocation = location.toLowerCase();
+
+    // Check for quiet/bedtime locations
+    final isQuietLocation = normalizedLocation.contains('bed') ||
+        normalizedLocation.contains('bedroom') ||
+        normalizedLocation.contains('sofa');
+
+    // Late evening (22:00 or later) + quiet location → Calm
+    if (hour >= 22 && isQuietLocation) {
+      return CelebrationStyle.calm;
+    }
+
+    // Default to standard for all other cases
+    return CelebrationStyle.standard;
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
 
-      // Create user profile
+      // Determine celebration style based on habit time and location
+      final celebrationStyle = _determineCelebrationStyle(
+        _formatTime(_selectedTime),
+        _locationController.text.trim(),
+      );
+
+      // Create user profile with AI-informed celebration style
       final profile = UserProfile(
         name: _nameController.text.trim(),
         identity: _identityController.text.trim(),
         createdAt: DateTime.now(),
+        celebrationStyle: celebrationStyle,
       );
 
       // Create first habit with implementation intentions + Make it Attractive

@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../../data/models/user_profile.dart';
 import '../../data/identity_messages.dart';
+import '../../data/celebration_config.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 import '../../widgets/daily_coach_dialog.dart';
@@ -378,6 +380,10 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     bool isCompleted,
     AppState appState,
   ) {
+    // Get celebration config for animations
+    final celebrationStyle = appState.userProfile?.celebrationStyle ?? CelebrationStyle.standard;
+    final celebrationConfig = configForStyle(celebrationStyle);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -603,12 +609,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 const SizedBox(width: 16),
                 Column(
                   children: [
-                    // Animate streak number changes
+                    // Animate streak number changes (uses celebration style config)
                     AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
+                      duration: celebrationConfig.animationDuration,
                       transitionBuilder: (Widget child, Animation<double> animation) {
+                        // Use celebration config's bounce scale for animation
+                        final scaleTween = Tween<double>(
+                          begin: 1.0,
+                          end: celebrationConfig.bounceScale,
+                        );
                         return ScaleTransition(
-                          scale: animation,
+                          scale: scaleTween.animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                          ),
                           child: child,
                         );
                       },
@@ -680,8 +696,14 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 onPressed: () async {
                   debugPrint('🔘 Complete habit button pressed');
 
-                  // Light haptic feedback for tactile response
-                  HapticFeedback.lightImpact();
+                  // Get celebration config based on user's celebration style
+                  final celebrationStyle = appState.userProfile?.celebrationStyle ?? CelebrationStyle.standard;
+                  final celebrationConfig = configForStyle(celebrationStyle);
+
+                  // Haptic feedback (conditional based on celebration style)
+                  if (celebrationConfig.enableHaptic) {
+                    HapticFeedback.lightImpact();
+                  }
 
                   // Complete habit and check if it's a new completion
                   final wasNewCompletion = await appState.completeHabitForToday();

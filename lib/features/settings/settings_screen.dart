@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/app_state.dart';
+import '../../data/models/user_profile.dart';
 
-/// Settings screen - placeholder for future features
+/// Settings screen - Configure app preferences and manage account
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/today'),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const SizedBox(height: 16),
-            
-            // App info section
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Settings'),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/today'),
+            ),
+          ),
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const SizedBox(height: 16),
+
+                // App info section
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -90,7 +95,12 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             const Divider(),
-            
+
+            // Preferences section
+            _buildSectionTitle(context, 'Preferences'),
+            _buildCelebrationStyleSelector(context, appState),
+            const Divider(),
+
             _buildSectionTitle(context, 'Data'),
             _buildSettingsTile(
               context,
@@ -153,6 +163,8 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+      },
+    );
   }
 
   Widget _buildSectionTitle(BuildContext context, String title) {
@@ -181,6 +193,85 @@ class SettingsScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildCelebrationStyleSelector(BuildContext context, AppState appState) {
+    final currentStyle = appState.userProfile?.celebrationStyle ?? CelebrationStyle.standard;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.celebration,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Celebration Style',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose how you want to celebrate completing your habit',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Calm option
+            RadioListTile<CelebrationStyle>(
+              title: const Text('Calm'),
+              subtitle: const Text('Soft feedback, no haptics'),
+              value: CelebrationStyle.calm,
+              groupValue: currentStyle,
+              onChanged: (CelebrationStyle? value) {
+                if (value != null) {
+                  appState.updateCelebrationStyle(value);
+                }
+              },
+            ),
+
+            // Standard option
+            RadioListTile<CelebrationStyle>(
+              title: const Text('Standard'),
+              subtitle: const Text('Gentle animation and a light tap'),
+              value: CelebrationStyle.standard,
+              groupValue: currentStyle,
+              onChanged: (CelebrationStyle? value) {
+                if (value != null) {
+                  appState.updateCelebrationStyle(value);
+                }
+              },
+            ),
+
+            // Lively option
+            RadioListTile<CelebrationStyle>(
+              title: const Text('Lively'),
+              subtitle: const Text('More noticeable animation and feedback'),
+              value: CelebrationStyle.lively,
+              groupValue: currentStyle,
+              onChanged: (CelebrationStyle? value) {
+                if (value != null) {
+                  appState.updateCelebrationStyle(value);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
