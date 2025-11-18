@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../data/app_state.dart';
+import '../../data/review_service.dart';
+import '../../widgets/weekly_review_dialog.dart';
 
 /// Settings screen - placeholder for future features
 class SettingsScreen extends StatelessWidget {
@@ -142,6 +144,13 @@ class SettingsScreen extends StatelessWidget {
             ),
             _buildSettingsTile(
               context,
+              icon: Icons.analytics_outlined,
+              title: 'Generate Weekly Review',
+              subtitle: 'Get insights on your progress',
+              onTap: () => _handleGenerateWeeklyReview(context, appState),
+            ),
+            _buildSettingsTile(
+              context,
               icon: Icons.backup,
               title: 'Backup & Restore',
               subtitle: 'Save your data',
@@ -259,5 +268,84 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Generate and show weekly review (Phase 6)
+  Future<void> _handleGenerateWeeklyReview(
+      BuildContext context, AppState appState) async {
+    if (appState.currentHabit == null || appState.userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No habit data available for review'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Generating weekly review...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final habit = appState.currentHabit!;
+      final profile = appState.userProfile!;
+
+      // Build context for weekly review
+      final reviewContext = WeeklyReviewContext(
+        identity: profile.identity,
+        habitName: habit.name,
+        tinyVersion: habit.tinyVersion,
+        currentStreak: habit.currentStreak,
+        totalCompletions: habit.totalCompletions,
+        completionHistory: habit.completionHistory,
+        daysToReview: 7, // Last 7 days
+      );
+
+      // Call review service
+      final service = ReviewService();
+      final result = await service.generateWeeklyReview(reviewContext);
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      // Show review dialog
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => WeeklyReviewDialog(review: result),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to generate review. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 }

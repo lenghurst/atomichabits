@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'api_client.dart';
+import 'api_config.dart';
 
 /// AI-powered suggestion service for Atomic Habits principles
-/// 
+///
 /// This service provides contextual suggestions with:
 /// - Remote LLM integration (with fallback to local heuristics)
 /// - Temptation bundling (pairing habits with enjoyable activities)
@@ -13,14 +14,18 @@ import 'package:flutter/foundation.dart';
 /// - Environment distractions (friction to remove)
 ///
 /// ARCHITECTURE:
-/// 1. Tries to fetch suggestions from remote LLM endpoint (with 5s timeout)
+/// 1. Tries to fetch suggestions from remote LLM endpoint (with 5s timeout via ApiClient)
 /// 2. Falls back to local heuristic suggestions if remote fails
 /// 3. Always returns suggestions - never crashes on errors
 class AiSuggestionService {
-  // Remote LLM endpoint configuration
-  // TODO: Replace with your actual LLM proxy endpoint
-  static const String _remoteLlmEndpoint = 'https://example.com/api/habit-suggestions';
-  static const Duration _remoteTimeout = Duration(seconds: 5);
+  // API client for remote LLM calls (configured via api_config.dart)
+  final ApiClient _apiClient;
+
+  /// Create an AI suggestion service
+  ///
+  /// [apiClient] - Optional API client (for testing or custom config)
+  AiSuggestionService({ApiClient? apiClient})
+      : _apiClient = apiClient ?? const ApiClient(baseUrl: apiBaseUrl);
   
   /// Returns 3 temptation bundling suggestions (async with remote LLM + local fallback)
   /// 
@@ -231,10 +236,9 @@ class AiSuggestionService {
   // ========== REMOTE LLM INTEGRATION ==========
 
   /// Fetches suggestions from remote LLM endpoint
-  /// 
+  ///
   /// Returns empty list on failure (caller will use local fallback)
-  /// 
-  /// TODO: Replace endpoint URL with your actual LLM proxy
+  ///
   /// Expected JSON response format:
   /// {
   ///   "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
@@ -251,69 +255,88 @@ class AiSuggestionService {
     String? existingEnvironmentCue,
     String? existingEnvironmentDistraction,
   }) async {
-    try {
-      // Build request payload
-      final payload = {
-        'suggestion_type': suggestionType,
-        'identity': identity,
-        'habit_name': habitName,
-        'two_minute_version': tinyVersion,
-        'time': implementationTime,
-        'location': implementationLocation,
-        'existing_temptation_bundle': existingTemptationBundle,
-        'existing_pre_ritual': existingPreRitual,
-        'existing_environment_cue': existingEnvironmentCue,
-        'existing_environment_distraction': existingEnvironmentDistraction,
-      };
+    // Build request payload with snake_case keys to match backend contract
+    final payload = {
+      'suggestion_type': suggestionType,
+      'identity': identity,
+      'habit_name': habitName,
+      'two_minute_version': tinyVersion,
+      'time': implementationTime,
+      'location': implementationLocation,
+      'existing_temptation_bundle': existingTemptationBundle,
+      'existing_pre_ritual': existingPreRitual,
+      'existing_environment_cue': existingEnvironmentCue,
+      'existing_environment_distraction': existingEnvironmentDistraction,
+    };
 
-      if (kDebugMode) {
-        debugPrint('📡 Attempting remote LLM call for $suggestionType...');
-      }
+    if (kDebugMode) {
+      debugPrint('📡 Attempting remote LLM call for $suggestionType...');
+    }
 
-      // Make HTTP POST request with timeout
-      // TODO: Replace _remoteLlmEndpoint with your actual LLM proxy URL
-      final response = await http.post(
-        Uri.parse(_remoteLlmEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          // TODO: Add authentication headers if needed
-          // 'Authorization': 'Bearer YOUR_API_KEY',
-        },
-        body: jsonEncode(payload),
-      ).timeout(_remoteTimeout);
+    // Make API call using ApiClient
+    final result = await _apiClient.postJson<_SuggestionsResponse>(
+      '/api/habit-suggestions',
+      body: payload,
+      parser: (json) => _SuggestionsResponse.fromJson(json),
+    );
 
-      // Parse response
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        
-        // TODO: Adjust parsing based on your actual API response format
-        // Expected format: {"suggestions": ["item1", "item2", "item3"]}
-        if (data.containsKey('suggestions') && data['suggestions'] is List) {
-          final suggestions = (data['suggestions'] as List)
-              .map((item) => item.toString())
-              .toList();
-          
-          if (suggestions.length >= 3) {
-            return suggestions.take(3).toList();
-          }
+    // Handle result
+    if (result.isSuccess && result.value != null) {
+      final suggestions = result.value!.suggestions;
+      if (suggestions.length >= 3) {
+        if (kDebugMode) {
+          debugPrint('✅ Remote LLM returned ${suggestions.length} suggestions');
         }
+        return suggestions.take(3).toList();
+      } else {
+        if (kDebugMode) {
+          debugPrint('⚠️ Remote LLM returned only ${suggestions.length} suggestions (expected 3+)');
+        }
+        return [];
       }
+    }
 
-      if (kDebugMode) {
-        debugPrint('⚠️ Remote LLM returned invalid response (status ${response.statusCode})');
+    // Log error details for debugging
+    if (kDebugMode) {
+      switch (result.errorType) {
+        case ApiErrorType.network:
+          debugPrint('⚠️ Network error: ${result.errorMessage}');
+          break;
+        case ApiErrorType.timeout:
+          debugPrint('⏱️ Request timeout: ${result.errorMessage}');
+          break;
+        case ApiErrorType.server:
+          debugPrint('⚠️ Server error (${result.statusCode}): ${result.errorMessage}');
+          break;
+        case ApiErrorType.parse:
+          debugPrint('⚠️ Parse error: ${result.errorMessage}');
+          break;
+        case ApiErrorType.unknown:
+        default:
+          debugPrint('❌ Unknown error: ${result.errorMessage}');
+          break;
       }
-      return [];
-      
-    } on TimeoutException {
-      if (kDebugMode) {
-        debugPrint('⏱️ Remote LLM timeout after ${_remoteTimeout.inSeconds}s');
+    }
+
+    return [];
+  }
+
+  // ========== RESPONSE MODELS ==========
+
+  /// Response model for suggestions endpoint
+  class _SuggestionsResponse {
+    final List<String> suggestions;
+
+    _SuggestionsResponse({required this.suggestions});
+
+    factory _SuggestionsResponse.fromJson(Map<String, dynamic> json) {
+      if (json.containsKey('suggestions') && json['suggestions'] is List) {
+        final suggestions = (json['suggestions'] as List)
+            .map((item) => item.toString())
+            .toList();
+        return _SuggestionsResponse(suggestions: suggestions);
       }
-      return [];
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Remote LLM error: $e');
-      }
-      return [];
+      return _SuggestionsResponse(suggestions: []);
     }
   }
 

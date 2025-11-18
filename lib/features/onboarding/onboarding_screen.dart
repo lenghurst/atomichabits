@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
+import '../../data/coach_onboarding_service.dart';
 import '../../widgets/suggestion_dialog.dart';
 
 /// Onboarding screen - collects user identity and first habit
@@ -378,6 +379,158 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  /// Get coach feedback on the onboarding plan (optional, non-blocking)
+  Future<void> _handleGetCoachFeedback() async {
+    // Validate form first
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all required fields first'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Getting coach feedback...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // Build context from form data
+      final context = OnboardingContext(
+        name: _nameController.text.trim(),
+        identity: _identityController.text.trim(),
+        habitName: _habitNameController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim(),
+        implementationTime: _formatTime(_selectedTime),
+        implementationLocation: _locationController.text.trim(),
+        temptationBundle: _temptationBundleController.text.trim().isEmpty
+            ? null
+            : _temptationBundleController.text.trim(),
+        preHabitRitual: _preHabitRitualController.text.trim().isEmpty
+            ? null
+            : _preHabitRitualController.text.trim(),
+        environmentCue: _environmentCueController.text.trim().isEmpty
+            ? null
+            : _environmentCueController.text.trim(),
+        environmentDistraction: _environmentDistractionController.text.trim().isEmpty
+            ? null
+            : _environmentDistractionController.text.trim(),
+      );
+
+      // Call coach service
+      final service = CoachOnboardingService();
+      final result = await service.generatePlan(context);
+
+      // Close loading dialog
+      if (mounted) Navigator.of(this.context).pop();
+
+      // Show coach feedback dialog
+      if (mounted) {
+        _showCoachFeedbackDialog(result);
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(this.context).pop();
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to get coach feedback. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Show coach feedback in a dialog
+  void _showCoachFeedbackDialog(CoachPlanResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.psychology_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text('Coach Feedback'),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                result.message,
+                style: const TextStyle(height: 1.5),
+              ),
+              if (result.suggestions.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Key reminders:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...result.suggestions.map((suggestion) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: TextStyle(fontSize: 16)),
+                          Expanded(
+                            child: Text(
+                              suggestion,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
@@ -399,17 +552,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim(),
         // New "Make it Attractive" and environment design fields
-        temptationBundle: _temptationBundleController.text.trim().isEmpty 
-            ? null 
+        temptationBundle: _temptationBundleController.text.trim().isEmpty
+            ? null
             : _temptationBundleController.text.trim(),
-        preHabitRitual: _preHabitRitualController.text.trim().isEmpty 
-            ? null 
+        preHabitRitual: _preHabitRitualController.text.trim().isEmpty
+            ? null
             : _preHabitRitualController.text.trim(),
-        environmentCue: _environmentCueController.text.trim().isEmpty 
-            ? null 
+        environmentCue: _environmentCueController.text.trim().isEmpty
+            ? null
             : _environmentCueController.text.trim(),
-        environmentDistraction: _environmentDistractionController.text.trim().isEmpty 
-            ? null 
+        environmentDistraction: _environmentDistractionController.text.trim().isEmpty
+            ? null
             : _environmentDistractionController.text.trim(),
       );
 
@@ -771,6 +924,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ],
                 ),
                 const SizedBox(height: 32),
+
+                // Optional: Get coach feedback
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _handleGetCoachFeedback,
+                    icon: const Icon(Icons.psychology_outlined),
+                    label: const Text('Get Coach Feedback (Optional)'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // Complete button
                 SizedBox(

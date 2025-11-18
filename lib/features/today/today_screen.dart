@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/notification_service.dart';
 import '../../data/notification_ids.dart';
+import '../../data/daily_coach_service.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/daily_coach_dialog.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -75,6 +77,37 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           appState.dismissRewardFlow();
           Navigator.of(dialogContext).pop();
         },
+      ),
+    );
+  }
+
+  /// Show daily coach reflection dialog (Phase 6)
+  void _showDailyCoachDialog(AppState appState) {
+    if (appState.currentHabit == null || appState.userProfile == null) {
+      debugPrint('⚠️ Cannot show daily coach dialog - missing habit or profile');
+      return;
+    }
+
+    final habit = appState.currentHabit!;
+    final profile = appState.userProfile!;
+
+    debugPrint('💭 Showing daily coach reflection dialog');
+
+    // Build context for daily reflection
+    final reflectionContext = DailyReflectionContext(
+      identity: profile.identity,
+      habitName: habit.name,
+      tinyVersion: habit.tinyVersion,
+      date: DateTime.now(),
+      status: 'completed', // User accessed this after completing
+      currentStreak: habit.currentStreak,
+      totalCompletions: habit.totalCompletions,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => DailyCoachDialog(
+        context: reflectionContext,
       ),
     );
   }
@@ -723,7 +756,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 ),
               ),
             )
-          else
+          else ...[
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -748,6 +781,75 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
+
+            // Phase 6: "Reflect with coach" card (optional daily reflection)
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Card(
+                elevation: 0,
+                color: Colors.deepPurple.shade50,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Colors.deepPurple.shade100,
+                    width: 1,
+                  ),
+                ),
+                child: InkWell(
+                  onTap: () => _showDailyCoachDialog(appState),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.auto_awesome,
+                            color: Colors.deepPurple.shade700,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Reflect with coach',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepPurple.shade900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Get personalised feedback on today\'s progress',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.deepPurple.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: Colors.deepPurple.shade400,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
 
           // "Improve this habit" button
