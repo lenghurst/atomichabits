@@ -6,6 +6,7 @@ import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/avatar/avatar_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -71,6 +72,10 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+              ),
+              GoRoute(
+                path: '/avatar',
+                builder: (context, state) => const AvatarScreen(),
               ),
             ],
           );

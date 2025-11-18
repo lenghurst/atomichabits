@@ -8,6 +8,9 @@ class Habit {
   final int currentStreak;
   final DateTime? lastCompletedDate;
   final DateTime createdAt;
+
+  // Phase 4: Total completions for cosmetic unlocks (cumulative, never resets)
+  final int totalCompletions;
   
   // Implementation intentions (James Clear)
   final String implementationTime; // "22:00" - when to do the habit
@@ -36,6 +39,7 @@ class Habit {
     this.currentStreak = 0,
     this.lastCompletedDate,
     required this.createdAt,
+    this.totalCompletions = 0,
     required this.implementationTime,
     required this.implementationLocation,
     this.temptationBundle,
@@ -51,6 +55,7 @@ class Habit {
     String? tinyVersion,
     int? currentStreak,
     DateTime? lastCompletedDate,
+    int? totalCompletions,
     String? implementationTime,
     String? implementationLocation,
     String? temptationBundle,
@@ -66,6 +71,7 @@ class Habit {
       currentStreak: currentStreak ?? this.currentStreak,
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
       createdAt: createdAt,
+      totalCompletions: totalCompletions ?? this.totalCompletions,
       implementationTime: implementationTime ?? this.implementationTime,
       implementationLocation: implementationLocation ?? this.implementationLocation,
       temptationBundle: temptationBundle ?? this.temptationBundle,
@@ -85,6 +91,7 @@ class Habit {
       'currentStreak': currentStreak,
       'lastCompletedDate': lastCompletedDate?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
+      'totalCompletions': totalCompletions,
       'implementationTime': implementationTime,
       'implementationLocation': implementationLocation,
       // New "Make it Attractive" and environment design fields
@@ -108,6 +115,7 @@ class Habit {
           ? DateTime.parse(json['lastCompletedDate'] as String)
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      totalCompletions: json['totalCompletions'] as int? ?? 0,
       implementationTime: json['implementationTime'] as String? ?? '09:00',
       implementationLocation: json['implementationLocation'] as String? ?? '',
       // New fields - safe to be null (backward compatible)

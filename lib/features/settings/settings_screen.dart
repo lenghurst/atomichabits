@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../data/app_state.dart';
 
 /// Settings screen - placeholder for future features
 class SettingsScreen extends StatelessWidget {
@@ -7,19 +9,21 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/today'),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Settings'),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/today'),
+            ),
+          ),
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
             const SizedBox(height: 16),
             
             // App info section
@@ -93,7 +97,22 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             const Divider(),
-            
+
+            // Phase 4: Avatar Settings
+            _buildSectionTitle(context, 'Personalisation'),
+            Card(
+              child: SwitchListTile(
+                secondary: const Icon(Icons.person_outline),
+                title: const Text('Identity avatar'),
+                subtitle: const Text('Show a small visual that grows with your habit'),
+                value: appState.avatarEnabled,
+                onChanged: (bool value) {
+                  appState.updateAvatarEnabled(value);
+                },
+              ),
+            ),
+            const Divider(),
+
             _buildSectionTitle(context, 'Data'),
             _buildSettingsTile(
               context,
@@ -152,9 +171,11 @@ class SettingsScreen extends StatelessWidget {
                 );
               },
             ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -4,6 +4,7 @@ import 'models/habit.dart';
 import 'models/user_profile.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
+import 'avatar_cosmetics.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
@@ -40,6 +41,9 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+
+  // Phase 4: Avatar getters
+  bool get avatarEnabled => _userProfile?.avatarEnabled ?? false;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -167,7 +171,7 @@ class AppState extends ChangeNotifier {
 
     // Calculate new streak (check if yesterday was completed)
     int newStreak = _currentHabit!.currentStreak;
-    
+
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
       final yesterday = today.subtract(const Duration(days: 1));
@@ -176,7 +180,7 @@ class AppState extends ChangeNotifier {
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       // If last completion was yesterday, continue streak
       if (lastDate == yesterday) {
         newStreak = _currentHabit!.currentStreak + 1;
@@ -188,23 +192,30 @@ class AppState extends ChangeNotifier {
       // First completion
       newStreak = 1;
     }
-    
+
+    // Phase 4: Increment total completions (cumulative, never resets)
+    final newTotalCompletions = _currentHabit!.totalCompletions + 1;
+
     _currentHabit = _currentHabit!.copyWith(
       currentStreak: newStreak,
       lastCompletedDate: now,
+      totalCompletions: newTotalCompletions,
     );
-    
-    await _saveToStorage(); // Persist the updated streak
-    
+
+    await _saveToStorage(); // Persist the updated streak and total
+
+    // Phase 4: Check for avatar cosmetic unlocks
+    _updateAvatarUnlocks(newTotalCompletions);
+
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
-    
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('✅ Habit completed! New streak: $newStreak');
+      debugPrint('✅ Habit completed! New streak: $newStreak, Total: $newTotalCompletions');
     }
-    
+
     return true; // New completion
   }
 
@@ -444,12 +455,81 @@ class AppState extends ChangeNotifier {
       getEnvironmentCueSuggestionsForCurrentHabit(),
       getEnvironmentDistractionSuggestionsForCurrentHabit(),
     ]);
-    
+
     return {
       'temptationBundle': results[0],
       'preHabitRitual': results[1],
       'environmentCue': results[2],
       'environmentDistraction': results[3],
     };
+  }
+
+  // ========== Phase 4: Avatar & Cosmetic Progression Methods ==========
+
+  /// Toggle avatar enabled/disabled
+  /// Allows minimalist users to opt out of avatar visuals
+  Future<void> updateAvatarEnabled(bool enabled) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(avatarEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Avatar enabled: $enabled');
+    }
+  }
+
+  /// Update equipped cosmetics
+  /// Called from Avatar screen when user changes their loadout
+  Future<void> updateEquippedCosmetics(Map<String, String> newEquipped) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(equippedCosmetics: newEquipped);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Equipped cosmetics updated: $newEquipped');
+    }
+  }
+
+  /// Check for new avatar cosmetic unlocks based on total completions
+  /// Called after each successful habit completion
+  /// Non-punitive: unlocks are based on cumulative votes, never removed
+  void _updateAvatarUnlocks(int totalVotes) {
+    if (_userProfile == null) return;
+
+    final currentUnlocked = _userProfile!.unlockedCosmeticsIds.toSet();
+    final newlyUnlocked = <String>{};
+
+    // Check all cosmetics to see which should be unlocked
+    for (final cosmetic in kAllCosmeticItems) {
+      if (totalVotes >= cosmetic.requiredVotes &&
+          !currentUnlocked.contains(cosmetic.id)) {
+        newlyUnlocked.add(cosmetic.id);
+      }
+    }
+
+    if (newlyUnlocked.isEmpty) return;
+
+    final updatedUnlocked = currentUnlocked..addAll(newlyUnlocked);
+
+    // Auto-equip first cosmetic per category if nothing equipped yet
+    final updatedEquipped = Map<String, String>.from(_userProfile!.equippedCosmetics);
+    for (final cosmetic in kAllCosmeticItems.where((c) => newlyUnlocked.contains(c.id))) {
+      updatedEquipped.putIfAbsent(cosmetic.category, () => cosmetic.id);
+    }
+
+    _userProfile = _userProfile!.copyWith(
+      unlockedCosmeticsIds: updatedUnlocked.toList(),
+      equippedCosmetics: updatedEquipped,
+    );
+    _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('🎁 Unlocked ${newlyUnlocked.length} new cosmetics: $newlyUnlocked');
+    }
   }
 }

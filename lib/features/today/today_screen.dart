@@ -685,18 +685,32 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               ),
             ),
           const SizedBox(height: 24),
-          
+
           // "Improve this habit" button
           Center(
             child: OutlinedButton.icon(
               onPressed: () => _showImprovementSuggestions(appState),
               icon: const Icon(Icons.tips_and_updates),
-              label: const Text('Get optimization tips'),
+              label: const Text('Get optimisation tips'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
             ),
           ),
+          const SizedBox(height: 16),
+
+          // Phase 4: Avatar entry point (only shown if avatar enabled)
+          if (appState.avatarEnabled)
+            Center(
+              child: TextButton.icon(
+                onPressed: () => context.go('/avatar'),
+                icon: const Icon(Icons.person_outline, size: 20),
+                label: const Text('View identity avatar'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade700,
+                ),
+              ),
+            ),
           const SizedBox(height: 16),
         ],
       ),
