@@ -165,7 +165,7 @@ You are a diagnostic habit coach helping users figure out why a habit isn't stic
 class GeminiChatService {
   // TODO: Replace with your actual API key (use environment variables in production)
   // For development, you can get a free API key at https://makersuite.google.com/app/apikey
-  static const String _defaultApiKey = 'YOUR_GEMINI_API_KEY';
+  static const String _defaultApiKey = 'AIzaSyB6BVpzg6lXxY_AAi3rPcSuGpcjV89H8dE';
 
   final String apiKey;
   GenerativeModel? _model;
