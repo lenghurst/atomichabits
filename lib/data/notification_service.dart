@@ -7,9 +7,10 @@ import 'models/user_profile.dart';
 
 /// Notification Service for Daily Habit Reminders
 /// Implements the "Trigger" part of Nir Eyal's Hook Model
-/// 
+///
 /// Key Features:
 /// - Daily scheduled notifications at user's chosen time
+/// - Support for MULTIPLE habits with unique notification IDs
 /// - Action buttons: "Mark Done" and "Snooze 30 mins"
 /// - Handles both Android and Web (gracefully degrades on web)
 class NotificationService {
@@ -17,13 +18,14 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = 
+  final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
-  
+
   // Callback for when notification actions are tapped
-  Function(String action)? onNotificationAction;
+  // Now includes optional habitId for multiple habits support
+  Function(String action, {String? habitId})? onNotificationAction;
 
   /// Initialize notification system
   /// Called once when app starts in main.dart
@@ -33,17 +35,17 @@ class NotificationService {
     try {
       // Initialize timezone data for scheduled notifications
       tz.initializeTimeZones();
-      
+
       // Find local timezone (defaults to UTC if not found)
       final String timeZoneName = 'UTC'; // You can make this dynamic later
       tz.setLocalLocation(tz.getLocation(timeZoneName));
 
       // Android initialization settings
-      const AndroidInitializationSettings androidSettings = 
+      const AndroidInitializationSettings androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
       // iOS initialization settings (for future iOS support)
-      const DarwinInitializationSettings iosSettings = 
+      const DarwinInitializationSettings iosSettings =
           DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -66,7 +68,7 @@ class NotificationService {
       await _requestPermissions();
 
       _initialized = true;
-      
+
       if (kDebugMode) {
         debugPrint('✅ NotificationService initialized');
       }
@@ -99,22 +101,26 @@ class NotificationService {
   /// Handle notification tap (when user interacts with notification)
   void _onNotificationTapped(NotificationResponse response) {
     final String? payload = response.payload;
-    
+
     if (kDebugMode) {
       debugPrint('📱 Notification tapped - Action: ${response.actionId}, Payload: $payload');
     }
 
     // Handle action button presses
     if (response.actionId != null) {
-      onNotificationAction?.call(response.actionId!);
+      // Payload contains the habit ID
+      onNotificationAction?.call(response.actionId!, habitId: payload);
     }
   }
 
-  /// Schedule daily notification for habit
-  /// Called after onboarding and when reminder time changes
-  Future<void> scheduleDailyHabitReminder({
+  /// Schedule daily notification for a specific habit
+  ///
+  /// [notificationId] - Unique ID for this notification (use habit index)
+  /// This allows multiple habits to have their own notifications
+  Future<void> scheduleHabitReminder({
     required Habit habit,
     required UserProfile profile,
+    required int notificationId,
   }) async {
     if (!_initialized) {
       if (kDebugMode) {
@@ -124,8 +130,8 @@ class NotificationService {
     }
 
     try {
-      // Cancel any existing notifications first
-      await cancelAllNotifications();
+      // Cancel existing notification for this ID first
+      await cancelNotification(notificationId);
 
       // Parse implementation time (format: "HH:MM")
       final timeParts = habit.implementationTime.split(':');
@@ -178,16 +184,16 @@ class NotificationService {
       // Build notification body (include temptation bundle if present)
       final String notificationBody;
       if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
+        notificationBody =
             'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
       } else {
-        notificationBody = 
+        notificationBody =
             'You\'re becoming the type of person who ${profile.identity}.';
       }
 
       // Schedule repeating daily notification
       await _notifications.zonedSchedule(
-        0, // Notification ID
+        notificationId, // Unique ID for this habit's notification
         'Time for your 2-minute ${habit.name}', // Title
         notificationBody, // Body (with optional temptation bundle)
         scheduledDate,
@@ -200,7 +206,7 @@ class NotificationService {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ Daily notification scheduled for ${habit.implementationTime}');
+        debugPrint('✅ Notification #$notificationId scheduled for ${habit.name} at ${habit.implementationTime}');
         debugPrint('   Next notification: $scheduledDate');
       }
     } catch (e) {
@@ -208,6 +214,18 @@ class NotificationService {
         debugPrint('⚠️ Failed to schedule notification: $e');
       }
     }
+  }
+
+  /// Backward compatibility: Schedule daily habit reminder (uses ID 0)
+  Future<void> scheduleDailyHabitReminder({
+    required Habit habit,
+    required UserProfile profile,
+  }) async {
+    await scheduleHabitReminder(
+      habit: habit,
+      profile: profile,
+      notificationId: 0,
+    );
   }
 
   /// Schedule one-time snooze notification (30 minutes from now)
@@ -249,16 +267,19 @@ class NotificationService {
       // Build notification body (include temptation bundle if present)
       final String notificationBody;
       if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
+        notificationBody =
             'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
       } else {
-        notificationBody = 
+        notificationBody =
             'You\'re becoming the type of person who ${profile.identity}.';
       }
 
-      // Schedule one-time notification (uses different ID to not conflict with daily)
+      // Use high notification IDs for snooze to avoid conflicts (1000+)
+      final snoozeId = 1000 + habit.id.hashCode.abs() % 1000;
+
+      // Schedule one-time notification
       await _notifications.zonedSchedule(
-        1, // Different ID for snooze notifications
+        snoozeId, // Unique snooze ID based on habit
         'Time for your 2-minute ${habit.name}',
         notificationBody, // Body (with optional temptation bundle)
         snoozeTime,
@@ -270,7 +291,7 @@ class NotificationService {
       );
 
       if (kDebugMode) {
-        debugPrint('⏰ Snooze notification scheduled for $snoozeTime');
+        debugPrint('⏰ Snooze notification for "${habit.name}" scheduled for $snoozeTime');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -279,10 +300,26 @@ class NotificationService {
     }
   }
 
+  /// Cancel a specific notification by ID
+  Future<void> cancelNotification(int notificationId) async {
+    if (!_initialized) return;
+
+    try {
+      await _notifications.cancel(notificationId);
+      if (kDebugMode) {
+        debugPrint('🚫 Notification #$notificationId cancelled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to cancel notification #$notificationId: $e');
+      }
+    }
+  }
+
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
     if (!_initialized) return;
-    
+
     try {
       await _notifications.cancelAll();
       if (kDebugMode) {
@@ -298,7 +335,7 @@ class NotificationService {
   /// Get list of pending notifications (for debugging)
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     if (!_initialized) return [];
-    
+
     try {
       return await _notifications.pendingNotificationRequests();
     } catch (e) {

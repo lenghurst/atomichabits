@@ -6,14 +6,15 @@ import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/habits/add_habit_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
-  
+
   runApp(const MyApp());
 }
 
@@ -71,6 +72,10 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+              ),
+              GoRoute(
+                path: '/add-habit',
+                builder: (context, state) => const AddHabitScreen(),
               ),
             ],
           );
