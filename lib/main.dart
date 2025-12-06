@@ -7,6 +7,7 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/habits/add_habit_screen.dart';
+import 'features/habits/edit_habit_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -76,6 +77,13 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/add-habit',
                 builder: (context, state) => const AddHabitScreen(),
+              ),
+              GoRoute(
+                path: '/edit-habit/:habitId',
+                builder: (context, state) {
+                  final habitId = state.pathParameters['habitId']!;
+                  return EditHabitScreen(habitId: habitId);
+                },
               ),
             ],
           );

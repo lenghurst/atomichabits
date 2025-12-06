@@ -254,10 +254,22 @@ class SettingsScreen extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: () => _confirmDeleteHabit(context, habit, appState),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => context.go('/edit-habit/${habit.id}'),
+              tooltip: 'Edit habit',
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _confirmDeleteHabit(context, habit, appState),
+              tooltip: 'Delete habit',
+            ),
+          ],
         ),
+        onTap: () => context.go('/edit-habit/${habit.id}'),
       ),
     );
   }
