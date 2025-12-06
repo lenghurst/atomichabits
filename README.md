@@ -16,19 +16,30 @@ lib/
 ├── main.dart                    # App entry point with navigation setup
 ├── data/
 │   ├── app_state.dart          # Central state management (Provider)
-│   ├── models/
-│   │   ├── habit.dart          # Habit data model
-│   │   └── user_profile.dart   # User profile/identity model
-│   └── repositories/           # (Future: data persistence layer)
+│   ├── ai_suggestion_service.dart  # AI suggestions (remote LLM + local fallback)
+│   ├── notification_service.dart   # Daily habit reminders
+│   └── models/
+│       ├── habit.dart          # Habit data model (good & bad habits)
+│       ├── user_profile.dart   # User profile/identity model
+│       ├── habit_circle.dart   # Social layer: habit circles & members
+│       └── creator_session.dart # Creator mode: sessions & summaries
 ├── features/
 │   ├── onboarding/
 │   │   └── onboarding_screen.dart  # Collects identity & first habit
 │   ├── today/
 │   │   └── today_screen.dart       # Shows today's habit & streak
-│   └── settings/
-│       └── settings_screen.dart    # Settings & app info
+│   ├── settings/
+│   │   └── settings_screen.dart    # Settings & feature navigation
+│   ├── bad_habit/
+│   │   └── bad_habit_screen.dart   # Change/Reduce Habit Toolkit
+│   ├── social/
+│   │   └── social_screen.dart      # Social & Norms Layer
+│   └── creator/
+│       └── creator_mode_screen.dart # Creator Mode (quantity-first)
 └── widgets/
-    └── common/                 # (Future: reusable UI components)
+    ├── suggestion_dialog.dart       # AI suggestion picker
+    ├── reward_investment_dialog.dart # Hook Model reward flow
+    └── pre_habit_ritual_dialog.dart  # Pre-habit ritual with timer
 ```
 
 ## 🏗️ Architecture Explained (In Plain English)
@@ -80,26 +91,50 @@ context.go('/');
 
 ## 🎨 Features Implemented
 
-### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Validates all inputs before proceeding
+### ✅ Core Habit Tracking
+- **Identity-based onboarding** - Define who you want to become
+- **2-minute rule** - Create tiny versions of habits
+- **Implementation intentions** - When/where you'll do the habit
+- **Streak tracking** - Visual progress with fire icons
+- **Hook Model reward flow** - Confetti celebration + investment phase
 
-### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- Shows current streak with fire icon
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
+### ✅ Make It Attractive
+- **Temptation bundling** - Pair habits with enjoyable activities
+- **Pre-habit rituals** - 30-second mental preparation with timer
+- **AI suggestions** - Context-aware recommendations (remote LLM + local fallback)
 
-### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
-- App information and about section
+### ✅ Environment Design
+- **Environment cues** - Visual triggers for habits
+- **Distraction removal** - Friction for competing behaviors
+- **AI-powered suggestions** - Based on time, location, and habit type
+
+### ✅ Change / Reduce Habit Toolkit (Bad Habits)
+- **Habit substitution** - Map needs to healthier alternatives
+- **Cue firewall** - Block triggers by time, place, people, emotion
+- **Bright-line rules** - "I don't..." rules with 4 intensity levels (gentle → absolute)
+- **Progressive extremism** - Rules that tighten over time
+- **Friction/guardrails** - Add steps between cue and bad behavior
+- **Avoided tracking** - Track successful resistance
+
+### ✅ Social & Norms Layer
+- **People cues** - "When I'm with X, I do Y" connections
+- **Habit circles** - Small groups with shared habits
+- **Champion/guide support** - Local leaders (Mozambique model)
+- **Norm messaging** - "Around here, we..." social proof
+- **Group check-ins** - Weekly/daily accountability
+
+### ✅ Creator Mode
+- **Quantity-first tracking** - Reps over quality (photo class story)
+- **Session types** - Generate (create) vs Refine (deliberate practice)
+- **Weekly rep goals** - Progress tracking with goal percentage
+- **Minimal workspace** - WordStar-style focus support
+- **Session learnings** - Track insights from each creative session
+- **Weekly summaries** - Volume + learnings, not "was it good?"
+
+### ✅ Notifications & Reminders
+- **Daily habit reminders** - At your scheduled time
+- **Action buttons** - Mark Done or Snooze from notification
+- **Temptation bundle included** - Reminder shows your paired reward
 
 ## 🚀 How to Run the App
 
@@ -184,15 +219,13 @@ Try this user journey:
 
 ## 🔮 Future Features (Not Yet Implemented)
 
-- [ ] Multiple habits support
 - [ ] Habit history and calendar view
-- [ ] Reminders and notifications
 - [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
-- [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
-- [ ] Weekly/monthly analytics
+- [ ] 4 Laws of Behavior Change framework UI
+- [ ] Weekly/monthly analytics dashboard
 - [ ] Backup and restore functionality
+- [ ] Social habit circle real-time sync
+- [ ] Push notifications for group check-ins
 
 ## 🛠️ Technologies Used
 
