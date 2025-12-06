@@ -1,225 +1,350 @@
-# Atomic Habits Hook App
+# Atomic Habits - Identity-Based Habit Tracker
 
-A Flutter mobile habit-tracking app based on:
-- **James Clear's Atomic Habits** (identity-based habits, 4 Laws of Behavior Change, 2-minute rule)
-- **Nir Eyal's Hook Model** (Trigger → Action → Variable Reward → Investment)
-- **B.J. Fogg's Behavior Model** (Behavior = Motivation × Ability × Prompt)
+A Flutter mobile app that helps you build lasting habits through identity-based behavior change, powered by principles from James Clear's *Atomic Habits*, Nir Eyal's *Hook Model*, and B.J. Fogg's *Behavior Model*.
 
-## 🎯 Project Overview
+## 🎯 What Makes This Different
 
-This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
+Instead of just tracking habits, this app helps you **become the person** you want to be:
+
+- **Identity-First**: Define who you want to become, not just what you want to do
+- **AI-Powered Suggestions**: Get personalized recommendations for making habits attractive and easy
+- **2-Minute Rule**: Start with tiny versions that are impossible to fail
+- **Implementation Intentions**: Precise plans for when and where you'll do your habit
+- **Environment Design**: Visual cues to trigger habits and remove distractions
+- **Hook Model Integration**: Built-in rewards and investment mechanisms to create habit loops
+
+## ✨ Features
+
+### Core Habit Building
+- ✅ **Identity-based onboarding** - "I am a person who..."
+- ✅ **Tiny habit versions** - Apply the 2-minute rule
+- ✅ **Implementation intentions** - Specific time and location planning
+- ✅ **Daily streak tracking** - Visual progress with fire icons
+- ✅ **Habit completion with confetti** - Celebrate small wins
+- ✅ **Investment mechanism** - Reinforce commitment after each completion
+
+### Make Habits Attractive (2nd Law of Behavior Change)
+- ✅ **Temptation bundling** - Pair habits with things you enjoy
+- ✅ **Pre-habit rituals** - Mental preparation with guided 30-second countdown
+- ✅ **AI-powered suggestions** - Get contextual ideas for each element
+
+### Make Habits Easy (3rd Law of Behavior Change)
+- ✅ **Environment cues** - Visual triggers to start your habit
+- ✅ **Distraction removal** - Friction-adding guardrails
+- ✅ **Optimization tips** - Get 8 suggestions to improve your habit system
+
+### Technical Features
+- ✅ **Local data persistence** - Hive database stores all your data
+- ✅ **Daily notifications** - Reminders at your implementation time
+- ✅ **Offline AI suggestions** - Local heuristics with optional remote LLM integration
+- ✅ **Progressive Web App** - Works on mobile, desktop, and web
 
 ## 📁 Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with navigation setup
+├── main.dart                           # App entry point & navigation
 ├── data/
-│   ├── app_state.dart          # Central state management (Provider)
-│   ├── models/
-│   │   ├── habit.dart          # Habit data model
-│   │   └── user_profile.dart   # User profile/identity model
-│   └── repositories/           # (Future: data persistence layer)
+│   ├── app_state.dart                 # State management (Provider)
+│   ├── ai_suggestion_service.dart     # AI suggestions (local + remote)
+│   ├── notification_service.dart      # Daily habit reminders
+│   └── models/
+│       ├── habit.dart                 # Habit data model (8 fields)
+│       └── user_profile.dart          # User identity profile
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart  # Collects identity & first habit
+│   │   └── onboarding_screen.dart    # Identity + habit creation
 │   ├── today/
-│   │   └── today_screen.dart       # Shows today's habit & streak
+│   │   └── today_screen.dart         # Daily habit view & completion
 │   └── settings/
-│       └── settings_screen.dart    # Settings & app info
+│       └── settings_screen.dart      # App settings
 └── widgets/
-    └── common/                 # (Future: reusable UI components)
+    ├── pre_habit_ritual_dialog.dart   # 30-second ritual modal
+    ├── ai_suggestion_dialog.dart      # "Ideas" button suggestions
+    └── optimization_tips_dialog.dart  # 8-tip improvement dialog
 ```
 
-## 🏗️ Architecture Explained (In Plain English)
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Flutter SDK** 3.35.4 or later ([Install Flutter](https://docs.flutter.dev/get-started/install))
+- **Dart** 3.9.2 or later (comes with Flutter)
+- **Android device/emulator** or **iOS device/simulator**
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/lenghurst/atomichabits.git
+   cd atomichabits
+   ```
+
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Run the app**
+   ```bash
+   # Run on connected device/emulator
+   flutter run
+
+   # Run on specific device
+   flutter devices  # List available devices
+   flutter run -d <device-id>
+
+   # Run in Chrome (web)
+   flutter run -d chrome
+   ```
+
+### Build for Production
+
+**Android APK:**
+```bash
+flutter build apk --release
+# Output: build/app/outputs/flutter-apk/app-release.apk
+```
+
+**Android App Bundle (for Play Store):**
+```bash
+flutter build appbundle --release
+# Output: build/app/outputs/bundle/release/app-release.aab
+```
+
+**iOS (requires macOS with Xcode):**
+```bash
+flutter build ios --release
+```
+
+**Web:**
+```bash
+flutter build web --release
+# Output: build/web/
+```
+
+## 🧪 Testing
+
+See [QUICK_TEST_GUIDE.md](QUICK_TEST_GUIDE.md) for a 5-minute test walkthrough, or [TESTING_GUIDE.md](TESTING_GUIDE.md) for comprehensive testing scenarios.
+
+### Quick Test Journey
+
+1. **Clear browser data** (F12 > Application > IndexedDB > Delete all)
+2. **Complete onboarding** with sample habit:
+   - Identity: `reads every day`
+   - Habit: `Read one page`
+   - Time: `22:00`, Location: `In bed`
+3. **Try "Ideas" buttons** - Get AI suggestions for:
+   - Temptation bundling (herbal tea, candles)
+   - Pre-habit ritual (breathing exercises)
+   - Environment cues (book on pillow)
+   - Distraction removal (charge phone elsewhere)
+4. **Test Today screen**:
+   - View your complete habit plan
+   - Click "Start ritual" for 30-second countdown
+   - Mark habit as complete (confetti!)
+   - Answer investment question
+5. **Get optimization tips** - 8 contextual suggestions
+
+## 🏗️ Architecture
 
 ### State Management: Provider
 
-**What it does:** Provider is like a "data warehouse" for your app. It stores information (like your habits and streak) in one central place, and automatically updates the screens when that data changes.
+**AppState** (`lib/data/app_state.dart`) is the central data store:
+- Holds user profile and habit data
+- Manages habit completion and streak logic
+- Calls `notifyListeners()` to trigger UI updates
+- Persists data to Hive database
 
-**How it works:**
-1. **AppState** (`data/app_state.dart`) is the "warehouse" that holds all your app's data
-2. **Provider** wraps the entire app (see `main.dart`) and makes this data available everywhere
-3. **Consumer** widgets "subscribe" to changes - when data updates, they automatically rebuild
+**Why Provider?** Simple, performant, and officially recommended by Flutter team.
 
-**Example flow:**
-- User completes a habit → `completeHabitForToday()` is called
-- AppState updates the streak and calls `notifyListeners()`
-- The TodayScreen automatically rebuilds with the new streak number
+### Data Persistence: Hive
 
-**Why Provider?** It's beginner-friendly, widely used, and has excellent documentation. No complex setup required!
+All data is stored locally using Hive (NoSQL database):
+- **Box: `userProfile`** - Name and identity
+- **Box: `habit`** - Complete habit model
+- **Box: `appState`** - Onboarding completion status
+
+Data survives app restarts and is stored in IndexedDB (web) or local files (mobile).
+
+### AI Suggestion System
+
+**Async Remote + Local Fallback Architecture:**
+1. Attempts to fetch suggestions from remote LLM endpoint (5s timeout)
+2. Falls back to local heuristics if remote fails/unavailable
+3. Local heuristics use keyword matching and time-of-day logic
+4. Returns 3 contextual suggestions per category
+
+**Configuration:** Edit `lib/data/ai_suggestion_service.dart` to add your LLM endpoint.
 
 ### Navigation: GoRouter
 
-**What it does:** GoRouter handles moving between different screens in your app using simple paths (like websites).
+Path-based routing with automatic onboarding redirect:
+- `/` - Onboarding (if not completed)
+- `/today` - Daily habit view (default if onboarded)
+- `/settings` - App settings
 
-**How it works:**
-- Routes are defined in `main.dart` with paths like `/`, `/today`, `/settings`
-- Use `context.go('/today')` to navigate to a screen
-- The router knows to start at onboarding (`/`) if not completed, otherwise start at Today screen
+## 🎨 Design Principles
 
-**Example:**
-```dart
-// Navigate to Today screen
-context.go('/today');
+### From *Atomic Habits* (James Clear)
 
-// Go back to previous screen
-context.go('/');
+**The 4 Laws of Behavior Change:**
+1. ✅ **Make it Obvious** - Implementation intentions (time + location)
+2. ✅ **Make it Attractive** - Temptation bundling + pre-habit rituals
+3. ✅ **Make it Easy** - 2-minute rule + environment design
+4. ⏳ **Make it Satisfying** - Habit tracking coming soon
+
+**Identity-Based Habits:**
+- Focus on who you wish to become, not what you want to achieve
+- Every habit completion is a "vote" for your new identity
+- App reinforces identity in notifications and UI messaging
+
+### From *Hook Model* (Nir Eyal)
+
+**Trigger → Action → Variable Reward → Investment:**
+- **Trigger**: Daily notification + identity reminder
+- **Action**: Simple "Mark as Complete" button (2-minute version)
+- **Variable Reward**: Confetti animation, streak increase, completion status
+- **Investment**: Answer reflection question to deepen commitment
+
+### From *Fogg Behavior Model*
+
+**B = MAP (Behavior = Motivation × Ability × Prompt):**
+- **Motivation**: Identity alignment + visible streak
+- **Ability**: 2-minute tiny version ensures high ability
+- **Prompt**: Daily notification at implementation time
+
+## 📦 Dependencies
+
+```yaml
+dependencies:
+  flutter: sdk
+  provider: ^6.1.5+1           # State management
+  go_router: ^14.0.0           # Navigation
+  hive: ^2.2.3                 # Local database
+  hive_flutter: ^1.1.0         # Hive for Flutter
+  confetti: ^0.7.0             # Celebration animations
+  flutter_local_notifications: ^18.0.1  # Daily reminders
+  http: ^1.2.2                 # Remote LLM calls
+
+dev_dependencies:
+  hive_generator: ^2.0.1       # Generate Hive adapters
+  build_runner: ^2.4.14        # Code generation
 ```
 
-### Data Models
+## 🔐 Security & Privacy
 
-**Habit** (`data/models/habit.dart`):
-- Represents a single habit with name, identity, tiny version, streak, etc.
-- Has methods to create copies with updates (`copyWith`)
-- Can be saved/loaded from JSON for persistence
+### API Key Management
 
-**UserProfile** (`data/models/user_profile.dart`):
-- Stores the user's desired identity ("I am a person who...")
-- Keeps track of name and creation date
+**Current status:** ✅ **No API keys required** - local AI suggestions work offline
 
-## 🎨 Features Implemented
-
-### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Validates all inputs before proceeding
-
-### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- Shows current streak with fire icon
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
-
-### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
-- App information and about section
-
-## 🚀 How to Run the App
-
-### Option 1: Web Preview (Easiest!)
-
-**Your app is already running!** 🎉
-
-🔗 **Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
-
-Just click the link above and try the app in your browser!
-
-### Option 2: Android Device or Emulator
-
-**Prerequisites:**
-- Android device with USB debugging enabled, OR
-- Android emulator running on your computer
-- Flutter SDK installed on your computer
-
-**Steps:**
-
-1. **Clone this project to your computer:**
-   ```bash
-   # Copy the flutter_app folder to your local machine
+**Optional LLM Integration:**
+1. Create `.env` file in project root:
+   ```
+   LLM_ENDPOINT=https://your-llm-proxy.com/api
+   LLM_API_KEY=your-secret-key-here
    ```
 
-2. **Connect your Android device** (or start an emulator)
+2. Add `.env` to `.gitignore` (already included)
 
-3. **Run the app:**
-   ```bash
-   cd flutter_app
-   flutter run
-   ```
+3. Use `flutter_dotenv` package to load environment variables
 
-4. **The app will install and launch on your device!**
+**⚠️ NEVER commit API keys to version control!**
 
-### Option 3: Build APK for Installation
+### Data Privacy
 
-```bash
-cd flutter_app
-flutter build apk --release
-```
+- ✅ All data stored **locally** on user's device
+- ✅ No analytics or tracking
+- ✅ No cloud sync (user owns their data)
+- ✅ Optional remote LLM calls (disabled by default)
 
-The APK will be created at: `build/app/outputs/flutter-apk/app-release.apk`
+## 🐛 Known Issues
 
-Transfer this file to your Android phone and install it!
+### Non-Critical Warnings
 
-## 🧪 Testing the App
+From `flutter analyze`:
+- **INFO**: Unnecessary import of `flutter/foundation.dart` in `today_screen.dart`
+- **INFO**: `BuildContext` used across async gap (safely guarded with `if (mounted)`)
 
-Try this user journey:
+### Platform Limitations
 
-1. **Start the app** - you'll see the Onboarding screen
-2. **Fill in your details:**
-   - Name: "Alex"
-   - Identity: "I am a person who reads daily"
-   - Habit: "Read every day"
-   - Tiny version: "Read one page before bed"
-3. **Click "Start Building Habits"** - navigates to Today screen
-4. **See your identity reminder** at the top
-5. **Notice the streak counter** (starts at 0)
-6. **Click "Mark as Complete"** - watch the streak increase to 1!
-7. **Notice the button changes** to show completion
-8. **Click Settings icon** to see the settings screen
+**Web:**
+- Local notifications show permission request but don't display (browser limitation)
+- Use Android/iOS for full notification testing
 
-## 📚 Key Concepts Used
+**iOS:**
+- Requires notification permission dialog (handled automatically)
+- Background notification delivery depends on system settings
 
-### From Atomic Habits:
-- **Identity-based habits**: "I am a person who..." vs "I want to do..."
-- **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: (Future feature) Link new habits to existing ones
-- **Visual cues**: Streak counter provides visible progress
+## 📚 Documentation
 
-### From Hook Model:
-- **Trigger**: Seeing your identity reminder and streak
-- **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Watching streak increase, seeing completion status
-- **Investment**: Building streak makes you more committed
+- [QUICK_TEST_GUIDE.md](QUICK_TEST_GUIDE.md) - 5-minute test walkthrough
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Comprehensive testing scenarios
+- [AI_SUGGESTIONS_GUIDE.md](AI_SUGGESTIONS_GUIDE.md) - AI feature documentation
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Technical implementation details
+- [ASYNC_SUGGESTIONS_UPGRADE.md](ASYNC_SUGGESTIONS_UPGRADE.md) - Remote LLM integration guide
 
-### From Fogg Behavior Model:
-- **Motivation**: Identity and visible streak
-- **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Daily reminder when you open the app
-
-## 🔮 Future Features (Not Yet Implemented)
+## 🔮 Roadmap
 
 - [ ] Multiple habits support
-- [ ] Habit history and calendar view
-- [ ] Reminders and notifications
-- [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
-- [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
+- [ ] Habit history calendar view
 - [ ] Weekly/monthly analytics
-- [ ] Backup and restore functionality
+- [ ] Habit stacking (link habits together)
+- [ ] Make it Satisfying (4th Law) - immediate rewards
+- [ ] Cloud sync (optional)
+- [ ] Social accountability features
+- [ ] Export habit data (CSV, JSON)
 
-## 🛠️ Technologies Used
+## 🛠️ Development
 
-- **Flutter 3.35.4** - UI framework
-- **Dart 3.9.2** - Programming language
-- **Provider 6.1.5+1** - State management
-- **GoRouter ^14.0.0** - Navigation
-- **Material Design 3** - UI design system
+### Run Tests
+```bash
+flutter test
+```
 
-## 📖 Learn More
+### Code Generation (for Hive models)
+```bash
+flutter pub run build_runner build
+```
 
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [GoRouter Package](https://pub.dev/packages/go_router)
-- [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
-- [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
+### Analyze Code
+```bash
+flutter analyze
+```
 
-## 💡 Tips for Non-Technical Users
+### Format Code
+```bash
+flutter format lib/
+```
 
-**What is Flutter?** Flutter is like a toolbox for building mobile apps. You write code once, and it can run on both Android and iPhone.
+## 🤝 Contributing
 
-**What is Provider?** Think of it as a smart messenger that tells your app screens when data changes, so they can update automatically.
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-**What is a Widget?** Everything you see in Flutter is a "widget" - buttons, text, screens, etc. Widgets are like LEGO blocks you stack together to build your app.
+## 📄 License
 
-**What is State?** "State" is the data that can change in your app - like your habit streak or whether you completed today's habit.
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🙏 Acknowledgments
+
+- **James Clear** - *Atomic Habits* framework
+- **Nir Eyal** - *Hook Model* principles
+- **B.J. Fogg** - *Behavior Model* insights
+- **Flutter Community** - Amazing framework and packages
+
+## 📧 Contact
+
+**Repository:** [github.com/lenghurst/atomichabits](https://github.com/lenghurst/atomichabits)
+
+**Issues:** [Report bugs or request features](https://github.com/lenghurst/atomichabits/issues)
 
 ---
 
-Built with ❤️ using Flutter | Based on science-backed behavior change principles
+**Built with ❤️ using Flutter** | **Based on science-backed behavior change principles**
+
+*"You do not rise to the level of your goals. You fall to the level of your systems."* - James Clear
