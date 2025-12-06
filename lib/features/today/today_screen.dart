@@ -782,7 +782,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -797,10 +797,18 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
             ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit habit'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.go('/edit-habit/${habit.id}');
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.tips_and_updates),
               title: const Text('Get optimization tips'),
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(sheetContext).pop();
                 _showImprovementSuggestions(appState, habit);
               },
             ),
@@ -808,7 +816,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('Delete habit', style: TextStyle(color: Colors.red)),
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(sheetContext).pop();
                 _confirmDeleteHabit(context, habit, appState);
               },
             ),
