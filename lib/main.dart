@@ -6,6 +6,9 @@ import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/bad_habit/bad_habit_screen.dart';
+import 'features/social/social_screen.dart';
+import 'features/creator/creator_mode_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -71,6 +74,18 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+              ),
+              GoRoute(
+                path: '/bad-habits',
+                builder: (context, state) => const BadHabitScreen(),
+              ),
+              GoRoute(
+                path: '/social',
+                builder: (context, state) => const SocialScreen(),
+              ),
+              GoRoute(
+                path: '/creator',
+                builder: (context, state) => const CreatorModeScreen(),
               ),
             ],
           );

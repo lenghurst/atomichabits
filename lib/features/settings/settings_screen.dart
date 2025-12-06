@@ -21,7 +21,7 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             const SizedBox(height: 16),
-            
+
             // App info section
             Card(
               child: Padding(
@@ -51,6 +51,34 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
+            // Feature Modules section
+            _buildSectionTitle(context, 'Feature Modules'),
+            _buildSettingsTile(
+              context,
+              icon: Icons.block,
+              title: 'Change / Reduce Habits',
+              subtitle: 'Manage bad habits with substitution & guardrails',
+              onTap: () => context.go('/bad-habits'),
+              iconColor: Colors.red,
+            ),
+            _buildSettingsTile(
+              context,
+              icon: Icons.people,
+              title: 'Social & Community',
+              subtitle: 'People cues and habit circles',
+              onTap: () => context.go('/social'),
+              iconColor: Colors.blue,
+            ),
+            _buildSettingsTile(
+              context,
+              icon: Icons.create,
+              title: 'Creator Mode',
+              subtitle: 'Quantity-first tracking for creative work',
+              onTap: () => context.go('/creator'),
+              iconColor: Colors.deepPurple,
+            ),
+            const Divider(),
+
             // Settings sections (placeholders)
             _buildSectionTitle(context, 'Account'),
             _buildSettingsTile(
@@ -59,14 +87,13 @@ class SettingsScreen extends StatelessWidget {
               title: 'Profile',
               subtitle: 'Edit your identity and name',
               onTap: () {
-                // TODO: Navigate to profile edit screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Coming soon!')),
                 );
               },
             ),
             const Divider(),
-            
+
             _buildSectionTitle(context, 'Habits'),
             _buildSettingsTile(
               context,
@@ -74,7 +101,6 @@ class SettingsScreen extends StatelessWidget {
               title: 'Edit Habit',
               subtitle: 'Modify your current habit',
               onTap: () {
-                // TODO: Navigate to habit edit screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Coming soon!')),
                 );
@@ -86,14 +112,13 @@ class SettingsScreen extends StatelessWidget {
               title: 'Add New Habit',
               subtitle: 'Create additional habits',
               onTap: () {
-                // TODO: Navigate to add habit screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Coming soon!')),
                 );
               },
             ),
             const Divider(),
-            
+
             _buildSectionTitle(context, 'Data'),
             _buildSettingsTile(
               context,
@@ -101,7 +126,6 @@ class SettingsScreen extends StatelessWidget {
               title: 'Habit History',
               subtitle: 'View your past completions',
               onTap: () {
-                // TODO: Navigate to history screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Coming soon!')),
                 );
@@ -113,14 +137,13 @@ class SettingsScreen extends StatelessWidget {
               title: 'Backup & Restore',
               subtitle: 'Save your data',
               onTap: () {
-                // TODO: Implement backup
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Coming soon!')),
                 );
               },
             ),
             const Divider(),
-            
+
             _buildSectionTitle(context, 'About'),
             _buildSettingsTile(
               context,
@@ -177,9 +200,10 @@ class SettingsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
     return ListTile(
-      leading: Icon(icon),
+      leading: Icon(icon, color: iconColor),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),

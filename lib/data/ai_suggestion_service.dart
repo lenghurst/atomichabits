@@ -3,14 +3,22 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
+import 'models/habit.dart';
+
 /// AI-powered suggestion service for Atomic Habits principles
-/// 
+///
 /// This service provides contextual suggestions with:
 /// - Remote LLM integration (with fallback to local heuristics)
 /// - Temptation bundling (pairing habits with enjoyable activities)
 /// - Pre-habit rituals (mental preparation before action)
 /// - Environment cues (visual triggers to start habits)
 /// - Environment distractions (friction to remove)
+///
+/// BAD HABIT SUPPORT (Change / Reduce Habit Toolkit):
+/// - Substitution suggestions (swap bad behavior for healthier alternative)
+/// - Cue firewall suggestions (avoid/weaken triggers)
+/// - Bright-line rule suggestions ("I don't..." rules)
+/// - Friction/guardrail suggestions (add steps to bad habits)
 ///
 /// ARCHITECTURE:
 /// 1. Tries to fetch suggestions from remote LLM endpoint (with 5s timeout)
@@ -666,6 +674,603 @@ class AiSuggestionService {
       'Put your phone on airplane mode or in another room',
       'Close all apps and browser tabs not related to your habit',
       'Remove or hide any items that tempt you away from this habit',
+    ];
+  }
+
+  // ========== BAD HABIT SUGGESTIONS (Change / Reduce Habit Toolkit) ==========
+
+  /// Returns 3 substitution behavior suggestions for bad habits
+  ///
+  /// Substitution: Replace the bad habit with a healthier behavior
+  /// that meets the same underlying need.
+  Future<List<String>> getSubstitutionSuggestions({
+    required String badHabitName,
+    String? underlyingNeed,
+    String? currentTriggers,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchBadHabitSuggestions(
+        suggestionType: 'substitution',
+        badHabitName: badHabitName,
+        underlyingNeed: underlyingNeed,
+        currentTriggers: currentTriggers,
+      );
+
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('Using remote LLM suggestions for substitution');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Remote LLM failed for substitution: $e');
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('Using local fallback for substitution');
+    }
+    return _localSubstitutionSuggestions(
+      badHabitName: badHabitName,
+      underlyingNeed: underlyingNeed,
+    );
+  }
+
+  /// Returns 3 cue firewall suggestions for bad habits
+  ///
+  /// Cue Firewall: Strategies to avoid or weaken triggers (Vietnam study concept)
+  Future<List<String>> getCueFirewallSuggestions({
+    required String badHabitName,
+    CueType? cueType,
+    String? specificTrigger,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchBadHabitSuggestions(
+        suggestionType: 'cue_firewall',
+        badHabitName: badHabitName,
+        cueType: cueType?.name,
+        specificTrigger: specificTrigger,
+      );
+
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('Using remote LLM suggestions for cue firewall');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Remote LLM failed for cue firewall: $e');
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('Using local fallback for cue firewall');
+    }
+    return _localCueFirewallSuggestions(
+      badHabitName: badHabitName,
+      cueType: cueType,
+      specificTrigger: specificTrigger,
+    );
+  }
+
+  /// Returns 3 bright-line rule suggestions for bad habits
+  ///
+  /// Bright-line rules: Crisp "I don't..." rules with progressive extremism
+  Future<List<String>> getBrightLineRuleSuggestions({
+    required String badHabitName,
+    RuleIntensity? desiredIntensity,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchBadHabitSuggestions(
+        suggestionType: 'bright_line_rule',
+        badHabitName: badHabitName,
+        intensity: desiredIntensity?.name,
+      );
+
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('Using remote LLM suggestions for bright-line rules');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Remote LLM failed for bright-line rules: $e');
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('Using local fallback for bright-line rules');
+    }
+    return _localBrightLineRuleSuggestions(
+      badHabitName: badHabitName,
+      desiredIntensity: desiredIntensity,
+    );
+  }
+
+  /// Returns 3 friction/guardrail suggestions for bad habits
+  ///
+  /// Friction: Add steps between cue and bad behavior (checkout line pattern)
+  Future<List<String>> getFrictionSuggestions({
+    required String badHabitName,
+    String? currentLocation,
+  }) async {
+    try {
+      final remoteSuggestions = await _fetchBadHabitSuggestions(
+        suggestionType: 'friction',
+        badHabitName: badHabitName,
+        location: currentLocation,
+      );
+
+      if (remoteSuggestions.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('Using remote LLM suggestions for friction');
+        }
+        return remoteSuggestions;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Remote LLM failed for friction: $e');
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('Using local fallback for friction');
+    }
+    return _localFrictionSuggestions(
+      badHabitName: badHabitName,
+      currentLocation: currentLocation,
+    );
+  }
+
+  /// Fetch bad habit suggestions from remote LLM
+  Future<List<String>> _fetchBadHabitSuggestions({
+    required String suggestionType,
+    required String badHabitName,
+    String? underlyingNeed,
+    String? currentTriggers,
+    String? cueType,
+    String? specificTrigger,
+    String? intensity,
+    String? location,
+  }) async {
+    try {
+      final payload = {
+        'suggestion_type': suggestionType,
+        'bad_habit_name': badHabitName,
+        'underlying_need': underlyingNeed,
+        'current_triggers': currentTriggers,
+        'cue_type': cueType,
+        'specific_trigger': specificTrigger,
+        'intensity': intensity,
+        'location': location,
+      };
+
+      if (kDebugMode) {
+        debugPrint('Attempting remote LLM call for bad habit $suggestionType...');
+      }
+
+      final response = await http.post(
+        Uri.parse(_remoteLlmEndpoint),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      ).timeout(_remoteTimeout);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        if (data.containsKey('suggestions') && data['suggestions'] is List) {
+          final suggestions = (data['suggestions'] as List)
+              .map((item) => item.toString())
+              .toList();
+          if (suggestions.length >= 3) {
+            return suggestions.take(3).toList();
+          }
+        }
+      }
+      return [];
+    } on TimeoutException {
+      if (kDebugMode) {
+        debugPrint('Remote LLM timeout for bad habit suggestions');
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Remote LLM error for bad habit suggestions: $e');
+      }
+      return [];
+    }
+  }
+
+  // ========== LOCAL BAD HABIT SUGGESTION FALLBACKS ==========
+
+  /// Local substitution suggestions based on common bad habits
+  List<String> _localSubstitutionSuggestions({
+    required String badHabitName,
+    String? underlyingNeed,
+  }) {
+    final habitLower = badHabitName.toLowerCase();
+    final needLower = underlyingNeed?.toLowerCase() ?? '';
+
+    // Alcohol-related habits
+    if (habitLower.contains('drink') || habitLower.contains('alcohol') ||
+        habitLower.contains('beer') || habitLower.contains('wine')) {
+      return [
+        'Drink sparkling water with lime instead',
+        'Try a mocktail or non-alcoholic beer',
+        'Have herbal tea or kombucha for the ritual feeling',
+      ];
+    }
+
+    // Smoking habits
+    if (habitLower.contains('smok') || habitLower.contains('cigarette') ||
+        habitLower.contains('vape')) {
+      return [
+        'Chew gum or use a toothpick when cravings hit',
+        'Take 5 deep breaths instead of a smoke break',
+        'Go for a short walk around the block',
+      ];
+    }
+
+    // Social media / phone scrolling
+    if (habitLower.contains('scroll') || habitLower.contains('social media') ||
+        habitLower.contains('phone') || habitLower.contains('instagram') ||
+        habitLower.contains('tiktok') || habitLower.contains('twitter')) {
+      return [
+        'Read a physical book or magazine instead',
+        'Do a quick stretch or breathing exercise',
+        'Write in a notebook or journal',
+      ];
+    }
+
+    // Junk food / snacking
+    if (habitLower.contains('snack') || habitLower.contains('junk') ||
+        habitLower.contains('candy') || habitLower.contains('chips') ||
+        habitLower.contains('sugar')) {
+      return [
+        'Eat fruit, nuts, or dark chocolate instead',
+        'Drink a glass of water first (often thirst is mistaken for hunger)',
+        'Chew gum or brush your teeth to reset your palate',
+      ];
+    }
+
+    // Procrastination
+    if (habitLower.contains('procrastin') || habitLower.contains('delay') ||
+        habitLower.contains('avoid')) {
+      return [
+        'Do just 2 minutes of the task you\'re avoiding',
+        'Work on a different task from your list',
+        'Write down what you\'re avoiding and why',
+      ];
+    }
+
+    // Nail biting / nervous habits
+    if (habitLower.contains('nail') || habitLower.contains('biting') ||
+        habitLower.contains('pick')) {
+      return [
+        'Keep a stress ball or fidget toy nearby',
+        'Apply bitter nail polish as a reminder',
+        'Take deep breaths and notice the urge without acting',
+      ];
+    }
+
+    // Need-based suggestions
+    if (needLower.contains('stress') || needLower.contains('relax')) {
+      return [
+        'Try deep breathing or a 5-minute meditation',
+        'Go for a walk or do light stretching',
+        'Listen to calming music or nature sounds',
+      ];
+    }
+
+    if (needLower.contains('bored') || needLower.contains('stimulat')) {
+      return [
+        'Learn something new (watch an educational video)',
+        'Call or text a friend',
+        'Do a quick creative activity (doodle, write, play music)',
+      ];
+    }
+
+    if (needLower.contains('social') || needLower.contains('connect')) {
+      return [
+        'Call or video chat with a friend instead',
+        'Join an online community around a positive interest',
+        'Write a message to someone you haven\'t talked to in a while',
+      ];
+    }
+
+    // Generic fallback
+    return [
+      'Replace the habit with a 5-minute walk',
+      'Do 10 deep breaths when you feel the urge',
+      'Drink a glass of water and wait 10 minutes',
+    ];
+  }
+
+  /// Local cue firewall suggestions based on cue type
+  List<String> _localCueFirewallSuggestions({
+    required String badHabitName,
+    CueType? cueType,
+    String? specificTrigger,
+  }) {
+    // Suggestions based on cue type
+    switch (cueType) {
+      case CueType.time:
+        return [
+          'Schedule a different activity during that time',
+          'Change your routine to avoid that trigger time',
+          'Set an alarm to remind you of your alternative behavior',
+        ];
+      case CueType.place:
+        return [
+          'Avoid that location when possible',
+          'Change the layout or use of that space',
+          'Create a new association with that place (do something positive there)',
+        ];
+      case CueType.people:
+        return [
+          'Suggest alternative activities when with these people',
+          'Limit time with people who trigger the habit',
+          'Be upfront about your goals with supportive friends',
+        ];
+      case CueType.emotion:
+        return [
+          'Identify the emotion before acting on it',
+          'Have a pre-planned response for that emotional state',
+          'Practice recognizing the feeling without reacting',
+        ];
+      case CueType.action:
+        return [
+          'Break the chain by adding a pause after the action',
+          'Replace what follows that action with something positive',
+          'Change the sequence of your routine',
+        ];
+      default:
+        break;
+    }
+
+    // Habit-specific suggestions
+    final habitLower = badHabitName.toLowerCase();
+
+    if (habitLower.contains('drink') || habitLower.contains('alcohol')) {
+      return [
+        'Avoid walking past bars or liquor stores',
+        'Don\'t keep alcohol at home',
+        'Plan alcohol-free activities with friends',
+      ];
+    }
+
+    if (habitLower.contains('scroll') || habitLower.contains('phone')) {
+      return [
+        'Remove social media apps from your phone',
+        'Charge your phone in another room',
+        'Use app blockers during vulnerable times',
+      ];
+    }
+
+    if (habitLower.contains('snack') || habitLower.contains('junk')) {
+      return [
+        'Don\'t buy junk food (if it\'s not there, you can\'t eat it)',
+        'Store snacks out of sight in hard-to-reach places',
+        'Avoid the snack aisle when grocery shopping',
+      ];
+    }
+
+    // Generic fallback
+    return [
+      'Identify your top 3 triggers and write them down',
+      'Remove or hide items associated with the habit',
+      'Change your environment to break the pattern',
+    ];
+  }
+
+  /// Local bright-line rule suggestions based on intensity
+  List<String> _localBrightLineRuleSuggestions({
+    required String badHabitName,
+    RuleIntensity? desiredIntensity,
+  }) {
+    final habitLower = badHabitName.toLowerCase();
+
+    // Alcohol rules
+    if (habitLower.contains('drink') || habitLower.contains('alcohol')) {
+      switch (desiredIntensity) {
+        case RuleIntensity.gentle:
+          return [
+            'I don\'t drink more than 2 drinks in one sitting',
+            'I don\'t drink alone at home',
+            'I don\'t drink before 6 PM',
+          ];
+        case RuleIntensity.moderate:
+          return [
+            'I don\'t drink on weekdays',
+            'I don\'t drink at home',
+            'I don\'t drink more than once a week',
+          ];
+        case RuleIntensity.strict:
+          return [
+            'I don\'t drink unless it\'s a special occasion',
+            'I don\'t keep alcohol in my house',
+            'I don\'t drink in any situation where I\'m stressed',
+          ];
+        case RuleIntensity.absolute:
+          return [
+            'I don\'t drink alcohol, period',
+            'I am someone who doesn\'t drink',
+            'I never drink, no matter the occasion',
+          ];
+        default:
+          break;
+      }
+    }
+
+    // Social media / phone rules
+    if (habitLower.contains('scroll') || habitLower.contains('phone') ||
+        habitLower.contains('social media')) {
+      switch (desiredIntensity) {
+        case RuleIntensity.gentle:
+          return [
+            'I don\'t check social media before breakfast',
+            'I don\'t scroll for more than 15 minutes at a time',
+            'I don\'t use my phone in bed',
+          ];
+        case RuleIntensity.moderate:
+          return [
+            'I don\'t check social media before noon',
+            'I don\'t use my phone during meals',
+            'I don\'t scroll after 9 PM',
+          ];
+        case RuleIntensity.strict:
+          return [
+            'I don\'t have social media apps on my phone',
+            'I only check social media on my computer, once per day',
+            'I don\'t touch my phone for the first hour after waking',
+          ];
+        case RuleIntensity.absolute:
+          return [
+            'I don\'t use social media',
+            'I am someone who doesn\'t scroll',
+            'I never check social media',
+          ];
+        default:
+          break;
+      }
+    }
+
+    // Junk food rules
+    if (habitLower.contains('snack') || habitLower.contains('junk') ||
+        habitLower.contains('sugar')) {
+      switch (desiredIntensity) {
+        case RuleIntensity.gentle:
+          return [
+            'I don\'t eat junk food before lunch',
+            'I don\'t eat snacks while watching TV',
+            'I don\'t buy candy at checkout',
+          ];
+        case RuleIntensity.moderate:
+          return [
+            'I don\'t eat junk food on weekdays',
+            'I don\'t keep junk food at home',
+            'I don\'t eat sugar after 6 PM',
+          ];
+        case RuleIntensity.strict:
+          return [
+            'I don\'t buy junk food, ever',
+            'I don\'t eat processed snacks',
+            'I only eat whole foods',
+          ];
+        case RuleIntensity.absolute:
+          return [
+            'I don\'t eat junk food, period',
+            'I am someone who doesn\'t eat processed food',
+            'I never eat sugar',
+          ];
+        default:
+          break;
+      }
+    }
+
+    // Generic rules based on intensity
+    switch (desiredIntensity) {
+      case RuleIntensity.gentle:
+        return [
+          'I don\'t do this habit before noon',
+          'I don\'t do this habit more than once a day',
+          'I don\'t do this habit when I\'m stressed',
+        ];
+      case RuleIntensity.moderate:
+        return [
+          'I don\'t do this habit on weekdays',
+          'I don\'t do this habit alone',
+          'I don\'t do this habit at home',
+        ];
+      case RuleIntensity.strict:
+        return [
+          'I only do this habit once a week maximum',
+          'I don\'t do this habit unless planned in advance',
+          'I don\'t do this habit in my usual environment',
+        ];
+      case RuleIntensity.absolute:
+        return [
+          'I don\'t do this habit, period',
+          'I am someone who doesn\'t do this',
+          'I never engage in this behavior',
+        ];
+      default:
+        return [
+          'I don\'t do this habit on weekdays',
+          'I don\'t do this habit when I\'m alone',
+          'I don\'t do this habit after 8 PM',
+        ];
+    }
+  }
+
+  /// Local friction suggestions (impulse guardrails)
+  List<String> _localFrictionSuggestions({
+    required String badHabitName,
+    String? currentLocation,
+  }) {
+    final habitLower = badHabitName.toLowerCase();
+    final locationLower = currentLocation?.toLowerCase() ?? '';
+
+    // Alcohol friction
+    if (habitLower.contains('drink') || habitLower.contains('alcohol')) {
+      return [
+        'Don\'t keep alcohol at home - you\'ll have to go out to get it',
+        'Keep alcohol locked away or in an inconvenient place',
+        'Wait 10 minutes before having a drink (the urge often passes)',
+      ];
+    }
+
+    // Phone / social media friction
+    if (habitLower.contains('scroll') || habitLower.contains('phone')) {
+      return [
+        'Delete apps from your phone (use browser only - adds friction)',
+        'Log out after each use so you have to log in again',
+        'Put your phone in another room when at home',
+      ];
+    }
+
+    // Snacking friction
+    if (habitLower.contains('snack') || habitLower.contains('junk')) {
+      return [
+        'Keep snacks in a hard-to-reach cabinet or the garage',
+        'Don\'t buy snacks when grocery shopping',
+        'Require yourself to eat at a table, not while doing other things',
+      ];
+    }
+
+    // Smoking friction
+    if (habitLower.contains('smok') || habitLower.contains('cigarette')) {
+      return [
+        'Don\'t carry cigarettes on you - keep them locked away',
+        'Require yourself to go outside and walk to smoke',
+        'Wait 5 minutes before lighting up (the urge may pass)',
+      ];
+    }
+
+    // Location-based friction
+    if (locationLower.contains('home')) {
+      return [
+        'Store items for this habit in the garage or basement',
+        'Add a physical lock or barrier to access',
+        'Put a sticky note asking "Do you really need this?" on the item',
+      ];
+    }
+
+    if (locationLower.contains('work') || locationLower.contains('office')) {
+      return [
+        'Leave items at home that trigger this habit',
+        'Use website blockers during work hours',
+        'Keep your workspace clear of temptation',
+      ];
+    }
+
+    // Generic friction suggestions
+    return [
+      'Add steps between the cue and the behavior',
+      'Make the habit physically harder to do (hide, lock, relocate)',
+      'Require a waiting period before engaging in the habit',
     ];
   }
 
