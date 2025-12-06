@@ -1,7 +1,12 @@
 # Quick Test Guide - AI Suggestions
 
-## 🌐 Live Preview
-**URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
+## 🚀 Getting Started
+
+**Run the app locally:**
+```bash
+flutter run -d chrome  # For web
+flutter run            # For connected mobile device
+```
 
 ---
 

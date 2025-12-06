@@ -1,17 +1,29 @@
 # Testing Guide: "Make it Attractive" Features
 
 ## Overview
-This guide shows you how to test the new Atomic Habits features implemented in v1.1:
+This guide shows you how to test the Atomic Habits features:
 - **Temptation bundling** (pair your habit with something you enjoy)
 - **Pre-habit rituals** (prepare mentally before your habit)
 - **Environment design** (cues and distraction guardrails)
+- **AI-powered suggestions** (get contextual ideas for each element)
 
 All features are **optional** and **backward compatible** with existing habit data.
 
 ---
 
-## 🔗 Live Preview
-**Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
+## 🚀 Running the App
+
+**Local development:**
+```bash
+# Web (easiest for testing)
+flutter run -d chrome
+
+# Android device/emulator
+flutter run -d android
+
+# iOS simulator (macOS only)
+flutter run -d ios
+```
 
 ---
 
