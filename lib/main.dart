@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/onboarding/ai_onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/bad_habit/bad_habit_screen.dart';
@@ -86,6 +87,10 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/creator',
                 builder: (context, state) => const CreatorModeScreen(),
+              ),
+              GoRoute(
+                path: '/ai-onboarding',
+                builder: (context, state) => const AiOnboardingScreen(),
               ),
             ],
           );

@@ -51,6 +51,18 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
+            // AI Coach section
+            _buildSectionTitle(context, 'AI Habit Coach'),
+            _buildSettingsTile(
+              context,
+              icon: Icons.psychology,
+              title: 'Create Habit with AI',
+              subtitle: 'Conversational onboarding powered by Gemini',
+              onTap: () => context.go('/ai-onboarding'),
+              iconColor: Colors.teal,
+            ),
+            const Divider(),
+
             // Feature Modules section
             _buildSectionTitle(context, 'Feature Modules'),
             _buildSettingsTile(
@@ -110,12 +122,9 @@ class SettingsScreen extends StatelessWidget {
               context,
               icon: Icons.add_circle,
               title: 'Add New Habit',
-              subtitle: 'Create additional habits',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Coming soon!')),
-                );
-              },
+              subtitle: 'Create additional habits with AI coach',
+              onTap: () => context.go('/ai-onboarding'),
+              iconColor: Colors.green,
             ),
             const Divider(),
 

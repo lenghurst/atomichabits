@@ -19,13 +19,21 @@ lib/
 │   ├── ai_suggestion_service.dart  # AI suggestions (remote LLM + local fallback)
 │   ├── notification_service.dart   # Daily habit reminders
 │   └── models/
-│       ├── habit.dart          # Habit data model (good & bad habits)
-│       ├── user_profile.dart   # User profile/identity model
-│       ├── habit_circle.dart   # Social layer: habit circles & members
-│       └── creator_session.dart # Creator mode: sessions & summaries
+│       ├── habit.dart           # Habit data model (good & bad habits)
+│       ├── user_profile.dart    # User profile/identity model
+│       ├── habit_circle.dart    # Social layer: habit circles & members
+│       ├── creator_session.dart # Creator mode: sessions & summaries
+│       ├── chat_message.dart    # Chat message model for AI conversations
+│       └── chat_conversation.dart # Conversation history & persistence
+│   └── services/
+│       └── gemini_chat_service.dart  # Conversational AI (Gemini 2.5 Flash)
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart  # Collects identity & first habit
+│   │   ├── onboarding_screen.dart    # Form-based onboarding
+│   │   ├── ai_onboarding_screen.dart # AI conversational onboarding
+│   │   └── widgets/
+│   │       ├── chat_bubble.dart      # Chat message UI
+│   │       └── voice_input_button.dart # Speech-to-text input
 │   ├── today/
 │   │   └── today_screen.dart       # Shows today's habit & streak
 │   ├── settings/
@@ -131,10 +139,36 @@ context.go('/');
 - **Session learnings** - Track insights from each creative session
 - **Weekly summaries** - Volume + learnings, not "was it good?"
 
+### ✅ Conversational AI Coach (Gemini 2.5 Flash)
+- **AI-powered onboarding** - Natural conversation to create habits
+- **Atomic Habits expert** - Trained on identity, 2-minute rule, implementation intentions
+- **Constructive critique** - Challenges vague or too-ambitious goals
+- **Streaming responses** - Real-time typing effect for natural feel
+- **Voice input** - Speech-to-text for hands-free interaction
+- **Conversation persistence** - 60-day history for continuity
+- **Context-aware** - References user's existing habits and progress
+
 ### ✅ Notifications & Reminders
 - **Daily habit reminders** - At your scheduled time
 - **Action buttons** - Mark Done or Snooze from notification
 - **Temptation bundle included** - Reminder shows your paired reward
+
+## ⚙️ Configuration
+
+### Gemini AI Setup (for Conversational AI Coach)
+
+To enable the AI-powered conversational onboarding, you need a Gemini API key:
+
+1. **Get a free API key** at [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+2. **Add your key** to `lib/data/services/gemini_chat_service.dart`:
+   ```dart
+   static const String _defaultApiKey = 'YOUR_GEMINI_API_KEY';
+   ```
+
+3. **For production**, use environment variables or secure storage instead of hardcoding.
+
+> **Note:** The app works without an API key, but the AI coach will show a configuration message. All other features remain fully functional.
 
 ## 🚀 How to Run the App
 

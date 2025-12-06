@@ -58,6 +58,15 @@ dependencies:
   # HTTP client for remote LLM suggestions
   http: 1.5.0
 
+  # Gemini AI for conversational features
+  google_generative_ai: ^0.4.6
+
+  # Speech-to-text for voice input
+  speech_to_text: ^7.0.0
+
+  # Connectivity checking for online status
+  connectivity_plus: ^6.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
