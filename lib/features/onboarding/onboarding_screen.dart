@@ -136,7 +136,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
+      // Add small delay to prevent dialog from closing immediately (web platform issue)
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // Show suggestions dialog
       if (mounted) {
         showDialog(
@@ -212,7 +215,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
       
       if (mounted) Navigator.of(context).pop();
-      
+
+      // Add small delay to prevent dialog from closing immediately (web platform issue)
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (mounted) {
         showDialog(
           context: context,
@@ -282,7 +288,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
       
       if (mounted) Navigator.of(context).pop();
-      
+
+      // Add small delay to prevent dialog from closing immediately (web platform issue)
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (mounted) {
         showDialog(
           context: context,
@@ -352,7 +361,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
       
       if (mounted) Navigator.of(context).pop();
-      
+
+      // Add small delay to prevent dialog from closing immediately (web platform issue)
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (mounted) {
         showDialog(
           context: context,
