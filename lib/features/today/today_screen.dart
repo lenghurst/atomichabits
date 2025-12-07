@@ -797,6 +797,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
             ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('View history'),
+              subtitle: Text(
+                '${habit.currentStreak} day streak',
+                style: TextStyle(
+                  color: habit.currentStreak > 0
+                      ? Colors.orange
+                      : Colors.grey,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.go('/history/${habit.id}');
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.edit),
               title: const Text('Edit habit'),
               onTap: () {

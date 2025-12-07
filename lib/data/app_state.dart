@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'models/completion_record.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 
@@ -274,7 +275,13 @@ class AppState extends ChangeNotifier {
 
   /// Marks a specific habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
-  Future<bool> completeHabitForToday({String? habitId, bool fromNotification = false}) async {
+  /// Optionally accepts a note and mood for the completion record
+  Future<bool> completeHabitForToday({
+    String? habitId,
+    bool fromNotification = false,
+    String? note,
+    int? mood,
+  }) async {
     // Use provided habitId or fall back to selected habit
     final targetId = habitId ?? _selectedHabitId;
     if (targetId == null) return false;
@@ -329,9 +336,30 @@ class AppState extends ChangeNotifier {
       newStreak = 1;
     }
 
+    // Create completion record for history
+    final completionRecord = CompletionRecord(
+      date: today,
+      completed: true,
+      note: note,
+      mood: mood,
+    );
+
+    // Update completion history (remove existing record for today if any)
+    final updatedHistory = habit.completionHistory
+        .where((r) => CompletionRecord.normalizeDate(r.date) != today)
+        .toList()
+      ..add(completionRecord);
+
+    // Update longest streak if needed
+    final newLongestStreak = newStreak > habit.longestStreak
+        ? newStreak
+        : habit.longestStreak;
+
     _habits[index] = habit.copyWith(
       currentStreak: newStreak,
+      longestStreak: newLongestStreak,
       lastCompletedDate: now,
+      completionHistory: updatedHistory,
     );
 
     await _saveToStorage(); // Persist the updated streak
@@ -673,5 +701,124 @@ class AppState extends ChangeNotifier {
   int get longestCurrentStreak {
     if (_habits.isEmpty) return 0;
     return _habits.map((h) => h.currentStreak).reduce((a, b) => a > b ? a : b);
+  }
+
+  // ========== Completion History Methods ==========
+
+  /// Record a missed day for a habit (for "What got in the way?" feature)
+  /// This is called when user acknowledges they missed a day
+  Future<void> recordMissedDay({
+    required String habitId,
+    required DateTime date,
+    String? obstacle,
+    int? mood,
+  }) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index < 0) return;
+
+    final habit = _habits[index];
+    final normalizedDate = CompletionRecord.normalizeDate(date);
+
+    // Create missed day record
+    final missedRecord = CompletionRecord(
+      date: normalizedDate,
+      completed: false,
+      obstacle: obstacle,
+      mood: mood,
+    );
+
+    // Update completion history (remove existing record for this date if any)
+    final updatedHistory = habit.completionHistory
+        .where((r) => CompletionRecord.normalizeDate(r.date) != normalizedDate)
+        .toList()
+      ..add(missedRecord);
+
+    _habits[index] = habit.copyWith(
+      completionHistory: updatedHistory,
+    );
+
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('📝 Recorded missed day for "${habit.name}" on $normalizedDate: $obstacle');
+    }
+  }
+
+  /// Update an existing completion record (add note, mood, or obstacle)
+  Future<void> updateCompletionRecord({
+    required String habitId,
+    required DateTime date,
+    String? note,
+    String? obstacle,
+    int? mood,
+  }) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index < 0) return;
+
+    final habit = _habits[index];
+    final normalizedDate = CompletionRecord.normalizeDate(date);
+
+    // Find existing record
+    final existingRecord = habit.getRecordForDate(date);
+    if (existingRecord == null) return;
+
+    // Create updated record
+    final updatedRecord = existingRecord.copyWith(
+      note: note ?? existingRecord.note,
+      obstacle: obstacle ?? existingRecord.obstacle,
+      mood: mood ?? existingRecord.mood,
+    );
+
+    // Update completion history
+    final updatedHistory = habit.completionHistory
+        .where((r) => CompletionRecord.normalizeDate(r.date) != normalizedDate)
+        .toList()
+      ..add(updatedRecord);
+
+    _habits[index] = habit.copyWith(
+      completionHistory: updatedHistory,
+    );
+
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('📝 Updated record for "${habit.name}" on $normalizedDate');
+    }
+  }
+
+  /// Get completion record for a habit on a specific date
+  CompletionRecord? getCompletionRecord(String habitId, DateTime date) {
+    final habit = getHabitById(habitId);
+    return habit?.getRecordForDate(date);
+  }
+
+  /// Check if there are any missed days that haven't been reflected on
+  /// Returns list of dates that need "What got in the way?" prompts
+  List<DateTime> getUnreflectedMissedDays(String habitId) {
+    final habit = getHabitById(habitId);
+    if (habit == null) return [];
+
+    final now = DateTime.now();
+    final today = CompletionRecord.normalizeDate(now);
+    final createdDate = CompletionRecord.normalizeDate(habit.createdAt);
+
+    final unreflectedDays = <DateTime>[];
+
+    // Check last 7 days (don't go too far back)
+    for (int i = 1; i <= 7; i++) {
+      final checkDate = today.subtract(Duration(days: i));
+
+      // Don't check before habit was created
+      if (checkDate.isBefore(createdDate)) break;
+
+      // If no record exists for this date, it's a potential missed day
+      if (!habit.hasRecordFor(checkDate)) {
+        unreflectedDays.add(checkDate);
+      }
+    }
+
+    return unreflectedDays;
   }
 }

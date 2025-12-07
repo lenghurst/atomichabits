@@ -115,10 +115,17 @@ class SettingsScreen extends StatelessWidget {
                   title: 'Habit History',
                   subtitle: 'View your past completions',
                   onTap: () {
-                    // TODO: Navigate to history screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!')),
-                    );
+                    // Navigate to history for the selected/first habit
+                    final appState = context.read<AppState>();
+                    final habitId = appState.selectedHabitId ??
+                        (appState.habits.isNotEmpty ? appState.habits.first.id : null);
+                    if (habitId != null) {
+                      context.go('/history/$habitId');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No habits to view history for')),
+                      );
+                    }
                   },
                 ),
                 _buildSettingsTile(
