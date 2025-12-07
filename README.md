@@ -5,221 +5,360 @@ A Flutter mobile habit-tracking app based on:
 - **Nir Eyal's Hook Model** (Trigger → Action → Variable Reward → Investment)
 - **B.J. Fogg's Behavior Model** (Behavior = Motivation × Ability × Prompt)
 
-## 🎯 Project Overview
+## Project Overview
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with navigation setup
+├── main.dart                              # App entry point with navigation setup
 ├── data/
-│   ├── app_state.dart          # Central state management (Provider)
-│   ├── models/
-│   │   ├── habit.dart          # Habit data model
-│   │   └── user_profile.dart   # User profile/identity model
-│   └── repositories/           # (Future: data persistence layer)
+│   ├── app_state.dart                     # Central state management (Provider + Hive persistence)
+│   ├── notification_service.dart          # Push notification service (Android/iOS)
+│   ├── ai_suggestion_service.dart         # AI suggestions (remote LLM + local fallback)
+│   └── models/
+│       ├── habit.dart                     # Habit data model with implementation intentions
+│       └── user_profile.dart              # User profile with identity + contact info
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart  # Collects identity & first habit
+│   │   └── onboarding_screen.dart         # 4-step onboarding with habit creation
 │   ├── today/
-│   │   └── today_screen.dart       # Shows today's habit & streak
+│   │   └── today_screen.dart              # Today's habit view with completion flow
 │   └── settings/
-│       └── settings_screen.dart    # Settings & app info
+│       └── settings_screen.dart           # Notification settings + preferences
 └── widgets/
-    └── common/                 # (Future: reusable UI components)
+    ├── reward_investment_dialog.dart      # Confetti celebration + reminder time picker
+    ├── pre_habit_ritual_dialog.dart       # Pre-habit ritual countdown timer
+    └── suggestion_dialog.dart             # AI suggestion selection UI
 ```
 
-## 🏗️ Architecture Explained (In Plain English)
+## Features Implemented
 
-### State Management: Provider
+### Onboarding (Identity-Based Habit Creation)
+- Collects user's name and desired identity ("I am a person who...")
+- Creates first habit with 2-minute rule (tiny version)
+- Implementation intentions: When (time) and Where (location)
+- **Make it Attractive** options:
+  - Temptation bundling (pair habit with enjoyable activity)
+  - Pre-habit ritual (mental preparation before action)
+- **Make it Obvious** options:
+  - Environment cue (visual trigger)
+  - Environment distraction removal (friction for bad habits)
+- AI-powered suggestions for all fields (with "Get Ideas" buttons)
+- Notification permission request at completion
 
-**What it does:** Provider is like a "data warehouse" for your app. It stores information (like your habits and streak) in one central place, and automatically updates the screens when that data changes.
+### Today Screen (Hook Model Implementation)
+- Personalized greeting with identity reminder
+- Today's habit card with:
+  - Tiny version display
+  - Implementation intention (time + location)
+  - Temptation bundle display (if set)
+- Streak counter with fire icon
+- **Pre-habit ritual flow**: Shows ritual dialog with 30-second countdown before completion
+- **Reward flow** (after completion):
+  - Confetti animation celebration
+  - Streak count display
+  - Identity reinforcement ("You've cast a vote for...")
+- **Investment flow**: Time picker to set tomorrow's reminder
 
-**How it works:**
-1. **AppState** (`data/app_state.dart`) is the "warehouse" that holds all your app's data
-2. **Provider** wraps the entire app (see `main.dart`) and makes this data available everywhere
-3. **Consumer** widgets "subscribe" to changes - when data updates, they automatically rebuild
+### Push Notifications (Make it Obvious - Law 1)
+- **Android Support**:
+  - Permissions: `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `VIBRATE`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`
+  - Boot receiver for notification persistence after device restart
+  - Action buttons: "Mark Done" and "Snooze 30 mins"
+- **iOS Support**:
+  - Background modes configured
+  - Notification categories with action buttons
+  - UNUserNotificationCenter delegate setup
+- **Features**:
+  - Dynamic timezone detection (not hardcoded UTC)
+  - Daily scheduled reminders at user-chosen time
+  - Snooze functionality (reschedules 30 minutes later)
+  - Test notification button in Settings
+  - Permission request flow with educational messaging
 
-**Example flow:**
-- User completes a habit → `completeHabitForToday()` is called
-- AppState updates the streak and calls `notifyListeners()`
-- The TodayScreen automatically rebuilds with the new streak number
+### Alternative Reminders (Email/SMS) - UI Ready, Backend Pending
+- Email address input with validation
+- Phone number input with validation
+- Enable/disable toggles for each channel
+- Preferences persisted locally in Hive
+- "Coming Soon" badge (premium feature ready)
 
-**Why Provider?** It's beginner-friendly, widely used, and has excellent documentation. No complex setup required!
+### AI Suggestion System
+- **Architecture**: Remote LLM (5-second timeout) → Local fallback
+- **Suggestion Types**:
+  - Temptation bundling ideas
+  - Pre-habit ritual suggestions
+  - Environment cue recommendations
+  - Environment distraction removal tips
+- **Local Fallback**: Context-aware heuristics based on:
+  - Habit type (reading, exercise, meditation, etc.)
+  - Time of day (morning, afternoon, evening, night)
+  - Location (bedroom, desk, kitchen, etc.)
+
+### Settings Screen
+- **Notification Settings**:
+  - Enable/disable daily reminders toggle
+  - Permission status with "Grant" button
+  - Reminder time picker
+  - Test notification button
+- **Alternative Reminders**:
+  - Email input and toggle
+  - SMS input and toggle
+- Placeholder sections for future features
+
+### Data Persistence (Hive)
+- User profile (name, identity, email, phone)
+- Habit data (name, streak, completion dates, all settings)
+- Onboarding completion status
+- Notification preferences
+- Survives app restarts and updates
+
+## Architecture
+
+### State Management: Provider + Hive
+- **AppState** (`data/app_state.dart`): Central state with 450+ lines managing:
+  - User profile and habits
+  - Notification scheduling and preferences
+  - Reward/investment flow state
+  - AI suggestion fetching
+- **Hive**: Local NoSQL database for persistence
+- **Provider**: Reactive UI updates via `notifyListeners()`
 
 ### Navigation: GoRouter
-
-**What it does:** GoRouter handles moving between different screens in your app using simple paths (like websites).
-
-**How it works:**
-- Routes are defined in `main.dart` with paths like `/`, `/today`, `/settings`
-- Use `context.go('/today')` to navigate to a screen
-- The router knows to start at onboarding (`/`) if not completed, otherwise start at Today screen
-
-**Example:**
-```dart
-// Navigate to Today screen
-context.go('/today');
-
-// Go back to previous screen
-context.go('/');
-```
+- Routes: `/` (onboarding), `/today`, `/settings`
+- Conditional initial route based on onboarding completion
 
 ### Data Models
+- **Habit**: 12 fields including implementation intentions, temptation bundle, pre-habit ritual, environment design
+- **UserProfile**: Name, identity, email, phone, reminder preferences
 
-**Habit** (`data/models/habit.dart`):
-- Represents a single habit with name, identity, tiny version, streak, etc.
-- Has methods to create copies with updates (`copyWith`)
-- Can be saved/loaded from JSON for persistence
+## Dependencies
 
-**UserProfile** (`data/models/user_profile.dart`):
-- Stores the user's desired identity ("I am a person who...")
-- Keeps track of name and creation date
+```yaml
+dependencies:
+  provider: 6.1.5+1              # State management
+  go_router: ^14.0.0             # Navigation
+  hive: 2.2.3                    # Local database
+  hive_flutter: 1.1.0            # Hive Flutter integration
+  flutter_local_notifications: ^18.0.1  # Push notifications
+  timezone: ^0.9.4               # Timezone support
+  confetti: ^0.7.0               # Celebration animations
+  http: 1.5.0                    # Remote LLM API calls
+```
 
-## 🎨 Features Implemented
+## How to Run
 
-### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Validates all inputs before proceeding
-
-### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- Shows current streak with fire icon
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
-
-### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
-- App information and about section
-
-## 🚀 How to Run the App
-
-### Option 1: Web Preview (Easiest!)
-
-**Your app is already running!** 🎉
-
-🔗 **Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
-
-Just click the link above and try the app in your browser!
-
-### Option 2: Android Device or Emulator
-
-**Prerequisites:**
-- Android device with USB debugging enabled, OR
-- Android emulator running on your computer
-- Flutter SDK installed on your computer
-
-**Steps:**
-
-1. **Clone this project to your computer:**
-   ```bash
-   # Copy the flutter_app folder to your local machine
-   ```
-
-2. **Connect your Android device** (or start an emulator)
-
-3. **Run the app:**
-   ```bash
-   cd flutter_app
-   flutter run
-   ```
-
-4. **The app will install and launch on your device!**
-
-### Option 3: Build APK for Installation
-
+### Web Preview
 ```bash
-cd flutter_app
+flutter run -d chrome
+```
+
+### Android
+```bash
+flutter run -d android
+```
+
+### iOS
+```bash
+flutter run -d ios
+```
+
+### Build APK
+```bash
 flutter build apk --release
 ```
 
-The APK will be created at: `build/app/outputs/flutter-apk/app-release.apk`
+---
 
-Transfer this file to your Android phone and install it!
+## Technical Implementation TODOs
 
-## 🧪 Testing the App
+### High Priority
 
-Try this user journey:
+#### 1. Remote LLM Endpoint Configuration
+**File**: `lib/data/ai_suggestion_service.dart:22`
 
-1. **Start the app** - you'll see the Onboarding screen
-2. **Fill in your details:**
-   - Name: "Alex"
-   - Identity: "I am a person who reads daily"
-   - Habit: "Read every day"
-   - Tiny version: "Read one page before bed"
-3. **Click "Start Building Habits"** - navigates to Today screen
-4. **See your identity reminder** at the top
-5. **Notice the streak counter** (starts at 0)
-6. **Click "Mark as Complete"** - watch the streak increase to 1!
-7. **Notice the button changes** to show completion
-8. **Click Settings icon** to see the settings screen
+Currently uses placeholder URL. You need to:
+```dart
+// Replace this:
+static const String _remoteLlmEndpoint = 'https://example.com/api/habit-suggestions';
 
-## 📚 Key Concepts Used
+// With your actual endpoint, e.g.:
+static const String _remoteLlmEndpoint = 'https://your-api.com/api/habit-suggestions';
+```
 
-### From Atomic Habits:
-- **Identity-based habits**: "I am a person who..." vs "I want to do..."
-- **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: (Future feature) Link new habits to existing ones
-- **Visual cues**: Streak counter provides visible progress
+**Expected API Contract**:
+```json
+// Request (POST)
+{
+  "suggestion_type": "temptation_bundle|pre_habit_ritual|environment_cue|environment_distraction",
+  "identity": "I am a person who reads daily",
+  "habit_name": "Read every day",
+  "two_minute_version": "Read one page",
+  "time": "22:00",
+  "location": "In bed",
+  "existing_temptation_bundle": null,
+  "existing_pre_ritual": null,
+  "existing_environment_cue": null,
+  "existing_environment_distraction": null
+}
 
-### From Hook Model:
-- **Trigger**: Seeing your identity reminder and streak
-- **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Watching streak increase, seeing completion status
-- **Investment**: Building streak makes you more committed
+// Response (200 OK)
+{
+  "suggestions": [
+    "Suggestion 1",
+    "Suggestion 2",
+    "Suggestion 3"
+  ]
+}
+```
 
-### From Fogg Behavior Model:
-- **Motivation**: Identity and visible streak
-- **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Daily reminder when you open the app
+**Backend Options**:
+- OpenAI API proxy (with your own API key)
+- Claude API proxy
+- Self-hosted LLM (Ollama, LMStudio)
+- Firebase Cloud Function wrapping any LLM
 
-## 🔮 Future Features (Not Yet Implemented)
+#### 2. Email/SMS Reminder Backend
+**Files**:
+- `lib/data/app_state.dart:393` (setEmailRemindersEnabled)
+- `lib/data/app_state.dart:408` (setSmsRemindersEnabled)
 
-- [ ] Multiple habits support
-- [ ] Habit history and calendar view
-- [ ] Reminders and notifications
-- [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
-- [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
-- [ ] Weekly/monthly analytics
-- [ ] Backup and restore functionality
+Currently marked with `// TODO: When backend is implemented...`
 
-## 🛠️ Technologies Used
+**Implementation Options**:
 
-- **Flutter 3.35.4** - UI framework
-- **Dart 3.9.2** - Programming language
-- **Provider 6.1.5+1** - State management
-- **GoRouter ^14.0.0** - Navigation
-- **Material Design 3** - UI design system
+**Option A: Firebase Cloud Functions + Twilio/SendGrid**
+```javascript
+// Firebase Function example
+exports.sendHabitReminder = functions.pubsub
+  .schedule('every day 09:00')
+  .onRun(async (context) => {
+    const users = await admin.firestore().collection('users').get();
+    for (const user of users.docs) {
+      if (user.data().smsRemindersEnabled) {
+        await twilioClient.messages.create({
+          body: `Time for your habit: ${user.data().habitName}`,
+          to: user.data().phone,
+          from: TWILIO_PHONE_NUMBER
+        });
+      }
+    }
+  });
+```
 
-## 📖 Learn More
+**Option B: AWS Lambda + SNS/SES**
+- Use EventBridge for scheduling
+- SNS for SMS, SES for email
 
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [GoRouter Package](https://pub.dev/packages/go_router)
-- [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
-- [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
+**Required Changes**:
+1. Add user registration endpoint (send profile to backend)
+2. Store user timezone on backend
+3. Create scheduled jobs per user's reminder time
+4. Add authentication (Firebase Auth, Supabase, etc.)
 
-## 💡 Tips for Non-Technical Users
+**Cost Estimates**:
+- Twilio SMS: ~$0.0075/message (US)
+- SendGrid Email: Free tier up to 100/day
+- Firebase Functions: Free tier covers ~2M invocations/month
 
-**What is Flutter?** Flutter is like a toolbox for building mobile apps. You write code once, and it can run on both Android and iPhone.
+### Medium Priority
 
-**What is Provider?** Think of it as a smart messenger that tells your app screens when data changes, so they can update automatically.
+#### 3. Multiple Habits Support
+**Current State**: Single habit stored in `_currentHabit`
+**Required Changes**:
+- Change `_currentHabit` to `List<Habit> _habits`
+- Update Hive storage to use list
+- Create habit selection UI
+- Update Today screen to show multiple habits
+- Add habit creation/deletion in Settings
 
-**What is a Widget?** Everything you see in Flutter is a "widget" - buttons, text, screens, etc. Widgets are like LEGO blocks you stack together to build your app.
+#### 4. Habit History & Calendar View
+**Required Changes**:
+- Add `List<DateTime> completionHistory` to Habit model
+- Create calendar widget showing completion days
+- Add history screen with streak statistics
+- Implement "Don't break the chain" visualization
 
-**What is State?** "State" is the data that can change in your app - like your habit streak or whether you completed today's habit.
+#### 5. Analytics Dashboard
+**Suggested Metrics**:
+- Completion rate (daily/weekly/monthly)
+- Streak statistics (current, longest, average)
+- Best day of week for completions
+- Time-to-complete trends
+
+### Low Priority
+
+#### 6. Testing
+Currently no tests. Add:
+```bash
+test/
+├── unit/
+│   ├── habit_model_test.dart
+│   ├── user_profile_test.dart
+│   └── ai_suggestion_service_test.dart
+├── widget/
+│   ├── today_screen_test.dart
+│   └── onboarding_screen_test.dart
+└── integration/
+    └── full_flow_test.dart
+```
+
+#### 7. App Store Preparation
+- [ ] Add app icon (currently default Flutter icon)
+- [ ] Add splash screen
+- [ ] Create screenshots for store listing
+- [ ] Write privacy policy (required for notifications)
+- [ ] Configure iOS capabilities in Xcode
+- [ ] Test on physical devices
+
+#### 8. Premium Features (Monetization)
+- Email/SMS reminders (backend ready)
+- Advanced analytics
+- Multiple habits (free: 1, premium: unlimited)
+- Custom themes
+- Data export
 
 ---
 
-Built with ❤️ using Flutter | Based on science-backed behavior change principles
+## Key Concepts Used
+
+### From Atomic Habits (James Clear)
+- **Identity-based habits**: "I am a person who..." vs "I want to do..."
+- **2-minute rule**: Make habits so small you can't say no
+- **Implementation intentions**: "I will [HABIT] at [TIME] in [LOCATION]"
+- **Temptation bundling**: Pair habits with things you enjoy
+- **Environment design**: Make cues obvious, distractions invisible
+- **Make it Satisfying**: Streak tracking + celebration
+
+### From Hook Model (Nir Eyal)
+- **Trigger**: Push notifications + visual cues
+- **Action**: One-tap habit completion
+- **Variable Reward**: Confetti + streak celebration
+- **Investment**: Setting tomorrow's reminder time
+
+### From Behavior Model (B.J. Fogg)
+- **Motivation**: Identity reinforcement
+- **Ability**: Tiny 2-minute version
+- **Prompt**: Notifications + environment cues
+
+---
+
+## File Reference
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `lib/data/app_state.dart` | ~520 | Central state, persistence, notifications |
+| `lib/data/notification_service.dart` | ~400 | Push notification implementation |
+| `lib/data/ai_suggestion_service.dart` | ~720 | AI suggestions with LLM + fallback |
+| `lib/features/onboarding/onboarding_screen.dart` | ~800 | 4-step onboarding flow |
+| `lib/features/today/today_screen.dart` | ~700 | Today view + completion flow |
+| `lib/features/settings/settings_screen.dart` | ~720 | Settings + notification preferences |
+| `lib/widgets/reward_investment_dialog.dart` | ~310 | Confetti celebration + time picker |
+| `lib/widgets/pre_habit_ritual_dialog.dart` | ~215 | Pre-habit ritual countdown |
+
+---
+
+Built with Flutter | Based on science-backed behavior change principles
