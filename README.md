@@ -1,4 +1,4 @@
-# Atomic Habits Hook App
+# Atomic Habits App
 
 A Flutter mobile habit-tracking app based on:
 - **James Clear's Atomic Habits** (identity-based habits, 4 Laws of Behavior Change, 2-minute rule)
@@ -9,330 +9,334 @@ A Flutter mobile habit-tracking app based on:
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
 
+**Key Features:**
+- AI-powered conversational onboarding (Gemini 2.5 Flash)
+- Firebase authentication (Email, Google, Guest)
+- Streak tracking with confetti rewards
+- Bad habit toolkit with substitution strategies
+- Social accountability circles
+
+---
+
+## ⚙️ Setup Guide (Step-by-Step)
+
+This guide assumes you have no technical experience. Follow each step carefully.
+
+### Prerequisites
+
+Before starting, you need:
+1. **Flutter SDK** installed ([Install Flutter](https://docs.flutter.dev/get-started/install))
+2. **Android Studio** or **VS Code** with Flutter extension
+3. A **Google account** for Firebase and Gemini
+
+---
+
+### 🔥 Firebase Setup (Authentication)
+
+Firebase handles user login. This is **required** for the app to work.
+
+#### Step 1: Create a Firebase Project
+
+1. Open your web browser and go to: **https://console.firebase.google.com/**
+2. Sign in with your Google account
+3. Click the big **"Create a project"** button (or "Add project")
+4. Enter a project name: `atomic-habits-app`
+5. Click **Continue**
+6. Google Analytics: You can disable this (toggle off) - it's optional
+7. Click **Create project**
+8. Wait for it to finish, then click **Continue**
+
+#### Step 2: Add Your Android App to Firebase
+
+1. On your Firebase project dashboard, look for the Android icon (little robot) and click it
+2. Fill in these fields:
+   - **Android package name:** `com.example.atomic_habits_hook_app`
+   - **App nickname:** `Atomic Habits` (optional)
+   - **Debug signing certificate:** Leave blank for now (we'll add this later)
+3. Click **Register app**
+4. You'll see a button to **Download google-services.json** - click it
+5. Save this file somewhere you can find it (like your Downloads folder)
+6. **Important:** Copy this file to your project folder:
+   ```
+   Your project folder/android/app/google-services.json
+   ```
+   (Replace the existing placeholder file if there is one)
+7. Click **Next** through the remaining steps (the code changes are already done)
+8. Click **Continue to console**
+
+#### Step 3: Enable Authentication Methods
+
+1. In Firebase Console, look at the left sidebar
+2. Click **Build** → **Authentication**
+3. Click the **Get started** button
+4. You'll see the **Sign-in method** tab - click on it
+
+**Enable Email/Password:**
+1. Click on **Email/Password**
+2. Toggle the first switch to **Enable**
+3. Click **Save**
+
+**Enable Google Sign-In:**
+1. Click on **Google**
+2. Toggle the switch to **Enable**
+3. Enter your email in **Project support email**
+4. Click **Save**
+
+**Enable Guest Mode (Anonymous):**
+1. Click on **Anonymous**
+2. Toggle the switch to **Enable**
+3. Click **Save**
+
+#### Step 4: Add SHA-1 Fingerprint (Required for Google Sign-In)
+
+This is a security key that connects your computer to Firebase.
+
+**On Mac/Linux:**
+1. Open Terminal
+2. Navigate to your project: `cd /path/to/atomichabits`
+3. Run: `cd android && ./gradlew signingReport`
+4. Look for the line that says `SHA1:` followed by a long code
+5. Copy that code (it looks like: `AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD`)
+
+**On Windows:**
+1. Open Command Prompt
+2. Navigate to your project: `cd C:\path\to\atomichabits`
+3. Run: `cd android && gradlew signingReport`
+4. Look for and copy the SHA1 code
+
+**Add it to Firebase:**
+1. Go to Firebase Console → click the gear icon ⚙️ → **Project settings**
+2. Scroll down to **Your apps** section
+3. Find your Android app
+4. Click **Add fingerprint**
+5. Paste your SHA1 code
+6. Click **Save**
+
+---
+
+### 🤖 Gemini AI Setup (Conversational Coach)
+
+The AI coach uses Google's Gemini 2.5 Flash. You need a free API key.
+
+#### Step 1: Get Your API Key
+
+1. Go to: **https://aistudio.google.com/apikey**
+2. Sign in with your Google account
+3. Click **Create API key**
+4. Select your Firebase project (or create a new one)
+5. Your API key will appear - it looks like: `AIzaSyABC123...`
+6. **Copy this key** and save it somewhere safe (you can't see it again!)
+
+#### Step 2: Add the Key to Your App
+
+1. Open your project in your code editor
+2. Find this file: `lib/data/services/gemini_chat_service.dart`
+3. Look for this line near the top:
+   ```dart
+   static const String _defaultApiKey = 'your-api-key-here';
+   ```
+4. Replace `your-api-key-here` with your actual API key:
+   ```dart
+   static const String _defaultApiKey = 'AIzaSyABC123yourActualKeyHere';
+   ```
+5. Save the file
+
+**Security Note:** For a production app, you should use environment variables instead of hardcoding the key. But for personal use/testing, this works fine.
+
+---
+
+### 🔐 Google OAuth Setup (Already Configured)
+
+Google Sign-In works automatically once you've:
+1. Added `google-services.json` to `android/app/`
+2. Enabled Google Sign-In in Firebase Authentication
+3. Added your SHA-1 fingerprint
+
+The Flutter packages (`google_sign_in`, `firebase_auth`) handle everything else.
+
+---
+
+## 🚀 Running the App
+
+### Option 1: Android Device
+
+1. **Enable Developer Mode on your phone:**
+   - Go to Settings → About Phone
+   - Tap "Build Number" 7 times
+   - Go back to Settings → Developer Options
+   - Enable "USB Debugging"
+
+2. **Connect your phone** to your computer via USB
+
+3. **Run the app:**
+   ```bash
+   cd /path/to/atomichabits
+   flutter run
+   ```
+
+4. The app will install and launch on your phone!
+
+### Option 2: Android Emulator
+
+1. **Open Android Studio**
+2. Go to Tools → Device Manager
+3. Create a new virtual device (e.g., Pixel 6)
+4. Start the emulator
+5. Run: `flutter run`
+
+### Option 3: Build APK
+
+```bash
+flutter build apk --release
+```
+
+The APK will be at: `build/app/outputs/flutter-apk/app-release.apk`
+
+Transfer this to your Android phone and install it.
+
+---
+
+## 🧪 Testing the App
+
+1. **Launch the app** - You'll see the login screen
+2. **Sign in:**
+   - Try **Continue as Guest** for quick testing
+   - Or create an account with email/password
+   - Or use **Continue with Google**
+3. **AI Onboarding:**
+   - The AI coach will guide you through creating your first habit
+   - It asks about your identity, habit, when/where you'll do it
+   - Speak or type your responses
+4. **Today Screen:**
+   - See your habit and streak
+   - Tap "Mark as Complete" to track progress
+   - Watch the confetti celebration!
+5. **Settings:**
+   - Explore Bad Habits, Social, and Creator Mode features
+
+---
+
 ## 📁 Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with navigation setup
+├── main.dart                         # App entry + routing
 ├── data/
-│   ├── app_state.dart          # Central state management (Provider)
-│   ├── ai_suggestion_service.dart  # AI suggestions (remote LLM + local fallback)
-│   ├── notification_service.dart   # Daily habit reminders
-│   └── models/
-│       ├── habit.dart           # Habit data model (good & bad habits)
-│       ├── user_profile.dart    # User profile/identity model
-│       ├── habit_circle.dart    # Social layer: habit circles & members
-│       ├── creator_session.dart # Creator mode: sessions & summaries
-│       ├── chat_message.dart    # Chat message model for AI conversations
-│       └── chat_conversation.dart # Conversation history & persistence
-│   └── services/
-│       └── gemini_chat_service.dart  # Conversational AI (Gemini 2.5 Flash)
+│   ├── app_state.dart                # Central state management
+│   ├── services/
+│   │   ├── auth_service.dart         # Firebase authentication
+│   │   └── gemini_chat_service.dart  # AI conversational coach
+│   └── models/                       # Data models
 ├── features/
+│   ├── auth/
+│   │   └── login_screen.dart         # Login/signup page
 │   ├── onboarding/
-│   │   ├── onboarding_screen.dart    # Form-based onboarding
-│   │   ├── ai_onboarding_screen.dart # AI conversational onboarding
-│   │   └── widgets/
-│   │       ├── chat_bubble.dart      # Chat message UI
-│   │       └── voice_input_button.dart # Speech-to-text input
-│   ├── today/
-│   │   └── today_screen.dart       # Shows today's habit & streak
-│   ├── settings/
-│   │   └── settings_screen.dart    # Settings & feature navigation
-│   ├── bad_habit/
-│   │   └── bad_habit_screen.dart   # Change/Reduce Habit Toolkit
-│   ├── social/
-│   │   └── social_screen.dart      # Social & Norms Layer
-│   └── creator/
-│       └── creator_mode_screen.dart # Creator Mode (quantity-first)
-└── widgets/
-    ├── suggestion_dialog.dart       # AI suggestion picker
-    ├── reward_investment_dialog.dart # Hook Model reward flow
-    └── pre_habit_ritual_dialog.dart  # Pre-habit ritual with timer
+│   │   ├── ai_onboarding_screen.dart # AI-powered onboarding
+│   │   └── onboarding_screen.dart    # Form-based fallback
+│   ├── today/                        # Main habit tracking
+│   ├── settings/                     # Settings & navigation
+│   ├── bad_habit/                    # Bad habit toolkit
+│   ├── social/                       # Social features
+│   └── creator/                      # Creator mode
+└── widgets/                          # Reusable UI components
 ```
-
-## 🏗️ Architecture Explained (In Plain English)
-
-### State Management: Provider
-
-**What it does:** Provider is like a "data warehouse" for your app. It stores information (like your habits and streak) in one central place, and automatically updates the screens when that data changes.
-
-**How it works:**
-1. **AppState** (`data/app_state.dart`) is the "warehouse" that holds all your app's data
-2. **Provider** wraps the entire app (see `main.dart`) and makes this data available everywhere
-3. **Consumer** widgets "subscribe" to changes - when data updates, they automatically rebuild
-
-**Example flow:**
-- User completes a habit → `completeHabitForToday()` is called
-- AppState updates the streak and calls `notifyListeners()`
-- The TodayScreen automatically rebuilds with the new streak number
-
-**Why Provider?** It's beginner-friendly, widely used, and has excellent documentation. No complex setup required!
-
-### Navigation: GoRouter
-
-**What it does:** GoRouter handles moving between different screens in your app using simple paths (like websites).
-
-**How it works:**
-- Routes are defined in `main.dart` with paths like `/`, `/today`, `/settings`
-- Use `context.go('/today')` to navigate to a screen
-- The router knows to start at onboarding (`/`) if not completed, otherwise start at Today screen
-
-**Example:**
-```dart
-// Navigate to Today screen
-context.go('/today');
-
-// Go back to previous screen
-context.go('/');
-```
-
-### Data Models
-
-**Habit** (`data/models/habit.dart`):
-- Represents a single habit with name, identity, tiny version, streak, etc.
-- Has methods to create copies with updates (`copyWith`)
-- Can be saved/loaded from JSON for persistence
-
-**UserProfile** (`data/models/user_profile.dart`):
-- Stores the user's desired identity ("I am a person who...")
-- Keeps track of name and creation date
-
-## 🎨 Features Implemented
-
-### ✅ Core Habit Tracking
-- **Identity-based onboarding** - Define who you want to become
-- **2-minute rule** - Create tiny versions of habits
-- **Implementation intentions** - When/where you'll do the habit
-- **Streak tracking** - Visual progress with fire icons
-- **Hook Model reward flow** - Confetti celebration + investment phase
-
-### ✅ Make It Attractive
-- **Temptation bundling** - Pair habits with enjoyable activities
-- **Pre-habit rituals** - 30-second mental preparation with timer
-- **AI suggestions** - Context-aware recommendations (remote LLM + local fallback)
-
-### ✅ Environment Design
-- **Environment cues** - Visual triggers for habits
-- **Distraction removal** - Friction for competing behaviors
-- **AI-powered suggestions** - Based on time, location, and habit type
-
-### ✅ Change / Reduce Habit Toolkit (Bad Habits)
-- **Habit substitution** - Map needs to healthier alternatives
-- **Cue firewall** - Block triggers by time, place, people, emotion
-- **Bright-line rules** - "I don't..." rules with 4 intensity levels (gentle → absolute)
-- **Progressive extremism** - Rules that tighten over time
-- **Friction/guardrails** - Add steps between cue and bad behavior
-- **Avoided tracking** - Track successful resistance
-
-### ✅ Social & Norms Layer
-- **People cues** - "When I'm with X, I do Y" connections
-- **Habit circles** - Small groups with shared habits
-- **Champion/guide support** - Local leaders (Mozambique model)
-- **Norm messaging** - "Around here, we..." social proof
-- **Group check-ins** - Weekly/daily accountability
-
-### ✅ Creator Mode
-- **Quantity-first tracking** - Reps over quality (photo class story)
-- **Session types** - Generate (create) vs Refine (deliberate practice)
-- **Weekly rep goals** - Progress tracking with goal percentage
-- **Minimal workspace** - WordStar-style focus support
-- **Session learnings** - Track insights from each creative session
-- **Weekly summaries** - Volume + learnings, not "was it good?"
-
-### ✅ Conversational AI Coach (Gemini 2.5 Flash)
-- **AI-powered onboarding** - Natural conversation to create habits
-- **Atomic Habits expert** - Trained on identity, 2-minute rule, implementation intentions
-- **Constructive critique** - Challenges vague or too-ambitious goals
-- **Streaming responses** - Real-time typing effect for natural feel
-- **Voice input** - Speech-to-text for hands-free interaction
-- **Conversation persistence** - 60-day history for continuity
-- **Context-aware** - References user's existing habits and progress
-
-### ✅ Authentication (Firebase)
-- **Email/Password** - Traditional signup and login
-- **Google Sign-In** - One-tap authentication
-- **Guest Mode** - Try the app without an account
-- **Account Linking** - Upgrade guest accounts later
-
-### ✅ Notifications & Reminders
-- **Daily habit reminders** - At your scheduled time
-- **Action buttons** - Mark Done or Snooze from notification
-- **Temptation bundle included** - Reminder shows your paired reward
-
-## ⚙️ Configuration
-
-### Firebase Setup (Required for Authentication)
-
-To enable authentication, you need to set up Firebase:
-
-#### 1. Create a Firebase Project
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click "Add project" and follow the setup wizard
-3. Enable Google Analytics (optional)
-
-#### 2. Add Android App
-
-1. In Firebase Console, click "Add app" → Android
-2. Enter your package name: `com.example.atomic_habits_hook_app`
-3. Download `google-services.json`
-4. Place it in `android/app/google-services.json`
-
-#### 3. Enable Authentication Methods
-
-1. Go to Firebase Console → Authentication → Sign-in method
-2. Enable the following providers:
-   - **Email/Password** - Toggle on
-   - **Google** - Toggle on, configure OAuth consent screen
-   - **Anonymous** - Toggle on (for guest mode)
-
-#### 4. Configure Android
-
-The `android/build.gradle` and `android/app/build.gradle` files are already configured. Just ensure you've placed `google-services.json` in the correct location.
-
-#### 5. Configure Google Sign-In (Android)
-
-1. In Firebase Console → Project Settings → Your apps → Android app
-2. Add your SHA-1 fingerprint:
-   ```bash
-   cd android && ./gradlew signingReport
-   ```
-3. Copy the SHA-1 and add it in Firebase Console
-
-> **Note:** The app runs without Firebase configuration but will show errors when attempting to sign in. Guest mode requires Firebase Anonymous auth to be enabled.
-
-### Gemini AI Setup (for Conversational AI Coach)
-
-To enable the AI-powered conversational onboarding, you need a Gemini API key:
-
-1. **Get a free API key** at [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-2. **Add your key** to `lib/data/services/gemini_chat_service.dart`:
-   ```dart
-   static const String _defaultApiKey = 'YOUR_GEMINI_API_KEY';
-   ```
-
-3. **For production**, use environment variables or secure storage instead of hardcoding.
-
-> **Note:** The app works without an API key, but the AI coach will show a configuration message. All other features remain fully functional.
-
-## 🚀 How to Run the App
-
-### Option 1: Web Preview (Easiest!)
-
-**Your app is already running!** 🎉
-
-🔗 **Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
-
-Just click the link above and try the app in your browser!
-
-### Option 2: Android Device or Emulator
-
-**Prerequisites:**
-- Android device with USB debugging enabled, OR
-- Android emulator running on your computer
-- Flutter SDK installed on your computer
-
-**Steps:**
-
-1. **Clone this project to your computer:**
-   ```bash
-   # Copy the flutter_app folder to your local machine
-   ```
-
-2. **Connect your Android device** (or start an emulator)
-
-3. **Run the app:**
-   ```bash
-   cd flutter_app
-   flutter run
-   ```
-
-4. **The app will install and launch on your device!**
-
-### Option 3: Build APK for Installation
-
-```bash
-cd flutter_app
-flutter build apk --release
-```
-
-The APK will be created at: `build/app/outputs/flutter-apk/app-release.apk`
-
-Transfer this file to your Android phone and install it!
-
-## 🧪 Testing the App
-
-Try this user journey:
-
-1. **Start the app** - you'll see the Onboarding screen
-2. **Fill in your details:**
-   - Name: "Alex"
-   - Identity: "I am a person who reads daily"
-   - Habit: "Read every day"
-   - Tiny version: "Read one page before bed"
-3. **Click "Start Building Habits"** - navigates to Today screen
-4. **See your identity reminder** at the top
-5. **Notice the streak counter** (starts at 0)
-6. **Click "Mark as Complete"** - watch the streak increase to 1!
-7. **Notice the button changes** to show completion
-8. **Click Settings icon** to see the settings screen
-
-## 📚 Key Concepts Used
-
-### From Atomic Habits:
-- **Identity-based habits**: "I am a person who..." vs "I want to do..."
-- **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: (Future feature) Link new habits to existing ones
-- **Visual cues**: Streak counter provides visible progress
-
-### From Hook Model:
-- **Trigger**: Seeing your identity reminder and streak
-- **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Watching streak increase, seeing completion status
-- **Investment**: Building streak makes you more committed
-
-### From Fogg Behavior Model:
-- **Motivation**: Identity and visible streak
-- **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Daily reminder when you open the app
-
-## 🔮 Future Features (Not Yet Implemented)
-
-- [ ] Habit history and calendar view
-- [ ] Habit stacking (link habits together)
-- [ ] 4 Laws of Behavior Change framework UI
-- [ ] Weekly/monthly analytics dashboard
-- [ ] Backup and restore functionality
-- [ ] Social habit circle real-time sync
-- [ ] Push notifications for group check-ins
-
-## 🛠️ Technologies Used
-
-- **Flutter 3.35.4** - UI framework
-- **Dart 3.9.2** - Programming language
-- **Provider 6.1.5+1** - State management
-- **GoRouter ^14.0.0** - Navigation
-- **Material Design 3** - UI design system
-
-## 📖 Learn More
-
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [GoRouter Package](https://pub.dev/packages/go_router)
-- [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
-- [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
-
-## 💡 Tips for Non-Technical Users
-
-**What is Flutter?** Flutter is like a toolbox for building mobile apps. You write code once, and it can run on both Android and iPhone.
-
-**What is Provider?** Think of it as a smart messenger that tells your app screens when data changes, so they can update automatically.
-
-**What is a Widget?** Everything you see in Flutter is a "widget" - buttons, text, screens, etc. Widgets are like LEGO blocks you stack together to build your app.
-
-**What is State?** "State" is the data that can change in your app - like your habit streak or whether you completed today's habit.
 
 ---
 
-Built with ❤️ using Flutter | Based on science-backed behavior change principles
+## 🎨 Features
+
+### Authentication
+- Email/Password signup and login
+- Google One-Tap Sign-In
+- Guest mode (try without account)
+- Sign out with data preservation
+
+### AI Conversational Coach
+- Natural language onboarding
+- Atomic Habits expert guidance
+- Challenges vague or ambitious goals
+- Voice input support
+- 60-day conversation history
+
+### Core Habit Tracking
+- Identity-based habits ("I am a person who...")
+- 2-minute rule (tiny versions)
+- Implementation intentions (when/where)
+- Streak tracking with rewards
+- Hook Model: Trigger → Action → Reward → Investment
+
+### Bad Habit Toolkit
+- Habit substitution mapping
+- Cue firewall (block triggers)
+- Bright-line rules ("I don't...")
+- Progressive friction/guardrails
+
+### Social Features
+- Habit circles (group accountability)
+- People cues ("When with X, I do Y")
+- Norm messaging ("Around here, we...")
+
+### Creator Mode
+- Quantity-first tracking
+- Session types (Generate vs Refine)
+- Weekly rep goals
+- Session learnings capture
+
+---
+
+## 🔮 Future Features
+
+- [ ] Habit history calendar view
+- [ ] Habit stacking (link habits)
+- [ ] Weekly/monthly analytics
+- [ ] Cloud backup and sync
+- [ ] Push notifications for groups
+
+---
+
+## 🛠️ Technologies
+
+| Technology | Purpose |
+|------------|---------|
+| Flutter | UI framework |
+| Firebase Auth | User authentication |
+| Gemini 2.5 Flash | AI conversational coach |
+| Hive | Local data storage |
+| Provider | State management |
+| GoRouter | Navigation |
+
+---
+
+## 🆘 Troubleshooting
+
+**"No Firebase App" error:**
+- Make sure `google-services.json` is in `android/app/`
+- Run `flutter clean` then `flutter run`
+
+**Google Sign-In not working:**
+- Check that SHA-1 fingerprint is added in Firebase Console
+- Make sure Google provider is enabled in Authentication
+
+**AI coach says "API key not configured":**
+- Add your Gemini API key to `gemini_chat_service.dart`
+- Get a key at https://aistudio.google.com/apikey
+
+**App won't build:**
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
+---
+
+## 📚 Learn More
+
+- [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
+- [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
+- [Flutter Documentation](https://docs.flutter.dev/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+
+---
+
+Built with Flutter | Based on science-backed behavior change principles
