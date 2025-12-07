@@ -146,7 +146,7 @@ class AppState extends ChangeNotifier {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     // Check if already completed today
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
@@ -155,7 +155,7 @@ class AppState extends ChangeNotifier {
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       if (lastDate == today) {
         // Already completed today
         if (kDebugMode) {
@@ -167,7 +167,7 @@ class AppState extends ChangeNotifier {
 
     // Calculate new streak (check if yesterday was completed)
     int newStreak = _currentHabit!.currentStreak;
-    
+
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
       final yesterday = today.subtract(const Duration(days: 1));
@@ -176,7 +176,7 @@ class AppState extends ChangeNotifier {
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       // If last completion was yesterday, continue streak
       if (lastDate == yesterday) {
         newStreak = _currentHabit!.currentStreak + 1;
@@ -188,23 +188,34 @@ class AppState extends ChangeNotifier {
       // First completion
       newStreak = 1;
     }
-    
+
+    // Update longest streak if current streak exceeds it
+    final newLongestStreak = newStreak > _currentHabit!.longestStreak
+        ? newStreak
+        : _currentHabit!.longestStreak;
+
+    // Add to completion history
+    final updatedHistory = List<DateTime>.from(_currentHabit!.completionHistory)
+      ..add(now);
+
     _currentHabit = _currentHabit!.copyWith(
       currentStreak: newStreak,
+      longestStreak: newLongestStreak,
       lastCompletedDate: now,
+      completionHistory: updatedHistory,
     );
-    
-    await _saveToStorage(); // Persist the updated streak
-    
+
+    await _saveToStorage(); // Persist the updated streak and history
+
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
-    
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('✅ Habit completed! New streak: $newStreak');
+      debugPrint('✅ Habit completed! Streak: $newStreak (best: $newLongestStreak), Total: ${updatedHistory.length}');
     }
-    
+
     return true; // New completion
   }
 
@@ -444,12 +455,57 @@ class AppState extends ChangeNotifier {
       getEnvironmentCueSuggestionsForCurrentHabit(),
       getEnvironmentDistractionSuggestionsForCurrentHabit(),
     ]);
-    
+
     return {
       'temptationBundle': results[0],
       'preHabitRitual': results[1],
       'environmentCue': results[2],
       'environmentDistraction': results[3],
     };
+  }
+
+  // ========== Analytics & History Methods ==========
+
+  /// Get longest streak ever achieved
+  int get longestStreak => _currentHabit?.longestStreak ?? 0;
+
+  /// Get total number of completions
+  int get totalCompletions => _currentHabit?.totalCompletions ?? 0;
+
+  /// Get overall completion rate (0.0 to 1.0)
+  double get completionRate => _currentHabit?.completionRate ?? 0.0;
+
+  /// Get weekly completion rate (last 7 days)
+  double get weeklyCompletionRate => _currentHabit?.weeklyCompletionRate ?? 0.0;
+
+  /// Get monthly completion rate (last 30 days)
+  double get monthlyCompletionRate => _currentHabit?.monthlyCompletionRate ?? 0.0;
+
+  /// Check if habit was completed on a specific date
+  bool wasHabitCompletedOn(DateTime date) {
+    return _currentHabit?.wasCompletedOn(date) ?? false;
+  }
+
+  /// Get all completion dates for calendar view
+  List<DateTime> get completionHistory =>
+      _currentHabit?.completionHistory ?? [];
+
+  /// Get completions within a date range (for calendar/chart views)
+  List<DateTime> getCompletionsInRange(DateTime startDate, DateTime endDate) {
+    return _currentHabit?.getCompletionsInRange(startDate, endDate) ?? [];
+  }
+
+  /// Get completion count for a date range
+  int getCompletionCount({DateTime? startDate, DateTime? endDate}) {
+    return _currentHabit?.getCompletionCount(
+          startDate: startDate,
+          endDate: endDate,
+        ) ??
+        0;
+  }
+
+  /// Get completion rate for a specific number of days
+  double getCompletionRateForLastDays(int days) {
+    return _currentHabit?.getCompletionRateForLastDays(days) ?? 0.0;
   }
 }
