@@ -148,12 +148,58 @@ context.go('/');
 - **Conversation persistence** - 60-day history for continuity
 - **Context-aware** - References user's existing habits and progress
 
+### ✅ Authentication (Firebase)
+- **Email/Password** - Traditional signup and login
+- **Google Sign-In** - One-tap authentication
+- **Guest Mode** - Try the app without an account
+- **Account Linking** - Upgrade guest accounts later
+
 ### ✅ Notifications & Reminders
 - **Daily habit reminders** - At your scheduled time
 - **Action buttons** - Mark Done or Snooze from notification
 - **Temptation bundle included** - Reminder shows your paired reward
 
 ## ⚙️ Configuration
+
+### Firebase Setup (Required for Authentication)
+
+To enable authentication, you need to set up Firebase:
+
+#### 1. Create a Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click "Add project" and follow the setup wizard
+3. Enable Google Analytics (optional)
+
+#### 2. Add Android App
+
+1. In Firebase Console, click "Add app" → Android
+2. Enter your package name: `com.example.atomic_habits_hook_app`
+3. Download `google-services.json`
+4. Place it in `android/app/google-services.json`
+
+#### 3. Enable Authentication Methods
+
+1. Go to Firebase Console → Authentication → Sign-in method
+2. Enable the following providers:
+   - **Email/Password** - Toggle on
+   - **Google** - Toggle on, configure OAuth consent screen
+   - **Anonymous** - Toggle on (for guest mode)
+
+#### 4. Configure Android
+
+The `android/build.gradle` and `android/app/build.gradle` files are already configured. Just ensure you've placed `google-services.json` in the correct location.
+
+#### 5. Configure Google Sign-In (Android)
+
+1. In Firebase Console → Project Settings → Your apps → Android app
+2. Add your SHA-1 fingerprint:
+   ```bash
+   cd android && ./gradlew signingReport
+   ```
+3. Copy the SHA-1 and add it in Firebase Console
+
+> **Note:** The app runs without Firebase configuration but will show errors when attempting to sign in. Guest mode requires Firebase Anonymous auth to be enabled.
 
 ### Gemini AI Setup (for Conversational AI Coach)
 

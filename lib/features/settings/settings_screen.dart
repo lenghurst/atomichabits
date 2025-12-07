@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../data/app_state.dart';
 
 /// Settings screen - placeholder for future features
 class SettingsScreen extends StatelessWidget {
@@ -58,7 +60,7 @@ class SettingsScreen extends StatelessWidget {
               icon: Icons.psychology,
               title: 'Create Habit with AI',
               subtitle: 'Conversational onboarding powered by Gemini',
-              onTap: () => context.go('/ai-onboarding'),
+              onTap: () => context.go('/onboarding'),
               iconColor: Colors.teal,
             ),
             const Divider(),
@@ -123,7 +125,7 @@ class SettingsScreen extends StatelessWidget {
               icon: Icons.add_circle,
               title: 'Add New Habit',
               subtitle: 'Create additional habits with AI coach',
-              onTap: () => context.go('/ai-onboarding'),
+              onTap: () => context.go('/onboarding'),
               iconColor: Colors.green,
             ),
             const Divider(),
@@ -184,6 +186,51 @@ class SettingsScreen extends StatelessWidget {
                 );
               },
             ),
+            const Divider(),
+
+            // Account Actions section
+            _buildSectionTitle(context, 'Account Actions'),
+            Consumer<AppState>(
+              builder: (context, appState, child) {
+                final isGuest = appState.isGuest;
+                final email = appState.authEmail;
+
+                return Column(
+                  children: [
+                    // Show account info
+                    if (email != null)
+                      ListTile(
+                        leading: const Icon(Icons.email),
+                        title: const Text('Signed in as'),
+                        subtitle: Text(email),
+                      )
+                    else if (isGuest)
+                      ListTile(
+                        leading: const Icon(Icons.person_outline),
+                        title: const Text('Guest Account'),
+                        subtitle: const Text('Sign in to save your progress'),
+                        trailing: TextButton(
+                          onPressed: () => _showUpgradeAccountDialog(context),
+                          child: const Text('Upgrade'),
+                        ),
+                      ),
+
+                    // Sign out button
+                    _buildSettingsTile(
+                      context,
+                      icon: Icons.logout,
+                      title: 'Sign Out',
+                      subtitle: isGuest
+                          ? 'Warning: Guest data will be lost'
+                          : 'Sign out of your account',
+                      onTap: () => _showSignOutDialog(context, appState, isGuest),
+                      iconColor: Colors.red,
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -253,6 +300,76 @@ class SettingsScreen extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Got it!'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context, AppState appState, bool isGuest) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out?'),
+        content: Text(
+          isGuest
+              ? 'You are signed in as a guest. Signing out will permanently delete all your data. This cannot be undone.'
+              : 'Are you sure you want to sign out?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+
+              // Clear data if guest
+              if (isGuest) {
+                await appState.clearUserData();
+              }
+
+              // Sign out
+              await appState.signOut();
+
+              // Navigate to login
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpgradeAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Upgrade Account'),
+        content: const Text(
+          'Link your guest account to an email or Google account to save your progress and sync across devices.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Later'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // TODO: Implement account linking flow
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Account linking coming soon!')),
+              );
+            },
+            child: const Text('Upgrade Now'),
           ),
         ],
       ),

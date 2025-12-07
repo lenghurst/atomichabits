@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
 import 'models/habit_circle.dart';
 import 'models/creator_session.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
+import 'services/auth_service.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
@@ -17,6 +20,22 @@ import 'ai_suggestion_service.dart';
 /// - Habit circles (social layer)
 /// - Creator mode (quantity-first tracking)
 class AppState extends ChangeNotifier {
+  // ============ Authentication State ============
+
+  // Auth service
+  final AuthService _authService = AuthService();
+
+  // Auth state subscription
+  StreamSubscription<User?>? _authSubscription;
+
+  // Current Firebase user
+  User? _firebaseUser;
+
+  // Whether Firebase has initialized
+  bool _authInitialized = false;
+
+  // ============ User Data State ============
+
   // User profile
   UserProfile? _userProfile;
 
@@ -53,7 +72,31 @@ class AppState extends ChangeNotifier {
   // AI Suggestion service (local heuristics for now)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
 
-  // Getters to access state
+  // ============ Auth Getters ============
+
+  /// Whether user is authenticated (signed in)
+  bool get isAuthenticated => _firebaseUser != null;
+
+  /// Whether auth has been initialized
+  bool get authInitialized => _authInitialized;
+
+  /// Current Firebase user
+  User? get firebaseUser => _firebaseUser;
+
+  /// Whether current user is a guest (anonymous)
+  bool get isGuest => _firebaseUser?.isAnonymous ?? false;
+
+  /// User's display name from Firebase
+  String? get authDisplayName => _firebaseUser?.displayName;
+
+  /// User's email from Firebase
+  String? get authEmail => _firebaseUser?.email;
+
+  /// Auth service for login operations
+  AuthService get authService => _authService;
+
+  // ============ Data Getters ============
+
   UserProfile? get userProfile => _userProfile;
   List<Habit> get habits => List.unmodifiable(_habits);
   List<Habit> get goodHabits => _habits.where((h) => h.habitType == HabitType.good).toList();
@@ -72,21 +115,24 @@ class AppState extends ChangeNotifier {
     try {
       // Initialize notification service first
       await _notificationService.initialize();
-      
+
       // Set up notification action handler
       _notificationService.onNotificationAction = _handleNotificationAction;
-      
+
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
-      
+
       // Load saved data from Hive
       await _loadFromStorage();
-      
+
+      // Initialize auth listener
+      _initAuthListener();
+
       // Schedule notifications if onboarding completed
       if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -96,6 +142,59 @@ class AppState extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Initialize Firebase auth state listener
+  void _initAuthListener() {
+    // Get current user immediately
+    _firebaseUser = _authService.currentUser;
+    _authInitialized = true;
+
+    // Listen for auth state changes
+    _authSubscription = _authService.authStateChanges.listen((User? user) {
+      _firebaseUser = user;
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('Auth state changed: ${user?.email ?? user?.uid ?? 'signed out'}');
+      }
+    });
+  }
+
+  /// Sign out the current user
+  Future<void> signOut() async {
+    await _authService.signOut();
+
+    // Optionally clear local data on sign out
+    // Uncomment below to clear data when user signs out:
+    // await _clearUserData();
+
+    notifyListeners();
+  }
+
+  /// Clear all user data (for sign out or account deletion)
+  Future<void> clearUserData() async {
+    _userProfile = null;
+    _habits.clear();
+    _currentHabit = null;
+    _habitCircles.clear();
+    _creatorSessions.clear();
+    _activeCreatorSession = null;
+    _hasCompletedOnboarding = false;
+
+    // Clear storage
+    if (_dataBox != null) {
+      await _dataBox!.clear();
+    }
+
+    notifyListeners();
+  }
+
+  /// Clean up resources
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   /// Load data from Hive storage
