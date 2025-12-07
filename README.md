@@ -5,221 +5,255 @@ A Flutter mobile habit-tracking app based on:
 - **Nir Eyal's Hook Model** (Trigger → Action → Variable Reward → Investment)
 - **B.J. Fogg's Behavior Model** (Behavior = Motivation × Ability × Prompt)
 
-## 🎯 Project Overview
+## Project Overview
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
 
-## 📁 Project Structure
+**Key Differentiator:** Unlike most habit trackers that are "fancy checklists," this app focuses on understanding *why* you miss habits and provides AI-powered coaching to help you design better systems.
+
+## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with navigation setup
+├── main.dart                         # App entry point with navigation & service init
 ├── data/
-│   ├── app_state.dart          # Central state management (Provider)
+│   ├── app_state.dart                # Central state management (Provider)
 │   ├── models/
-│   │   ├── habit.dart          # Habit data model
-│   │   └── user_profile.dart   # User profile/identity model
-│   └── repositories/           # (Future: data persistence layer)
+│   │   ├── habit.dart                # Habit data model with history & analytics
+│   │   ├── user_profile.dart         # User profile/identity model
+│   │   ├── user_preferences.dart     # User customization settings
+│   │   └── completion_record.dart    # Daily completion with mood/obstacles
+│   └── services/
+│       └── reflection_coach_service.dart  # AI coaching with Gemini
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart  # Collects identity & first habit
+│   │   └── onboarding_screen.dart    # Collects identity & first habit
 │   ├── today/
-│   │   └── today_screen.dart       # Shows today's habit & streak
-│   └── settings/
-│       └── settings_screen.dart    # Settings & app info
+│   │   └── today_screen.dart         # Shows today's habits & streaks
+│   ├── settings/
+│   │   └── settings_screen.dart      # Settings, habits list, personalization
+│   ├── habits/
+│   │   ├── add_habit_screen.dart     # Create new habits
+│   │   └── edit_habit_screen.dart    # Edit existing habits
+│   └── history/
+│       ├── habit_history_screen.dart     # Calendar view with streaks
+│       └── completion_detail_sheet.dart  # Reflection UI with AI coaching
 └── widgets/
-    └── common/                 # (Future: reusable UI components)
+    └── voice_input_button.dart       # Speech-to-text input component
 ```
 
-## 🏗️ Architecture Explained (In Plain English)
+## Features
 
-### State Management: Provider
+### Multiple Habits Support
+- Track unlimited habits with individual streaks
+- Each habit has its own implementation intention, temptation bundle, and tiny version
+- Quick habit switching from the Today screen
+- Manage habits from Settings
 
-**What it does:** Provider is like a "data warehouse" for your app. It stores information (like your habits and streak) in one central place, and automatically updates the screens when that data changes.
+### Habit History Calendar
+- Visual calendar showing completed (green), missed (red), and unmarked days
+- Streak statistics: current streak, longest streak, total completions
+- Weekly progress bar
+- Milestone celebrations at 7, 14, 21, 30, 50, 66, and 100 days
+- Tap any day to view or add reflection details
 
-**How it works:**
-1. **AppState** (`data/app_state.dart`) is the "warehouse" that holds all your app's data
-2. **Provider** wraps the entire app (see `main.dart`) and makes this data available everywhere
-3. **Consumer** widgets "subscribe" to changes - when data updates, they automatically rebuild
+### "What Got in the Way?" - Obstacle Tracking
+This is the core differentiator. When you miss a habit, the app helps you understand why:
 
-**Example flow:**
-- User completes a habit → `completeHabitForToday()` is called
-- AppState updates the streak and calls `notifyListeners()`
-- The TodayScreen automatically rebuilds with the new streak number
+- **12 Emoji-based obstacle categories:**
+  - 😴 Too tired
+  - ⏰ No time
+  - 🤯 Overwhelmed
+  - 😷 Felt unwell
+  - 🏠 Away from home
+  - 📱 Got distracted
+  - 😔 Low motivation
+  - 🌧️ Bad mood
+  - 👥 Social situation
+  - 🔄 Routine disrupted
+  - 🤔 Forgot
+  - ❓ Other
 
-**Why Provider?** It's beginner-friendly, widely used, and has excellent documentation. No complex setup required!
+- **AI Coaching Tips:** Each obstacle shows contextual advice based on Atomic Habits principles
+- **Pattern Detection:** The app tracks obstacle frequency to identify recurring issues
 
-### Navigation: GoRouter
+### AI Reflection Coach (Gemini-Powered)
+- **Conversational coaching** when you select an obstacle
+- Coach understands your habit context (streak, implementation time, tiny version)
+- Provides personalized advice based on the Four Laws of Behavior Change
+- Focus on systems design, not willpower
+- Follow-up conversation capability
 
-**What it does:** GoRouter handles moving between different screens in your app using simple paths (like websites).
+### Voice Input
+- Speech-to-text for obstacle descriptions and notes
+- Animated recording indicator
+- Works in reflection sheets and coach conversations
 
-**How it works:**
-- Routes are defined in `main.dart` with paths like `/`, `/today`, `/settings`
-- Use `context.go('/today')` to navigate to a screen
-- The router knows to start at onboarding (`/`) if not completed, otherwise start at Today screen
+### Mood Tracking with Customizable Emojis
+Track how you felt each day with a 1-5 mood scale. Choose from 6 emoji presets:
 
-**Example:**
-```dart
-// Navigate to Today screen
-context.go('/today');
+| Preset | Emojis |
+|--------|--------|
+| Classic | 😢 😕 😐 🙂 😄 |
+| Expressive | 😭 😣 😶 😊 🤩 |
+| Thumbs | 👎 👇 ✊ 👆 👍 |
+| Energy | 🪫 😮‍💨 😑 ⚡ 🔥 |
+| Weather | 🌧️ 🌥️ ☁️ 🌤️ ☀️ |
+| Hearts | 💔 🩶 🤍 💙 ❤️ |
 
-// Go back to previous screen
-context.go('/');
+### Settings & Personalization
+- Add/edit/delete habits
+- Choose mood emoji preset
+- Toggle AI coaching tips on/off
+- View habit history
+- Reset all data option
+
+## Configuration
+
+### Gemini API Key (Required for AI Coaching)
+
+The AI coaching feature requires a Google Gemini API key. You can run the app without it, but the "Talk to Coach" feature will show as offline.
+
+**Option 1: Pass at runtime**
+```bash
+flutter run --dart-define=GEMINI_API_KEY=your_api_key_here
 ```
 
-### Data Models
+**Option 2: Build with key**
+```bash
+flutter build apk --dart-define=GEMINI_API_KEY=your_api_key_here
+```
 
-**Habit** (`data/models/habit.dart`):
-- Represents a single habit with name, identity, tiny version, streak, etc.
-- Has methods to create copies with updates (`copyWith`)
-- Can be saved/loaded from JSON for persistence
+**Get a Gemini API Key:**
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Click "Create API Key"
+3. Copy the key and use it as shown above
 
-**UserProfile** (`data/models/user_profile.dart`):
-- Stores the user's desired identity ("I am a person who...")
-- Keeps track of name and creation date
+**Note:** The AI coaching will gracefully fall back to static tips when:
+- No API key is provided
+- Device is offline
+- API request fails
 
-## 🎨 Features Implemented
+## How to Run
 
-### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Validates all inputs before proceeding
+### Prerequisites
+- Flutter SDK 3.9.2 or later
+- Dart 3.9.2 or later
 
-### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- Shows current streak with fire icon
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
-
-### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
-- App information and about section
-
-## 🚀 How to Run the App
-
-### Option 1: Web Preview (Easiest!)
-
-**Your app is already running!** 🎉
-
-🔗 **Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
-
-Just click the link above and try the app in your browser!
-
-### Option 2: Android Device or Emulator
-
-**Prerequisites:**
-- Android device with USB debugging enabled, OR
-- Android emulator running on your computer
-- Flutter SDK installed on your computer
-
-**Steps:**
-
-1. **Clone this project to your computer:**
-   ```bash
-   # Copy the flutter_app folder to your local machine
-   ```
-
-2. **Connect your Android device** (or start an emulator)
-
-3. **Run the app:**
-   ```bash
-   cd flutter_app
-   flutter run
-   ```
-
-4. **The app will install and launch on your device!**
-
-### Option 3: Build APK for Installation
+### Running the App
 
 ```bash
-cd flutter_app
-flutter build apk --release
+# Get dependencies
+flutter pub get
+
+# Run without AI coaching
+flutter run
+
+# Run with AI coaching enabled
+flutter run --dart-define=GEMINI_API_KEY=your_key
 ```
 
-The APK will be created at: `build/app/outputs/flutter-apk/app-release.apk`
+### Building for Release
 
-Transfer this file to your Android phone and install it!
+```bash
+# Android APK
+flutter build apk --release --dart-define=GEMINI_API_KEY=your_key
 
-## 🧪 Testing the App
+# Android App Bundle
+flutter build appbundle --release --dart-define=GEMINI_API_KEY=your_key
 
-Try this user journey:
+# iOS
+flutter build ios --release --dart-define=GEMINI_API_KEY=your_key
+```
 
-1. **Start the app** - you'll see the Onboarding screen
-2. **Fill in your details:**
-   - Name: "Alex"
-   - Identity: "I am a person who reads daily"
-   - Habit: "Read every day"
-   - Tiny version: "Read one page before bed"
-3. **Click "Start Building Habits"** - navigates to Today screen
-4. **See your identity reminder** at the top
-5. **Notice the streak counter** (starts at 0)
-6. **Click "Mark as Complete"** - watch the streak increase to 1!
-7. **Notice the button changes** to show completion
-8. **Click Settings icon** to see the settings screen
+## Dependencies
 
-## 📚 Key Concepts Used
+| Package | Version | Purpose |
+|---------|---------|---------|
+| provider | 6.1.5+1 | State management |
+| go_router | ^14.0.0 | Navigation |
+| hive_flutter | 1.1.0 | Local data persistence |
+| shared_preferences | 2.5.3 | Simple key-value storage |
+| table_calendar | ^3.1.2 | Calendar widget for history |
+| google_generative_ai | ^0.4.6 | Gemini AI for coaching |
+| speech_to_text | ^7.0.0 | Voice input |
+| connectivity_plus | ^6.1.4 | Online/offline detection |
+| confetti | ^0.7.0 | Celebration animations |
+| flutter_local_notifications | ^18.0.1 | Reminders |
+| http | 1.5.0 | HTTP client |
+
+## Architecture
+
+### State Management: Provider
+- `AppState` is the central data store
+- Manages habits, user profile, preferences, and completion records
+- Persists data to Hive local storage
+- Notifies UI of changes automatically
+
+### Navigation: GoRouter
+- Declarative routing with paths like `/today`, `/history/:habitId`
+- Conditional initial route based on onboarding status
+
+### AI Service: ReflectionCoachService
+- Singleton service initialized at app startup
+- Uses Gemini 1.5 Flash for fast responses
+- System prompt based on Atomic Habits methodology
+- Maintains chat session for follow-up questions
+- Automatic fallback to static tips when offline
+
+## Key Concepts
 
 ### From Atomic Habits:
 - **Identity-based habits**: "I am a person who..." vs "I want to do..."
 - **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: (Future feature) Link new habits to existing ones
-- **Visual cues**: Streak counter provides visible progress
+- **4 Laws of Behavior Change**: Make it obvious, attractive, easy, satisfying
+- **Environment > Willpower**: Design your environment for success
+- **Never miss twice**: The goal is getting back on track, not perfection
 
 ### From Hook Model:
-- **Trigger**: Seeing your identity reminder and streak
-- **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Watching streak increase, seeing completion status
-- **Investment**: Building streak makes you more committed
+- **Trigger**: Identity reminder, streak display, notifications
+- **Action**: One-tap completion, voice input
+- **Variable Reward**: Streak growth, milestone celebrations, AI insights
+- **Investment**: Building streak, reflecting on obstacles
 
 ### From Fogg Behavior Model:
-- **Motivation**: Identity and visible streak
-- **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Daily reminder when you open the app
+- **Motivation**: Identity alignment, visible progress
+- **Ability**: Tiny versions, voice input, simple UI
+- **Prompt**: Daily reminders, implementation intentions
 
-## 🔮 Future Features (Not Yet Implemented)
+## Future Features
 
-- [ ] Multiple habits support
-- [ ] Habit history and calendar view
-- [ ] Reminders and notifications
+- [ ] Notifications and reminders
 - [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
 - [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
-- [ ] Weekly/monthly analytics
-- [ ] Backup and restore functionality
+- [ ] Weekly/monthly AI-powered reviews
+- [ ] Backup and restore to cloud
+- [ ] Dark mode
+- [ ] Widget for home screen
 
-## 🛠️ Technologies Used
+## Troubleshooting
 
-- **Flutter 3.35.4** - UI framework
-- **Dart 3.9.2** - Programming language
-- **Provider 6.1.5+1** - State management
-- **GoRouter ^14.0.0** - Navigation
-- **Material Design 3** - UI design system
+### AI Coach shows "offline"
+- Check that you provided GEMINI_API_KEY
+- Verify internet connection
+- Check API key is valid at [Google AI Studio](https://aistudio.google.com/)
 
-## 📖 Learn More
+### Voice input not working
+- Grant microphone permission when prompted
+- Some devices/emulators don't support speech recognition
+- Check that speech_to_text package is properly installed
+
+### Data not persisting
+- Ensure Hive is initialized before app runs
+- Check for storage permission on Android
+
+## Learn More
 
 - [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [GoRouter Package](https://pub.dev/packages/go_router)
 - [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
 - [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
-
-## 💡 Tips for Non-Technical Users
-
-**What is Flutter?** Flutter is like a toolbox for building mobile apps. You write code once, and it can run on both Android and iPhone.
-
-**What is Provider?** Think of it as a smart messenger that tells your app screens when data changes, so they can update automatically.
-
-**What is a Widget?** Everything you see in Flutter is a "widget" - buttons, text, screens, etc. Widgets are like LEGO blocks you stack together to build your app.
-
-**What is State?** "State" is the data that can change in your app - like your habit streak or whether you completed today's habit.
+- [Google Gemini API](https://ai.google.dev/docs)
 
 ---
 
-Built with ❤️ using Flutter | Based on science-backed behavior change principles
+Built with Flutter | Based on science-backed behavior change principles
