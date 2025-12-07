@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
+import 'data/services/reflection_coach_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -16,6 +17,13 @@ void main() async {
 
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
+
+  // Initialize Reflection Coach with Gemini API key
+  // The API key can be provided via:
+  // - flutter run --dart-define=GEMINI_API_KEY=your_key
+  // - Or set in environment and read at build time
+  const geminiApiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
+  await ReflectionCoach.initialize(geminiApiKey);
 
   runApp(const MyApp());
 }

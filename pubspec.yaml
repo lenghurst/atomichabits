@@ -61,6 +61,15 @@ dependencies:
   # Calendar widget for habit history visualization
   table_calendar: ^3.1.2
 
+  # Google Generative AI (Gemini) for conversational coaching
+  google_generative_ai: ^0.4.6
+
+  # Speech-to-text for voice input
+  speech_to_text: ^7.0.0
+
+  # Connectivity checking for online status
+  connectivity_plus: ^6.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
