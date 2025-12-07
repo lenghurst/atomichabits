@@ -81,24 +81,50 @@ context.go('/');
 ## 🎨 Features Implemented
 
 ### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Validates all inputs before proceeding
+- Collects user's name and identity ("I am a person who...")
+- Creates habit with implementation intentions (when & where)
+- 2-minute rule: Defines tiny version of habit
+- AI-powered suggestions for:
+  - Temptation bundling (pair with enjoyable activity)
+  - Pre-habit rituals (10-30 second mindset priming)
+  - Environment cues (visual triggers)
+  - Distraction removal (friction reduction)
 
 ### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- Shows current streak with fire icon
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
+- Personalized identity reminder
+- Current habit with tiny version display
+- Streak counter with fire icon
+- "Start Ritual" button for pre-habit preparation
+- Confetti celebration on completion
+- "Improve this habit" AI suggestions
+- Best streak tracking
+
+### ✅ AI Suggestion System
+- Async remote LLM integration (5-second timeout)
+- Automatic fallback to local heuristics
+- 20+ habit-specific templates
+- Context-aware suggestions based on habit details
+
+### ✅ Notifications
+- Daily scheduled reminders at user-defined time
+- Action buttons: "Mark Done" and "Snooze 30 mins"
+- Temptation bundle included in notification text
+- Timezone support
+
+### ✅ Data Persistence
+- Hive local database
+- Completion history tracking
+- Streak persistence across app restarts
+- Backward-compatible data migrations
+
+### ✅ Analytics Foundation
+- Completion history (all dates tracked)
+- Longest streak tracking
+- Completion rates (weekly, monthly, overall)
+- Date-range queries for calendar/charts
 
 ### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
+- Placeholder sections for future features
 - App information and about section
 
 ## 🚀 How to Run the App
@@ -182,17 +208,40 @@ Try this user journey:
 - **Ability**: Tiny 2-minute version makes it easy
 - **Prompt**: Daily reminder when you open the app
 
-## 🔮 Future Features (Not Yet Implemented)
+## 🔮 Future Features
 
-- [ ] Multiple habits support
-- [ ] Habit history and calendar view
-- [ ] Reminders and notifications
+### Planned
+- [ ] Multiple habits support (optional - see Philosophy note below)
+- [ ] Habit history calendar view
+- [ ] Analytics dashboard with charts
 - [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
-- [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
-- [ ] Weekly/monthly analytics
+- [ ] Streak milestones & badges
+- [ ] Email/SMS reminders (backend integration)
 - [ ] Backup and restore functionality
+- [ ] Privacy policy & App Store preparation
+
+### Already Implemented ✅
+- [x] Data persistence (Hive local storage)
+- [x] Reminders and notifications
+- [x] Environment design suggestions (AI-powered)
+- [x] Completion history tracking
+- [x] Weekly/monthly completion rates
+
+### 📖 Philosophy: One Habit at a Time
+
+This app follows James Clear's core principle from *Atomic Habits*:
+
+> "You don't rise to the level of your goals. You fall to the level of your systems."
+
+**Why single-habit focus by default?**
+- Trying to change too many habits at once leads to failure
+- Mastering one habit builds the identity foundation for the next
+- The 2-minute rule works best with focused attention
+
+**Future approach:** If multiple habits are added, the app will:
+- Encourage users to master one habit first (21+ day streak)
+- Warn about cognitive overload when adding habits too quickly
+- Provide guidance on habit stacking (linking new habits to established ones)
 
 ## 🛠️ Technologies Used
 
