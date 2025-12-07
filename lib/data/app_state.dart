@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'models/user_preferences.dart';
 import 'models/completion_record.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
@@ -18,6 +19,9 @@ import 'ai_suggestion_service.dart';
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
+
+  // User preferences (customization settings)
+  UserPreferences _userPreferences = UserPreferences();
 
   // List of all habits (supports multiple habits)
   List<Habit> _habits = [];
@@ -46,6 +50,7 @@ class AppState extends ChangeNotifier {
 
   // Getters to access state
   UserProfile? get userProfile => _userProfile;
+  UserPreferences get userPreferences => _userPreferences;
   List<Habit> get habits => List.unmodifiable(_habits);
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
@@ -114,6 +119,12 @@ class AppState extends ChangeNotifier {
       _userProfile = UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
     }
 
+    // Load user preferences
+    final prefsJson = _dataBox!.get('userPreferences');
+    if (prefsJson != null) {
+      _userPreferences = UserPreferences.fromJson(Map<String, dynamic>.from(prefsJson));
+    }
+
     // Try to load habits list first (new format)
     final habitsJson = _dataBox!.get('habits');
     if (habitsJson != null) {
@@ -156,6 +167,9 @@ class AppState extends ChangeNotifier {
       if (_userProfile != null) {
         await _dataBox!.put('userProfile', _userProfile!.toJson());
       }
+
+      // Save user preferences
+      await _dataBox!.put('userPreferences', _userPreferences.toJson());
 
       // Save habits list (new format)
       await _dataBox!.put('habits', _habits.map((h) => h.toJson()).toList());
@@ -711,6 +725,7 @@ class AppState extends ChangeNotifier {
     required String habitId,
     required DateTime date,
     String? obstacle,
+    String? obstacleEmoji,
     int? mood,
   }) async {
     final index = _habits.indexWhere((h) => h.id == habitId);
@@ -724,6 +739,7 @@ class AppState extends ChangeNotifier {
       date: normalizedDate,
       completed: false,
       obstacle: obstacle,
+      obstacleEmoji: obstacleEmoji,
       mood: mood,
     );
 
@@ -821,4 +837,30 @@ class AppState extends ChangeNotifier {
 
     return unreflectedDays;
   }
+
+  // ========== User Preferences Methods ==========
+
+  /// Update user preferences
+  Future<void> updateUserPreferences(UserPreferences preferences) async {
+    _userPreferences = preferences;
+    await _saveToStorage();
+    notifyListeners();
+  }
+
+  /// Update mood emoji preset
+  Future<void> setMoodEmojiPreset(String preset) async {
+    _userPreferences = _userPreferences.copyWith(moodEmojiPreset: preset);
+    await _saveToStorage();
+    notifyListeners();
+  }
+
+  /// Toggle AI coaching tips
+  Future<void> toggleAiCoaching(bool enabled) async {
+    _userPreferences = _userPreferences.copyWith(showAiCoaching: enabled);
+    await _saveToStorage();
+    notifyListeners();
+  }
+
+  /// Get active mood emojis based on user preferences
+  Map<int, String> get activeMoodEmojis => _userPreferences.activeMoodEmojis;
 }

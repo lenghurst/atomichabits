@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../../data/models/user_preferences.dart';
+import '../../data/models/completion_record.dart';
 
 /// Settings screen - Manage habits and app settings
 ///
@@ -147,6 +149,29 @@ class SettingsScreen extends StatelessWidget {
                   subtitle: 'Clear all habits and start fresh',
                   isDestructive: true,
                   onTap: () => _confirmResetData(context, appState),
+                ),
+                const Divider(),
+
+                _buildSectionTitle(context, 'Personalization'),
+                _buildSettingsTile(
+                  context,
+                  icon: Icons.emoji_emotions,
+                  title: 'Mood Emoji Style',
+                  subtitle: _getMoodPresetDisplayName(appState.userPreferences.moodEmojiPreset),
+                  onTap: () => _showMoodEmojiPicker(context, appState),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lightbulb_outline),
+                  title: const Text('AI Coaching Tips'),
+                  subtitle: Text(
+                    appState.userPreferences.showAiCoaching
+                        ? 'Showing tips when you reflect'
+                        : 'Tips disabled',
+                  ),
+                  trailing: Switch(
+                    value: appState.userPreferences.showAiCoaching,
+                    onChanged: (value) => appState.toggleAiCoaching(value),
+                  ),
                 ),
                 const Divider(),
 
@@ -392,6 +417,109 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Got it!'),
           ),
         ],
+      ),
+    );
+  }
+
+  String _getMoodPresetDisplayName(String preset) {
+    return UserPreferences.getPresetDisplayName(preset);
+  }
+
+  void _showMoodEmojiPicker(BuildContext context, AppState appState) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Choose Mood Emoji Style',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'These emojis will be used when recording how you felt.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 24),
+              ...CompletionRecord.moodEmojiPresets.entries.map((entry) {
+                final presetName = entry.key;
+                final emojis = entry.value;
+                final isSelected = appState.userPreferences.moodEmojiPreset == presetName;
+
+                return InkWell(
+                  onTap: () {
+                    appState.setMoodEmojiPreset(presetName);
+                    Navigator.pop(sheetContext);
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: isSelected
+                          ? Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            )
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        // Emoji preview
+                        Expanded(
+                          child: Row(
+                            children: [1, 2, 3, 4, 5].map((mood) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  emojis[mood] ?? '',
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        // Label
+                        Text(
+                          UserPreferences.getPresetDisplayName(presetName),
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                        ),
+                        if (isSelected)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Icon(
+                              Icons.check_circle,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
