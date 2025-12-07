@@ -399,17 +399,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim(),
         // New "Make it Attractive" and environment design fields
-        temptationBundle: _temptationBundleController.text.trim().isEmpty 
-            ? null 
+        temptationBundle: _temptationBundleController.text.trim().isEmpty
+            ? null
             : _temptationBundleController.text.trim(),
-        preHabitRitual: _preHabitRitualController.text.trim().isEmpty 
-            ? null 
+        preHabitRitual: _preHabitRitualController.text.trim().isEmpty
+            ? null
             : _preHabitRitualController.text.trim(),
-        environmentCue: _environmentCueController.text.trim().isEmpty 
-            ? null 
+        environmentCue: _environmentCueController.text.trim().isEmpty
+            ? null
             : _environmentCueController.text.trim(),
-        environmentDistraction: _environmentDistractionController.text.trim().isEmpty 
-            ? null 
+        environmentDistraction: _environmentDistractionController.text.trim().isEmpty
+            ? null
             : _environmentDistractionController.text.trim(),
       );
 
@@ -418,9 +418,82 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       await appState.createHabit(habit);
       await appState.completeOnboarding();
 
+      // Request notification permission (external trigger for habit loop)
+      if (mounted) {
+        await _requestNotificationPermission(appState);
+      }
+
       // Navigate to Today screen
       if (mounted) {
         context.go('/today');
+      }
+    }
+  }
+
+  Future<void> _requestNotificationPermission(AppState appState) async {
+    // Show notification permission dialog
+    final shouldRequest = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.notifications_active, color: Colors.deepPurple),
+            SizedBox(width: 12),
+            Text('Enable Reminders?'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Daily notifications are the external trigger that starts your habit loop.',
+              style: TextStyle(fontSize: 15),
+            ),
+            SizedBox(height: 16),
+            Text(
+              '"Make it Obvious" - Law 1 of Behavior Change',
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.grey,
+                fontSize: 13,
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Without reminders, you rely on memory alone. With reminders, your environment prompts you to act.',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Maybe Later'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Enable Reminders'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldRequest == true && mounted) {
+      final granted = await appState.requestNotificationPermission();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              granted
+                  ? 'Daily reminders enabled! You\'ll be reminded at ${_formatTime(_selectedTime)}.'
+                  : 'Reminders not enabled. You can enable them later in Settings.',
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }

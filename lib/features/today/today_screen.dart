@@ -247,12 +247,6 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             title: const Text('Today'),
             centerTitle: true,
             actions: [
-              // Test notification button (debug only)
-              IconButton(
-                icon: const Icon(Icons.notifications_active),
-                onPressed: () => appState.showTestNotification(),
-                tooltip: 'Test notification',
-              ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () => context.go('/settings'),

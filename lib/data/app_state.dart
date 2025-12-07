@@ -12,25 +12,29 @@ import 'ai_suggestion_service.dart';
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
-  
+
   // Current habit (we'll support multiple habits later)
   Habit? _currentHabit;
-  
+
   // Onboarding completion status
   bool _hasCompletedOnboarding = false;
-  
+
   // Hive box for persistent storage
   Box? _dataBox;
-  
+
   // Loading state
   bool _isLoading = true;
-  
+
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
-  
+
+  // Notification preferences
+  bool _notificationsEnabled = true;
+  bool _hasRequestedNotificationPermission = false;
+
   // Notification service
   final NotificationService _notificationService = NotificationService();
-  
+
   // AI Suggestion service (local heuristics for now)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
 
@@ -40,6 +44,9 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get hasNotificationPermission => _notificationService.hasPermission;
+  bool get hasRequestedNotificationPermission => _hasRequestedNotificationPermission;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -92,8 +99,15 @@ class AppState extends ChangeNotifier {
       _currentHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
     }
 
+    // Load notification preferences
+    _notificationsEnabled = _dataBox!.get('notificationsEnabled', defaultValue: true);
+    _hasRequestedNotificationPermission = _dataBox!.get('hasRequestedNotificationPermission', defaultValue: false);
+
+    // Sync notification service state
+    _notificationService.setNotificationsEnabled(_notificationsEnabled);
+
     if (kDebugMode) {
-      debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, profile=${_userProfile?.name}, habit=${_currentHabit?.name}');
+      debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, profile=${_userProfile?.name}, habit=${_currentHabit?.name}, notifications=$_notificationsEnabled');
     }
   }
 
@@ -114,6 +128,10 @@ class AppState extends ChangeNotifier {
       if (_currentHabit != null) {
         await _dataBox!.put('currentHabit', _currentHabit!.toJson());
       }
+
+      // Save notification preferences
+      await _dataBox!.put('notificationsEnabled', _notificationsEnabled);
+      await _dataBox!.put('hasRequestedNotificationPermission', _hasRequestedNotificationPermission);
 
       if (kDebugMode) {
         debugPrint('Saved to storage successfully');
@@ -248,23 +266,24 @@ class AppState extends ChangeNotifier {
   }
   
   // ========== Notification Methods ==========
-  
+
   /// Schedule daily notifications for habit reminder
   Future<void> _scheduleNotifications() async {
     if (_currentHabit == null || _userProfile == null) return;
-    
+    if (!_notificationsEnabled) return;
+
     await _notificationService.scheduleDailyHabitReminder(
       habit: _currentHabit!,
       profile: _userProfile!,
     );
   }
-  
+
   /// Handle notification action buttons (Mark Done, Snooze)
   void _handleNotificationAction(String action) {
     if (kDebugMode) {
-      debugPrint('📱 Notification action: $action');
+      debugPrint('Notification action: $action');
     }
-    
+
     if (action == 'mark_done') {
       // Mark habit as complete from notification
       completeHabitForToday(fromNotification: true);
@@ -278,32 +297,76 @@ class AppState extends ChangeNotifier {
       }
     }
   }
-  
+
+  /// Request notification permission
+  /// Returns true if permission was granted
+  Future<bool> requestNotificationPermission() async {
+    _hasRequestedNotificationPermission = true;
+    await _saveToStorage();
+
+    final granted = await _notificationService.requestPermission();
+
+    if (granted && _notificationsEnabled && _currentHabit != null && _userProfile != null) {
+      // Schedule notifications if permission granted and enabled
+      await _scheduleNotifications();
+    }
+
+    notifyListeners();
+    return granted;
+  }
+
+  /// Check notification permission status
+  Future<bool> checkNotificationPermission() async {
+    return await _notificationService.checkPermissionStatus();
+  }
+
+  /// Enable or disable notifications
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    _notificationsEnabled = enabled;
+    _notificationService.setNotificationsEnabled(enabled);
+
+    await _saveToStorage();
+
+    if (enabled && _currentHabit != null && _userProfile != null) {
+      // Reschedule notifications when enabled
+      await _scheduleNotifications();
+    }
+
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Notifications ${enabled ? "enabled" : "disabled"}');
+    }
+  }
+
   /// Update reminder time and reschedule notifications
-  /// Called from Investment flow
+  /// Called from Investment flow or Settings
   Future<void> updateReminderTime(String newTime) async {
     if (_currentHabit == null) return;
-    
+
     _currentHabit = _currentHabit!.copyWith(
       implementationTime: newTime,
     );
-    
+
     await _saveToStorage();
-    
+
     // Reschedule notifications with new time
     await _scheduleNotifications();
-    
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('⏰ Reminder time updated to: $newTime');
+      debugPrint('Reminder time updated to: $newTime');
     }
   }
-  
-  /// Show test notification (for debugging)
+
+  /// Show test notification (for debugging/testing)
   Future<void> showTestNotification() async {
     await _notificationService.showTestNotification();
   }
+
+  /// Get the currently scheduled reminder time
+  String? get currentReminderTime => _currentHabit?.implementationTime;
   
   // ========== Reward + Investment Flow Methods ==========
   
