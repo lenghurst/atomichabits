@@ -103,33 +103,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
+      // Create temporary user profile (needed for suggestions)
+      final tempProfile = UserProfile(
+        name: _nameController.text.trim().isEmpty ? 'User' : _nameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty
+            ? 'achieves their goals'
+            : _identityController.text.trim(),
+        createdAt: DateTime.now(),
+      );
+
       // Create temporary habit to get suggestions
       final tempHabit = Habit(
         id: 'temp',
-        name: _habitNameController.text.trim().isEmpty 
-            ? 'your habit' 
+        name: _habitNameController.text.trim().isEmpty
+            ? 'your habit'
             : _habitNameController.text.trim(),
-        identity: _identityController.text.trim().isEmpty 
-            ? 'achieves their goals' 
+        identity: _identityController.text.trim().isEmpty
+            ? 'achieves their goals'
             : _identityController.text.trim(),
-        tinyVersion: _tinyVersionController.text.trim().isEmpty 
-            ? 'start small' 
+        tinyVersion: _tinyVersionController.text.trim().isEmpty
+            ? 'start small'
             : _tinyVersionController.text.trim(),
         createdAt: DateTime.now(),
         implementationTime: _formatTime(_selectedTime),
-        implementationLocation: _locationController.text.trim().isEmpty 
-            ? 'at home' 
+        implementationLocation: _locationController.text.trim().isEmpty
+            ? 'at home'
             : _locationController.text.trim(),
       );
-      
-      // Save current habit temporarily to get suggestions
+
+      // Save current state temporarily to get suggestions
+      final originalProfile = appState.userProfile;
       final originalHabit = appState.currentHabit;
+      await appState.updateUserProfile(tempProfile);
       await appState.createHabit(tempHabit);
       
       // Fetch suggestions (async - remote LLM with local fallback)
       final suggestions = await appState.getTemptationBundleSuggestionsForCurrentHabit();
-      
-      // Restore original habit
+
+      // Restore original state
+      if (originalProfile != null) {
+        await appState.updateUserProfile(originalProfile);
+      }
       if (originalHabit != null) {
         await appState.createHabit(originalHabit);
       }
@@ -196,6 +210,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
+      final tempProfile = UserProfile(
+        name: _nameController.text.trim().isEmpty ? 'User' : _nameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        createdAt: DateTime.now(),
+      );
+
       final tempHabit = Habit(
         id: 'temp',
         name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
@@ -205,11 +225,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
       );
-      
+
+      final originalProfile = appState.userProfile;
       final originalHabit = appState.currentHabit;
+      await appState.updateUserProfile(tempProfile);
       await appState.createHabit(tempHabit);
       final suggestions = await appState.getPreHabitRitualSuggestionsForCurrentHabit();
-      
+
+      if (originalProfile != null) {
+        await appState.updateUserProfile(originalProfile);
+      }
       if (originalHabit != null) {
         await appState.createHabit(originalHabit);
       }
@@ -269,6 +294,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
+      final tempProfile = UserProfile(
+        name: _nameController.text.trim().isEmpty ? 'User' : _nameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        createdAt: DateTime.now(),
+      );
+
       final tempHabit = Habit(
         id: 'temp',
         name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
@@ -278,11 +309,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
       );
-      
+
+      final originalProfile = appState.userProfile;
       final originalHabit = appState.currentHabit;
+      await appState.updateUserProfile(tempProfile);
       await appState.createHabit(tempHabit);
       final suggestions = await appState.getEnvironmentCueSuggestionsForCurrentHabit();
-      
+
+      if (originalProfile != null) {
+        await appState.updateUserProfile(originalProfile);
+      }
       if (originalHabit != null) {
         await appState.createHabit(originalHabit);
       }
@@ -342,6 +378,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
+      final tempProfile = UserProfile(
+        name: _nameController.text.trim().isEmpty ? 'User' : _nameController.text.trim(),
+        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
+        createdAt: DateTime.now(),
+      );
+
       final tempHabit = Habit(
         id: 'temp',
         name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
@@ -351,11 +393,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
       );
-      
+
+      final originalProfile = appState.userProfile;
       final originalHabit = appState.currentHabit;
+      await appState.updateUserProfile(tempProfile);
       await appState.createHabit(tempHabit);
       final suggestions = await appState.getEnvironmentDistractionSuggestionsForCurrentHabit();
-      
+
+      if (originalProfile != null) {
+        await appState.updateUserProfile(originalProfile);
+      }
       if (originalHabit != null) {
         await appState.createHabit(originalHabit);
       }
