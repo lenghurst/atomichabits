@@ -1,29 +1,46 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'models/habit.dart';
 import 'models/user_profile.dart';
 
 /// Notification Service for Daily Habit Reminders
-/// Implements the "Trigger" part of Nir Eyal's Hook Model
-/// 
+/// Implements the "Trigger" part of the Hook Model (Nir Eyal)
+/// And "Make it Obvious" - Law 1 from Atomic Habits (James Clear)
+///
 /// Key Features:
 /// - Daily scheduled notifications at user's chosen time
 /// - Action buttons: "Mark Done" and "Snooze 30 mins"
-/// - Handles both Android and Web (gracefully degrades on web)
+/// - Proper permission handling for Android 13+ and iOS
+/// - Dynamic timezone detection
+/// - Enable/disable toggle support
+/// - Boot receiver for notification persistence after device restart
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = 
+  final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
-  
+  bool _notificationsEnabled = true;
+
+  // Permission status
+  bool _hasPermission = false;
+
   // Callback for when notification actions are tapped
   Function(String action)? onNotificationAction;
+
+  // Callback for when app is opened from notification
+  Function(String? habitId)? onNotificationTapped;
+
+  // Getters
+  bool get isInitialized => _initialized;
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get hasPermission => _hasPermission;
 
   /// Initialize notification system
   /// Called once when app starts in main.dart
@@ -32,81 +49,264 @@ class NotificationService {
 
     try {
       // Initialize timezone data for scheduled notifications
-      tz.initializeTimeZones();
-      
-      // Find local timezone (defaults to UTC if not found)
-      final String timeZoneName = 'UTC'; // You can make this dynamic later
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      tz_data.initializeTimeZones();
+
+      // Detect local timezone
+      final String localTimeZone = await _getLocalTimeZone();
+      tz.setLocalLocation(tz.getLocation(localTimeZone));
+
+      if (kDebugMode) {
+        debugPrint('Timezone set to: $localTimeZone');
+      }
 
       // Android initialization settings
-      const AndroidInitializationSettings androidSettings = 
+      const AndroidInitializationSettings androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      // iOS initialization settings (for future iOS support)
-      const DarwinInitializationSettings iosSettings = 
-          DarwinInitializationSettings(
-        requestAlertPermission: true,
+      // iOS initialization settings
+      final DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: false, // We'll request manually
         requestBadgePermission: true,
         requestSoundPermission: true,
+        notificationCategories: [
+          DarwinNotificationCategory(
+            'habit_reminder',
+            actions: <DarwinNotificationAction>[
+              DarwinNotificationAction.plain(
+                'mark_done',
+                'Mark Done',
+                options: <DarwinNotificationActionOption>{
+                  DarwinNotificationActionOption.foreground,
+                },
+              ),
+              DarwinNotificationAction.plain(
+                'snooze',
+                'Snooze 30 mins',
+              ),
+            ],
+            options: <DarwinNotificationCategoryOption>{
+              DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+            },
+          ),
+        ],
       );
 
       // Combined initialization settings
-      const InitializationSettings initSettings = InitializationSettings(
+      final InitializationSettings initSettings = InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
+        macOS: iosSettings, // Same settings for macOS
       );
 
       // Initialize with callback for notification taps
       await _notifications.initialize(
         initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
+        onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTapped,
       );
 
-      // Request permissions (required for Android 13+)
-      await _requestPermissions();
-
       _initialized = true;
-      
+
       if (kDebugMode) {
-        debugPrint('✅ NotificationService initialized');
+        debugPrint('NotificationService initialized successfully');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ NotificationService initialization error: $e');
+        debugPrint('NotificationService initialization error: $e');
         debugPrint('Notifications may not work (common on web platform)');
       }
       // Don't throw - allow app to continue without notifications
     }
   }
 
-  /// Request notification permissions (Android 13+)
-  Future<void> _requestPermissions() async {
+  /// Get local timezone name
+  Future<String> _getLocalTimeZone() async {
     try {
-      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          _notifications.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      // Try to get the device timezone
+      final now = DateTime.now();
+      final offset = now.timeZoneOffset;
 
-      if (androidImplementation != null) {
-        await androidImplementation.requestNotificationsPermission();
+      // Map common offsets to timezone names
+      // This is a simplified approach - in production you might want to use
+      // a more comprehensive timezone detection library
+      final hours = offset.inHours;
+      final minutes = offset.inMinutes.remainder(60);
+
+      // Common timezone mappings
+      final timezoneMap = {
+        -12: 'Etc/GMT+12',
+        -11: 'Pacific/Pago_Pago',
+        -10: 'Pacific/Honolulu',
+        -9: 'America/Anchorage',
+        -8: 'America/Los_Angeles',
+        -7: 'America/Denver',
+        -6: 'America/Chicago',
+        -5: 'America/New_York',
+        -4: 'America/Halifax',
+        -3: 'America/Sao_Paulo',
+        -2: 'Atlantic/South_Georgia',
+        -1: 'Atlantic/Azores',
+        0: 'UTC',
+        1: 'Europe/London',
+        2: 'Europe/Paris',
+        3: 'Europe/Moscow',
+        4: 'Asia/Dubai',
+        5: 'Asia/Karachi',
+        6: 'Asia/Dhaka',
+        7: 'Asia/Bangkok',
+        8: 'Asia/Singapore',
+        9: 'Asia/Tokyo',
+        10: 'Australia/Sydney',
+        11: 'Pacific/Noumea',
+        12: 'Pacific/Auckland',
+      };
+
+      // Handle half-hour offsets
+      if (minutes == 30) {
+        if (hours == 5) return 'Asia/Kolkata';
+        if (hours == 9) return 'Australia/Darwin';
+        if (hours == -3) return 'America/St_Johns';
       }
+
+      return timezoneMap[hours] ?? 'UTC';
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Permission request not available on this platform');
+        debugPrint('Error detecting timezone: $e, using UTC');
       }
+      return 'UTC';
+    }
+  }
+
+  /// Request notification permissions
+  /// Returns true if permission granted, false otherwise
+  Future<bool> requestPermission() async {
+    if (!_initialized) {
+      await initialize();
+    }
+
+    try {
+      // Request Android 13+ permissions
+      if (!kIsWeb && Platform.isAndroid) {
+        final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+            _notifications.resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+
+        if (androidPlugin != null) {
+          // Request notification permission (Android 13+)
+          final bool? granted = await androidPlugin.requestNotificationsPermission();
+          _hasPermission = granted ?? false;
+
+          // Also request exact alarm permission (Android 12+)
+          await androidPlugin.requestExactAlarmsPermission();
+
+          if (kDebugMode) {
+            debugPrint('Android notification permission: $_hasPermission');
+          }
+        }
+      }
+
+      // Request iOS permissions
+      if (!kIsWeb && Platform.isIOS) {
+        final IOSFlutterLocalNotificationsPlugin? iosPlugin =
+            _notifications.resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>();
+
+        if (iosPlugin != null) {
+          final bool? granted = await iosPlugin.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+            critical: false,
+          );
+          _hasPermission = granted ?? false;
+
+          if (kDebugMode) {
+            debugPrint('iOS notification permission: $_hasPermission');
+          }
+        }
+      }
+
+      // Request macOS permissions
+      if (!kIsWeb && Platform.isMacOS) {
+        final MacOSFlutterLocalNotificationsPlugin? macPlugin =
+            _notifications.resolvePlatformSpecificImplementation<
+                MacOSFlutterLocalNotificationsPlugin>();
+
+        if (macPlugin != null) {
+          final bool? granted = await macPlugin.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+          _hasPermission = granted ?? false;
+        }
+      }
+
+      return _hasPermission;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Permission request error: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Check current permission status without requesting
+  Future<bool> checkPermissionStatus() async {
+    if (!_initialized) return false;
+
+    try {
+      if (!kIsWeb && Platform.isAndroid) {
+        final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+            _notifications.resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+
+        if (androidPlugin != null) {
+          _hasPermission = await androidPlugin.areNotificationsEnabled() ?? false;
+        }
+      } else if (!kIsWeb && Platform.isIOS) {
+        // iOS doesn't have a direct check, assume granted if we've requested before
+        // The notification will just not show if permission was denied
+        _hasPermission = true;
+      } else {
+        // Web and other platforms - assume no permission
+        _hasPermission = false;
+      }
+
+      return _hasPermission;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error checking permission status: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Enable or disable notifications
+  void setNotificationsEnabled(bool enabled) {
+    _notificationsEnabled = enabled;
+    if (!enabled) {
+      cancelAllNotifications();
+    }
+    if (kDebugMode) {
+      debugPrint('Notifications ${enabled ? "enabled" : "disabled"}');
     }
   }
 
   /// Handle notification tap (when user interacts with notification)
   void _onNotificationTapped(NotificationResponse response) {
     final String? payload = response.payload;
-    
+
     if (kDebugMode) {
-      debugPrint('📱 Notification tapped - Action: ${response.actionId}, Payload: $payload');
+      debugPrint('Notification tapped - Action: ${response.actionId}, Payload: $payload');
     }
 
     // Handle action button presses
-    if (response.actionId != null) {
+    if (response.actionId != null && response.actionId!.isNotEmpty) {
       onNotificationAction?.call(response.actionId!);
+    } else {
+      // User tapped the notification body itself
+      onNotificationTapped?.call(payload);
     }
   }
 
@@ -118,7 +318,14 @@ class NotificationService {
   }) async {
     if (!_initialized) {
       if (kDebugMode) {
-        debugPrint('⚠️ Cannot schedule notification - service not initialized');
+        debugPrint('Cannot schedule notification - service not initialized');
+      }
+      return;
+    }
+
+    if (!_notificationsEnabled) {
+      if (kDebugMode) {
+        debugPrint('Notifications disabled - skipping schedule');
       }
       return;
     }
@@ -132,7 +339,7 @@ class NotificationService {
       final hour = int.parse(timeParts[0]);
       final minute = int.parse(timeParts[1]);
 
-      // Create scheduled time
+      // Create scheduled time in local timezone
       final now = tz.TZDateTime.now(tz.local);
       var scheduledDate = tz.TZDateTime(
         tz.local,
@@ -148,14 +355,21 @@ class NotificationService {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
-      // Notification details
+      // Build notification body (include temptation bundle if present)
+      final String notificationBody = _buildNotificationBody(habit, profile);
+
+      // Android notification details with action buttons
       final androidDetails = AndroidNotificationDetails(
-        'habit_reminders', // Channel ID
-        'Habit Reminders', // Channel name
+        'habit_reminders',
+        'Habit Reminders',
         channelDescription: 'Daily reminders for your habits',
         importance: Importance.high,
         priority: Priority.high,
         ticker: 'Time for your habit!',
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        enableVibration: true,
+        playSound: true,
         // Action buttons
         actions: <AndroidNotificationAction>[
           const AndroidNotificationAction(
@@ -173,41 +387,51 @@ class NotificationService {
         ],
       );
 
-      final notificationDetails = NotificationDetails(android: androidDetails);
+      // iOS notification details
+      const iosDetails = DarwinNotificationDetails(
+        categoryIdentifier: 'habit_reminder',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
 
-      // Build notification body (include temptation bundle if present)
-      final String notificationBody;
-      if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
-      } else {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity}.';
-      }
+      final notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+        macOS: iosDetails,
+      );
 
       // Schedule repeating daily notification
       await _notifications.zonedSchedule(
         0, // Notification ID
-        'Time for your 2-minute ${habit.name}', // Title
-        notificationBody, // Body (with optional temptation bundle)
+        'Time for your 2-minute ${habit.name}',
+        notificationBody,
         scheduledDate,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time, // Repeat daily at same time
-        payload: habit.id, // Pass habit ID for reference
+        payload: habit.id,
       );
 
       if (kDebugMode) {
-        debugPrint('✅ Daily notification scheduled for ${habit.implementationTime}');
-        debugPrint('   Next notification: $scheduledDate');
+        debugPrint('Daily notification scheduled for ${habit.implementationTime}');
+        debugPrint('Next notification: $scheduledDate');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Failed to schedule notification: $e');
+        debugPrint('Failed to schedule notification: $e');
       }
     }
+  }
+
+  /// Build notification body text
+  String _buildNotificationBody(Habit habit, UserProfile profile) {
+    if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
+      return 'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
+    }
+    return 'You\'re becoming the type of person who ${profile.identity}.';
   }
 
   /// Schedule one-time snooze notification (30 minutes from now)
@@ -216,10 +440,12 @@ class NotificationService {
     required Habit habit,
     required UserProfile profile,
   }) async {
-    if (!_initialized) return;
+    if (!_initialized || !_notificationsEnabled) return;
 
     try {
       final snoozeTime = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 30));
+
+      final String notificationBody = _buildNotificationBody(habit, profile);
 
       final androidDetails = AndroidNotificationDetails(
         'habit_reminders',
@@ -227,7 +453,7 @@ class NotificationService {
         channelDescription: 'Daily reminders for your habits',
         importance: Importance.high,
         priority: Priority.high,
-        // Same action buttons as daily notification
+        category: AndroidNotificationCategory.reminder,
         actions: <AndroidNotificationAction>[
           const AndroidNotificationAction(
             'mark_done',
@@ -244,23 +470,24 @@ class NotificationService {
         ],
       );
 
-      final notificationDetails = NotificationDetails(android: androidDetails);
+      const iosDetails = DarwinNotificationDetails(
+        categoryIdentifier: 'habit_reminder',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
 
-      // Build notification body (include temptation bundle if present)
-      final String notificationBody;
-      if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
-      } else {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity}.';
-      }
+      final notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+        macOS: iosDetails,
+      );
 
       // Schedule one-time notification (uses different ID to not conflict with daily)
       await _notifications.zonedSchedule(
         1, // Different ID for snooze notifications
         'Time for your 2-minute ${habit.name}',
-        notificationBody, // Body (with optional temptation bundle)
+        notificationBody,
         snoozeTime,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -270,11 +497,11 @@ class NotificationService {
       );
 
       if (kDebugMode) {
-        debugPrint('⏰ Snooze notification scheduled for $snoozeTime');
+        debugPrint('Snooze notification scheduled for $snoozeTime');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Failed to schedule snooze: $e');
+        debugPrint('Failed to schedule snooze: $e');
       }
     }
   }
@@ -282,15 +509,31 @@ class NotificationService {
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
     if (!_initialized) return;
-    
+
     try {
       await _notifications.cancelAll();
       if (kDebugMode) {
-        debugPrint('🚫 All notifications cancelled');
+        debugPrint('All notifications cancelled');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Failed to cancel notifications: $e');
+        debugPrint('Failed to cancel notifications: $e');
+      }
+    }
+  }
+
+  /// Cancel specific notification by ID
+  Future<void> cancelNotification(int id) async {
+    if (!_initialized) return;
+
+    try {
+      await _notifications.cancel(id);
+      if (kDebugMode) {
+        debugPrint('Notification $id cancelled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to cancel notification $id: $e');
       }
     }
   }
@@ -298,12 +541,12 @@ class NotificationService {
   /// Get list of pending notifications (for debugging)
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     if (!_initialized) return [];
-    
+
     try {
       return await _notifications.pendingNotificationRequests();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Failed to get pending notifications: $e');
+        debugPrint('Failed to get pending notifications: $e');
       }
       return [];
     }
@@ -311,7 +554,19 @@ class NotificationService {
 
   /// Show immediate test notification (for testing purposes)
   Future<void> showTestNotification() async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      if (kDebugMode) {
+        debugPrint('Cannot show test notification - service not initialized');
+      }
+      return;
+    }
+
+    if (!_notificationsEnabled) {
+      if (kDebugMode) {
+        debugPrint('Notifications disabled - cannot show test');
+      }
+      return;
+    }
 
     try {
       const androidDetails = AndroidNotificationDetails(
@@ -320,6 +575,7 @@ class NotificationService {
         channelDescription: 'Daily reminders for your habits',
         importance: Importance.high,
         priority: Priority.high,
+        category: AndroidNotificationCategory.reminder,
         actions: <AndroidNotificationAction>[
           AndroidNotificationAction(
             'mark_done',
@@ -336,7 +592,18 @@ class NotificationService {
         ],
       );
 
-      const notificationDetails = NotificationDetails(android: androidDetails);
+      const iosDetails = DarwinNotificationDetails(
+        categoryIdentifier: 'habit_reminder',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+        macOS: iosDetails,
+      );
 
       await _notifications.show(
         99, // Test notification ID
@@ -346,12 +613,34 @@ class NotificationService {
       );
 
       if (kDebugMode) {
-        debugPrint('🧪 Test notification shown');
+        debugPrint('Test notification shown');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Failed to show test notification: $e');
+        debugPrint('Failed to show test notification: $e');
       }
     }
+  }
+
+  /// Get scheduled notification time as readable string
+  Future<String?> getScheduledTimeDescription() async {
+    final pending = await getPendingNotifications();
+    if (pending.isEmpty) return null;
+
+    // Find the daily notification (ID 0)
+    final dailyNotification = pending.where((n) => n.id == 0).firstOrNull;
+    if (dailyNotification == null) return null;
+
+    return dailyNotification.title;
+  }
+}
+
+/// Background notification response handler (must be top-level function)
+@pragma('vm:entry-point')
+void _onBackgroundNotificationTapped(NotificationResponse response) {
+  // Handle background notification tap
+  // This is called when the app is terminated and user taps notification
+  if (kDebugMode) {
+    debugPrint('Background notification tapped: ${response.payload}');
   }
 }
