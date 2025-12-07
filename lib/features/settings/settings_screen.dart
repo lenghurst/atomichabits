@@ -13,6 +13,17 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isRequestingPermission = false;
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _emailControllerInitialized = false;
+  bool _phoneControllerInitialized = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +76,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Notifications section
                 _buildSectionTitle(context, 'Notifications'),
                 _buildNotificationSettings(context, appState),
+
+                // Alternative Reminders section (Premium)
+                _buildSectionTitle(context, 'Alternative Reminders'),
+                _buildAlternativeRemindersSettings(context, appState),
                 const Divider(),
 
                 // Account section
@@ -355,6 +370,257 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildAlternativeRemindersSettings(BuildContext context, AppState appState) {
+    // Initialize controllers with current values (only once)
+    if (!_emailControllerInitialized && appState.userEmail != null) {
+      _emailController.text = appState.userEmail!;
+      _emailControllerInitialized = true;
+    }
+    if (!_phoneControllerInitialized && appState.userPhone != null) {
+      _phoneController.text = appState.userPhone!;
+      _phoneControllerInitialized = true;
+    }
+
+    final emailEnabled = appState.emailRemindersEnabled;
+    final smsEnabled = appState.smsRemindersEnabled;
+    final canEnableEmail = appState.canEnableEmailReminders;
+    final canEnableSms = appState.canEnableSmsReminders;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Premium badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.amber.shade600, Colors.orange.shade600],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.star, size: 14, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text(
+                    'Coming Soon',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Get reminders via email or text message in addition to push notifications.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Email section
+            Row(
+              children: [
+                const Icon(Icons.email, color: Colors.blue, size: 24),
+                const SizedBox(width: 12),
+                const Text(
+                  'Email Reminders',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: emailEnabled,
+                  onChanged: canEnableEmail
+                      ? (value) => _toggleEmailReminders(context, appState, value)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                hintText: 'your@email.com',
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                suffixIcon: _emailController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.save, size: 20),
+                        onPressed: () => _saveEmail(context, appState),
+                        tooltip: 'Save email',
+                      )
+                    : null,
+              ),
+              keyboardType: TextInputType.emailAddress,
+              onSubmitted: (_) => _saveEmail(context, appState),
+            ),
+            if (!canEnableEmail && _emailController.text.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Please enter a valid email address',
+                style: TextStyle(fontSize: 12, color: Colors.red.shade600),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 12),
+
+            // SMS section
+            Row(
+              children: [
+                const Icon(Icons.sms, color: Colors.green, size: 24),
+                const SizedBox(width: 12),
+                const Text(
+                  'Text Message Reminders',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: smsEnabled,
+                  onChanged: canEnableSms
+                      ? (value) => _toggleSmsReminders(context, appState, value)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                hintText: '+1 (555) 123-4567',
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                suffixIcon: _phoneController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.save, size: 20),
+                        onPressed: () => _savePhone(context, appState),
+                        tooltip: 'Save phone',
+                      )
+                    : null,
+              ),
+              keyboardType: TextInputType.phone,
+              onSubmitted: (_) => _savePhone(context, appState),
+            ),
+            if (!canEnableSms && _phoneController.text.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Please enter a valid phone number (at least 10 digits)',
+                style: TextStyle(fontSize: 12, color: Colors.red.shade600),
+              ),
+            ],
+
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Email and SMS reminders will be available in a future update. '
+                      'Save your details now to be ready!',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveEmail(BuildContext context, AppState appState) async {
+    final email = _emailController.text.trim();
+    await appState.updateEmail(email.isEmpty ? null : email);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(email.isEmpty ? 'Email cleared' : 'Email saved: $email'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+    // Rebuild to update validation state
+    setState(() {});
+  }
+
+  Future<void> _savePhone(BuildContext context, AppState appState) async {
+    final phone = _phoneController.text.trim();
+    await appState.updatePhone(phone.isEmpty ? null : phone);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(phone.isEmpty ? 'Phone cleared' : 'Phone saved: $phone'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+    // Rebuild to update validation state
+    setState(() {});
+  }
+
+  Future<void> _toggleEmailReminders(
+    BuildContext context,
+    AppState appState,
+    bool enabled,
+  ) async {
+    await appState.setEmailRemindersEnabled(enabled);
+
+    if (context.mounted && enabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email reminders will be available in a future update!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _toggleSmsReminders(
+    BuildContext context,
+    AppState appState,
+    bool enabled,
+  ) async {
+    await appState.setSmsRemindersEnabled(enabled);
+
+    if (context.mounted && enabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('SMS reminders will be available in a future update!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _requestPermission(BuildContext context, AppState appState) async {

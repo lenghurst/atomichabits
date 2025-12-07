@@ -367,7 +367,83 @@ class AppState extends ChangeNotifier {
 
   /// Get the currently scheduled reminder time
   String? get currentReminderTime => _currentHabit?.implementationTime;
-  
+
+  // ========== Email/SMS Reminder Preferences (Premium Feature) ==========
+
+  /// Update user's email address
+  Future<void> updateEmail(String? email) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(email: email);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Email updated to: $email');
+    }
+  }
+
+  /// Update user's phone number
+  Future<void> updatePhone(String? phone) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(phone: phone);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Phone updated to: $phone');
+    }
+  }
+
+  /// Enable/disable email reminders (premium feature)
+  Future<void> setEmailRemindersEnabled(bool enabled) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(emailRemindersEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('Email reminders ${enabled ? "enabled" : "disabled"}');
+    }
+
+    // TODO: When backend is implemented, register/unregister for email reminders
+  }
+
+  /// Enable/disable SMS reminders (premium feature)
+  Future<void> setSmsRemindersEnabled(bool enabled) async {
+    if (_userProfile == null) return;
+
+    _userProfile = _userProfile!.copyWith(smsRemindersEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('SMS reminders ${enabled ? "enabled" : "disabled"}');
+    }
+
+    // TODO: When backend is implemented, register/unregister for SMS reminders
+  }
+
+  /// Check if email reminders are available (has valid email)
+  bool get canEnableEmailReminders => _userProfile?.hasValidEmail ?? false;
+
+  /// Check if SMS reminders are available (has valid phone)
+  bool get canEnableSmsReminders => _userProfile?.hasValidPhone ?? false;
+
+  /// Get email reminders enabled status
+  bool get emailRemindersEnabled => _userProfile?.emailRemindersEnabled ?? false;
+
+  /// Get SMS reminders enabled status
+  bool get smsRemindersEnabled => _userProfile?.smsRemindersEnabled ?? false;
+
+  /// Get user's email
+  String? get userEmail => _userProfile?.email;
+
+  /// Get user's phone
+  String? get userPhone => _userProfile?.phone;
+
   // ========== Reward + Investment Flow Methods ==========
   
   /// Dismiss the reward flow
