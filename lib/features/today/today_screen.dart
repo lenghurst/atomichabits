@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/habit_list_sheet.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -234,6 +235,74 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     }
   }
 
+  // ========== Multi-Habit UI Helpers ==========
+
+  Widget _buildHabitSelectorButton(BuildContext context, AppState appState) {
+    return IconButton(
+      icon: const Icon(Icons.list),
+      tooltip: 'View all habits',
+      onPressed: () {
+        HabitListSheet.show(
+          context,
+          onAddHabit: () {
+            Navigator.pop(context); // Close sheet
+            context.go('/settings'); // Go to settings to add habit
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressChip(BuildContext context, AppState appState) {
+    final completed = appState.habitsCompletedTodayCount;
+    final total = appState.activeHabitCount;
+    final allDone = completed == total;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: InkWell(
+        onTap: () {
+          HabitListSheet.show(
+            context,
+            onAddHabit: () {
+              Navigator.pop(context);
+              context.go('/settings');
+            },
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: allDone
+                ? Colors.green.withOpacity(0.15)
+                : theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                allDone ? Icons.check_circle : Icons.track_changes,
+                size: 16,
+                color: allDone ? Colors.green : theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$completed/$total',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: allDone ? Colors.green[700] : theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
@@ -246,13 +315,20 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           appBar: AppBar(
             title: const Text('Today'),
             centerTitle: true,
+            leading: appState.activeHabitCount > 1
+                ? _buildHabitSelectorButton(context, appState)
+                : null,
             actions: [
+              // Progress indicator for multiple habits
+              if (appState.activeHabitCount > 1)
+                _buildProgressChip(context, appState),
               // Test notification button (debug only)
-              IconButton(
-                icon: const Icon(Icons.notifications_active),
-                onPressed: () => appState.showTestNotification(),
-                tooltip: 'Test notification',
-              ),
+              if (kDebugMode)
+                IconButton(
+                  icon: const Icon(Icons.notifications_active),
+                  onPressed: () => appState.showTestNotification(),
+                  tooltip: 'Test notification',
+                ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () => context.go('/settings'),
