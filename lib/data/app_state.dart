@@ -9,37 +9,98 @@ import 'ai_suggestion_service.dart';
 /// Uses Provider for simple, beginner-friendly state management
 /// Now includes Hive persistence for data that survives app restarts
 /// Handles Hook Model: Trigger (notifications) → Action → Reward → Investment
+/// Supports multiple habits with soft guardrails (Atomic Habits philosophy)
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
-  
-  // Current habit (we'll support multiple habits later)
-  Habit? _currentHabit;
-  
+
+  // Multiple habits support
+  List<Habit> _habits = [];
+  String? _primaryHabitId; // The "focused" habit (user's main habit)
+
   // Onboarding completion status
   bool _hasCompletedOnboarding = false;
-  
+
   // Hive box for persistent storage
   Box? _dataBox;
-  
+
   // Loading state
   bool _isLoading = true;
-  
+
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
-  
+
   // Notification service
   final NotificationService _notificationService = NotificationService();
-  
+
   // AI Suggestion service (local heuristics for now)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
 
-  // Getters to access state
+  // ========== Getters ==========
+
   UserProfile? get userProfile => _userProfile;
-  Habit? get currentHabit => _currentHabit;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+
+  /// Get all active (non-archived) habits
+  List<Habit> get habits => _habits.where((h) => !h.isArchived).toList();
+
+  /// Get all habits including archived
+  List<Habit> get allHabits => List.unmodifiable(_habits);
+
+  /// Get archived habits only
+  List<Habit> get archivedHabits => _habits.where((h) => h.isArchived).toList();
+
+  /// Get the primary/focused habit (or first habit if none set)
+  Habit? get currentHabit {
+    if (_habits.isEmpty) return null;
+    final activeHabits = habits;
+    if (activeHabits.isEmpty) return null;
+
+    // Return primary habit if set and exists
+    if (_primaryHabitId != null) {
+      final primary = activeHabits.where((h) => h.id == _primaryHabitId).firstOrNull;
+      if (primary != null) return primary;
+    }
+
+    // Fallback to first active habit
+    return activeHabits.first;
+  }
+
+  /// Get habit by ID
+  Habit? getHabitById(String id) {
+    return _habits.where((h) => h.id == id).firstOrNull;
+  }
+
+  /// Check if any habit is established (21+ day streak)
+  bool get hasEstablishedHabit => habits.any((h) => h.isEstablished);
+
+  /// Get count of active habits
+  int get activeHabitCount => habits.length;
+
+  /// Calculate "focus score" - are habits getting proper attention?
+  /// Returns 0.0 to 1.0 (1.0 = well focused, 0.0 = spread too thin)
+  double get focusScore {
+    final active = habits;
+    if (active.isEmpty) return 1.0;
+    if (active.length == 1) return 1.0;
+
+    // Penalize for too many habits without established foundation
+    final establishedCount = active.where((h) => h.isEstablished).length;
+    final newCount = active.length - establishedCount;
+
+    // Ideal: each new habit should have at least one established habit backing it
+    if (newCount > establishedCount + 1) {
+      // Too many new habits without foundation
+      return (establishedCount + 1) / active.length;
+    }
+
+    // Also factor in average health of habits
+    final avgHealth = active.map((h) => h.healthScore).reduce((a, b) => a + b) / active.length;
+
+    return avgHealth.clamp(0.0, 1.0);
+  }
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -47,21 +108,21 @@ class AppState extends ChangeNotifier {
     try {
       // Initialize notification service first
       await _notificationService.initialize();
-      
+
       // Set up notification action handler
       _notificationService.onNotificationAction = _handleNotificationAction;
-      
+
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
-      
+
       // Load saved data from Hive
       await _loadFromStorage();
-      
+
       // Schedule notifications if onboarding completed
-      if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
+      if (_hasCompletedOnboarding && currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -74,6 +135,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// Load data from Hive storage
+  /// Handles backward compatibility: migrates single habit to habits list
   Future<void> _loadFromStorage() async {
     if (_dataBox == null) return;
 
@@ -86,14 +148,36 @@ class AppState extends ChangeNotifier {
       _userProfile = UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
     }
 
-    // Load current habit
-    final habitJson = _dataBox!.get('currentHabit');
-    if (habitJson != null) {
-      _currentHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
+    // Load primary habit ID
+    _primaryHabitId = _dataBox!.get('primaryHabitId');
+
+    // Try to load habits list (new format)
+    final habitsJson = _dataBox!.get('habits');
+    if (habitsJson != null) {
+      final habitsList = habitsJson as List<dynamic>;
+      _habits = habitsList
+          .map((h) => Habit.fromJson(Map<String, dynamic>.from(h)))
+          .toList();
+    } else {
+      // Backward compatibility: migrate single habit to list
+      final habitJson = _dataBox!.get('currentHabit');
+      if (habitJson != null) {
+        final singleHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
+        _habits = [singleHabit];
+        _primaryHabitId = singleHabit.id;
+
+        // Migrate to new format
+        await _saveToStorage();
+
+        if (kDebugMode) {
+          debugPrint('Migrated single habit to habits list');
+        }
+      }
     }
 
     if (kDebugMode) {
-      debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, profile=${_userProfile?.name}, habit=${_currentHabit?.name}');
+      debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, '
+          'profile=${_userProfile?.name}, habits=${_habits.length}');
     }
   }
 
@@ -110,13 +194,21 @@ class AppState extends ChangeNotifier {
         await _dataBox!.put('userProfile', _userProfile!.toJson());
       }
 
-      // Save current habit
-      if (_currentHabit != null) {
-        await _dataBox!.put('currentHabit', _currentHabit!.toJson());
+      // Save habits list (new format)
+      await _dataBox!.put('habits', _habits.map((h) => h.toJson()).toList());
+
+      // Save primary habit ID
+      if (_primaryHabitId != null) {
+        await _dataBox!.put('primaryHabitId', _primaryHabitId);
+      }
+
+      // Also save currentHabit for backward compatibility
+      if (currentHabit != null) {
+        await _dataBox!.put('currentHabit', currentHabit!.toJson());
       }
 
       if (kDebugMode) {
-        debugPrint('Saved to storage successfully');
+        debugPrint('Saved to storage: ${_habits.length} habits');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -132,24 +224,161 @@ class AppState extends ChangeNotifier {
     notifyListeners(); // Tell UI to rebuild
   }
 
-  /// Creates a new habit
+  // ========== Habit Management Methods ==========
+
+  /// Creates a new habit and adds it to the list
+  /// If this is the first habit, it becomes primary automatically
   Future<void> createHabit(Habit habit) async {
-    _currentHabit = habit;
+    // Check if habit with same ID exists (update instead of add)
+    final existingIndex = _habits.indexWhere((h) => h.id == habit.id);
+    if (existingIndex >= 0) {
+      _habits[existingIndex] = habit;
+    } else {
+      _habits.add(habit);
+    }
+
+    // If this is the first habit, make it primary
+    if (_habits.length == 1 || _primaryHabitId == null) {
+      _primaryHabitId = habit.id;
+    }
+
     await _saveToStorage(); // Persist to storage
     notifyListeners();
   }
 
-  /// Marks habit as completed for today
+  /// Add a new habit (alias for createHabit for clarity)
+  Future<void> addHabit(Habit habit) async {
+    await createHabit(habit);
+  }
+
+  /// Set the primary/focused habit
+  Future<void> setPrimaryHabit(String habitId) async {
+    if (_habits.any((h) => h.id == habitId && !h.isArchived)) {
+      _primaryHabitId = habitId;
+      await _saveToStorage();
+      notifyListeners();
+
+      if (kDebugMode) {
+        final habit = getHabitById(habitId);
+        debugPrint('Primary habit set to: ${habit?.name}');
+      }
+    }
+  }
+
+  /// Archive a habit (soft delete - keeps history)
+  Future<void> archiveHabit(String habitId) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index >= 0) {
+      _habits[index] = _habits[index].copyWith(isArchived: true);
+
+      // If archived habit was primary, select new primary
+      if (_primaryHabitId == habitId) {
+        final active = habits;
+        _primaryHabitId = active.isNotEmpty ? active.first.id : null;
+      }
+
+      await _saveToStorage();
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('Habit archived: ${_habits[index].name}');
+      }
+    }
+  }
+
+  /// Restore an archived habit
+  Future<void> restoreHabit(String habitId) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index >= 0) {
+      _habits[index] = _habits[index].copyWith(isArchived: false);
+      await _saveToStorage();
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('Habit restored: ${_habits[index].name}');
+      }
+    }
+  }
+
+  /// Permanently delete a habit (use with caution - loses history)
+  Future<void> deleteHabitPermanently(String habitId) async {
+    _habits.removeWhere((h) => h.id == habitId);
+
+    // If deleted habit was primary, select new primary
+    if (_primaryHabitId == habitId) {
+      final active = habits;
+      _primaryHabitId = active.isNotEmpty ? active.first.id : null;
+    }
+
+    await _saveToStorage();
+    notifyListeners();
+  }
+
+  /// Update an existing habit
+  Future<void> updateHabit(Habit updatedHabit) async {
+    final index = _habits.indexWhere((h) => h.id == updatedHabit.id);
+    if (index >= 0) {
+      _habits[index] = updatedHabit;
+      await _saveToStorage();
+      notifyListeners();
+    }
+  }
+
+  /// Check if user should see a soft warning before adding a new habit
+  /// Returns a message if warning should show, null if OK to proceed
+  String? getNewHabitWarning() {
+    final active = habits;
+
+    // No warning for first habit
+    if (active.isEmpty) return null;
+
+    // Check if any habit is established
+    final hasEstablished = active.any((h) => h.isEstablished);
+
+    if (!hasEstablished) {
+      return 'Tip: James Clear recommends mastering one habit before adding another. '
+          'Your current habit isn\'t established yet (21+ day streak). '
+          'Consider focusing on it first, but you can still add a new one if you\'re ready.';
+    }
+
+    // Check focus score
+    if (focusScore < 0.5) {
+      return 'Your habits might need more attention. '
+          'Some aren\'t being completed consistently. '
+          'Consider strengthening existing habits before adding new ones.';
+    }
+
+    // Check for too many habits
+    if (active.length >= 5) {
+      return 'You have ${active.length} active habits. '
+          'Managing too many habits can reduce effectiveness. '
+          'Consider archiving some or using habit stacking instead.';
+    }
+
+    return null; // No warning needed
+  }
+
+  /// Marks habit as completed for today (uses current/primary habit)
   /// Returns true if this was a new completion (triggers reward flow)
   Future<bool> completeHabitForToday({bool fromNotification = false}) async {
-    if (_currentHabit == null) return false;
+    return completeHabit(currentHabit?.id, fromNotification: fromNotification);
+  }
 
+  /// Marks a specific habit as completed for today
+  /// Returns true if this was a new completion (triggers reward flow)
+  Future<bool> completeHabit(String? habitId, {bool fromNotification = false}) async {
+    if (habitId == null) return false;
+
+    final habitIndex = _habits.indexWhere((h) => h.id == habitId);
+    if (habitIndex < 0) return false;
+
+    final habit = _habits[habitIndex];
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     // Check if already completed today
-    if (_currentHabit!.lastCompletedDate != null) {
-      final lastCompleted = _currentHabit!.lastCompletedDate!;
+    if (habit.lastCompletedDate != null) {
+      final lastCompleted = habit.lastCompletedDate!;
       final lastDate = DateTime(
         lastCompleted.year,
         lastCompleted.month,
@@ -159,17 +388,17 @@ class AppState extends ChangeNotifier {
       if (lastDate == today) {
         // Already completed today
         if (kDebugMode) {
-          debugPrint('Habit already completed today');
+          debugPrint('Habit "${habit.name}" already completed today');
         }
         return false;
       }
     }
 
     // Calculate new streak (check if yesterday was completed)
-    int newStreak = _currentHabit!.currentStreak;
+    int newStreak = habit.currentStreak;
 
-    if (_currentHabit!.lastCompletedDate != null) {
-      final lastCompleted = _currentHabit!.lastCompletedDate!;
+    if (habit.lastCompletedDate != null) {
+      final lastCompleted = habit.lastCompletedDate!;
       final yesterday = today.subtract(const Duration(days: 1));
       final lastDate = DateTime(
         lastCompleted.year,
@@ -179,7 +408,7 @@ class AppState extends ChangeNotifier {
 
       // If last completion was yesterday, continue streak
       if (lastDate == yesterday) {
-        newStreak = _currentHabit!.currentStreak + 1;
+        newStreak = habit.currentStreak + 1;
       } else {
         // Streak broken, start over
         newStreak = 1;
@@ -190,15 +419,16 @@ class AppState extends ChangeNotifier {
     }
 
     // Update longest streak if current streak exceeds it
-    final newLongestStreak = newStreak > _currentHabit!.longestStreak
+    final newLongestStreak = newStreak > habit.longestStreak
         ? newStreak
-        : _currentHabit!.longestStreak;
+        : habit.longestStreak;
 
     // Add to completion history
-    final updatedHistory = List<DateTime>.from(_currentHabit!.completionHistory)
+    final updatedHistory = List<DateTime>.from(habit.completionHistory)
       ..add(now);
 
-    _currentHabit = _currentHabit!.copyWith(
+    // Update the habit in the list
+    _habits[habitIndex] = habit.copyWith(
       currentStreak: newStreak,
       longestStreak: newLongestStreak,
       lastCompletedDate: now,
@@ -207,13 +437,15 @@ class AppState extends ChangeNotifier {
 
     await _saveToStorage(); // Persist the updated streak and history
 
-    // Trigger Reward + Investment flow
-    _shouldShowRewardFlow = true;
+    // Trigger Reward + Investment flow (only for primary habit)
+    if (habitId == _primaryHabitId) {
+      _shouldShowRewardFlow = true;
+    }
 
     notifyListeners();
 
     if (kDebugMode) {
-      debugPrint('✅ Habit completed! Streak: $newStreak (best: $newLongestStreak), Total: ${updatedHistory.length}');
+      debugPrint('✅ "${habit.name}" completed! Streak: $newStreak (best: $newLongestStreak), Total: ${updatedHistory.length}');
     }
 
     return true; // New completion
@@ -230,20 +462,25 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Checks if habit was completed today
+  /// Checks if current/primary habit was completed today
   bool isHabitCompletedToday() {
-    if (_currentHabit?.lastCompletedDate == null) return false;
+    return currentHabit?.isCompletedToday ?? false;
+  }
 
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final lastCompleted = _currentHabit!.lastCompletedDate!;
-    final lastDate = DateTime(
-      lastCompleted.year,
-      lastCompleted.month,
-      lastCompleted.day,
-    );
+  /// Check if a specific habit was completed today
+  bool isHabitCompletedTodayById(String habitId) {
+    final habit = getHabitById(habitId);
+    return habit?.isCompletedToday ?? false;
+  }
 
-    return lastDate == today;
+  /// Get count of habits completed today
+  int get habitsCompletedTodayCount {
+    return habits.where((h) => h.isCompletedToday).length;
+  }
+
+  /// Get count of habits not yet completed today
+  int get habitsPendingTodayCount {
+    return habits.where((h) => !h.isCompletedToday).length;
   }
 
   /// Clear all data (useful for testing/reset)
@@ -252,63 +489,86 @@ class AppState extends ChangeNotifier {
       await _dataBox!.clear();
     }
     _userProfile = null;
-    _currentHabit = null;
+    _habits = [];
+    _primaryHabitId = null;
     _hasCompletedOnboarding = false;
     await _notificationService.cancelAllNotifications();
     notifyListeners();
   }
   
   // ========== Notification Methods ==========
-  
-  /// Schedule daily notifications for habit reminder
+
+  /// Schedule daily notifications for habit reminder (primary habit)
   Future<void> _scheduleNotifications() async {
-    if (_currentHabit == null || _userProfile == null) return;
-    
+    if (currentHabit == null || _userProfile == null) return;
+
     await _notificationService.scheduleDailyHabitReminder(
-      habit: _currentHabit!,
+      habit: currentHabit!,
       profile: _userProfile!,
     );
   }
-  
+
   /// Handle notification action buttons (Mark Done, Snooze)
   void _handleNotificationAction(String action) {
     if (kDebugMode) {
       debugPrint('📱 Notification action: $action');
     }
-    
+
     if (action == 'mark_done') {
       // Mark habit as complete from notification
       completeHabitForToday(fromNotification: true);
     } else if (action == 'snooze') {
       // Schedule snooze notification
-      if (_currentHabit != null && _userProfile != null) {
+      if (currentHabit != null && _userProfile != null) {
         _notificationService.scheduleSnoozeNotification(
-          habit: _currentHabit!,
+          habit: currentHabit!,
           profile: _userProfile!,
         );
       }
     }
   }
-  
-  /// Update reminder time and reschedule notifications
+
+  /// Update reminder time and reschedule notifications for current habit
   /// Called from Investment flow
   Future<void> updateReminderTime(String newTime) async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+    if (currentHabit == null) return;
+
+    final habitIndex = _habits.indexWhere((h) => h.id == currentHabit!.id);
+    if (habitIndex < 0) return;
+
+    _habits[habitIndex] = _habits[habitIndex].copyWith(
       implementationTime: newTime,
     );
-    
+
     await _saveToStorage();
-    
+
     // Reschedule notifications with new time
     await _scheduleNotifications();
-    
+
     notifyListeners();
-    
+
     if (kDebugMode) {
       debugPrint('⏰ Reminder time updated to: $newTime');
     }
+  }
+
+  /// Update reminder time for a specific habit
+  Future<void> updateHabitReminderTime(String habitId, String newTime) async {
+    final habitIndex = _habits.indexWhere((h) => h.id == habitId);
+    if (habitIndex < 0) return;
+
+    _habits[habitIndex] = _habits[habitIndex].copyWith(
+      implementationTime: newTime,
+    );
+
+    await _saveToStorage();
+
+    // Reschedule notifications if this is the primary habit
+    if (habitId == _primaryHabitId) {
+      await _scheduleNotifications();
+    }
+
+    notifyListeners();
   }
   
   /// Show test notification (for debugging)
