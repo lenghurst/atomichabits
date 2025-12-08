@@ -32,6 +32,9 @@ class Habit {
   final String? environmentDistraction; // Distraction to remove/hide
   // e.g., "Charge phone in kitchen"
 
+  // Soft delete - keeps history but hides from active list
+  final bool isArchived;
+
   Habit({
     required this.id,
     required this.name,
@@ -48,6 +51,7 @@ class Habit {
     this.preHabitRitual,
     this.environmentCue,
     this.environmentDistraction,
+    this.isArchived = false,
   }) : completionHistory = completionHistory ?? [];
 
   /// Creates a copy of this habit with some fields updated
@@ -65,6 +69,7 @@ class Habit {
     String? preHabitRitual,
     String? environmentCue,
     String? environmentDistraction,
+    bool? isArchived,
   }) {
     return Habit(
       id: id,
@@ -82,6 +87,7 @@ class Habit {
       preHabitRitual: preHabitRitual ?? this.preHabitRitual,
       environmentCue: environmentCue ?? this.environmentCue,
       environmentDistraction: environmentDistraction ?? this.environmentDistraction,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 
@@ -107,6 +113,7 @@ class Habit {
       'preHabitRitual': preHabitRitual,
       'environmentCue': environmentCue,
       'environmentDistraction': environmentDistraction,
+      'isArchived': isArchived,
     };
   }
 
@@ -141,7 +148,37 @@ class Habit {
       preHabitRitual: json['preHabitRitual'] as String?,
       environmentCue: json['environmentCue'] as String?,
       environmentDistraction: json['environmentDistraction'] as String?,
+      isArchived: json['isArchived'] as bool? ?? false,
     );
+  }
+
+  // ========== Status Helper Methods ==========
+
+  /// Check if habit is considered "established" (21+ day longest streak)
+  /// Used for soft guidance when adding new habits
+  bool get isEstablished => longestStreak >= 21;
+
+  /// Check if habit was completed today
+  bool get isCompletedToday {
+    if (lastCompletedDate == null) return false;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDate = DateTime(
+      lastCompletedDate!.year,
+      lastCompletedDate!.month,
+      lastCompletedDate!.day,
+    );
+    return lastDate == today;
+  }
+
+  /// Get a "health score" for this habit (0.0 to 1.0)
+  /// Based on recent consistency - useful for UI indicators
+  double get healthScore {
+    if (completionHistory.isEmpty) return 0.0;
+    // Weight recent performance more heavily
+    final weekly = weeklyCompletionRate * 0.6;
+    final monthly = monthlyCompletionRate * 0.4;
+    return (weekly + monthly).clamp(0.0, 1.0);
   }
 
   // ========== Analytics Helper Methods ==========
