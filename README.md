@@ -98,6 +98,19 @@ context.go('/');
 - Confetti celebration on completion
 - "Improve this habit" AI suggestions
 - Best streak tracking
+- **Multi-habit progress indicator** (X/Y completed today)
+- **Habit list sheet** for viewing all habits
+
+### ✅ Multiple Habits Support
+- Add unlimited habits with soft guardrails
+- Primary habit focus (set your main habit)
+- Archive/restore habits (preserves history)
+- Focus score indicator (tracks habit health)
+- Smart warnings when adding new habits:
+  - Tip if no habit is established yet (< 21-day streak)
+  - Warning if focus score is low
+  - Guidance for 5+ active habits
+- Habit cards with health indicators and streaks
 
 ### ✅ AI Suggestion System
 - Async remote LLM integration (5-second timeout)
@@ -124,7 +137,10 @@ context.go('/');
 - Date-range queries for calendar/charts
 
 ### ✅ Settings Screen
-- Placeholder sections for future features
+- Habit summary card (today's progress + focus score)
+- Manage habits (view, archive, restore, delete)
+- Add new habit with philosophy-based warnings
+- Reset all data option
 - App information and about section
 
 ## 🚀 How to Run the App
@@ -211,7 +227,6 @@ Try this user journey:
 ## 🔮 Future Features
 
 ### Planned
-- [ ] Multiple habits support (optional - see Philosophy note below)
 - [ ] Habit history calendar view
 - [ ] Analytics dashboard with charts
 - [ ] Habit stacking (link habits together)
@@ -221,11 +236,13 @@ Try this user journey:
 - [ ] Privacy policy & App Store preparation
 
 ### Already Implemented ✅
+- [x] **Multiple habits support** (with soft guardrails)
 - [x] Data persistence (Hive local storage)
 - [x] Reminders and notifications
 - [x] Environment design suggestions (AI-powered)
 - [x] Completion history tracking
 - [x] Weekly/monthly completion rates
+- [x] Focus score and habit health indicators
 
 ### 📖 Philosophy: One Habit at a Time
 
@@ -238,10 +255,14 @@ This app follows James Clear's core principle from *Atomic Habits*:
 - Mastering one habit builds the identity foundation for the next
 - The 2-minute rule works best with focused attention
 
-**Future approach:** If multiple habits are added, the app will:
-- Encourage users to master one habit first (21+ day streak)
-- Warn about cognitive overload when adding habits too quickly
-- Provide guidance on habit stacking (linking new habits to established ones)
+**How multiple habits work (soft guardrails, not hard gates):**
+- First habit becomes your "primary focus" automatically
+- Adding new habits shows helpful tips (not blocks):
+  - Suggests mastering current habit first (21+ day streak)
+  - Warns if existing habits need attention (low focus score)
+  - Recommends archiving or habit stacking if 5+ habits
+- Users can always proceed - we inform, not restrict
+- Focus score helps track if you're spreading too thin
 
 ## 🛠️ Technologies Used
 
