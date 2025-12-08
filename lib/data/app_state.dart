@@ -27,7 +27,11 @@ class AppState extends ChangeNotifier {
   
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
-  
+
+  // "Never Miss Twice" recovery flow state
+  bool _shouldShowNeverMissTwice = false;
+  int _daysSinceLastCompletion = 0;
+
   // Notification service
   final NotificationService _notificationService = NotificationService();
   
@@ -40,6 +44,8 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+  bool get shouldShowNeverMissTwice => _shouldShowNeverMissTwice;
+  int get daysSinceLastCompletion => _daysSinceLastCompletion;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -60,8 +66,11 @@ class AppState extends ChangeNotifier {
       // Schedule notifications if onboarding completed
       if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
+
+        // Check for "Never Miss Twice" situation
+        _checkNeverMissTwiceSituation();
       }
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -141,12 +150,22 @@ class AppState extends ChangeNotifier {
 
   /// Marks habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
-  Future<bool> completeHabitForToday({bool fromNotification = false}) async {
+  ///
+  /// Now tracks:
+  /// - daysShowedUp (NEVER resets - cumulative total)
+  /// - completionHistory (for rolling averages)
+  /// - neverMissTwiceWins (when user recovers after single miss)
+  /// - currentStreak (still tracked, but de-emphasized in UI)
+  Future<bool> completeHabitForToday({
+    bool fromNotification = false,
+    bool isMinimumVersion = false,
+  }) async {
     if (_currentHabit == null) return false;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+    final todayStr = today.toIso8601String().split('T')[0]; // YYYY-MM-DD
+
     // Check if already completed today
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
@@ -155,9 +174,8 @@ class AppState extends ChangeNotifier {
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       if (lastDate == today) {
-        // Already completed today
         if (kDebugMode) {
           debugPrint('Habit already completed today');
         }
@@ -165,47 +183,95 @@ class AppState extends ChangeNotifier {
       }
     }
 
-    // Calculate new streak (check if yesterday was completed)
+    // Calculate new streak and detect "Never Miss Twice" recovery
     int newStreak = _currentHabit!.currentStreak;
-    
+    bool isNeverMissTwiceRecovery = false;
+
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
-      final yesterday = today.subtract(const Duration(days: 1));
       final lastDate = DateTime(
         lastCompleted.year,
         lastCompleted.month,
         lastCompleted.day,
       );
-      
-      // If last completion was yesterday, continue streak
-      if (lastDate == yesterday) {
+
+      final daysSinceLast = today.difference(lastDate).inDays;
+
+      if (daysSinceLast == 1) {
+        // Yesterday was completed - continue streak
         newStreak = _currentHabit!.currentStreak + 1;
-      } else {
-        // Streak broken, start over
+      } else if (daysSinceLast == 2) {
+        // Missed exactly ONE day - this is a "Never Miss Twice" recovery!
         newStreak = 1;
+        isNeverMissTwiceRecovery = true;
+        if (kDebugMode) {
+          debugPrint('🎯 Never Miss Twice recovery! User bounced back after 1 missed day.');
+        }
+      } else {
+        // Missed multiple days - streak resets
+        newStreak = 1;
+        if (kDebugMode) {
+          debugPrint('📉 Streak reset after $daysSinceLast days gap');
+        }
       }
     } else {
-      // First completion
+      // First completion ever
       newStreak = 1;
     }
-    
+
+    // Update completion history (keep last 90 days for analytics)
+    List<String> updatedHistory = List<String>.from(_currentHabit!.completionHistory);
+    if (!updatedHistory.contains(todayStr)) {
+      updatedHistory.add(todayStr);
+    }
+    // Prune old entries (keep last 90 days)
+    final ninetyDaysAgo = today.subtract(const Duration(days: 90));
+    updatedHistory = updatedHistory.where((dateStr) {
+      try {
+        final date = DateTime.parse(dateStr);
+        return date.isAfter(ninetyDaysAgo);
+      } catch (_) {
+        return false;
+      }
+    }).toList();
+
+    // Update all metrics
     _currentHabit = _currentHabit!.copyWith(
       currentStreak: newStreak,
       lastCompletedDate: now,
+      // These NEVER reset - cumulative progress
+      daysShowedUp: _currentHabit!.daysShowedUp + 1,
+      minimumVersionCount: isMinimumVersion
+          ? _currentHabit!.minimumVersionCount + 1
+          : _currentHabit!.minimumVersionCount,
+      neverMissTwiceWins: isNeverMissTwiceRecovery
+          ? _currentHabit!.neverMissTwiceWins + 1
+          : _currentHabit!.neverMissTwiceWins,
+      completionHistory: updatedHistory,
     );
-    
-    await _saveToStorage(); // Persist the updated streak
-    
+
+    // Clear "Never Miss Twice" prompt since user just completed
+    _shouldShowNeverMissTwice = false;
+    _daysSinceLastCompletion = 0;
+
+    await _saveToStorage();
+
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
-    
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('✅ Habit completed! New streak: $newStreak');
+      debugPrint('✅ Habit completed!');
+      debugPrint('   Streak: $newStreak');
+      debugPrint('   Days showed up (total): ${_currentHabit!.daysShowedUp}');
+      debugPrint('   Graceful Consistency: ${_currentHabit!.gracefulConsistencyScore}%');
+      if (isNeverMissTwiceRecovery) {
+        debugPrint('   🏆 Never Miss Twice wins: ${_currentHabit!.neverMissTwiceWins}');
+      }
     }
-    
-    return true; // New completion
+
+    return true;
   }
 
   /// Marks onboarding as complete
@@ -310,6 +376,73 @@ class AppState extends ChangeNotifier {
   /// Dismiss the reward flow
   void dismissRewardFlow() {
     _shouldShowRewardFlow = false;
+    notifyListeners();
+  }
+
+  /// Dismiss the "Never Miss Twice" recovery prompt
+  void dismissNeverMissTwice() {
+    _shouldShowNeverMissTwice = false;
+    notifyListeners();
+  }
+
+  /// Check if user is in a "Never Miss Twice" situation
+  /// Called on app launch and periodically
+  ///
+  /// Situations:
+  /// - Missed 1 day: Show gentle "Never Miss Twice" prompt
+  /// - Missed 2+ days: Show "Welcome Back" prompt (different flow)
+  void _checkNeverMissTwiceSituation() {
+    if (_currentHabit == null) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Check if already completed today
+    if (isHabitCompletedToday()) {
+      _shouldShowNeverMissTwice = false;
+      _daysSinceLastCompletion = 0;
+      return;
+    }
+
+    // Check last completion
+    if (_currentHabit!.lastCompletedDate == null) {
+      // Never completed - not a "miss" situation
+      _shouldShowNeverMissTwice = false;
+      _daysSinceLastCompletion = 0;
+      return;
+    }
+
+    final lastCompleted = _currentHabit!.lastCompletedDate!;
+    final lastDate = DateTime(
+      lastCompleted.year,
+      lastCompleted.month,
+      lastCompleted.day,
+    );
+
+    _daysSinceLastCompletion = today.difference(lastDate).inDays;
+
+    if (_daysSinceLastCompletion == 1) {
+      // Just yesterday - no need for special prompt yet
+      // (They might complete today normally)
+      _shouldShowNeverMissTwice = false;
+    } else if (_daysSinceLastCompletion == 2) {
+      // Missed exactly 1 day (yesterday) - "Never Miss Twice" situation!
+      _shouldShowNeverMissTwice = true;
+      if (kDebugMode) {
+        debugPrint('⚠️ Never Miss Twice situation detected! Missed 1 day.');
+      }
+    } else if (_daysSinceLastCompletion > 2) {
+      // Missed multiple days - still show recovery, but different framing
+      _shouldShowNeverMissTwice = true;
+      if (kDebugMode) {
+        debugPrint('📅 Multi-day gap: $_daysSinceLastCompletion days since last completion');
+      }
+    }
+  }
+
+  /// Refresh the "Never Miss Twice" check (call when app resumes)
+  void refreshMissedDayCheck() {
+    _checkNeverMissTwiceSituation();
     notifyListeners();
   }
   

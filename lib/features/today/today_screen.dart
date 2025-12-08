@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/never_miss_twice_dialog.dart';
+import '../../widgets/habit_calendar.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -22,9 +24,13 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     // Listen for app lifecycle changes to detect coming from background
     WidgetsBinding.instance.addObserver(this);
     
-    // Check if we should show reward flow when screen loads
+    // Check if we should show reward flow or recovery when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowRewardFlow();
+      // Slight delay before showing recovery dialog to let screen settle
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _checkAndShowNeverMissTwice();
+      });
     });
   }
 
@@ -36,9 +42,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // When app comes to foreground, check if reward flow should be shown
+    // When app comes to foreground, check if reward flow or recovery should be shown
     if (state == AppLifecycleState.resumed) {
+      final appState = Provider.of<AppState>(context, listen: false);
+      appState.refreshMissedDayCheck();
       _checkAndShowRewardFlow();
+      _checkAndShowNeverMissTwice();
     }
   }
 
@@ -47,6 +56,48 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     if (appState.shouldShowRewardFlow) {
       _showRewardInvestmentDialog(appState);
     }
+  }
+
+  void _checkAndShowNeverMissTwice() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    if (appState.shouldShowNeverMissTwice && !appState.isHabitCompletedToday()) {
+      _showNeverMissTwiceDialog(appState);
+    }
+  }
+
+  void _showNeverMissTwiceDialog(AppState appState) {
+    if (appState.currentHabit == null || appState.userProfile == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => NeverMissTwiceDialog(
+        daysMissed: appState.daysSinceLastCompletion,
+        habitName: appState.currentHabit!.name,
+        tinyVersion: appState.currentHabit!.tinyVersion,
+        identity: appState.userProfile!.identity,
+        daysShowedUp: appState.currentHabit!.daysShowedUp,
+        neverMissTwiceWins: appState.currentHabit!.neverMissTwiceWins,
+        onDoMinimumVersion: () async {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+          // Complete with minimum version flag
+          final wasCompleted = await appState.completeHabitForToday(isMinimumVersion: true);
+          if (wasCompleted && mounted) {
+            _showRewardInvestmentDialog(appState);
+          }
+        },
+        onDoFullHabit: () {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+          // Don't mark complete yet - let them do it via the button
+        },
+        onDismiss: () {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+        },
+      ),
+    );
   }
 
   void _showRewardInvestmentDialog(AppState appState) {
@@ -417,23 +468,48 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       color: Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.access_time, color: Colors.blue, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Planned: ${habit.implementationTime} in ${habit.implementationLocation}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.blue, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Planned: ${habit.implementationTime} in ${habit.implementationLocation}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
+                        // Habit stacking display (if set)
+                        if (habit.anchorEvent != null && habit.anchorEvent!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.link, color: Colors.blue.shade600, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'After I ${habit.anchorEvent}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue.shade700,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  
+
                   // Temptation Bundle display (Make it Attractive)
                   if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -531,22 +607,23 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 24),
 
-          // Streak counter
+          // === GRACEFUL CONSISTENCY METRICS (Atomic Habits aligned) ===
           Text(
-            'Your Streak',
+            'Your Progress',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 16),
 
+          // Primary metric: Days Showed Up (NEVER resets)
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.orange.shade300,
-                  Colors.deepOrange.shade400,
+                  Colors.green.shade400,
+                  Colors.teal.shade500,
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
@@ -555,26 +632,28 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  Icons.local_fire_department,
-                  size: 48,
+                  Icons.check_circle,
+                  size: 40,
                   color: Colors.white,
                 ),
                 const SizedBox(width: 16),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${habit.currentStreak}',
+                      '${habit.daysShowedUp}',
                       style: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 40,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     const Text(
-                      'days',
+                      'days you showed up',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 14,
                         color: Colors.white,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -582,6 +661,130 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+
+          // Secondary metrics row
+          Row(
+            children: [
+              // Current streak (de-emphasized)
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.local_fire_department,
+                              color: Colors.orange.shade600, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${habit.currentStreak}',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'current streak',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.orange.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Graceful Consistency Score
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.purple.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.insights,
+                              color: Colors.purple.shade600, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${habit.gracefulConsistencyScore}%',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'consistency',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // "Never Miss Twice" wins badge (if any)
+          if (habit.neverMissTwiceWins > 0) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.replay, color: Colors.blue.shade600, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Bounced back ${habit.neverMissTwiceWins} ${habit.neverMissTwiceWins == 1 ? 'time' : 'times'}',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Calendar/History View
+          HabitCalendar(
+            completionHistory: habit.completionHistory,
+            daysShowedUp: habit.daysShowedUp,
+            neverMissTwiceWins: habit.neverMissTwiceWins,
+          ),
+
           const SizedBox(height: 32),
 
           // Pre-Habit Ritual button (if ritual exists and not completed)

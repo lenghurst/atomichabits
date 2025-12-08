@@ -22,8 +22,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _habitNameController = TextEditingController();
   final _tinyVersionController = TextEditingController();
   final _locationController = TextEditingController();
-  
-  // New "Make it Attractive" and environment design controllers
+
+  // Habit Stacking - "After [X], I will [new habit]"
+  final _anchorEventController = TextEditingController();
+
+  // "Make it Attractive" and environment design controllers
   final _temptationBundleController = TextEditingController();
   final _preHabitRitualController = TextEditingController();
   final _environmentCueController = TextEditingController();
@@ -39,6 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _habitNameController.dispose();
     _tinyVersionController.dispose();
     _locationController.dispose();
+    _anchorEventController.dispose();
     _temptationBundleController.dispose();
     _preHabitRitualController.dispose();
     _environmentCueController.dispose();
@@ -389,7 +393,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         createdAt: DateTime.now(),
       );
 
-      // Create first habit with implementation intentions + Make it Attractive
+      // Create first habit with implementation intentions + Habit Stacking + Make it Attractive
       final habit = Habit(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _habitNameController.text.trim(),
@@ -398,18 +402,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         createdAt: DateTime.now(),
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim(),
-        // New "Make it Attractive" and environment design fields
-        temptationBundle: _temptationBundleController.text.trim().isEmpty 
-            ? null 
+        // Habit Stacking
+        anchorEvent: _anchorEventController.text.trim().isEmpty
+            ? null
+            : _anchorEventController.text.trim(),
+        // "Make it Attractive" and environment design fields
+        temptationBundle: _temptationBundleController.text.trim().isEmpty
+            ? null
             : _temptationBundleController.text.trim(),
-        preHabitRitual: _preHabitRitualController.text.trim().isEmpty 
-            ? null 
+        preHabitRitual: _preHabitRitualController.text.trim().isEmpty
+            ? null
             : _preHabitRitualController.text.trim(),
-        environmentCue: _environmentCueController.text.trim().isEmpty 
-            ? null 
+        environmentCue: _environmentCueController.text.trim().isEmpty
+            ? null
             : _environmentCueController.text.trim(),
-        environmentDistraction: _environmentDistractionController.text.trim().isEmpty 
-            ? null 
+        environmentDistraction: _environmentDistractionController.text.trim().isEmpty
+            ? null
             : _environmentDistractionController.text.trim(),
       );
 
@@ -596,6 +604,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 32),
+
+                // === HABIT STACKING SECTION ===
+
+                Text(
+                  'Link to Existing Habit (Optional)',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '"After I [current habit], I will [new habit]" — James Clear',
+                  style: TextStyle(fontSize: 16, color: Colors.grey, fontStyle: FontStyle.italic),
+                ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _anchorEventController,
+                  decoration: const InputDecoration(
+                    labelText: 'After I...',
+                    hintText: 'e.g., "brush my teeth", "pour my morning coffee", "close my laptop"',
+                    helperText: 'Linking to an existing habit makes new habits stick better',
+                    helperMaxLines: 2,
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.link),
+                  ),
+                  maxLines: 1,
+                  // Optional field - no validator
                 ),
                 const SizedBox(height: 32),
 
