@@ -31,7 +31,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _preHabitRitualController = TextEditingController();
   final _environmentCueController = TextEditingController();
   final _environmentDistractionController = TextEditingController();
-  
+
+  // Failure Playbooks - "If [obstacle], then I will [response]"
+  final List<Map<String, String>> _failurePlaybooks = [];
+  final _customObstacleController = TextEditingController();
+  final _customResponseController = TextEditingController();
+
   // Implementation intention: Time
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
 
@@ -47,6 +52,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _preHabitRitualController.dispose();
     _environmentCueController.dispose();
     _environmentDistractionController.dispose();
+    _customObstacleController.dispose();
+    _customResponseController.dispose();
     super.dispose();
   }
 
@@ -79,6 +86,89 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  // Add a failure playbook
+  void _addPlaybook(String obstacle, String response) {
+    if (obstacle.trim().isEmpty || response.trim().isEmpty) return;
+
+    // Check for duplicates
+    final exists = _failurePlaybooks.any((p) =>
+        p['obstacle']?.toLowerCase() == obstacle.toLowerCase());
+    if (exists) return;
+
+    setState(() {
+      _failurePlaybooks.add({
+        'obstacle': obstacle.trim(),
+        'response': response.trim(),
+      });
+    });
+  }
+
+  // Remove a failure playbook
+  void _removePlaybook(int index) {
+    setState(() {
+      _failurePlaybooks.removeAt(index);
+    });
+  }
+
+  // Show dialog to add custom playbook
+  void _showAddCustomPlaybookDialog() {
+    _customObstacleController.clear();
+    _customResponseController.clear();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.shield, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Add Recovery Plan'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _customObstacleController,
+              decoration: const InputDecoration(
+                labelText: 'If this happens...',
+                hintText: 'e.g., "I feel too tired"',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _customResponseController,
+              decoration: const InputDecoration(
+                labelText: 'Then I will...',
+                hintText: 'e.g., "Do just 1 minute"',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _addPlaybook(
+                _customObstacleController.text,
+                _customResponseController.text,
+              );
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
   }
 
   // Helper: Show suggestion dialog for temptation bundle (async with loading state)
@@ -419,6 +509,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         environmentDistraction: _environmentDistractionController.text.trim().isEmpty
             ? null
             : _environmentDistractionController.text.trim(),
+        // Failure playbooks
+        failurePlaybooks: _failurePlaybooks,
       );
 
       // Save to state (now with persistence!)
@@ -810,6 +902,135 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 32),
 
+                // === FAILURE PLAYBOOKS SECTION ===
+
+                Text(
+                  '🛡️ Failure Playbooks (Optional)',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Pre-plan your response to obstacles. "If [X happens], then I will [Y]"',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+
+                // Quick-add common playbooks
+                const Text(
+                  'Quick add common recovery plans:',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _QuickPlaybookChip(
+                      label: "I'm too tired",
+                      response: 'Do just the 2-minute version',
+                      onTap: () => _addPlaybook("I'm too tired", 'Do just the 2-minute version'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I'm too tired"),
+                    ),
+                    _QuickPlaybookChip(
+                      label: "I don't have time",
+                      response: 'Do it for just 1 minute',
+                      onTap: () => _addPlaybook("I don't have time", 'Do it for just 1 minute'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I don't have time"),
+                    ),
+                    _QuickPlaybookChip(
+                      label: "I forgot",
+                      response: 'Set a phone alarm right now',
+                      onTap: () => _addPlaybook("I forgot", 'Set a phone alarm right now'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I forgot"),
+                    ),
+                    _QuickPlaybookChip(
+                      label: "I'm not motivated",
+                      response: 'Just show up and do 10 seconds',
+                      onTap: () => _addPlaybook("I'm not motivated", 'Just show up and do 10 seconds'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I'm not motivated"),
+                    ),
+                    _QuickPlaybookChip(
+                      label: "I'm traveling",
+                      response: 'Do a modified travel-friendly version',
+                      onTap: () => _addPlaybook("I'm traveling", 'Do a modified travel-friendly version'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I'm traveling"),
+                    ),
+                    _QuickPlaybookChip(
+                      label: "I'm stressed",
+                      response: 'Do the minimum and be kind to myself',
+                      onTap: () => _addPlaybook("I'm stressed", 'Do the minimum and be kind to myself'),
+                      isAdded: _failurePlaybooks.any((p) => p['obstacle'] == "I'm stressed"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Add custom playbook button
+                OutlinedButton.icon(
+                  onPressed: _showAddCustomPlaybookDialog,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add custom recovery plan'),
+                ),
+                const SizedBox(height: 16),
+
+                // Display added playbooks
+                if (_failurePlaybooks.isNotEmpty) ...[
+                  const Text(
+                    'Your recovery plans:',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+                  ...List.generate(_failurePlaybooks.length, (index) {
+                    final playbook = _failurePlaybooks[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shield, color: Colors.orange, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'If ${playbook['obstacle']}...',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  'Then: ${playbook['response']}',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            onPressed: () => _removePlaybook(index),
+                            color: Colors.grey,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+                const SizedBox(height: 32),
+
                 // Complete button
                 SizedBox(
                   width: double.infinity,
@@ -835,6 +1056,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Quick-add chip for common failure playbooks
+class _QuickPlaybookChip extends StatelessWidget {
+  final String label;
+  final String response;
+  final VoidCallback onTap;
+  final bool isAdded;
+
+  const _QuickPlaybookChip({
+    required this.label,
+    required this.response,
+    required this.onTap,
+    required this.isAdded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: isAdded ? Colors.white : Colors.orange.shade700,
+          fontSize: 13,
+        ),
+      ),
+      backgroundColor: isAdded ? Colors.orange : Colors.orange.shade50,
+      side: BorderSide(
+        color: isAdded ? Colors.orange : Colors.orange.shade300,
+      ),
+      avatar: Icon(
+        isAdded ? Icons.check : Icons.add,
+        size: 16,
+        color: isAdded ? Colors.white : Colors.orange.shade600,
+      ),
+      onPressed: isAdded ? null : onTap,
+      tooltip: 'Then: $response',
     );
   }
 }

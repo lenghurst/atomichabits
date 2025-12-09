@@ -18,6 +18,7 @@ class NeverMissTwiceDialog extends StatelessWidget {
   final String identity;
   final int daysShowedUp; // Total days user has shown up (never resets)
   final int neverMissTwiceWins; // Previous recovery wins
+  final List<Map<String, String>> failurePlaybooks; // Pre-set recovery plans
   final VoidCallback onDoMinimumVersion;
   final VoidCallback onDoFullHabit;
   final VoidCallback onDismiss;
@@ -30,6 +31,7 @@ class NeverMissTwiceDialog extends StatelessWidget {
     required this.identity,
     required this.daysShowedUp,
     required this.neverMissTwiceWins,
+    this.failurePlaybooks = const [],
     required this.onDoMinimumVersion,
     required this.onDoFullHabit,
     required this.onDismiss,
@@ -163,6 +165,74 @@ class NeverMissTwiceDialog extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Failure Playbooks section (if user has pre-set recovery plans)
+            if (failurePlaybooks.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.shield, color: Colors.orange.shade700, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Your Recovery Plans',
+                          style: TextStyle(
+                            color: Colors.orange.shade800,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ...failurePlaybooks.take(3).map((playbook) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '• ',
+                            style: TextStyle(
+                              color: Colors.orange.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  color: Colors.grey.shade800,
+                                  fontSize: 13,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'If ${playbook['obstacle']}: ',
+                                    style: const TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                  TextSpan(
+                                    text: playbook['response'],
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
 
             // Primary action: Do the minimum version

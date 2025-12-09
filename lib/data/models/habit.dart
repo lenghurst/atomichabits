@@ -31,6 +31,12 @@ class Habit {
   final String? environmentDistraction; // Distraction to remove/hide
   // e.g., "Charge phone in kitchen"
 
+  // === FAILURE PLAYBOOKS (Pre-set recovery plans) ===
+  // "If [obstacle], then I will [response]" - implementation intentions for failure
+  // Each playbook is a Map with 'obstacle' and 'response' keys
+  // e.g., [{'obstacle': 'I\'m too tired', 'response': 'Do just 1 minute version'}]
+  final List<Map<String, String>> failurePlaybooks;
+
   // === GRACEFUL CONSISTENCY METRICS (vs fragile streaks) ===
 
   // Total days user showed up (NEVER resets - this is the key metric)
@@ -61,6 +67,7 @@ class Habit {
     this.preHabitRitual,
     this.environmentCue,
     this.environmentDistraction,
+    this.failurePlaybooks = const [],
     this.daysShowedUp = 0,
     this.minimumVersionCount = 0,
     this.neverMissTwiceWins = 0,
@@ -81,6 +88,7 @@ class Habit {
     String? preHabitRitual,
     String? environmentCue,
     String? environmentDistraction,
+    List<Map<String, String>>? failurePlaybooks,
     int? daysShowedUp,
     int? minimumVersionCount,
     int? neverMissTwiceWins,
@@ -101,6 +109,7 @@ class Habit {
       preHabitRitual: preHabitRitual ?? this.preHabitRitual,
       environmentCue: environmentCue ?? this.environmentCue,
       environmentDistraction: environmentDistraction ?? this.environmentDistraction,
+      failurePlaybooks: failurePlaybooks ?? this.failurePlaybooks,
       daysShowedUp: daysShowedUp ?? this.daysShowedUp,
       minimumVersionCount: minimumVersionCount ?? this.minimumVersionCount,
       neverMissTwiceWins: neverMissTwiceWins ?? this.neverMissTwiceWins,
@@ -127,6 +136,8 @@ class Habit {
       'preHabitRitual': preHabitRitual,
       'environmentCue': environmentCue,
       'environmentDistraction': environmentDistraction,
+      // Failure playbooks
+      'failurePlaybooks': failurePlaybooks,
       // Graceful consistency metrics
       'daysShowedUp': daysShowedUp,
       'minimumVersionCount': minimumVersionCount,
@@ -143,6 +154,14 @@ class Habit {
     if (json['completionHistory'] != null && json['completionHistory'] is List) {
       history = (json['completionHistory'] as List)
           .map((item) => item.toString())
+          .toList();
+    }
+
+    // Parse failure playbooks with backward compatibility
+    List<Map<String, String>> playbooks = [];
+    if (json['failurePlaybooks'] != null && json['failurePlaybooks'] is List) {
+      playbooks = (json['failurePlaybooks'] as List)
+          .map((item) => Map<String, String>.from(item as Map))
           .toList();
     }
 
@@ -165,6 +184,8 @@ class Habit {
       preHabitRitual: json['preHabitRitual'] as String?,
       environmentCue: json['environmentCue'] as String?,
       environmentDistraction: json['environmentDistraction'] as String?,
+      // Failure playbooks (backward compatible)
+      failurePlaybooks: playbooks,
       // Graceful consistency metrics (backward compatible - default to 0)
       daysShowedUp: json['daysShowedUp'] as int? ?? 0,
       minimumVersionCount: json['minimumVersionCount'] as int? ?? 0,

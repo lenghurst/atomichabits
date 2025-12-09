@@ -78,6 +78,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         identity: appState.userProfile!.identity,
         daysShowedUp: appState.currentHabit!.daysShowedUp,
         neverMissTwiceWins: appState.currentHabit!.neverMissTwiceWins,
+        failurePlaybooks: appState.currentHabit!.failurePlaybooks,
         onDoMinimumVersion: () async {
           Navigator.of(dialogContext).pop();
           appState.dismissNeverMissTwice();
