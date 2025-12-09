@@ -299,6 +299,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             title: const Text('Today'),
             centerTitle: true,
             actions: [
+              // Zoom Out / Stats button
+              IconButton(
+                icon: const Icon(Icons.insights),
+                onPressed: () => context.go('/stats'),
+                tooltip: 'View stats',
+              ),
               // Test notification button (debug only)
               IconButton(
                 icon: const Icon(Icons.notifications_active),
@@ -617,49 +623,59 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 16),
 
-          // Primary metric: Days Showed Up (NEVER resets)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.green.shade400,
-                  Colors.teal.shade500,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  size: 40,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${habit.daysShowedUp}',
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Text(
-                      'days you showed up',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+          // Primary metric: Days Showed Up (NEVER resets) - Tappable to see stats
+          GestureDetector(
+            onTap: () => context.go('/stats'),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.green.shade400,
+                    Colors.teal.shade500,
                   ],
                 ),
-              ],
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${habit.daysShowedUp}',
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Text(
+                          'days you showed up',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Colors.white70,
+                    size: 28,
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
