@@ -7,6 +7,7 @@ import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 import '../../widgets/never_miss_twice_dialog.dart';
 import '../../widgets/habit_calendar.dart';
+import '../../widgets/weekly_review_dialog.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -30,6 +31,10 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       // Slight delay before showing recovery dialog to let screen settle
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) _checkAndShowNeverMissTwice();
+      });
+      // Check for weekly review (shown after other dialogs)
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) _checkAndShowWeeklyReview();
       });
     });
   }
@@ -65,6 +70,16 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _checkAndShowWeeklyReview() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    // Don't show if other dialogs are active
+    if (appState.shouldShowWeeklyReview &&
+        !appState.shouldShowRewardFlow &&
+        !appState.shouldShowNeverMissTwice) {
+      _showWeeklyReviewDialog(appState);
+    }
+  }
+
   void _showNeverMissTwiceDialog(AppState appState) {
     if (appState.currentHabit == null || appState.userProfile == null) return;
 
@@ -96,6 +111,42 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         onDismiss: () {
           Navigator.of(dialogContext).pop();
           appState.dismissNeverMissTwice();
+        },
+      ),
+    );
+  }
+
+  void _showWeeklyReviewDialog(AppState appState) {
+    if (appState.currentHabit == null || appState.userProfile == null) return;
+
+    final weeklyStats = appState.getWeeklyStats();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => WeeklyReviewDialog(
+        daysCompletedThisWeek: weeklyStats['daysCompleted'] ?? 0,
+        daysInWeek: weeklyStats['daysInWeek'] ?? 7,
+        totalDaysShowedUp: appState.currentHabit!.daysShowedUp,
+        currentStreak: appState.currentHabit!.currentStreak,
+        neverMissTwiceWins: appState.currentHabit!.neverMissTwiceWins,
+        habitName: appState.currentHabit!.name,
+        identity: appState.userProfile!.identity,
+        onComplete: () {
+          Navigator.of(dialogContext).pop();
+          appState.completeWeeklyReview();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Weekly review completed! Keep up the great work.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+        onDismiss: () {
+          Navigator.of(dialogContext).pop();
+          appState.dismissWeeklyReview();
         },
       ),
     );

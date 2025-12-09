@@ -32,6 +32,10 @@ class AppState extends ChangeNotifier {
   bool _shouldShowNeverMissTwice = false;
   int _daysSinceLastCompletion = 0;
 
+  // Weekly review state
+  bool _shouldShowWeeklyReview = false;
+  String? _lastWeeklyReviewDate; // ISO date string of last completed review
+
   // Notification service
   final NotificationService _notificationService = NotificationService();
   
@@ -46,6 +50,7 @@ class AppState extends ChangeNotifier {
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
   bool get shouldShowNeverMissTwice => _shouldShowNeverMissTwice;
   int get daysSinceLastCompletion => _daysSinceLastCompletion;
+  bool get shouldShowWeeklyReview => _shouldShowWeeklyReview;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -69,6 +74,9 @@ class AppState extends ChangeNotifier {
 
         // Check for "Never Miss Twice" situation
         _checkNeverMissTwiceSituation();
+
+        // Check for weekly review (Sunday)
+        _checkWeeklyReviewSituation();
       }
 
       _isLoading = false;
@@ -100,6 +108,9 @@ class AppState extends ChangeNotifier {
     if (habitJson != null) {
       _currentHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
     }
+
+    // Load last weekly review date
+    _lastWeeklyReviewDate = _dataBox!.get('lastWeeklyReviewDate');
 
     if (kDebugMode) {
       debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, profile=${_userProfile?.name}, habit=${_currentHabit?.name}');
@@ -445,7 +456,115 @@ class AppState extends ChangeNotifier {
     _checkNeverMissTwiceSituation();
     notifyListeners();
   }
-  
+
+  // ========== Weekly Review Methods ==========
+
+  /// Check if we should show the weekly review prompt
+  /// Shows on Sundays if not already completed this week
+  void _checkWeeklyReviewSituation() {
+    final now = DateTime.now();
+
+    // Only show on Sundays (weekday 7 in Dart)
+    if (now.weekday != DateTime.sunday) {
+      _shouldShowWeeklyReview = false;
+      return;
+    }
+
+    // Check if already completed review this week
+    if (_lastWeeklyReviewDate != null) {
+      try {
+        final lastReview = DateTime.parse(_lastWeeklyReviewDate!);
+        final lastReviewDate = DateTime(lastReview.year, lastReview.month, lastReview.day);
+        final today = DateTime(now.year, now.month, now.day);
+
+        // Calculate the start of this week (Monday)
+        final thisWeekStart = today.subtract(Duration(days: today.weekday - 1));
+
+        // If last review was this week, don't show again
+        if (!lastReviewDate.isBefore(thisWeekStart)) {
+          _shouldShowWeeklyReview = false;
+          if (kDebugMode) {
+            debugPrint('📅 Weekly review already completed this week');
+          }
+          return;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('Error parsing last review date: $e');
+        }
+      }
+    }
+
+    // It's Sunday and no review this week - show the prompt
+    _shouldShowWeeklyReview = true;
+    if (kDebugMode) {
+      debugPrint('📅 Sunday! Time for weekly review');
+    }
+  }
+
+  /// Complete the weekly review
+  Future<void> completeWeeklyReview() async {
+    final now = DateTime.now();
+    _lastWeeklyReviewDate = DateTime(now.year, now.month, now.day).toIso8601String();
+    _shouldShowWeeklyReview = false;
+
+    // Save to storage
+    if (_dataBox != null) {
+      await _dataBox!.put('lastWeeklyReviewDate', _lastWeeklyReviewDate);
+    }
+
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('✅ Weekly review completed');
+    }
+  }
+
+  /// Dismiss the weekly review (skip for now)
+  void dismissWeeklyReview() {
+    _shouldShowWeeklyReview = false;
+    notifyListeners();
+  }
+
+  /// Get weekly stats for the review dialog
+  Map<String, int> getWeeklyStats() {
+    if (_currentHabit == null) {
+      return {
+        'daysCompleted': 0,
+        'daysInWeek': 7,
+      };
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Calculate this week's boundaries (Monday to Sunday)
+    final daysFromMonday = today.weekday - 1;
+    final thisWeekStart = today.subtract(Duration(days: daysFromMonday));
+
+    // Count completions this week
+    int daysCompleted = 0;
+    for (final dateStr in _currentHabit!.completionHistory) {
+      try {
+        final date = DateTime.parse(dateStr);
+        final completionDate = DateTime(date.year, date.month, date.day);
+
+        if (!completionDate.isBefore(thisWeekStart) &&
+            !completionDate.isAfter(today)) {
+          daysCompleted++;
+        }
+      } catch (_) {}
+    }
+
+    // Days elapsed in this week (1-7)
+    final daysInWeek = today.weekday;
+
+    return {
+      'daysCompleted': daysCompleted,
+      'daysInWeek': daysInWeek,
+    };
+  }
+
   /// Check if we should show reward flow when app comes to foreground
   bool checkAndTriggerRewardFlow() {
     // If habit was just completed and we haven't shown reward yet
