@@ -1,20 +1,37 @@
-# Implementation Summary: "Make it Attractive" Features
+# Implementation Summary: Atomic Habits Flutter App
 
 ## What Was Implemented
 
-I extended your existing Flutter habit tracker with **James Clear's "Make it Attractive" principle** and **environment design strategies** from Atomic Habits. All changes are **incremental** and **backward compatible**.
+This Flutter habit tracker implements **James Clear's Atomic Habits** framework with a focus on:
+- **Graceful Consistency** (not fragile streaks)
+- **"Make it Attractive"** principle and environment design
+- **AI-powered suggestions** with remote LLM + local fallback
+- **"Never Miss Twice"** recovery mechanism
+
+All changes are **incremental** and **backward compatible**.
 
 ### 1. Extended Habit Data Model
 **File:** `lib/data/models/habit.dart`
 
-Added four new **optional** fields to the Habit class:
+#### "Make it Attractive" Fields (optional):
 - **`temptationBundle`**: What enjoyable thing you'll pair with your habit (e.g., "Have herbal tea while reading")
 - **`preHabitRitual`**: Mental preparation before the habit (e.g., "Take 3 deep breaths")
 - **`environmentCue`**: What you'll place in your environment to trigger the habit (e.g., "Put book on pillow at 21:45")
 - **`environmentDistraction`**: What you'll remove to eliminate friction (e.g., "Charge phone in kitchen")
 
+#### Habit Stacking (optional):
+- **`anchorEvent`**: Existing habit to stack the new one on (e.g., "brush my teeth", "pour morning coffee")
+
+#### Graceful Consistency Metrics:
+- **`daysShowedUp`**: Total completions that NEVER resets (key motivator)
+- **`minimumVersionCount`**: Times user did just the 2-minute version
+- **`neverMissTwiceWins`**: Times user recovered after single missed day
+- **`completionHistory`**: List of completion dates for rolling calculations
+- **`gracefulConsistencyScore`**: Computed 0-100 score (4-week average + recovery bonus)
+- **`rollingAdherencePercent`**: 4-week completion percentage
+
 All fields:
-- Are **nullable** (optional - users can skip them)
+- Are **nullable** or default to 0 (backward compatible)
 - Persist in **Hive** storage automatically
 - Support **backward compatibility** (old habits without these fields still work)
 - Handle empty strings gracefully (converted to `null`)
@@ -111,19 +128,54 @@ Body: "You're becoming the type of person who reads every day (and Have herbal t
 
 ---
 
+---
+
+### 6. AI Suggestion Service (Async Architecture)
+**File:** `lib/data/ai_suggestion_service.dart`
+
+**Architecture:**
+1. **Remote LLM** (5-second timeout) - Tries external API first
+2. **Local Fallback** - Context-aware heuristics always work
+
+**Suggestion Types:**
+- **Temptation Bundle**: Based on habit type + time of day
+- **Pre-habit Ritual**: Mindset preparation suggestions
+- **Environment Cue**: Location-specific visual triggers
+- **Environment Distraction**: Friction to remove
+
+**Features:**
+- Never crashes - always returns suggestions
+- Debug logging for remote/local path visibility
+- Easy to configure remote endpoint URL
+- Parallel fetching for all suggestion types
+
+---
+
+### 7. "Never Miss Twice" Recovery Flow
+**File:** `lib/data/app_state.dart`
+
+**Detection:**
+- On app launch, checks days since last completion
+- 2 days gap = "Never Miss Twice" situation
+- >2 days = "Welcome Back" framing
+
+**Tracking:**
+- `neverMissTwiceWins` increments when user recovers after 1 missed day
+- Used in Graceful Consistency Score calculation (+5 points per win, max 30)
+
+---
+
 ## Files Changed
 
-1. **`lib/data/models/habit.dart`** - Extended with 4 new optional fields + updated serialization
-2. **`lib/features/onboarding/onboarding_screen.dart`** - Added 2 optional sections with 4 text fields
-3. **`lib/features/today/today_screen.dart`** - Added displays + "Start ritual" button
-4. **`lib/widgets/pre_habit_ritual_dialog.dart`** - NEW FILE: Ritual modal widget
-5. **`lib/data/notification_service.dart`** - Updated notification body logic
-
-**No changes to**:
-- `lib/data/app_state.dart` (state management unchanged)
-- Reward flow logic (confetti + investment dialogue)
-- Streak logic (currentStreak, lastCompletedDate)
-- Notification scheduling (still daily at implementation time)
+1. **`lib/data/models/habit.dart`** - Extended with environment fields + graceful consistency metrics
+2. **`lib/data/app_state.dart`** - Added Never Miss Twice detection + AI suggestion integration
+3. **`lib/data/ai_suggestion_service.dart`** - NEW: Async AI suggestions with remote + local fallback
+4. **`lib/features/onboarding/onboarding_screen.dart`** - Added habit stacking + Make it Attractive sections
+5. **`lib/features/today/today_screen.dart`** - Displays graceful metrics + recovery prompts + ritual button
+6. **`lib/widgets/pre_habit_ritual_dialog.dart`** - NEW: Ritual modal widget
+7. **`lib/widgets/suggestion_dialog.dart`** - NEW: AI suggestion picker
+8. **`lib/widgets/reward_investment_dialog.dart`** - Post-completion reward flow
+9. **`lib/data/notification_service.dart`** - Updated notification body logic
 
 ---
 
@@ -223,27 +275,25 @@ These don't affect functionality, just style suggestions.
 
 ## What Was Preserved
 
-✅ All existing streak logic (0-day, 1-day, N-day streaks)  
-✅ Reward flow with confetti + investment question  
-✅ Daily notifications with "Complete" / "Later" buttons  
-✅ Single-habit assumption (no habit list)  
-✅ Identity-based messaging throughout  
-✅ 2-minute rule (tiny version implementation)  
-✅ Hive persistence for all data  
+✅ Streak logic (still tracked, but de-emphasized for graceful consistency)
+✅ Reward flow with confetti + investment question
+✅ Daily notifications with "Complete" / "Later" buttons
+✅ Single-habit assumption (no habit list)
+✅ Identity-based messaging throughout
+✅ 2-minute rule (tiny version implementation)
+✅ Hive persistence for all data
 
 ---
 
-## Next Steps
+## Architecture Principles
 
-1. ✅ **Build complete** - Web app built and deployed
-2. ✅ **Server running** - CORS-enabled server on port 5060
-3. ✅ **Testing guide created** - See `TESTING_GUIDE.md` for detailed test cases
-4. 🎯 **Test in web preview** - Use the URL above to verify all features
-5. 📱 **Optional**: Build Android APK for full notification testing
+1. **Graceful Degradation**: AI suggestions work offline with local fallback
+2. **Backward Compatibility**: All new fields are optional with sensible defaults
+3. **Identity-First**: All messaging reinforces "I am a person who..." framing
+4. **Atomic Habits Aligned**: Implements 4 Laws of Behavior Change
+5. **Hook Model**: Trigger → Action → Variable Reward → Investment cycle
 
 ---
 
-**Implementation Time**: ~45 minutes (code + build + documentation)  
-**Lines Changed**: ~200 lines across 5 files  
-**Backward Compatibility**: ✅ 100% (old data still works)  
-**All Requirements Met**: ✅ Data model, onboarding, Today screen, notifications, persistence
+**Backward Compatibility**: ✅ 100% (old data still works)
+**All Requirements Met**: ✅ Data model, onboarding, Today screen, notifications, persistence, AI suggestions, graceful consistency

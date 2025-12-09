@@ -16,19 +16,22 @@ lib/
 ├── main.dart                    # App entry point with navigation setup
 ├── data/
 │   ├── app_state.dart          # Central state management (Provider)
-│   ├── models/
-│   │   ├── habit.dart          # Habit data model
-│   │   └── user_profile.dart   # User profile/identity model
-│   └── repositories/           # (Future: data persistence layer)
+│   ├── notification_service.dart # Push notifications with actions
+│   ├── ai_suggestion_service.dart # AI-powered habit suggestions
+│   └── models/
+│       ├── habit.dart          # Habit data model with consistency metrics
+│       └── user_profile.dart   # User profile/identity model
 ├── features/
 │   ├── onboarding/
 │   │   └── onboarding_screen.dart  # Collects identity & first habit
 │   ├── today/
-│   │   └── today_screen.dart       # Shows today's habit & streak
+│   │   └── today_screen.dart       # Shows habit, metrics & recovery prompts
 │   └── settings/
 │       └── settings_screen.dart    # Settings & app info
 └── widgets/
-    └── common/                 # (Future: reusable UI components)
+    ├── suggestion_dialog.dart      # AI suggestion picker dialog
+    ├── pre_habit_ritual_dialog.dart # Pre-habit ritual countdown modal
+    └── reward_investment_dialog.dart # Post-completion reward flow
 ```
 
 ## 🏗️ Architecture Explained (In Plain English)
@@ -84,14 +87,40 @@ context.go('/');
 - Collects user's name
 - Asks "Who do you want to become?" (identity-based)
 - Creates first habit with a tiny version (2-minute rule)
+- Implementation intentions: time and location
+- **Habit Stacking**: Optional anchor event ("After [X], I will [habit]")
+- **Make it Attractive**: Temptation bundling and pre-habit rituals
+- **Environment Design**: Cues to add and distractions to remove
 - Validates all inputs before proceeding
 
 ### ✅ Today Screen
 - Shows personalized greeting with identity reminder
 - Displays today's habit with the tiny version
-- Shows current streak with fire icon
+- **Graceful Consistency Score** (0-100) instead of fragile streaks
+- Total "Days Showed Up" counter (never resets)
+- Rolling 4-week adherence percentage
+- **Never Miss Twice** recovery prompts
+- Shows temptation bundle, environment cues, and distraction reminders
+- **Pre-habit ritual modal** with 30-second countdown
 - Big "Mark as Complete" button (or completed status)
 - Quick access to Settings
+
+### ✅ Graceful Consistency Metrics
+Based on James Clear's philosophy that "missing once is an accident, missing twice is the start of a new habit":
+- **Days Showed Up**: Cumulative total that NEVER resets (key motivator)
+- **Graceful Consistency Score**: Rolling 4-week average + recovery bonus
+- **Never Miss Twice Wins**: Tracks times user recovered after single miss
+- **Minimum Version Count**: Tracks when user did just the 2-minute version
+- De-emphasizes streak count (still tracked, but not the focus)
+
+### ✅ AI Suggestion System
+Context-aware suggestions powered by async architecture:
+- **Remote LLM integration** with 5-second timeout
+- **Local heuristic fallback** ensures suggestions always work
+- Suggests temptation bundles based on habit type and time of day
+- Suggests pre-habit rituals for mental preparation
+- Suggests environment cues specific to location
+- Suggests distractions to remove based on habit category
 
 ### ✅ Settings Screen
 - Placeholder sections for future features:
@@ -168,31 +197,32 @@ Try this user journey:
 ### From Atomic Habits:
 - **Identity-based habits**: "I am a person who..." vs "I want to do..."
 - **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: (Future feature) Link new habits to existing ones
-- **Visual cues**: Streak counter provides visible progress
+- **Habit stacking**: "After [anchor event], I will [habit]"
+- **Never Miss Twice**: Missing once is accident, missing twice starts new habit
+- **Make it Attractive**: Temptation bundling pairs habit with enjoyment
+- **Environment Design**: Add cues, remove distractions
+- **Graceful Consistency**: Focus on showing up, not perfect streaks
 
 ### From Hook Model:
-- **Trigger**: Seeing your identity reminder and streak
+- **Trigger**: Implementation intention + environment cues
 - **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Watching streak increase, seeing completion status
-- **Investment**: Building streak makes you more committed
+- **Variable Reward**: Graceful consistency score, recovery wins
+- **Investment**: Days showed up counter that never resets
 
 ### From Fogg Behavior Model:
-- **Motivation**: Identity and visible streak
+- **Motivation**: Identity reminder and graceful consistency
 - **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Daily reminder when you open the app
+- **Prompt**: Habit stacking anchor + scheduled notifications
 
 ## 🔮 Future Features (Not Yet Implemented)
 
 - [ ] Multiple habits support
 - [ ] Habit history and calendar view
-- [ ] Reminders and notifications
-- [ ] Habit stacking (link habits together)
-- [ ] Data persistence (save to local storage)
-- [ ] Environment design suggestions
-- [ ] 4 Laws of Behavior Change framework
-- [ ] Weekly/monthly analytics
-- [ ] Backup and restore functionality
+- [ ] Weekly/monthly analytics dashboard
+- [ ] Social accountability features
+- [ ] Habit chains visualization
+- [ ] Export data to CSV/JSON
+- [ ] Cloud sync and backup
 
 ## 🛠️ Technologies Used
 
@@ -200,6 +230,9 @@ Try this user journey:
 - **Dart 3.9.2** - Programming language
 - **Provider 6.1.5+1** - State management
 - **GoRouter ^14.0.0** - Navigation
+- **Hive** - Local data persistence
+- **http** - Remote API calls for AI suggestions
+- **confetti_widget** - Celebration animations
 - **Material Design 3** - UI design system
 
 ## 📖 Learn More
