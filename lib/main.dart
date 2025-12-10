@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
+import 'data/api_config.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/ai_onboarding_screen.dart';
+import 'features/onboarding/premium_ai_onboarding_screen.dart';
 import 'features/onboarding/welcome_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -12,10 +14,13 @@ import 'features/settings/settings_screen.dart';
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
-  
+
+  // Load API keys from environment (for production builds)
+  ApiConfig.instance.loadFromEnvironment();
+
   runApp(const MyApp());
 }
 
@@ -68,6 +73,10 @@ class MyApp extends StatelessWidget {
               ),
               GoRoute(
                 path: '/onboarding/ai',
+                builder: (context, state) => const PremiumAiOnboardingScreen(),
+              ),
+              GoRoute(
+                path: '/onboarding/ai-basic',
                 builder: (context, state) => const AiOnboardingScreen(),
               ),
               GoRoute(
