@@ -1,287 +1,341 @@
 # Implementation Summary: Atomic Habits Flutter App
 
-## What Was Implemented
+## Overview
 
-This Flutter habit tracker implements **James Clear's Atomic Habits** framework with a focus on:
-- **Graceful Consistency** (not fragile streaks)
-- **"Make it Attractive"** principle and environment design
-- **AI-powered suggestions** with remote LLM + local fallback
-- **"Never Miss Twice"** recovery mechanism
+This Flutter app implements James Clear's Atomic Habits framework with a focus on **Graceful Consistency** rather than fragile streaks. All features are backward compatible and designed to support long-term habit formation.
 
-All changes are **incremental** and **backward compatible**.
+## Feature Implementation Status
 
-### 1. Extended Habit Data Model
+### Tier 1: Essential Features (100% Complete)
+
+| Feature | Status | File(s) |
+|---------|--------|---------|
+| Identity-Based Onboarding | Done | `onboarding_screen.dart` |
+| 2-Minute Rule (Tiny Version) | Done | `habit.dart` |
+| Implementation Intentions | Done | `habit.dart`, `onboarding_screen.dart` |
+| Graceful Consistency Metrics | Done | `habit.dart`, `app_state.dart` |
+| Never Miss Twice Recovery | Done | `never_miss_twice_dialog.dart` |
+| Calendar View | Done | `habit_calendar.dart` |
+| Push Notifications | Done | `notification_service.dart` |
+
+### Tier 2: High Value Features (100% Complete)
+
+| Feature | Status | File(s) |
+|---------|--------|---------|
+| Multiple Habits + Focus Mode | Done | `app_state.dart`, `habit_selector.dart` |
+| Failure Playbooks | Done | `habit.dart`, `onboarding_screen.dart` |
+| Zoom Out Stats | Done | `stats_screen.dart` |
+| Weekly Review | Done | `weekly_review_dialog.dart` |
+| Habit Stacking | Done | `habit.dart`, `onboarding_screen.dart` |
+| Temptation Bundling | Done | `habit.dart`, `today_screen.dart` |
+| Environment Design | Done | `habit.dart`, `onboarding_screen.dart` |
+| Pre-Habit Rituals | Done | `pre_habit_ritual_dialog.dart` |
+| AI Suggestions | Done | `ai_suggestion_service.dart` |
+
+### Tier 3: Differentiating Features (Planned)
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Social Accountability | Planned | High |
+| Habit Chains Visualization | Planned | Medium |
+| Export Data (CSV/JSON) | Planned | Medium |
+| Cloud Sync & Backup | Planned | Medium |
+| Advanced Analytics | Planned | Low |
+
+---
+
+## Detailed Feature Documentation
+
+### 1. Multiple Habits + Focus Mode
+
+**Files:** `lib/data/app_state.dart`, `lib/widgets/habit_selector.dart`, `lib/widgets/add_habit_dialog.dart`
+
+**What it does:**
+- Users can track multiple habits simultaneously
+- "Focus Mode" highlights one habit for primary attention
+- Prevents overwhelm (Atomic Habits: don't change everything at once)
+
+**Key Implementation:**
+```dart
+// AppState changes
+List<Habit> _habits = [];           // Multiple habits
+String? _focusedHabitId;            // Focus mode ID (null = show all)
+
+// Getters
+List<Habit> get habits              // All habits
+Habit? get focusedHabit             // Currently focused habit
+bool get isFocusMode                // Is focus mode active
+int get habitsCompletedTodayCount   // How many done today
+
+// Methods
+addHabit(habit)                     // Add new habit
+removeHabit(habitId)                // Remove habit
+setFocusedHabit(habitId)            // Enter/exit focus mode
+completeHabitForToday(habitId?)     // Complete specific or focused habit
+```
+
+**UI Components:**
+- `HabitSelector`: Dropdown in AppBar for switching habits
+- `HabitMiniCard`: Compact card for multi-habit list view
+- `AddHabitDialog`: 2-step wizard for quick habit creation
+
+**Backward Compatibility:**
+- Auto-migrates old single habit to new format
+- `currentHabit` getter maintained for compatibility
+
+---
+
+### 2. Failure Playbooks
+
+**Files:** `lib/data/models/habit.dart`, `lib/features/onboarding/onboarding_screen.dart`, `lib/widgets/never_miss_twice_dialog.dart`
+
+**What it does:**
+- Pre-set "If [obstacle], then [response]" recovery plans
+- Based on implementation intentions for failure scenarios
+- Shown during "Never Miss Twice" recovery prompts
+
+**Data Model:**
+```dart
+final List<Map<String, String>> failurePlaybooks;
+// Example: [{'obstacle': "I'm too tired", 'response': "Do just 1 minute"}]
+```
+
+**Quick-Add Chips in Onboarding:**
+- "I'm too tired" -> "Do the 2-minute version"
+- "I don't have time" -> "Do it for just 60 seconds"
+- "I'm not motivated" -> "Put on my workout clothes only"
+- "I forgot" -> "Set a phone reminder right now"
+- "I'm stressed" -> "Do deep breathing first, then start"
+
+---
+
+### 3. Zoom Out Stats Screen
+
+**File:** `lib/features/stats/stats_screen.dart`
+
+**What it does:**
+- Weekly/monthly perspective on habit progress
+- Trend comparison (this week vs last week)
+- Resilience stats (bounce backs, 2-minute versions)
+- Contextual insights based on user data
+
+**Stats Calculated:**
+- This week vs last week completion counts
+- This month vs last month comparison
+- Longest streak ever
+- Current streak
+- Never Miss Twice wins
+- Minimum version count
+- Rolling 4-week percentage
+
+**Insight Generation:**
+- "You're on fire this week!"
+- "You've bounced back X times - that's real resilience"
+- "Those 'minimum' days still count"
+- Context-aware based on actual user data
+
+---
+
+### 4. Weekly Review
+
+**File:** `lib/widgets/weekly_review_dialog.dart`
+
+**What it does:**
+- Sunday reflection prompts (3-step wizard)
+- Review week's wins and challenges
+- Set commitment for next week
+- Tracks last review date to avoid duplicates
+
+**3-Step Wizard:**
+1. **Stats Overview**: Days completed, streak, total showed up
+2. **Reflection**: Quick-select wins and challenges
+3. **Commitment**: Action plan for next week
+
+**Quick-Select Options:**
+- Wins: "Stayed consistent", "Did the tiny version", "Bounced back", etc.
+- Challenges: "Missed multiple days", "Lost motivation", "Schedule changed", etc.
+
+---
+
+### 5. Graceful Consistency Metrics
+
 **File:** `lib/data/models/habit.dart`
 
-#### "Make it Attractive" Fields (optional):
-- **`temptationBundle`**: What enjoyable thing you'll pair with your habit (e.g., "Have herbal tea while reading")
-- **`preHabitRitual`**: Mental preparation before the habit (e.g., "Take 3 deep breaths")
-- **`environmentCue`**: What you'll place in your environment to trigger the habit (e.g., "Put book on pillow at 21:45")
-- **`environmentDistraction`**: What you'll remove to eliminate friction (e.g., "Charge phone in kitchen")
+**Philosophy:**
+> "Missing once is an accident. Missing twice is the start of a new habit."
 
-#### Habit Stacking (optional):
-- **`anchorEvent`**: Existing habit to stack the new one on (e.g., "brush my teeth", "pour morning coffee")
+**Key Metrics:**
+- `daysShowedUp`: Total completions (NEVER resets) - primary motivator
+- `minimumVersionCount`: Times user did 2-minute version
+- `neverMissTwiceWins`: Times user recovered after single miss
+- `completionHistory`: List of dates for rolling calculations
+- `gracefulConsistencyScore`: 0-100 computed score
 
-#### Graceful Consistency Metrics:
-- **`daysShowedUp`**: Total completions that NEVER resets (key motivator)
-- **`minimumVersionCount`**: Times user did just the 2-minute version
-- **`neverMissTwiceWins`**: Times user recovered after single missed day
-- **`completionHistory`**: List of completion dates for rolling calculations
-- **`gracefulConsistencyScore`**: Computed 0-100 score (4-week average + recovery bonus)
-- **`rollingAdherencePercent`**: 4-week completion percentage
+**Score Calculation:**
+```dart
+// Base: 4-week completion percentage (max 70 points)
+baseScore = (recentCompletions / 28 * 70)
 
-All fields:
-- Are **nullable** or default to 0 (backward compatible)
-- Persist in **Hive** storage automatically
-- Support **backward compatibility** (old habits without these fields still work)
-- Handle empty strings gracefully (converted to `null`)
+// Bonus: Never Miss Twice wins (5 points each, max 30)
+recoveryBonus = (neverMissTwiceWins * 5).clamp(0, 30)
 
----
-
-### 2. Enhanced Onboarding Screen
-**File:** `lib/features/onboarding/onboarding_screen.dart`
-
-Added two new sections to the onboarding flow (after the core habit fields):
-
-**✨ "Make it Attractive" Section** (optional):
-- Text field for temptation bundle with examples:
-  - "Listen to a podcast while walking"
-  - "Play your favourite playlist while tidying"
-- Text field for pre-habit ritual (single-line)
-
-**🏠 "Design Your Environment" Section** (optional):
-- Text field for environment cue (💡 icon)
-- Text field for distraction guardrail (🚫 icon)
-
-All fields:
-- Have no validators (completely optional)
-- Show helper text with examples
-- Store `null` if left blank (no empty strings in database)
-
----
-
-### 3. Updated Today Screen
-**File:** `lib/features/today/today_screen.dart`
-
-Added three new display sections that appear **only if the data exists**:
-
-**Temptation Bundle Display**:
-- Pink-themed box with 💗 icon
-- Appears after the tiny version card
-- Text: "Bundled with: [user's temptation bundle]"
-
-**Environment Design Section**:
-- Green-bordered box with "Environment" title
-- Shows cue (💡): "Cue: [user's environment cue]"
-- Shows distraction (🚫): "Distraction guardrail: [user's distraction]"
-- Only appears if at least one field is filled
-
-**"Start Ritual" Button**:
-- Outlined button with 🧘 icon
-- Appears **only if**:
-  - Pre-habit ritual exists
-  - Habit is **not completed** for today
-- Clicking opens the ritual modal (see below)
-- Button text: "Start ritual"
-
----
-
-### 4. Created Pre-Habit Ritual Modal
-**File:** `lib/widgets/pre_habit_ritual_dialog.dart` (NEW FILE)
-
-Created a new modal dialog for focused ritual practice:
-
-**Features**:
-- Purple-themed UI with 🧘 icon
-- Displays user's ritual text in highlighted box
-- **30-second countdown timer** (soft guidance, not enforced)
-- Two action buttons:
-  - **"Done – I'm ready"** (purple button) - closes modal after countdown
-  - **"Skip ritual"** (text button) - immediately closes modal
-
-**Important behavior**:
-- Modal does **NOT complete the habit** automatically
-- It's just a mindfulness moment to prime the user
-- After closing, user still needs to click "Mark as Complete"
-- Habit completion triggers the reward flow as usual
-
----
-
-### 5. Updated Notification Copy
-**File:** `lib/data/notification_service.dart`
-
-Modified the daily notification body to include temptation bundle:
-
-**Before**:
-```
-Title: "Time for your 2-minute Read one page"
-Body: "You're becoming the type of person who reads every day."
+// Total
+gracefulConsistencyScore = (baseScore + recoveryBonus).clamp(0, 100)
 ```
 
-**After** (when temptation bundle exists):
-```
-Title: "Time for your 2-minute Read one page"
-Body: "You're becoming the type of person who reads every day (and Have herbal tea while reading)."
-```
+---
 
-**If no temptation bundle**: Body remains the original version (no change).
+### 6. Never Miss Twice Recovery
+
+**Files:** `lib/data/app_state.dart`, `lib/widgets/never_miss_twice_dialog.dart`
+
+**Detection Logic:**
+- On app launch, checks days since last completion
+- 2 days gap = "Never Miss Twice" situation (missed 1 day)
+- >2 days = "Welcome Back" framing (multi-day gap)
+
+**Dialog Features:**
+- Shows days since last completion
+- Displays user's failure playbooks (if any)
+- Options: "Do minimum version", "Do full habit", "Dismiss"
+- Tracks `neverMissTwiceWins` when user recovers
 
 ---
 
+### 7. Habit Stacking
+
+**Files:** `lib/data/models/habit.dart`, `lib/features/onboarding/onboarding_screen.dart`
+
+**What it does:**
+- Links new habit to existing routine
+- "After [ANCHOR EVENT], I will [NEW HABIT]"
+
+**Implementation:**
+```dart
+final String? anchorEvent;  // "brush my teeth", "pour morning coffee"
+```
+
+**Display:** Shows on Today screen with link icon when set.
+
 ---
 
-### 6. AI Suggestion Service (Async Architecture)
+### 8. Make it Attractive (Temptation Bundling + Rituals)
+
+**Files:** `lib/data/models/habit.dart`, `lib/widgets/pre_habit_ritual_dialog.dart`
+
+**Temptation Bundle:**
+- Pair habit with something enjoyable
+- Example: "Have herbal tea while reading"
+- Shown in notification body and Today screen
+
+**Pre-Habit Ritual:**
+- Mental preparation before habit
+- 30-second countdown modal
+- Example: "Take 3 deep breaths"
+
+---
+
+### 9. Environment Design
+
+**Files:** `lib/data/models/habit.dart`, `lib/features/onboarding/onboarding_screen.dart`
+
+**Two Components:**
+1. **Environment Cue**: Visual trigger to start habit
+   - Example: "Put book on pillow at 21:45"
+2. **Environment Distraction**: Remove competing stimuli
+   - Example: "Charge phone in kitchen"
+
+**Display:** Green-bordered section on Today screen when set.
+
+---
+
+### 10. AI Suggestion System
+
 **File:** `lib/data/ai_suggestion_service.dart`
 
 **Architecture:**
-1. **Remote LLM** (5-second timeout) - Tries external API first
-2. **Local Fallback** - Context-aware heuristics always work
+1. Remote LLM call with 5-second timeout
+2. Local heuristic fallback (always works offline)
 
 **Suggestion Types:**
-- **Temptation Bundle**: Based on habit type + time of day
-- **Pre-habit Ritual**: Mindset preparation suggestions
-- **Environment Cue**: Location-specific visual triggers
-- **Environment Distraction**: Friction to remove
+- Temptation bundles (based on habit type + time)
+- Pre-habit rituals (mindset preparation)
+- Environment cues (location-specific)
+- Distraction removal (friction to eliminate)
+
+**Context Awareness:**
+- Habit type detection (read, exercise, meditate, etc.)
+- Time analysis (morning/evening suggestions differ)
+- Location awareness (bedroom, desk, kitchen)
+
+---
+
+### 11. Calendar View
+
+**File:** `lib/widgets/habit_calendar.dart`
+
+**What it does:**
+- Visual history of completions
+- Shows last 5 weeks in grid format
+- Green dots for completed days
+- Current day highlighted
+
+---
+
+### 12. Push Notifications
+
+**File:** `lib/data/notification_service.dart`
 
 **Features:**
-- Never crashes - always returns suggestions
-- Debug logging for remote/local path visibility
-- Easy to configure remote endpoint URL
-- Parallel fetching for all suggestion types
+- Daily reminders at implementation time
+- Action buttons: "Mark Done", "Snooze"
+- Includes temptation bundle in body (if set)
+- Snooze adds 30-minute delay
 
 ---
 
-### 7. "Never Miss Twice" Recovery Flow
-**File:** `lib/data/app_state.dart`
+## File Change Log
 
-**Detection:**
-- On app launch, checks days since last completion
-- 2 days gap = "Never Miss Twice" situation
-- >2 days = "Welcome Back" framing
+### New Files Added
+1. `lib/widgets/habit_selector.dart` - Multi-habit dropdown + focus mode
+2. `lib/widgets/add_habit_dialog.dart` - Quick habit creation
+3. `lib/widgets/habit_calendar.dart` - Visual calendar view
+4. `lib/widgets/weekly_review_dialog.dart` - Sunday reflection wizard
+5. `lib/widgets/never_miss_twice_dialog.dart` - Recovery prompts
+6. `lib/widgets/pre_habit_ritual_dialog.dart` - Ritual countdown
+7. `lib/features/stats/stats_screen.dart` - Zoom out stats view
 
-**Tracking:**
-- `neverMissTwiceWins` increments when user recovers after 1 missed day
-- Used in Graceful Consistency Score calculation (+5 points per win, max 30)
-
----
-
-## Files Changed
-
-1. **`lib/data/models/habit.dart`** - Extended with environment fields + graceful consistency metrics
-2. **`lib/data/app_state.dart`** - Added Never Miss Twice detection + AI suggestion integration
-3. **`lib/data/ai_suggestion_service.dart`** - NEW: Async AI suggestions with remote + local fallback
-4. **`lib/features/onboarding/onboarding_screen.dart`** - Added habit stacking + Make it Attractive sections
-5. **`lib/features/today/today_screen.dart`** - Displays graceful metrics + recovery prompts + ritual button
-6. **`lib/widgets/pre_habit_ritual_dialog.dart`** - NEW: Ritual modal widget
-7. **`lib/widgets/suggestion_dialog.dart`** - NEW: AI suggestion picker
-8. **`lib/widgets/reward_investment_dialog.dart`** - Post-completion reward flow
-9. **`lib/data/notification_service.dart`** - Updated notification body logic
+### Modified Files
+1. `lib/data/app_state.dart` - Multi-habit support, focus mode
+2. `lib/data/models/habit.dart` - Extended with all new fields
+3. `lib/features/today/today_screen.dart` - Multi/single views, dialogs
+4. `lib/features/onboarding/onboarding_screen.dart` - New sections
+5. `lib/main.dart` - Added /stats route
 
 ---
 
-## How to Test
+## Data Migration
 
-### 🌐 Live Web Preview
-**URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
+### Backward Compatibility
+All changes are backward compatible:
+- New fields have defaults (null, 0, or empty list)
+- Old data loads without errors
+- Auto-migration from single habit to multi-habit format
 
-### Test 1: New Onboarding Fields
-1. Clear app data (DevTools > Application > IndexedDB > Delete)
-2. Refresh page to restart onboarding
-3. Fill core fields (identity, habit name, tiny version, time, location)
-4. **Fill optional fields**:
-   - Temptation bundle: `"Have herbal tea while reading"`
-   - Pre-habit ritual: `"Take 3 deep breaths"`
-   - Environment cue: `"Put book on pillow at 21:45"`
-   - Distraction: `"Charge phone in kitchen"`
-5. Click "Start Your Journey"
-
-**Expected**: App navigates to Today screen, no validation errors
-
----
-
-### Test 2: Today Screen Display
-1. Check for **pink box** with temptation bundle: "Bundled with: Have herbal tea while reading"
-2. Check for **green-bordered box** with:
-   - "Cue: Put book on pillow at 21:45"
-   - "Distraction guardrail: Charge phone in kitchen"
-3. Check for **"Start ritual" button** (🧘 icon, outlined style)
-
-**Expected**: All three sections visible with your data
-
----
-
-### Test 3: "Start Ritual" Modal Behavior
-1. Click **"Start ritual"** button
-2. Observe:
-   - Purple modal with ritual text: "Take 3 deep breaths"
-   - Countdown starts at 30 seconds
-3. Test **"Skip ritual"** - closes immediately, habit still incomplete
-4. Reopen modal, wait for countdown, click **"Done – I'm ready"**
-5. Modal closes, habit still **not completed** (you're just ready)
-6. Click **"Mark as Complete"** to actually complete the habit
-
-**Expected**: 
-- Ritual modal works as described
-- Ritual does **NOT** auto-complete habit
-- Reward flow triggers normally after "Mark as Complete"
-
----
-
-### Test 4: Persistence
-1. Hard refresh browser (`Ctrl+Shift+R`)
-2. Check Today screen - all fields should still be visible
-3. Open DevTools > Application > IndexedDB > Hive database
-4. Verify habit JSON contains all 4 new fields
-
-**Expected**: Data survives refresh, stored in Hive
-
----
-
-### Test 5: Notification Copy (Limited on Web)
-**Note**: Web browsers don't show real notifications. Full testing requires Android APK.
-
-**Web Testing**:
-1. Check console logs for "Notification scheduled"
-2. Code includes temptation bundle in body when present
-
-**Android Testing** (requires APK build):
-1. Build APK: `flutter build apk --release`
-2. Install on device, complete onboarding with temptation bundle
-3. Wait for notification at scheduled time
-4. Verify body includes: `"(and Have herbal tea while reading)"`
-
-**Expected**: Notification body includes temptation bundle on Android
-
----
-
-## Edge Cases Tested
-
-✅ **Partial fields**: Only filling temptation bundle works (other sections don't appear)  
-✅ **Empty strings**: Spaces converted to `null`, no empty displays  
-✅ **Backward compatibility**: Old habits without new fields load successfully  
-✅ **Ritual button visibility**: Hidden after habit completion, visible before  
-
----
-
-## Known Issues (Non-Critical)
-
-1. **flutter analyze** shows 2 INFO-level warnings:
-   - Unnecessary import in `today_screen.dart` (can be removed)
-   - BuildContext across async gap (safe pattern, guarded by `mounted` check)
-   
-These don't affect functionality, just style suggestions.
-
----
-
-## What Was Preserved
-
-✅ Streak logic (still tracked, but de-emphasized for graceful consistency)
-✅ Reward flow with confetti + investment question
-✅ Daily notifications with "Complete" / "Later" buttons
-✅ Single-habit assumption (no habit list)
-✅ Identity-based messaging throughout
-✅ 2-minute rule (tiny version implementation)
-✅ Hive persistence for all data
+### Migration Logic (app_state.dart:148-163)
+```dart
+// If old 'currentHabit' key exists, migrate to 'habits' list
+final oldHabitJson = _dataBox!.get('currentHabit');
+if (oldHabitJson != null) {
+  final oldHabit = Habit.fromJson(Map<String, dynamic>.from(oldHabitJson));
+  _habits = [oldHabit];
+  _focusedHabitId = oldHabit.id;
+  // Save in new format
+  await _dataBox!.put('habits', [oldHabitJson]);
+  await _dataBox!.put('focusedHabitId', oldHabit.id);
+  await _dataBox!.delete('currentHabit');
+}
+```
 
 ---
 
@@ -290,10 +344,46 @@ These don't affect functionality, just style suggestions.
 1. **Graceful Degradation**: AI suggestions work offline with local fallback
 2. **Backward Compatibility**: All new fields are optional with sensible defaults
 3. **Identity-First**: All messaging reinforces "I am a person who..." framing
-4. **Atomic Habits Aligned**: Implements 4 Laws of Behavior Change
-5. **Hook Model**: Trigger → Action → Variable Reward → Investment cycle
+4. **Atomic Habits Aligned**: Implements all 4 Laws of Behavior Change
+5. **Hook Model**: Complete Trigger -> Action -> Reward -> Investment cycle
+6. **Never Punish**: Graceful consistency, never shame for missing
 
 ---
 
-**Backward Compatibility**: ✅ 100% (old data still works)
-**All Requirements Met**: ✅ Data model, onboarding, Today screen, notifications, persistence, AI suggestions, graceful consistency
+## Testing Checklist
+
+### Core Flow
+- [ ] Complete onboarding with all fields
+- [ ] Complete habit and see reward flow
+- [ ] Miss a day and see Never Miss Twice dialog
+- [ ] Add second habit via dropdown
+- [ ] Enter focus mode
+- [ ] Exit focus mode to see all habits
+- [ ] View stats screen
+- [ ] Complete weekly review (set device to Sunday)
+
+### Edge Cases
+- [ ] Clear data and re-onboard
+- [ ] Leave optional fields empty
+- [ ] Complete minimum version
+- [ ] Old single-habit data migration
+- [ ] View stats with no completions
+
+---
+
+## Commit History
+
+```
+96f2e01 feat: Add multiple habits support with focus mode
+2873450 feat: Integrate weekly review with app state and Today screen
+e624474 feat: Add weekly review dialog widget
+4fb4c10 feat: Add "Zoom Out" stats screen with weekly/monthly perspective
+a023791 feat: Add failure playbooks for pre-set recovery plans
+82e9f63 feat: Upgrade to async suggestion system with remote LLM + local fallback
+1e07283 feat: Add AI suggestion system for habit optimization
+889c215 feat: Add graceful consistency metrics, Never Miss Twice, and habit stacking
+```
+
+---
+
+**All Tier 1 and Tier 2 features complete. Ready for Tier 3 development.**

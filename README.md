@@ -1,258 +1,292 @@
-# Atomic Habits Hook App
+# Atomic Habits App
 
-A Flutter mobile habit-tracking app based on:
-- **James Clear's Atomic Habits** (identity-based habits, 4 Laws of Behavior Change, 2-minute rule)
-- **Nir Eyal's Hook Model** (Trigger → Action → Variable Reward → Investment)
-- **B.J. Fogg's Behavior Model** (Behavior = Motivation × Ability × Prompt)
+A Flutter mobile habit-tracking app built on the science of behavior change, implementing principles from:
 
-## 🎯 Project Overview
+- **James Clear's Atomic Habits** - Identity-based habits, 4 Laws of Behavior Change, Graceful Consistency
+- **Nir Eyal's Hook Model** - Trigger, Action, Variable Reward, Investment
+- **B.J. Fogg's Behavior Model** - Behavior = Motivation x Ability x Prompt
 
-This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
+## Philosophy: Why This App Is Different
 
-## 📁 Project Structure
+Most habit apps focus on **streaks** - fragile numbers that reset to zero when you miss a day. This creates anxiety and all-or-nothing thinking that actually undermines long-term habit formation.
+
+This app implements **Graceful Consistency** based on James Clear's core insight:
+
+> "Missing once is an accident. Missing twice is the start of a new habit."
+
+Instead of punishing you for imperfection, this app:
+- Tracks **"Days You Showed Up"** - a number that NEVER resets
+- Celebrates **"Never Miss Twice" recoveries** - bouncing back after a miss
+- Shows **rolling 4-week consistency** instead of fragile streaks
+- Supports **2-minute versions** - showing up matters more than perfection
+- Provides **Failure Playbooks** - pre-planned responses to obstacles
+
+## Core Concepts
+
+### Identity-Based Habits
+"I am a person who reads daily" vs "I want to read more"
+
+Every action is a vote for the type of person you want to become. The app constantly reinforces your chosen identity.
+
+### The 4 Laws of Behavior Change
+
+| Law | Implementation |
+|-----|----------------|
+| **Make it Obvious** | Implementation intentions, environment cues, habit stacking |
+| **Make it Attractive** | Temptation bundling, pre-habit rituals |
+| **Make it Easy** | 2-minute rule (tiny version), minimum viable habit |
+| **Make it Satisfying** | Graceful consistency score, visual progress, celebration |
+
+### The Hook Model
+
+```
+TRIGGER: Notification + Environment Cue + Habit Stacking
+    |
+    v
+ACTION: One-tap completion (Make it Easy)
+    |
+    v
+VARIABLE REWARD: Consistency score, insights, never-miss-twice wins
+    |
+    v
+INVESTMENT: Days showed up (never resets), weekly review, identity reinforcement
+```
+
+## Features
+
+### Tier 1: Essential (Implemented)
+
+- **Identity-Based Onboarding** - Define who you want to become
+- **2-Minute Rule** - Every habit has a tiny version
+- **Implementation Intentions** - "I will [BEHAVIOR] at [TIME] in [LOCATION]"
+- **Graceful Consistency Metrics** - Days showed up, rolling 4-week average
+- **Never Miss Twice Recovery** - Gentle prompts after missing a day
+- **Calendar View** - Visual history of completions
+- **Push Notifications** - Contextual reminders with quick actions
+
+### Tier 2: High Value (Implemented)
+
+- **Multiple Habits + Focus Mode** - Track several habits, focus on one
+- **Failure Playbooks** - Pre-set "If X, then Y" recovery plans
+- **Zoom Out Stats** - Weekly/monthly perspective with trends
+- **Weekly Review** - Sunday reflection prompts
+- **Habit Stacking** - "After [ANCHOR], I will [NEW HABIT]"
+- **Temptation Bundling** - Pair habits with enjoyment
+- **Environment Design** - Cues to add, distractions to remove
+- **Pre-Habit Rituals** - Mental preparation before habits
+
+### Tier 3: Differentiating (Planned)
+
+- Social accountability features
+- Habit chains visualization
+- Export data to CSV/JSON
+- Cloud sync and backup
+- Advanced analytics dashboard
+
+## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with navigation setup
+├── main.dart                         # App entry + GoRouter navigation
 ├── data/
-│   ├── app_state.dart          # Central state management (Provider)
-│   ├── notification_service.dart # Push notifications with actions
-│   ├── ai_suggestion_service.dart # AI-powered habit suggestions
+│   ├── app_state.dart               # Central state (Provider) - multi-habit support
+│   ├── notification_service.dart    # Push notifications with actions
+│   ├── ai_suggestion_service.dart   # Context-aware habit suggestions
 │   └── models/
-│       ├── habit.dart          # Habit data model with consistency metrics
-│       └── user_profile.dart   # User profile/identity model
+│       ├── habit.dart               # Habit model with graceful metrics
+│       └── user_profile.dart        # User identity profile
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart  # Collects identity & first habit
+│   │   └── onboarding_screen.dart   # 6-step identity + habit setup
 │   ├── today/
-│   │   └── today_screen.dart       # Shows habit, metrics & recovery prompts
+│   │   └── today_screen.dart        # Main screen - single/multi habit views
+│   ├── stats/
+│   │   └── stats_screen.dart        # Zoom out - weekly/monthly stats
 │   └── settings/
-│       └── settings_screen.dart    # Settings & app info
+│       └── settings_screen.dart     # App settings and info
 └── widgets/
-    ├── suggestion_dialog.dart      # AI suggestion picker dialog
-    ├── pre_habit_ritual_dialog.dart # Pre-habit ritual countdown modal
-    └── reward_investment_dialog.dart # Post-completion reward flow
+    ├── habit_selector.dart          # Multi-habit dropdown + focus mode
+    ├── add_habit_dialog.dart        # Quick habit creation flow
+    ├── habit_calendar.dart          # Visual completion calendar
+    ├── reward_investment_dialog.dart # Post-completion celebration
+    ├── pre_habit_ritual_dialog.dart  # Ritual countdown modal
+    ├── never_miss_twice_dialog.dart  # Recovery prompts
+    ├── weekly_review_dialog.dart     # Sunday reflection wizard
+    └── suggestion_dialog.dart        # AI suggestion picker
 ```
 
-## 🏗️ Architecture Explained (In Plain English)
+## Data Model
+
+### Habit
+```dart
+Habit {
+  // Core
+  id, name, identity, tinyVersion, createdAt
+
+  // Implementation Intentions
+  implementationTime, implementationLocation, anchorEvent
+
+  // Make it Attractive
+  temptationBundle, preHabitRitual
+
+  // Environment Design
+  environmentCue, environmentDistraction
+
+  // Failure Playbooks
+  failurePlaybooks: [{ obstacle, response }]
+
+  // Graceful Consistency Metrics (NEVER reset)
+  daysShowedUp, minimumVersionCount, neverMissTwiceWins
+  completionHistory, currentStreak, lastCompletedDate
+
+  // Computed
+  gracefulConsistencyScore (0-100)
+  rollingAdherencePercent (4-week)
+}
+```
+
+### AppState (Multi-Habit Support)
+```dart
+AppState {
+  // Multiple habits
+  List<Habit> habits
+  String? focusedHabitId  // null = show all
+
+  // Getters
+  focusedHabit, currentHabit (backward compat)
+  isFocusMode, habitCount
+  habitsCompletedTodayCount, allHabitsCompletedToday
+
+  // Methods
+  addHabit(), removeHabit(), updateHabit()
+  setFocusedHabit(), getHabitById()
+  completeHabitForToday(habitId?)
+  isHabitCompletedToday(habitId?)
+}
+```
+
+## Architecture
 
 ### State Management: Provider
-
-**What it does:** Provider is like a "data warehouse" for your app. It stores information (like your habits and streak) in one central place, and automatically updates the screens when that data changes.
-
-**How it works:**
-1. **AppState** (`data/app_state.dart`) is the "warehouse" that holds all your app's data
-2. **Provider** wraps the entire app (see `main.dart`) and makes this data available everywhere
-3. **Consumer** widgets "subscribe" to changes - when data updates, they automatically rebuild
-
-**Example flow:**
-- User completes a habit → `completeHabitForToday()` is called
-- AppState updates the streak and calls `notifyListeners()`
-- The TodayScreen automatically rebuilds with the new streak number
-
-**Why Provider?** It's beginner-friendly, widely used, and has excellent documentation. No complex setup required!
+- Central `AppState` holds all data
+- `ChangeNotifier` pattern for reactive updates
+- `Consumer` widgets rebuild automatically on changes
 
 ### Navigation: GoRouter
+- Declarative routing with paths (`/`, `/today`, `/stats`, `/settings`)
+- Redirect logic for onboarding flow
 
-**What it does:** GoRouter handles moving between different screens in your app using simple paths (like websites).
+### Persistence: Hive
+- Local NoSQL storage
+- Automatic serialization/deserialization
+- Backward-compatible data migrations
 
-**How it works:**
-- Routes are defined in `main.dart` with paths like `/`, `/today`, `/settings`
-- Use `context.go('/today')` to navigate to a screen
-- The router knows to start at onboarding (`/`) if not completed, otherwise start at Today screen
+### AI Suggestions: Hybrid Architecture
+- Remote LLM calls with 5-second timeout
+- Local heuristic fallback (always works offline)
+- Context-aware based on habit type, time, location
 
-**Example:**
-```dart
-// Navigate to Today screen
-context.go('/today');
+## How to Run
 
-// Go back to previous screen
-context.go('/');
-```
+### Prerequisites
+- Flutter SDK 3.x
+- Dart SDK 3.x
+- Android Studio / VS Code with Flutter extensions
 
-### Data Models
-
-**Habit** (`data/models/habit.dart`):
-- Represents a single habit with name, identity, tiny version, streak, etc.
-- Has methods to create copies with updates (`copyWith`)
-- Can be saved/loaded from JSON for persistence
-
-**UserProfile** (`data/models/user_profile.dart`):
-- Stores the user's desired identity ("I am a person who...")
-- Keeps track of name and creation date
-
-## 🎨 Features Implemented
-
-### ✅ Onboarding Screen
-- Collects user's name
-- Asks "Who do you want to become?" (identity-based)
-- Creates first habit with a tiny version (2-minute rule)
-- Implementation intentions: time and location
-- **Habit Stacking**: Optional anchor event ("After [X], I will [habit]")
-- **Make it Attractive**: Temptation bundling and pre-habit rituals
-- **Environment Design**: Cues to add and distractions to remove
-- Validates all inputs before proceeding
-
-### ✅ Today Screen
-- Shows personalized greeting with identity reminder
-- Displays today's habit with the tiny version
-- **Graceful Consistency Score** (0-100) instead of fragile streaks
-- Total "Days Showed Up" counter (never resets)
-- Rolling 4-week adherence percentage
-- **Never Miss Twice** recovery prompts
-- Shows temptation bundle, environment cues, and distraction reminders
-- **Pre-habit ritual modal** with 30-second countdown
-- Big "Mark as Complete" button (or completed status)
-- Quick access to Settings
-
-### ✅ Graceful Consistency Metrics
-Based on James Clear's philosophy that "missing once is an accident, missing twice is the start of a new habit":
-- **Days Showed Up**: Cumulative total that NEVER resets (key motivator)
-- **Graceful Consistency Score**: Rolling 4-week average + recovery bonus
-- **Never Miss Twice Wins**: Tracks times user recovered after single miss
-- **Minimum Version Count**: Tracks when user did just the 2-minute version
-- De-emphasizes streak count (still tracked, but not the focus)
-
-### ✅ AI Suggestion System
-Context-aware suggestions powered by async architecture:
-- **Remote LLM integration** with 5-second timeout
-- **Local heuristic fallback** ensures suggestions always work
-- Suggests temptation bundles based on habit type and time of day
-- Suggests pre-habit rituals for mental preparation
-- Suggests environment cues specific to location
-- Suggests distractions to remove based on habit category
-
-### ✅ Settings Screen
-- Placeholder sections for future features:
-  - Profile editing
-  - Habit management
-  - History viewing
-  - Backup/restore
-- App information and about section
-
-## 🚀 How to Run the App
-
-### Option 1: Web Preview (Easiest!)
-
-**Your app is already running!** 🎉
-
-🔗 **Web Preview URL:** https://5060-i7bourjpm740ju7sjx1pf-cc2fbc16.sandbox.novita.ai
-
-Just click the link above and try the app in your browser!
-
-### Option 2: Android Device or Emulator
-
-**Prerequisites:**
-- Android device with USB debugging enabled, OR
-- Android emulator running on your computer
-- Flutter SDK installed on your computer
-
-**Steps:**
-
-1. **Clone this project to your computer:**
-   ```bash
-   # Copy the flutter_app folder to your local machine
-   ```
-
-2. **Connect your Android device** (or start an emulator)
-
-3. **Run the app:**
-   ```bash
-   cd flutter_app
-   flutter run
-   ```
-
-4. **The app will install and launch on your device!**
-
-### Option 3: Build APK for Installation
-
+### Development
 ```bash
-cd flutter_app
-flutter build apk --release
+# Clone repository
+git clone <repository-url>
+cd atomichabits
+
+# Get dependencies
+flutter pub get
+
+# Run on connected device/emulator
+flutter run
+
+# Run on web
+flutter run -d chrome
 ```
 
-The APK will be created at: `build/app/outputs/flutter-apk/app-release.apk`
+### Build for Production
+```bash
+# Android APK
+flutter build apk --release
 
-Transfer this file to your Android phone and install it!
+# iOS (requires Mac)
+flutter build ios --release
 
-## 🧪 Testing the App
+# Web
+flutter build web --release
+```
 
-Try this user journey:
+## Testing the App
 
-1. **Start the app** - you'll see the Onboarding screen
-2. **Fill in your details:**
-   - Name: "Alex"
-   - Identity: "I am a person who reads daily"
-   - Habit: "Read every day"
-   - Tiny version: "Read one page before bed"
-3. **Click "Start Building Habits"** - navigates to Today screen
-4. **See your identity reminder** at the top
-5. **Notice the streak counter** (starts at 0)
-6. **Click "Mark as Complete"** - watch the streak increase to 1!
-7. **Notice the button changes** to show completion
-8. **Click Settings icon** to see the settings screen
+### User Journey Test
+1. **Onboarding**: Create identity "I am a person who reads daily"
+2. **Create habit**: "Read" with tiny version "Read one page"
+3. **Set implementation**: Time 22:00, Location "In bed"
+4. **Add stacking**: "After I brush my teeth"
+5. **Environment design**: Cue "Put book on pillow", Distraction "Phone in kitchen"
+6. **Add failure playbook**: "I'm too tired" -> "Read just one paragraph"
+7. **Complete habit**: Tap "Mark as Complete"
+8. **See reward flow**: Confetti + investment prompt
+9. **Add second habit**: Use habit selector dropdown
+10. **Check stats**: Tap insights icon for Zoom Out view
+11. **Weekly review**: Appears on Sundays
 
-## 📚 Key Concepts Used
+### Edge Cases
+- Missing a day triggers "Never Miss Twice" dialog
+- Completing minimum version tracks separately
+- Old single-habit data auto-migrates to multi-habit format
+- Empty optional fields handled gracefully
 
-### From Atomic Habits:
-- **Identity-based habits**: "I am a person who..." vs "I want to do..."
-- **2-minute rule**: Make habits so small you can't say no
-- **Habit stacking**: "After [anchor event], I will [habit]"
-- **Never Miss Twice**: Missing once is accident, missing twice starts new habit
-- **Make it Attractive**: Temptation bundling pairs habit with enjoyment
-- **Environment Design**: Add cues, remove distractions
-- **Graceful Consistency**: Focus on showing up, not perfect streaks
+## Key Files Reference
 
-### From Hook Model:
-- **Trigger**: Implementation intention + environment cues
-- **Action**: Clicking "Mark as Complete" (easy action)
-- **Variable Reward**: Graceful consistency score, recovery wins
-- **Investment**: Days showed up counter that never resets
+| File | Purpose |
+|------|---------|
+| `lib/data/app_state.dart` | Central state, multi-habit logic, persistence |
+| `lib/data/models/habit.dart` | Habit data model, graceful metrics |
+| `lib/features/today/today_screen.dart` | Main screen, single/multi views |
+| `lib/features/onboarding/onboarding_screen.dart` | 6-step onboarding wizard |
+| `lib/widgets/habit_selector.dart` | Focus mode, habit switching |
+| `lib/widgets/never_miss_twice_dialog.dart` | Recovery prompts |
+| `lib/widgets/weekly_review_dialog.dart` | Sunday reflection |
 
-### From Fogg Behavior Model:
-- **Motivation**: Identity reminder and graceful consistency
-- **Ability**: Tiny 2-minute version makes it easy
-- **Prompt**: Habit stacking anchor + scheduled notifications
+## Documentation
 
-## 🔮 Future Features (Not Yet Implemented)
+- `README.md` - This file (project overview)
+- `IMPLEMENTATION_SUMMARY.md` - Detailed feature documentation
+- `FEATURE_ROADMAP.md` - Feature tiers and future plans
+- `AI_SUGGESTIONS_GUIDE.md` - AI system documentation
+- `TESTING_GUIDE.md` - Comprehensive test scenarios
 
-- [ ] Multiple habits support
-- [ ] Habit history and calendar view
-- [ ] Weekly/monthly analytics dashboard
-- [ ] Social accountability features
-- [ ] Habit chains visualization
-- [ ] Export data to CSV/JSON
-- [ ] Cloud sync and backup
+## Contributing
 
-## 🛠️ Technologies Used
+When adding features, ensure alignment with:
+1. **Graceful Consistency** - Never punish users for missing
+2. **Identity-First** - Reinforce "I am a person who..."
+3. **Backward Compatibility** - Old data must still work
+4. **The 4 Laws** - Make it Obvious, Attractive, Easy, Satisfying
 
-- **Flutter 3.35.4** - UI framework
-- **Dart 3.9.2** - Programming language
-- **Provider 6.1.5+1** - State management
-- **GoRouter ^14.0.0** - Navigation
-- **Hive** - Local data persistence
-- **http** - Remote API calls for AI suggestions
+## Technologies
+
+- **Flutter 3.x** - Cross-platform UI framework
+- **Dart 3.x** - Programming language
+- **Provider** - State management
+- **GoRouter** - Navigation
+- **Hive** - Local persistence
 - **confetti_widget** - Celebration animations
-- **Material Design 3** - UI design system
+- **flutter_local_notifications** - Push notifications
 
-## 📖 Learn More
+## Resources
 
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Provider Package](https://pub.dev/packages/provider)
-- [GoRouter Package](https://pub.dev/packages/go_router)
 - [Atomic Habits by James Clear](https://jamesclear.com/atomic-habits)
 - [Hooked by Nir Eyal](https://www.nirandfar.com/hooked/)
-
-## 💡 Tips for Non-Technical Users
-
-**What is Flutter?** Flutter is like a toolbox for building mobile apps. You write code once, and it can run on both Android and iPhone.
-
-**What is Provider?** Think of it as a smart messenger that tells your app screens when data changes, so they can update automatically.
-
-**What is a Widget?** Everything you see in Flutter is a "widget" - buttons, text, screens, etc. Widgets are like LEGO blocks you stack together to build your app.
-
-**What is State?** "State" is the data that can change in your app - like your habit streak or whether you completed today's habit.
+- [Flutter Documentation](https://docs.flutter.dev/)
+- [Provider Package](https://pub.dev/packages/provider)
 
 ---
 
-Built with ❤️ using Flutter | Based on science-backed behavior change principles
+Built with science-backed behavior change principles | Graceful Consistency > Fragile Streaks
