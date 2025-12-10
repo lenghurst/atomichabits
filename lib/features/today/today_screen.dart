@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
+import '../../data/models/habit.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 import '../../widgets/never_miss_twice_dialog.dart';
 import '../../widgets/habit_calendar.dart';
 import '../../widgets/weekly_review_dialog.dart';
+import '../../widgets/habit_selector.dart';
+import '../../widgets/add_habit_dialog.dart';
 
 /// Today screen - Shows today's habit and streak
 /// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
@@ -337,6 +340,37 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _showAddHabitDialog(AppState appState) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AddHabitDialog(
+        onHabitCreated: (habit) {
+          Navigator.of(dialogContext).pop();
+          appState.addHabit(habit);
+          // Set focus to the new habit
+          appState.setFocusedHabit(habit.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Added "${habit.name}" - let\'s build this habit!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+        onCancel: () => Navigator.of(dialogContext).pop(),
+      ),
+    );
+  }
+
+  void _handleHabitSelection(AppState appState, String? value) {
+    if (value == '_add_new_') {
+      _showAddHabitDialog(appState);
+    } else if (value == '_manage_') {
+      context.go('/settings');
+    } else {
+      appState.setFocusedHabit(value);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
@@ -344,11 +378,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         final habit = appState.currentHabit;
         final profile = appState.userProfile;
         final isCompleted = appState.isHabitCompletedToday();
+        final habits = appState.habits;
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Today'),
-            centerTitle: true,
+            // Show habit selector in title if we have habits
+            title: habits.isNotEmpty
+                ? HabitSelector(
+                    habits: habits,
+                    focusedHabit: appState.focusedHabit,
+                    isFocusMode: appState.isFocusMode,
+                    onHabitSelected: (value) => _handleHabitSelection(appState, value),
+                    onAddHabit: () => _showAddHabitDialog(appState),
+                    onManageHabits: () => context.go('/settings'),
+                  )
+                : const Text('Today'),
+            centerTitle: habits.isEmpty,
             actions: [
               // Zoom Out / Stats button
               IconButton(
@@ -357,11 +402,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 tooltip: 'View stats',
               ),
               // Test notification button (debug only)
-              IconButton(
-                icon: const Icon(Icons.notifications_active),
-                onPressed: () => appState.showTestNotification(),
-                tooltip: 'Test notification',
-              ),
+              if (kDebugMode)
+                IconButton(
+                  icon: const Icon(Icons.notifications_active),
+                  onPressed: () => appState.showTestNotification(),
+                  tooltip: 'Test notification',
+                ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () => context.go('/settings'),
@@ -369,18 +415,208 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
             ],
           ),
           body: SafeArea(
-            child: habit == null
+            child: habits.isEmpty
                 ? _buildNoHabitView(context)
-                : _buildHabitView(
-                    context,
-                    habit,
-                    profile,
-                    isCompleted,
-                    appState,
-                  ),
+                : appState.isFocusMode || habits.length == 1
+                    ? _buildHabitView(
+                        context,
+                        habit!,
+                        profile,
+                        isCompleted,
+                        appState,
+                      )
+                    : _buildMultiHabitView(context, appState),
           ),
+          // FAB to add habits when in multi-habit view
+          floatingActionButton: habits.isNotEmpty && habits.length > 1 && !appState.isFocusMode
+              ? FloatingActionButton.extended(
+                  onPressed: () => _showAddHabitDialog(appState),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Habit'),
+                  backgroundColor: Colors.green,
+                )
+              : null,
         );
       },
+    );
+  }
+
+  /// Build a view showing all habits as cards
+  Widget _buildMultiHabitView(BuildContext context, AppState appState) {
+    final profile = appState.userProfile;
+    final habits = appState.habits;
+    final completedCount = appState.habitsCompletedTodayCount;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Identity reminder
+          if (profile != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.star, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, ${profile.name}! 👋',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          profile.identity,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Progress summary
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: completedCount == habits.length
+                    ? [Colors.green.shade400, Colors.teal.shade500]
+                    : [Colors.blue.shade400, Colors.indigo.shade500],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  completedCount == habits.length
+                      ? Icons.celebration
+                      : Icons.today,
+                  color: Colors.white,
+                  size: 32,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$completedCount / ${habits.length} completed',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        completedCount == habits.length
+                            ? 'All habits done for today!'
+                            : '${habits.length - completedCount} remaining',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Habits header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Your Habits',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _showAddHabitDialog(appState),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Habit cards
+          ...habits.map((habit) {
+            final isHabitCompleted = appState.isHabitCompletedToday(habitId: habit.id);
+            final isFocused = appState.focusedHabitId == habit.id;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: HabitMiniCard(
+                habit: habit,
+                isCompleted: isHabitCompleted,
+                isFocused: isFocused,
+                onTap: () {
+                  // Enter focus mode for this habit
+                  appState.setFocusedHabit(habit.id);
+                },
+                onComplete: () async {
+                  final wasCompleted = await appState.completeHabitForToday(habitId: habit.id);
+                  if (wasCompleted && mounted) {
+                    _showRewardInvestmentDialog(appState);
+                  }
+                },
+                onFocus: () {
+                  if (isFocused) {
+                    appState.setFocusedHabit(null); // Exit focus mode
+                  } else {
+                    appState.setFocusedHabit(habit.id);
+                  }
+                },
+              ),
+            );
+          }),
+
+          const SizedBox(height: 16),
+
+          // Tip for focus mode
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lightbulb_outline, color: Colors.purple.shade600, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Tip: Tap a habit card to focus on it, or tap the focus icon to enter focus mode.',
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -416,16 +652,49 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
 
   Widget _buildHabitView(
     BuildContext context,
-    dynamic habit,
+    Habit habit,
     dynamic profile,
     bool isCompleted,
     AppState appState,
   ) {
+    final hasMultipleHabits = appState.habits.length > 1;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // "Back to all habits" button when in focus mode with multiple habits
+          if (hasMultipleHabits && appState.isFocusMode) ...[
+            InkWell(
+              onTap: () => appState.setFocusedHabit(null),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back, size: 16, color: Colors.grey.shade700),
+                    const SizedBox(width: 6),
+                    Text(
+                      'All Habits (${appState.habits.length})',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Identity reminder
           if (profile != null) ...[
             Container(

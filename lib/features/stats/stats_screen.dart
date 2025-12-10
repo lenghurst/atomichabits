@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
+import '../../data/models/habit.dart';
 
 /// Stats Screen - "Zoom Out" View
 ///
@@ -14,16 +15,23 @@ import '../../data/app_state.dart';
 /// - Monthly overview with trends
 /// - Best streaks and recovery wins
 /// - Motivational insights based on data
-class StatsScreen extends StatelessWidget {
+class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
+
+  @override
+  State<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _StatsScreenState extends State<StatsScreen> {
+  String? _selectedHabitId;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
-        final habit = appState.currentHabit;
+        final habits = appState.habits;
 
-        if (habit == null) {
+        if (habits.isEmpty) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Your Progress'),
@@ -38,12 +46,25 @@ class StatsScreen extends StatelessWidget {
           );
         }
 
+        // Get the habit to display stats for
+        Habit habit;
+        if (_selectedHabitId != null) {
+          habit = habits.firstWhere(
+            (h) => h.id == _selectedHabitId,
+            orElse: () => habits.first,
+          );
+        } else {
+          habit = appState.focusedHabit ?? habits.first;
+        }
+
         // Calculate stats
         final stats = _calculateStats(habit.completionHistory);
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Zoom Out'),
+            title: habits.length > 1
+                ? _buildHabitDropdown(habits, habit)
+                : const Text('Zoom Out'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/today'),
@@ -104,6 +125,30 @@ class StatsScreen extends StatelessWidget {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildHabitDropdown(List<Habit> habits, Habit selectedHabit) {
+    return DropdownButton<String>(
+      value: selectedHabit.id,
+      underline: const SizedBox(),
+      icon: const Icon(Icons.arrow_drop_down),
+      items: habits.map((habit) {
+        return DropdownMenuItem<String>(
+          value: habit.id,
+          child: Text(
+            habit.name,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedHabitId = value;
+        });
       },
     );
   }
