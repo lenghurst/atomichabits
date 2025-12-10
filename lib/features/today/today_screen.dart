@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../widgets/reward_investment_dialog.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/never_miss_twice_dialog.dart';
+import '../../widgets/habit_calendar.dart';
 
 /// Today screen - Shows today's habit and streak
-/// Implements the Hook Model: Trigger → Action → Variable Reward → Investment
+/// Implements the Hook Model: Trigger -> Action -> Variable Reward -> Investment
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
 
@@ -21,10 +23,14 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     super.initState();
     // Listen for app lifecycle changes to detect coming from background
     WidgetsBinding.instance.addObserver(this);
-    
-    // Check if we should show reward flow when screen loads
+
+    // Check if we should show reward flow or recovery when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowRewardFlow();
+      // Slight delay before showing recovery dialog to let screen settle
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _checkAndShowNeverMissTwice();
+      });
     });
   }
 
@@ -36,9 +42,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // When app comes to foreground, check if reward flow should be shown
+    // When app comes to foreground, check if reward flow or recovery should be shown
     if (state == AppLifecycleState.resumed) {
+      final appState = Provider.of<AppState>(context, listen: false);
+      appState.refreshMissedDayCheck();
       _checkAndShowRewardFlow();
+      _checkAndShowNeverMissTwice();
     }
   }
 
@@ -49,13 +58,55 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _checkAndShowNeverMissTwice() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    if (appState.shouldShowNeverMissTwice && !appState.isHabitCompletedToday()) {
+      _showNeverMissTwiceDialog(appState);
+    }
+  }
+
+  void _showNeverMissTwiceDialog(AppState appState) {
+    if (appState.currentHabit == null || appState.userProfile == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => NeverMissTwiceDialog(
+        daysMissed: appState.daysSinceLastCompletion,
+        habitName: appState.currentHabit!.name,
+        tinyVersion: appState.currentHabit!.tinyVersion,
+        identity: appState.userProfile!.identity,
+        daysShowedUp: appState.currentHabit!.daysShowedUp,
+        neverMissTwiceWins: appState.currentHabit!.neverMissTwiceWins,
+        onDoMinimumVersion: () async {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+          // Complete with minimum version flag
+          final wasCompleted = await appState.completeHabitForToday(isMinimumVersion: true);
+          if (wasCompleted && mounted) {
+            _showRewardInvestmentDialog(appState);
+          }
+        },
+        onDoFullHabit: () {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+          // Don't mark complete yet - let them do it via the button
+        },
+        onDismiss: () {
+          Navigator.of(dialogContext).pop();
+          appState.dismissNeverMissTwice();
+        },
+      ),
+    );
+  }
+
   void _showRewardInvestmentDialog(AppState appState) {
     if (appState.currentHabit == null || appState.userProfile == null) {
-      debugPrint('⚠️ Cannot show reward dialog - missing habit or profile');
+      debugPrint('Cannot show reward dialog - missing habit or profile');
       return;
     }
 
-    debugPrint('🎉 Showing reward dialog - streak: ${appState.currentHabit!.currentStreak}');
+    debugPrint('Showing reward dialog - streak: ${appState.currentHabit!.currentStreak}');
 
     showDialog(
       context: context,
@@ -65,11 +116,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         identity: appState.userProfile!.identity,
         currentReminderTime: appState.currentHabit!.implementationTime,
         onTimeUpdated: (newTime) {
-          debugPrint('⏰ Updating reminder time to: $newTime');
+          debugPrint('Updating reminder time to: $newTime');
           appState.updateReminderTime(newTime);
         },
         onDismiss: () {
-          debugPrint('✅ Dismissing reward dialog');
+          debugPrint('Dismissing reward dialog');
           appState.dismissRewardFlow();
           Navigator.of(dialogContext).pop();
         },
@@ -98,17 +149,17 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         ),
       ),
     );
-    
+
     try {
       // Fetch all suggestions (async)
       final allSuggestions = await appState.getAllSuggestionsForCurrentHabit();
-      
+
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
       // Check if we have any suggestions
       final hasSuggestions = allSuggestions.values.any((list) => list.isNotEmpty);
-      
+
       if (!hasSuggestions) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -125,104 +176,104 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         showDialog(
           context: context,
           builder: (dialogContext) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.tips_and_updates, color: Colors.deepPurple),
-            SizedBox(width: 12),
-            Text('Strengthen Your Habit'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Here are some ideas to make your habit stronger:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            title: const Row(
+              children: [
+                Icon(Icons.tips_and_updates, color: Colors.deepPurple),
+                SizedBox(width: 12),
+                Text('Strengthen Your Habit'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Here are some ideas to make your habit stronger:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Temptation Bundle suggestions
+                  if (allSuggestions['temptationBundle']!.isNotEmpty) ...[
+                    const Text(
+                      'Temptation Bundling',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    ...allSuggestions['temptationBundle']!.take(2).map((s) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('- $s', style: const TextStyle(fontSize: 14)),
+                        )),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Pre-habit Ritual suggestions
+                  if (allSuggestions['preHabitRitual']!.isNotEmpty) ...[
+                    const Text(
+                      'Pre-Habit Ritual',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    ...allSuggestions['preHabitRitual']!.take(2).map((s) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('- $s', style: const TextStyle(fontSize: 14)),
+                        )),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Environment Cue suggestions
+                  if (allSuggestions['environmentCue']!.isNotEmpty) ...[
+                    const Text(
+                      'Environment Cue',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    ...allSuggestions['environmentCue']!.take(2).map((s) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('- $s', style: const TextStyle(fontSize: 14)),
+                        )),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Distraction Removal suggestions
+                  if (allSuggestions['environmentDistraction']!.isNotEmpty) ...[
+                    const Text(
+                      'Remove Distractions',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    ...allSuggestions['environmentDistraction']!.take(2).map((s) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('- $s', style: const TextStyle(fontSize: 14)),
+                        )),
+                  ],
+
+                  const SizedBox(height: 16),
+                  Text(
+                    'Tip: You can adjust your habit setup in Settings.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              
-              // Temptation Bundle suggestions
-              if (allSuggestions['temptationBundle']!.isNotEmpty) ...[
-                const Text(
-                  '💗 Temptation Bundling',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 8),
-                ...allSuggestions['temptationBundle']!.take(2).map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('• $s', style: const TextStyle(fontSize: 14)),
-                )),
-                const SizedBox(height: 12),
-              ],
-              
-              // Pre-habit Ritual suggestions
-              if (allSuggestions['preHabitRitual']!.isNotEmpty) ...[
-                const Text(
-                  '🧘 Pre-Habit Ritual',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 8),
-                ...allSuggestions['preHabitRitual']!.take(2).map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('• $s', style: const TextStyle(fontSize: 14)),
-                )),
-                const SizedBox(height: 12),
-              ],
-              
-              // Environment Cue suggestions
-              if (allSuggestions['environmentCue']!.isNotEmpty) ...[
-                const Text(
-                  '💡 Environment Cue',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 8),
-                ...allSuggestions['environmentCue']!.take(2).map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('• $s', style: const TextStyle(fontSize: 14)),
-                )),
-                const SizedBox(height: 12),
-              ],
-              
-              // Distraction Removal suggestions
-              if (allSuggestions['environmentDistraction']!.isNotEmpty) ...[
-                const Text(
-                  '🚫 Remove Distractions',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 8),
-                ...allSuggestions['environmentDistraction']!.take(2).map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('• $s', style: const TextStyle(fontSize: 14)),
-                )),
-              ],
-              
-              const SizedBox(height: 16),
-              Text(
-                'Tip: You can adjust your habit setup in Settings.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                  fontStyle: FontStyle.italic,
-                ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Close'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Close'),
-          ),
-        ],
           ),
         );
       }
     } catch (e) {
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
       // Show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -334,7 +385,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hello, ${profile.name}! 👋',
+                          'Hello, ${profile.name}!',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -417,23 +468,48 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       color: Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.access_time, color: Colors.blue, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Planned: ${habit.implementationTime} in ${habit.implementationLocation}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.blue, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Planned: ${habit.implementationTime} in ${habit.implementationLocation}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
+                        // Habit stacking display (if set)
+                        if (habit.anchorEvent != null && habit.anchorEvent!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.link, color: Colors.blue.shade600, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'After I ${habit.anchorEvent}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue.shade700,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  
+
                   // Temptation Bundle display (Make it Attractive)
                   if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -460,7 +536,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       ),
                     ),
                   ],
-                  
+
                   // Environment Design display
                   if ((habit.environmentCue != null && habit.environmentCue!.isNotEmpty) ||
                       (habit.environmentDistraction != null && habit.environmentDistraction!.isNotEmpty)) ...[
@@ -505,7 +581,8 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                               ],
                             ),
                           ],
-                          if (habit.environmentDistraction != null && habit.environmentDistraction!.isNotEmpty) ...[
+                          if (habit.environmentDistraction != null &&
+                              habit.environmentDistraction!.isNotEmpty) ...[
                             const SizedBox(height: 6),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,22 +608,23 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 24),
 
-          // Streak counter
+          // === GRACEFUL CONSISTENCY METRICS (Atomic Habits aligned) ===
           Text(
-            'Your Streak',
+            'Your Progress',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 16),
 
+          // Primary metric: Days Showed Up (NEVER resets)
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.orange.shade300,
-                  Colors.deepOrange.shade400,
+                  Colors.green.shade400,
+                  Colors.teal.shade500,
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
@@ -555,26 +633,28 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  Icons.local_fire_department,
-                  size: 48,
+                  Icons.check_circle,
+                  size: 40,
                   color: Colors.white,
                 ),
                 const SizedBox(width: 16),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${habit.currentStreak}',
+                      '${habit.daysShowedUp}',
                       style: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 40,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     const Text(
-                      'days',
+                      'days you showed up',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 14,
                         color: Colors.white,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -582,24 +662,144 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+
+          // Secondary metrics row
+          Row(
+            children: [
+              // Current streak (de-emphasized)
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.local_fire_department, color: Colors.orange.shade600, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${habit.currentStreak}',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'current streak',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.orange.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Graceful Consistency Score
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.purple.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.insights, color: Colors.purple.shade600, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${habit.gracefulConsistencyScore}%',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'consistency',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // "Never Miss Twice" wins badge (if any)
+          if (habit.neverMissTwiceWins > 0) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.replay, color: Colors.blue.shade600, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Bounced back ${habit.neverMissTwiceWins} ${habit.neverMissTwiceWins == 1 ? 'time' : 'times'}',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Calendar/History View
+          HabitCalendar(
+            completionHistory: habit.completionHistory,
+            daysShowedUp: habit.daysShowedUp,
+            neverMissTwiceWins: habit.neverMissTwiceWins,
+          ),
+
           const SizedBox(height: 32),
 
           // Pre-Habit Ritual button (if ritual exists and not completed)
-          if (!isCompleted && 
-              habit.preHabitRitual != null && 
-              habit.preHabitRitual!.isNotEmpty) ...[
+          if (!isCompleted && habit.preHabitRitual != null && habit.preHabitRitual!.isNotEmpty) ...[
             SizedBox(
               width: double.infinity,
               height: 48,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  debugPrint('🧘 Starting pre-habit ritual');
+                  debugPrint('Starting pre-habit ritual');
                   showDialog(
                     context: context,
                     builder: (context) => PreHabitRitualDialog(
                       ritualText: habit.preHabitRitual!,
                       onDismiss: () {
-                        debugPrint('✅ Ritual completed, closing dialog');
+                        debugPrint('Ritual completed, closing dialog');
                         Navigator.of(context).pop();
                       },
                     ),
@@ -626,19 +826,19 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
-                  debugPrint('🔘 Mark as Complete button pressed');
-                  
+                  debugPrint('Mark as Complete button pressed');
+
                   // Complete habit and check if it's a new completion
                   final wasNewCompletion = await appState.completeHabitForToday();
-                  
-                  debugPrint('📊 Was new completion: $wasNewCompletion, mounted: $mounted');
-                  
+
+                  debugPrint('Was new completion: $wasNewCompletion, mounted: $mounted');
+
                   // Show reward flow if this was a new completion
                   if (wasNewCompletion && mounted) {
-                    debugPrint('✨ Triggering reward dialog');
+                    debugPrint('Triggering reward dialog');
                     _showRewardInvestmentDialog(appState);
                   } else if (!wasNewCompletion) {
-                    debugPrint('⚠️ Habit already completed today');
+                    debugPrint('Habit already completed today');
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Already completed for today!')),
@@ -651,7 +851,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text(
-                  'Mark as Complete ✓',
+                  'Mark as Complete',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -668,13 +868,13 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.green),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.green),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Completed for today! 🎉',
+                  Icon(Icons.check_circle, color: Colors.green),
+                  SizedBox(width: 8),
+                  Text(
+                    'Completed for today!',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -685,7 +885,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
               ),
             ),
           const SizedBox(height: 24),
-          
+
           // "Improve this habit" button
           Center(
             child: OutlinedButton.icon(

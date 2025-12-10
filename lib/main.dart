@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/onboarding/ai_onboarding_screen.dart';
+import 'features/onboarding/welcome_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 
@@ -62,6 +64,14 @@ class MyApp extends StatelessWidget {
             routes: [
               GoRoute(
                 path: '/',
+                builder: (context, state) => const WelcomeScreen(),
+              ),
+              GoRoute(
+                path: '/onboarding/ai',
+                builder: (context, state) => const AiOnboardingScreen(),
+              ),
+              GoRoute(
+                path: '/onboarding/manual',
                 builder: (context, state) => const OnboardingScreen(),
               ),
               GoRoute(
