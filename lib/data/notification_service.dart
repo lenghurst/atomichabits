@@ -1,9 +1,12 @@
+import 'dart:ui' show Color;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'models/consistency_metrics.dart';
+import 'services/recovery_engine.dart';
 
 /// Notification Service for Daily Habit Reminders
 /// Implements the "Trigger" part of Nir Eyal's Hook Model
@@ -11,6 +14,7 @@ import 'models/user_profile.dart';
 /// Key Features:
 /// - Daily scheduled notifications at user's chosen time
 /// - Action buttons: "Mark Done" and "Snooze 30 mins"
+/// - **Never Miss Twice** recovery notifications
 /// - Handles both Android and Web (gracefully degrades on web)
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -352,6 +356,166 @@ class NotificationService {
       if (kDebugMode) {
         debugPrint('⚠️ Failed to show test notification: $e');
       }
+    }
+  }
+  
+  // ========== Never Miss Twice Recovery Notifications ==========
+  
+  /// Schedule a recovery notification for tomorrow morning
+  /// Called when user misses a day - reminds them of "Never Miss Twice"
+  Future<void> scheduleRecoveryNotification({
+    required Habit habit,
+    required UserProfile profile,
+    required RecoveryNeed recoveryNeed,
+  }) async {
+    if (!_initialized) return;
+
+    try {
+      // Schedule for 9 AM tomorrow morning
+      final now = tz.TZDateTime.now(tz.local);
+      final scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day + 1, // Tomorrow
+        9, // 9 AM
+        0,
+      );
+
+      final title = RecoveryEngine.getRecoveryTitle(recoveryNeed.urgency);
+      final body = RecoveryEngine.getRecoveryNotificationMessage(recoveryNeed);
+
+      final androidDetails = AndroidNotificationDetails(
+        'recovery_reminders',
+        'Recovery Reminders',
+        channelDescription: 'Never Miss Twice recovery notifications',
+        importance: Importance.high,
+        priority: Priority.high,
+        ticker: 'Time to bounce back!',
+        color: _getUrgencyNotificationColor(recoveryNeed.urgency),
+        actions: <AndroidNotificationAction>[
+          const AndroidNotificationAction(
+            'do_tiny_version',
+            'Do 2-min version',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+          const AndroidNotificationAction(
+            'dismiss_recovery',
+            'Not now',
+            showsUserInterface: false,
+            cancelNotification: true,
+          ),
+        ],
+      );
+
+      final notificationDetails = NotificationDetails(android: androidDetails);
+
+      await _notifications.zonedSchedule(
+        2, // Recovery notification ID
+        title,
+        body,
+        scheduledDate,
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'recovery:${habit.id}',
+      );
+
+      if (kDebugMode) {
+        debugPrint('💪 Recovery notification scheduled for tomorrow 9 AM');
+        debugPrint('   Urgency: ${recoveryNeed.urgency}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to schedule recovery notification: $e');
+      }
+    }
+  }
+  
+  /// Show immediate recovery prompt notification
+  /// Used when app detects user hasn't completed habit today
+  Future<void> showRecoveryPromptNotification({
+    required Habit habit,
+    required UserProfile profile,
+    required RecoveryNeed recoveryNeed,
+  }) async {
+    if (!_initialized) return;
+
+    try {
+      final title = RecoveryEngine.getRecoveryTitle(recoveryNeed.urgency);
+      final body = RecoveryEngine.getRecoveryNotificationMessage(recoveryNeed);
+
+      final androidDetails = AndroidNotificationDetails(
+        'recovery_reminders',
+        'Recovery Reminders',
+        channelDescription: 'Never Miss Twice recovery notifications',
+        importance: Importance.high,
+        priority: Priority.high,
+        color: _getUrgencyNotificationColor(recoveryNeed.urgency),
+        actions: <AndroidNotificationAction>[
+          const AndroidNotificationAction(
+            'do_tiny_version',
+            'Do 2-min version',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+          const AndroidNotificationAction(
+            'dismiss_recovery',
+            'Not now',
+            showsUserInterface: false,
+            cancelNotification: true,
+          ),
+        ],
+      );
+
+      final notificationDetails = NotificationDetails(android: androidDetails);
+
+      await _notifications.show(
+        3, // Recovery prompt notification ID
+        title,
+        body,
+        notificationDetails,
+        payload: 'recovery:${habit.id}',
+      );
+
+      if (kDebugMode) {
+        debugPrint('💪 Recovery notification shown immediately');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to show recovery notification: $e');
+      }
+    }
+  }
+  
+  /// Cancel recovery notification
+  Future<void> cancelRecoveryNotification() async {
+    if (!_initialized) return;
+    
+    try {
+      await _notifications.cancel(2); // Recovery scheduled notification
+      await _notifications.cancel(3); // Recovery prompt notification
+      if (kDebugMode) {
+        debugPrint('🚫 Recovery notifications cancelled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to cancel recovery notifications: $e');
+      }
+    }
+  }
+  
+  /// Get notification color based on recovery urgency
+  Color _getUrgencyNotificationColor(RecoveryUrgency urgency) {
+    switch (urgency) {
+      case RecoveryUrgency.gentle:
+        return const Color(0xFFFFC107); // Amber
+      case RecoveryUrgency.important:
+        return const Color(0xFFFF9800); // Orange
+      case RecoveryUrgency.compassionate:
+        return const Color(0xFF9C27B0); // Purple
     }
   }
 }

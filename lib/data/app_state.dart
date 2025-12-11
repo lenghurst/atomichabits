@@ -2,13 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
+import 'models/consistency_metrics.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
+import 'services/recovery_engine.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
 /// Now includes Hive persistence for data that survives app restarts
 /// Handles Hook Model: Trigger (notifications) → Action → Reward → Investment
+/// 
+/// **Graceful Consistency Philosophy:**
+/// - Replaces fragile streaks with holistic consistency scoring
+/// - Implements "Never Miss Twice" recovery system
+/// - Celebrates recovery, not perfection
+/// - Long-term averages matter more than perfect days
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
@@ -28,6 +36,10 @@ class AppState extends ChangeNotifier {
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
   
+  // Recovery flow state (Never Miss Twice)
+  RecoveryNeed? _currentRecoveryNeed;
+  bool _shouldShowRecoveryPrompt = false;
+  
   // Notification service
   final NotificationService _notificationService = NotificationService();
   
@@ -40,6 +52,22 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+  
+  // Graceful Consistency Getters
+  RecoveryNeed? get currentRecoveryNeed => _currentRecoveryNeed;
+  bool get shouldShowRecoveryPrompt => _shouldShowRecoveryPrompt;
+  
+  /// Get the current graceful consistency metrics
+  ConsistencyMetrics? get consistencyMetrics => _currentHabit?.consistencyMetrics;
+  
+  /// Quick access to graceful score (0-100)
+  double get gracefulScore => _currentHabit?.gracefulScore ?? 0;
+  
+  /// Quick access to weekly average (0.0-1.0)
+  double get weeklyAverage => _currentHabit?.weeklyAverage ?? 0;
+  
+  /// Check if habit needs recovery attention
+  bool get needsRecovery => _currentHabit?.needsRecovery ?? false;
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -61,6 +89,9 @@ class AppState extends ChangeNotifier {
       if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
+      
+      // Check for recovery needs (Never Miss Twice)
+      _checkRecoveryNeeds();
       
       _isLoading = false;
       notifyListeners();
@@ -141,7 +172,16 @@ class AppState extends ChangeNotifier {
 
   /// Marks habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
-  Future<bool> completeHabitForToday({bool fromNotification = false}) async {
+  /// 
+  /// **Graceful Consistency Updates:**
+  /// - Adds completion to history for rolling averages
+  /// - Tracks recovery events if bouncing back from a miss
+  /// - Updates identity votes count
+  /// - Updates longest streak if needed
+  Future<bool> completeHabitForToday({
+    bool fromNotification = false,
+    bool usedTinyVersion = false,
+  }) async {
     if (_currentHabit == null) return false;
 
     final now = DateTime.now();
@@ -167,6 +207,9 @@ class AppState extends ChangeNotifier {
 
     // Calculate new streak (check if yesterday was completed)
     int newStreak = _currentHabit!.currentStreak;
+    bool isRecovery = false;
+    int daysMissed = 0;
+    DateTime? missStartDate;
     
     if (_currentHabit!.lastCompletedDate != null) {
       final lastCompleted = _currentHabit!.lastCompletedDate!;
@@ -181,20 +224,58 @@ class AppState extends ChangeNotifier {
       if (lastDate == yesterday) {
         newStreak = _currentHabit!.currentStreak + 1;
       } else {
-        // Streak broken, start over
+        // Streak broken - this is a recovery!
         newStreak = 1;
+        isRecovery = true;
+        daysMissed = today.difference(lastDate).inDays - 1;
+        missStartDate = lastDate.add(const Duration(days: 1));
       }
     } else {
       // First completion
       newStreak = 1;
     }
     
+    // Update completion history
+    final newCompletionHistory = List<DateTime>.from(_currentHabit!.completionHistory)
+      ..add(now);
+    
+    // Update recovery history if this was a recovery
+    final newRecoveryHistory = List<RecoveryEvent>.from(_currentHabit!.recoveryHistory);
+    if (isRecovery && missStartDate != null) {
+      newRecoveryHistory.add(RecoveryEvent(
+        missDate: missStartDate,
+        recoveryDate: now,
+        daysMissed: daysMissed,
+        missReason: _currentHabit!.lastMissReason,
+        usedTinyVersion: usedTinyVersion,
+      ));
+      
+      if (kDebugMode) {
+        debugPrint('🔄 Recovery recorded! Bounced back after $daysMissed day(s)');
+      }
+    }
+    
+    // Update identity votes and longest streak
+    final newIdentityVotes = _currentHabit!.identityVotes + 1;
+    final newLongestStreak = newStreak > _currentHabit!.longestStreak 
+        ? newStreak 
+        : _currentHabit!.longestStreak;
+    
     _currentHabit = _currentHabit!.copyWith(
       currentStreak: newStreak,
       lastCompletedDate: now,
+      completionHistory: newCompletionHistory,
+      recoveryHistory: newRecoveryHistory,
+      identityVotes: newIdentityVotes,
+      longestStreak: newLongestStreak,
+      lastMissReason: null, // Clear last miss reason after recovery
     );
     
-    await _saveToStorage(); // Persist the updated streak
+    await _saveToStorage(); // Persist the updated data
+    
+    // Clear recovery state since we just completed
+    _currentRecoveryNeed = null;
+    _shouldShowRecoveryPrompt = false;
     
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
@@ -202,7 +283,14 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     
     if (kDebugMode) {
+      final metrics = _currentHabit!.consistencyMetrics;
       debugPrint('✅ Habit completed! New streak: $newStreak');
+      debugPrint('📊 Graceful Score: ${metrics.gracefulScore.toStringAsFixed(1)}');
+      debugPrint('📈 Weekly Average: ${(metrics.weeklyAverage * 100).toStringAsFixed(0)}%');
+      debugPrint('🏆 Identity Votes: $newIdentityVotes');
+      if (isRecovery) {
+        debugPrint('🎉 RECOVERY! Bounced back after $daysMissed day(s) missed');
+      }
     }
     
     return true; // New completion
@@ -320,6 +408,142 @@ class AppState extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+  
+  // ========== Graceful Consistency & Recovery Methods ==========
+  
+  /// Check if habit needs recovery attention (Never Miss Twice)
+  /// This should be called when app starts or comes to foreground
+  void _checkRecoveryNeeds() {
+    if (_currentHabit == null || _userProfile == null) {
+      _currentRecoveryNeed = null;
+      _shouldShowRecoveryPrompt = false;
+      return;
+    }
+    
+    _currentRecoveryNeed = RecoveryEngine.checkRecoveryNeed(
+      habit: _currentHabit!,
+      profile: _userProfile!,
+      completionHistory: _currentHabit!.completionHistory,
+    );
+    
+    // Show recovery prompt if there's a recovery need
+    _shouldShowRecoveryPrompt = _currentRecoveryNeed != null;
+    
+    if (kDebugMode && _currentRecoveryNeed != null) {
+      debugPrint('⚠️ Recovery needed: ${_currentRecoveryNeed!.daysMissed} day(s) missed');
+      debugPrint('🎯 Urgency: ${_currentRecoveryNeed!.urgency}');
+    }
+  }
+  
+  /// Manually trigger recovery check (e.g., when app comes to foreground)
+  void checkRecoveryNeeds() {
+    _checkRecoveryNeeds();
+    notifyListeners();
+  }
+  
+  /// Dismiss the recovery prompt (user acknowledged it)
+  void dismissRecoveryPrompt() {
+    _shouldShowRecoveryPrompt = false;
+    notifyListeners();
+  }
+  
+  /// Record why the user missed (for pattern tracking)
+  Future<void> recordMissReason(MissReason reason) async {
+    if (_currentHabit == null) return;
+    
+    _currentHabit = _currentHabit!.copyWith(
+      lastMissReason: reason.name,
+    );
+    
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('📝 Recorded miss reason: ${reason.label}');
+    }
+  }
+  
+  /// Update failure playbook for habit
+  Future<void> updateFailurePlaybook(FailurePlaybook playbook) async {
+    if (_currentHabit == null) return;
+    
+    _currentHabit = _currentHabit!.copyWith(
+      failurePlaybook: playbook,
+    );
+    
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('📋 Updated failure playbook: ${playbook.scenario}');
+    }
+  }
+  
+  /// Pause the habit (planned break)
+  Future<void> pauseHabit() async {
+    if (_currentHabit == null) return;
+    
+    _currentHabit = _currentHabit!.copyWith(
+      isPaused: true,
+      pausedAt: DateTime.now(),
+    );
+    
+    await _saveToStorage();
+    
+    // Clear recovery needs since habit is paused
+    _currentRecoveryNeed = null;
+    _shouldShowRecoveryPrompt = false;
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('⏸️ Habit paused');
+    }
+  }
+  
+  /// Resume the habit from pause
+  Future<void> resumeHabit() async {
+    if (_currentHabit == null) return;
+    
+    _currentHabit = _currentHabit!.copyWith(
+      isPaused: false,
+      pausedAt: null,
+    );
+    
+    await _saveToStorage();
+    
+    // Check recovery needs after resuming
+    _checkRecoveryNeeds();
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('▶️ Habit resumed');
+    }
+  }
+  
+  /// Get recovery message for current recovery need
+  String? getRecoveryMessage() {
+    if (_currentRecoveryNeed == null) return null;
+    return RecoveryEngine.getRecoveryMessage(_currentRecoveryNeed!);
+  }
+  
+  /// Get recovery title for current recovery need
+  String? getRecoveryTitle() {
+    if (_currentRecoveryNeed == null) return null;
+    return RecoveryEngine.getRecoveryTitle(_currentRecoveryNeed!.urgency);
+  }
+  
+  /// Get zoom-out perspective message
+  String? getZoomOutMessage() {
+    if (_currentHabit == null) return null;
+    final metrics = _currentHabit!.consistencyMetrics;
+    return RecoveryEngine.getZoomOutMessage(
+      totalDays: metrics.totalDays,
+      completedDays: metrics.daysShowedUp,
+      currentMissStreak: metrics.currentMissStreak,
+    );
   }
   
   // ========== AI Suggestion Methods (Async with Remote LLM + Local Fallback) ==========
