@@ -474,6 +474,142 @@ Transfer this file to your Android phone and install it!
 
 ## 🧪 Testing the App
 
+### Test Architecture: Testability Through Separation
+
+Because we follow Vibecoding principles (small, pure, separated), testing becomes trivial:
+
+```
+test/
+├── helpers/                          # Unit tests for pure functions
+│   ├── date_utils_test.dart         # 25+ tests for HabitDateUtils
+│   └── recovery_ui_helpers_test.dart # 15+ tests for styling helpers
+├── models/                           # Unit tests for data models
+│   └── consistency_metrics_test.dart # 40+ tests for scoring system
+├── services/                         # Unit tests for business logic
+│   └── recovery_engine_test.dart    # 35+ tests for recovery system
+├── widgets/                          # Widget tests for UI components
+│   ├── identity_card_test.dart      # 6 tests
+│   ├── completion_button_test.dart  # 12 tests
+│   └── recovery_banner_test.dart    # 20+ tests
+└── integration/                      # Integration tests
+    └── core_flows_test.dart         # 15+ end-to-end flow tests
+```
+
+### Why Vibecoding = Testable Code
+
+| Component Type | Test Type | Example | Why Easy to Test |
+|---------------|-----------|---------|------------------|
+| **Pure Helpers** | Unit | `HabitDateUtils.isSameDay()` | No state, no deps, input → output |
+| **Data Models** | Unit | `ConsistencyMetrics.calculateGracefulScore()` | Pure calculation, no side effects |
+| **Services** | Unit | `RecoveryEngine.checkRecoveryNeed()` | Isolated business logic |
+| **Widgets** | Widget | `CompletionButton` | Dumb components, easy to render in isolation |
+| **Controllers** | Unit | `TodayScreenController` | Can mock dependencies |
+| **Flows** | Integration | Completion → Metrics Update | Components compose cleanly |
+
+### Running Tests
+
+```bash
+# Run all tests
+flutter test
+
+# Run specific test file
+flutter test test/helpers/date_utils_test.dart
+
+# Run tests with coverage
+flutter test --coverage
+
+# Run only unit tests (fast)
+flutter test test/helpers/ test/models/ test/services/
+
+# Run widget tests
+flutter test test/widgets/
+
+# Run integration tests
+flutter test test/integration/
+```
+
+### Test Examples
+
+**Testing Pure Helpers (Easiest)**
+```dart
+// test/helpers/date_utils_test.dart
+test('returns true for same date different times', () {
+  final date1 = DateTime(2024, 3, 15, 9, 30);
+  final date2 = DateTime(2024, 3, 15, 22, 45);
+  
+  expect(HabitDateUtils.isSameDay(date1, date2), isTrue);
+});
+```
+
+**Testing Business Logic**
+```dart
+// test/models/consistency_metrics_test.dart
+test('perfect week with quick recoveries scores higher', () {
+  final score = ConsistencyMetrics.calculateGracefulScore(
+    sevenDayAverage: 1.0,
+    quickRecoveries: 3,
+    completionTimeVariance: 0.0,
+    neverMissTwiceRate: 1.0,
+  );
+  
+  expect(score, closeTo(95.0, 0.1));
+});
+```
+
+**Testing Widgets (Dumb Components)**
+```dart
+// test/widgets/completion_button_test.dart
+testWidgets('calls onComplete when pressed', (tester) async {
+  var wasPressed = false;
+  
+  await tester.pumpWidget(
+    MaterialApp(
+      home: CompletionButton(
+        isCompleted: false,
+        onComplete: () => wasPressed = true,
+      ),
+    ),
+  );
+
+  await tester.tap(find.byType(ElevatedButton));
+  expect(wasPressed, isTrue);
+});
+```
+
+**Testing Core Flows (Integration)**
+```dart
+// test/integration/core_flows_test.dart
+test('completing habit updates consistency metrics correctly', () {
+  // Setup: User has a 7-day old habit with 5 completions
+  final completionDates = [...];
+  
+  // Calculate metrics before
+  final metricsBefore = ConsistencyMetrics.fromCompletionHistory(...);
+  
+  // User completes habit today
+  final metricsAfter = ConsistencyMetrics.fromCompletionHistory(
+    completionDates: [...completionDates, DateTime.now()],
+    ...
+  );
+  
+  // Assertions
+  expect(metricsAfter.identityVotes, equals(metricsBefore.identityVotes + 1));
+  expect(metricsAfter.currentMissStreak, equals(0));
+});
+```
+
+### Test Coverage Goals
+
+| Layer | Target Coverage | Current Status |
+|-------|----------------|----------------|
+| Helpers | 95%+ | ✅ Comprehensive |
+| Models | 90%+ | ✅ Comprehensive |
+| Services | 85%+ | ✅ Comprehensive |
+| Widgets | 80%+ | ✅ Core widgets covered |
+| Integration | Key flows | ✅ Critical paths covered |
+
+---
+
 ### Basic User Journey
 
 1. **Start the app** - you'll see the Onboarding screen
