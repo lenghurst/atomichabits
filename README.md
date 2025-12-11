@@ -809,6 +809,197 @@ Users can optionally log why they missed:
 
 This helps identify patterns and personalize future suggestions.
 
+## 🏗️ Never Miss Twice Engine — Implementation Details
+
+> **Framework Feature 31** — A cornerstone of Atomic Habits philosophy
+
+The "Never Miss Twice" Engine is fully implemented and represents one of the most impactful features for habit sustainability. This section documents the technical implementation.
+
+### Key Data Structures
+
+#### AppState Fields
+```dart
+// In lib/data/app_state.dart
+
+/// Tracks consecutive missed days (equivalent to `int consecutiveMissedDays`)
+/// Calculated dynamically from habit.currentMissStreak for accuracy
+int get consecutiveMissedDays => _currentHabit?.currentMissStreak ?? 0;
+
+/// The "Never Miss Twice Score" (0.0-1.0)
+/// Higher score = better at recovering before a second miss
+double get neverMissTwiceScore => _currentHabit?.neverMissTwiceRate ?? 1.0;
+
+/// Whether to show the recovery prompt UI (user's suggested field)
+bool get shouldShowRecoveryPrompt => _shouldShowRecoveryPrompt;
+
+/// Determines if recovery prompt should be shown (method form)
+bool shouldShowNeverMissTwicePrompt() {
+  if (_currentHabit == null) return false;
+  if (_currentHabit!.isPaused) return false;
+  if (_currentHabit!.isCompletedToday) return false;
+  return consecutiveMissedDays >= 1;
+}
+```
+
+#### ConsistencyMetrics Fields
+```dart
+// In lib/data/models/consistency_metrics.dart
+
+/// "Never Miss Twice" success rate (0.0-1.0)
+/// Percentage of single misses that didn't become 2+ misses
+final double neverMissTwiceRate;
+
+/// Current consecutive misses (for recovery prompts)
+final int currentMissStreak;
+
+/// Recovery urgency based on consecutive misses
+RecoveryUrgency get recoveryUrgency {
+  if (currentMissStreak <= 1) return RecoveryUrgency.gentle;
+  if (currentMissStreak == 2) return RecoveryUrgency.important;
+  return RecoveryUrgency.compassionate;
+}
+```
+
+#### Habit Model Tracking
+```dart
+// In lib/data/models/habit.dart
+
+/// Count of "Never Miss Twice" wins (recovered after single miss)
+final int singleMissRecoveries;
+
+/// Total days user "showed up" - NEVER resets
+final int daysShowedUp;
+
+/// Count of times user did the 2-minute/minimum version
+final int minimumVersionCount;
+
+/// Full completion count (distinguished from minimum version)
+final int fullCompletionCount;
+```
+
+### Recovery Detection Flow
+
+```
+┌──────────────────┐
+│   App Starts /   │
+│   Comes to       │
+│   Foreground     │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ _checkRecovery   │
+│    Needs()       │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐    Yes    ┌──────────────────┐
+│ Completed        │──────────▶│ No recovery      │
+│ Today?           │           │ needed           │
+└────────┬─────────┘           └──────────────────┘
+         │ No
+         ▼
+┌──────────────────┐
+│ Calculate        │
+│ consecutiveMiss  │
+│ Days             │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Determine        │
+│ Urgency Level    │
+│ (1/2/3+ days)    │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Show Recovery    │
+│ Banner + Dialog  │
+└──────────────────┘
+```
+
+### "Never Miss Twice" Score Calculation
+
+The score tracks what percentage of your misses were single-day misses (vs. multi-day gaps):
+
+```dart
+// Count single misses vs multi-day misses in completion history
+int singleMisses = 0;      // Missed 1 day, then recovered
+int multiDayMisses = 0;    // Missed 2+ consecutive days
+
+// Scan through all days since habit creation
+for (each day in history) {
+  if (missed) missStreak++;
+  else {
+    if (missStreak == 1) singleMisses++;
+    else if (missStreak > 1) multiDayMisses++;
+    missStreak = 0;
+  }
+}
+
+// Calculate rate
+neverMissTwiceRate = singleMisses / (singleMisses + multiDayMisses);
+```
+
+**Interpretation:**
+- **100%**: All your misses were single-day misses — you always bounced back
+- **80%+**: Excellent recovery skills
+- **60-79%**: Good at bouncing back
+- **<60%**: Room to improve recovery habits
+
+### Graceful Recovery (vs. Fragile Streak Reset)
+
+When completing after a miss, the app uses **Graceful Recovery** instead of a harsh streak reset:
+
+```dart
+// Old fragile approach (NOT USED):
+// newStreak = 0;  // Everything lost!
+
+// Graceful approach (WHAT WE DO):
+if (isRecovery && missStartDate != null) {
+  // Track this as a recovery event
+  newRecoveryHistory.add(RecoveryEvent(
+    missDate: missStartDate,
+    recoveryDate: now,
+    daysMissed: daysMissed,
+    missReason: _currentHabit!.lastMissReason,
+    usedTinyVersion: usedTinyVersion,
+  ));
+  
+  // "Never Miss Twice" win = recovered after only 1 day missed
+  if (daysMissed == 1) {
+    newSingleMissRecoveries++;
+    // 🏆 NEVER MISS TWICE WIN!
+  }
+}
+
+// Update flexible tracking (these NEVER reset):
+newDaysShowedUp++;
+newIdentityVotes++;
+```
+
+### Testing the Engine
+
+Run the comprehensive test suite:
+```bash
+flutter test test/app_state/never_miss_twice_test.dart
+flutter test test/services/recovery_engine_test.dart
+flutter test test/models/consistency_metrics_test.dart
+```
+
+### Files Involved
+
+| File | Role |
+|------|------|
+| `lib/data/app_state.dart` | Central state with NMT getters and methods |
+| `lib/data/services/recovery_engine.dart` | Detection, urgency calculation, messaging |
+| `lib/data/models/consistency_metrics.dart` | Score calculation, urgency enum |
+| `lib/data/models/habit.dart` | Tracking fields, computed properties |
+| `lib/widgets/recovery_prompt_dialog.dart` | Compassionate UI |
+| `lib/features/today/widgets/recovery_banner.dart` | Inline recovery indicator |
+| `test/app_state/never_miss_twice_test.dart` | Comprehensive unit tests |
+
 ## 🔮 Future Features (Not Yet Implemented)
 
 - [ ] Multiple habits support with Focus Mode
@@ -876,6 +1067,50 @@ We've fundamentally reimagined how the app tracks progress. Instead of fragile s
 - `lib/data/app_state.dart` — Added graceful consistency logic
 - `lib/features/today/today_screen.dart` — Integrated new UI components
 - `lib/data/notification_service.dart` — Added recovery notifications
+
+### 🎯 Never Miss Twice Engine Completion (Version 1.2.1)
+
+**Feature Completion:**
+The "Never Miss Twice" Engine (Framework Feature 31) is now **fully implemented** with all recommended tracking fields:
+
+**AppState Enhancements:**
+- Added `consecutiveMissedDays` getter — tracks current miss streak
+- Added `neverMissTwiceScore` getter — percentage score (0.0-1.0)
+- Added `shouldShowNeverMissTwicePrompt()` method — programmatic trigger check
+- Enhanced `shouldShowRecoveryPrompt` getter — for UI binding
+- Added graceful recovery logging in debug mode
+
+**Habit Model Tracking:**
+- `singleMissRecoveries` — count of "Never Miss Twice" wins (never resets!)
+- `daysShowedUp` — total days completed (never resets!)
+- `minimumVersionCount` — times 2-minute version was used
+- `fullCompletionCount` — times full version was completed
+
+**Completion Logic Improvements:**
+- Replaced fragile streak reset mentality with graceful recovery tracking
+- On completion after miss, system now:
+  - Records recovery event with context
+  - Tracks if it was a "Never Miss Twice" win (1-day recovery)
+  - Updates flexible tracking metrics
+  - Logs detailed metrics in debug mode
+
+**New Tests:**
+- `test/app_state/never_miss_twice_test.dart` — Comprehensive test suite
+  - `consecutiveMissedDays` tracking tests
+  - `neverMissTwiceScore` calculation tests
+  - Recovery urgency level tests
+  - Flexible tracking metric tests
+  - Atomic Habits philosophy alignment tests
+
+**Philosophy Alignment:**
+> "Missing once is an accident. Missing twice is the start of a new habit."
+
+The implementation ensures:
+- Single misses are never treated as failures
+- Identity votes NEVER reset
+- Days showed up NEVER reset
+- Recovery is celebrated, not hidden
+- Compassionate messaging at all urgency levels
 
 ### 🎨 Vibecoding Architecture Refactor (Version 1.2.0)
 

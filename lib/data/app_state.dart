@@ -17,6 +17,13 @@ import 'services/recovery_engine.dart';
 /// - Implements "Never Miss Twice" recovery system
 /// - Celebrates recovery, not perfection
 /// - Long-term averages matter more than perfect days
+/// 
+/// **Never Miss Twice Engine (Framework Feature 31):**
+/// This engine is critical for preventing single misses from spiraling.
+/// Key tracked fields:
+/// - consecutiveMissedDays: tracks current miss streak (via currentMissStreak)
+/// - shouldShowRecoveryPrompt: triggers recovery flow UI
+/// - neverMissTwiceScore: percentage of single-day misses that stayed single
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
@@ -36,9 +43,23 @@ class AppState extends ChangeNotifier {
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
   
-  // Recovery flow state (Never Miss Twice)
+  // ========== NEVER MISS TWICE ENGINE (Framework Feature 31) ==========
+  // These fields implement the "Never Miss Twice" philosophy:
+  // "Missing once is an accident. Missing twice is the start of a new habit."
+  
+  /// Current recovery need details (includes urgency level)
   RecoveryNeed? _currentRecoveryNeed;
+  
+  /// Whether to show the recovery prompt UI
   bool _shouldShowRecoveryPrompt = false;
+  
+  /// Tracks consecutive missed days (equivalent to user's suggested `int consecutiveMissedDays`)
+  /// Calculated dynamically from habit.currentMissStreak for accuracy
+  int get consecutiveMissedDays => _currentHabit?.currentMissStreak ?? 0;
+  
+  /// The "Never Miss Twice Score" (0.0-1.0) - percentage of single misses that stayed single
+  /// Higher score = better at recovering before a second miss
+  double get neverMissTwiceScore => _currentHabit?.neverMissTwiceRate ?? 1.0;
   
   // Notification service
   final NotificationService _notificationService = NotificationService();
@@ -53,9 +74,22 @@ class AppState extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
   
-  // Graceful Consistency Getters
+  // ========== Graceful Consistency Getters ==========
+  
+  /// Current recovery need (null if none needed)
   RecoveryNeed? get currentRecoveryNeed => _currentRecoveryNeed;
+  
+  /// Whether to show the recovery prompt (user's suggested `bool shouldShowRecoveryPrompt`)
   bool get shouldShowRecoveryPrompt => _shouldShowRecoveryPrompt;
+  
+  /// Determines if recovery prompt should be shown (for external checks)
+  /// Implements user's suggested `bool shouldShowNeverMissTwicePrompt()`
+  bool shouldShowNeverMissTwicePrompt() {
+    if (_currentHabit == null) return false;
+    if (_currentHabit!.isPaused) return false;
+    if (_currentHabit!.isCompletedToday) return false;
+    return consecutiveMissedDays >= 1;
+  }
   
   /// Get the current graceful consistency metrics
   ConsistencyMetrics? get consistencyMetrics => _currentHabit?.consistencyMetrics;
@@ -224,11 +258,20 @@ class AppState extends ChangeNotifier {
       if (lastDate == yesterday) {
         newStreak = _currentHabit!.currentStreak + 1;
       } else {
-        // Streak broken - this is a recovery!
+        // **GRACEFUL CONSISTENCY**: Not a "reset" - this is a RECOVERY!
+        // The old fragile streak mentality would reset to 0.
+        // Instead, we start a new streak at 1 AND track the recovery.
+        // The Graceful Consistency Score handles the nuance.
         newStreak = 1;
         isRecovery = true;
         daysMissed = today.difference(lastDate).inDays - 1;
         missStartDate = lastDate.add(const Duration(days: 1));
+        
+        // Log the graceful recovery philosophy in action
+        if (kDebugMode) {
+          debugPrint('💫 Graceful Recovery: Not a failure, just a comeback!');
+          debugPrint('   Days missed: $daysMissed | Starting fresh streak');
+        }
       }
     } else {
       // First completion
@@ -241,6 +284,10 @@ class AppState extends ChangeNotifier {
     
     // Update recovery history if this was a recovery
     final newRecoveryHistory = List<RecoveryEvent>.from(_currentHabit!.recoveryHistory);
+    
+    // Track "Never Miss Twice" wins specifically
+    int newSingleMissRecoveries = _currentHabit!.singleMissRecoveries;
+    
     if (isRecovery && missStartDate != null) {
       newRecoveryHistory.add(RecoveryEvent(
         missDate: missStartDate,
@@ -250,10 +297,28 @@ class AppState extends ChangeNotifier {
         usedTinyVersion: usedTinyVersion,
       ));
       
+      // "Never Miss Twice" win = recovered after only 1 day missed
+      if (daysMissed == 1) {
+        newSingleMissRecoveries++;
+        if (kDebugMode) {
+          debugPrint('🏆 NEVER MISS TWICE WIN! Single miss recovered immediately');
+          debugPrint('   Total NMT wins: $newSingleMissRecoveries');
+        }
+      }
+      
       if (kDebugMode) {
         debugPrint('🔄 Recovery recorded! Bounced back after $daysMissed day(s)');
       }
     }
+    
+    // Update flexible tracking metrics
+    final newDaysShowedUp = _currentHabit!.daysShowedUp + 1;
+    final newMinimumVersionCount = usedTinyVersion 
+        ? _currentHabit!.minimumVersionCount + 1 
+        : _currentHabit!.minimumVersionCount;
+    final newFullCompletionCount = !usedTinyVersion 
+        ? _currentHabit!.fullCompletionCount + 1 
+        : _currentHabit!.fullCompletionCount;
     
     // Update identity votes and longest streak
     final newIdentityVotes = _currentHabit!.identityVotes + 1;
@@ -269,6 +334,11 @@ class AppState extends ChangeNotifier {
       identityVotes: newIdentityVotes,
       longestStreak: newLongestStreak,
       lastMissReason: null, // Clear last miss reason after recovery
+      // Flexible tracking updates
+      daysShowedUp: newDaysShowedUp,
+      minimumVersionCount: newMinimumVersionCount,
+      fullCompletionCount: newFullCompletionCount,
+      singleMissRecoveries: newSingleMissRecoveries,
     );
     
     await _saveToStorage(); // Persist the updated data
@@ -288,8 +358,13 @@ class AppState extends ChangeNotifier {
       debugPrint('📊 Graceful Score: ${metrics.gracefulScore.toStringAsFixed(1)}');
       debugPrint('📈 Weekly Average: ${(metrics.weeklyAverage * 100).toStringAsFixed(0)}%');
       debugPrint('🏆 Identity Votes: $newIdentityVotes');
+      debugPrint('📅 Days Showed Up: $newDaysShowedUp (never resets!)');
+      debugPrint('🎯 Never Miss Twice Score: ${(metrics.neverMissTwiceRate * 100).toStringAsFixed(0)}%');
       if (isRecovery) {
         debugPrint('🎉 RECOVERY! Bounced back after $daysMissed day(s) missed');
+        if (daysMissed == 1) {
+          debugPrint('   ⭐ This was a "Never Miss Twice" win!');
+        }
       }
     }
     
