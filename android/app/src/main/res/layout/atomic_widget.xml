@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Atomic Habits Home Screen Widget Layout
+
+    Displays:
+    - Habit name at top
+    - Current streak count
+    - Completion status indicator
+    - Tap anywhere to complete habit or open app
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <!-- Habit Name -->
+    <TextView
+        android:id="@+id/widget_habit_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Habit"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- Streak Display -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:id="@+id/widget_streak_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" day streak"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <!-- Completion Status / Action Button -->
+    <TextView
+        android:id="@+id/widget_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tap to complete"
+        android:textSize="12sp"
+        android:textColor="#888888"
+        android:layout_marginTop="8dp" />
+
+    <!-- Tiny Version Reminder -->
+    <TextView
+        android:id="@+id/widget_tiny_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="10sp"
+        android:textColor="#AAAAAA"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:visibility="gone" />
+
+</LinearLayout>

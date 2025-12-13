@@ -1,6 +1,6 @@
 # AI_CONTEXT: Atomic Achievements Knowledge Checkpoint
 
-> **Last Updated:** December 2024 (v1.2.2 — Resume Sync Strategy)
+> **Last Updated:** December 2024 (v1.2.3 — Home Screen Widget Implementation)
 > **Purpose:** Save state for AI development agents working on this codebase
 
 ---
@@ -192,7 +192,30 @@ Single `AppState` ChangeNotifier created in `MyApp` and injected via Provider; c
 | 1.1.0 | Graceful Consistency | Rolling averages, recovery tracking, identity votes |
 | 1.2.0 | Vibecoding Refactor | Controllers, helpers, dumb widgets pattern |
 | 1.2.1 | Never Miss Twice Engine | Complete recovery detection and messaging |
-| **1.2.2** | **Resume Sync Strategy** | Widget split-brain fix, lifecycle reconciliation |
+| 1.2.2 | Resume Sync Strategy | Widget split-brain fix, lifecycle reconciliation |
+| **1.2.3** | **Home Screen Widget** | Android widget XML, AtomicWidgetService, background completion |
+
+---
+
+## 7) Home Screen Widget Architecture
+
+### Components
+- **Android Layout:** `android/app/src/main/res/layout/atomic_widget.xml`
+- **Widget Info:** `android/app/src/main/res/xml/atomic_widget_info.xml`
+- **Dart Service:** `lib/data/services/atomic_widget_service.dart`
+- **AndroidManifest:** Updated with widget receiver, background receiver, and service
+
+### Data Keys (shared between Dart and Android)
+- `habit_name` — Display name of focus habit
+- `habit_streak` — Current streak count
+- `habit_completed` — Whether completed today
+- `habit_tiny_version` — 2-minute version reminder
+- `habit_id` — Unique ID for verification
+
+### Flow
+1. **Widget tap** → Background callback → Direct Hive update
+2. **App resume** → `_reconcileWithHive()` → Detect external completion
+3. **App completion** → `_updateHomeWidget()` → Sync widget display
 
 ---
 

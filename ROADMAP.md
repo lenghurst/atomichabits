@@ -1,6 +1,6 @@
 # Roadmap — Atomic Achievements
 
-> **Last Updated:** December 2024 (v1.2.2)
+> **Last Updated:** December 2024 (v1.2.3)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 
 ---
@@ -14,11 +14,15 @@
   - `cancelDailyReminder()` prevents duplicate notifications
   - Reward flow triggers for widget completions
 
+- [x] **Home Screen Widget Implementation (v1.2.3)** — Complete Android widget using `home_widget` package
+  - Widget layout (`atomic_widget.xml`) with habit name, streak, status
+  - `AtomicWidgetService` with background callbacks for completion
+  - Widget info XML with 2x2 cell dimensions
+  - AndroidManifest updated with widget receiver and service
+  - AppState integration: `_updateHomeWidget()` called on init, completion, sync
+  - Empty state support for users without habits
+
 ### 🚧 In Progress
-- [ ] **Home Screen Widget Implementation** — Complete Android widget using `home_widget` package
-  - Widget layout (atomic_widget.xml)
-  - AtomicWidgetService background callbacks
-  - Empty state and multi-habit support
 
 ### 📋 To Do
 - [ ] **Timezone Correctness** — Detect local timezone for notifications and reschedule on TZ change; add iOS permission handling
@@ -76,6 +80,30 @@
 ---
 
 ## Sprint History
+
+### Sprint: Home Screen Widget (December 2024)
+**Goal:** Complete Android home screen widget implementation
+
+**Completed:**
+- ✅ Added `home_widget: ^0.7.0` to pubspec.yaml
+- ✅ Created `atomic_widget.xml` layout (habit name, streak, status)
+- ✅ Created `atomic_widget_info.xml` (2x2 cell, resizable)
+- ✅ Created `strings.xml` for widget description
+- ✅ Updated AndroidManifest.xml (widget receiver, background service)
+- ✅ Created `AtomicWidgetService` with background completion callback
+- ✅ Integrated with AppState (`_updateHomeWidget()` helper)
+- ✅ Widget updates on: init, completion, sync
+
+**Files Created:**
+- `android/app/src/main/res/layout/atomic_widget.xml`
+- `android/app/src/main/res/xml/atomic_widget_info.xml`
+- `android/app/src/main/res/values/strings.xml`
+- `lib/data/services/atomic_widget_service.dart`
+
+**Files Modified:**
+- `pubspec.yaml` (+1 dependency)
+- `android/app/src/main/AndroidManifest.xml` (+26 lines)
+- `lib/data/app_state.dart` (+25 lines)
 
 ### Sprint: Resume Sync Strategy (December 2024)
 **Goal:** Fix widget split-brain data issue

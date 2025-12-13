@@ -7,6 +7,17 @@ A Flutter mobile habit-tracking app based on:
 
 > **"Graceful Consistency > Fragile Streaks"** — Our core philosophy
 
+## 🤖 AI Development Documentation
+
+This project supports multi-agent AI development. Before making changes, review:
+
+| File | Purpose | When to Use |
+|------|---------|-------------|
+| **[AI_CONTEXT.md](./AI_CONTEXT.md)** | Knowledge checkpoint with architecture, gotchas, and feature matrix | Start here to understand the codebase |
+| **[ROADMAP.md](./ROADMAP.md)** | Prioritized execution plan with sprint history | Pick your next task from here |
+
+**For AI Agents:** Always update these files after completing significant work to maintain continuity across different agents (Claude, Codex, etc.).
+
 ## 🎯 Project Overview
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.

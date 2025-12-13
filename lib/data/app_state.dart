@@ -7,6 +7,7 @@ import 'models/consistency_metrics.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
+import 'services/atomic_widget_service.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
@@ -156,6 +157,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
+
+      // Initialize home screen widget
+      await AtomicWidgetService.initialize();
+
+      // Update widget with current habit data
+      await _updateHomeWidget();
 
       // Check for recovery needs (Never Miss Twice)
       _checkRecoveryNeeds();
@@ -332,6 +339,30 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   /// Clear the external completion flag after reward flow is shown
   void clearExternalCompletionFlag() {
     _externalCompletionDetected = false;
+  }
+
+  // ========== HOME SCREEN WIDGET INTEGRATION ==========
+
+  /// Update the home screen widget with current habit data
+  ///
+  /// Called after:
+  /// - App initialization
+  /// - Habit completion
+  /// - State reconciliation (after widget updates)
+  /// - Habit changes (name, reset, etc.)
+  Future<void> _updateHomeWidget() async {
+    if (_currentHabit == null) {
+      await AtomicWidgetService.showEmptyState();
+      return;
+    }
+
+    await AtomicWidgetService.updateWidget(
+      habitId: _currentHabit!.id,
+      habitName: _currentHabit!.name,
+      streak: _currentHabit!.currentStreak,
+      completedToday: isHabitCompletedToday(),
+      tinyVersion: _currentHabit!.tinyVersion,
+    );
   }
 
   /// Load data from Hive storage
@@ -545,9 +576,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
-    
+
+    // Update home screen widget
+    await _updateHomeWidget();
+
     notifyListeners();
-    
+
     if (kDebugMode) {
       final metrics = _currentHabit!.consistencyMetrics;
       debugPrint('✅ Habit completed! New streak: $newStreak');
@@ -563,7 +597,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         }
       }
     }
-    
+
     return true; // New completion
   }
 
