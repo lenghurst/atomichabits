@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.0.0 — AI Onboarding Phase 2 Complete)
+> **Last Updated:** December 2025 (v4.2.0 — Phase 4 Dashboard Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -85,10 +85,12 @@ When stale branches accumulate (> 10 unmerged):
 | Settings Screen | 🚧 Stub | SettingsScreen | - | UI only, no persistence |
 | **AI Onboarding (Phase 1)** | ✅ Live | OnboardingScreen + MagicWandButton | OnboardingOrchestrator | Magic Wand auto-fill |
 | **AI Onboarding (Phase 2)** | ✅ Live | ConversationalOnboardingScreen | OnboardingOrchestrator | Chat UI default route |
-| Multiple Habits | ❌ Not Started | - | - | Roadmap item |
-| History/Calendar View | ❌ Not Started | - | - | Roadmap item |
+| **Multi-Habit Engine (Phase 3)** | ✅ Live | - | AppState (List<Habit>) | CRUD + Focus Mode |
+| **Dashboard (Phase 4)** | ✅ Live | HabitListScreen | AppState | Habit cards, quick-complete, swipe-delete |
+| **Focus Mode Swipe (Phase 4)** | ✅ Live | TodayScreen (PageView) | AppState | Swipe between habits |
+| History/Calendar View | ❌ Not Started | - | - | Phase 5 |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
-| Bad Habit Protocol | ❌ Not Started | - | - | Phase 2, needs Phase 1 |
+| Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
 
 ---
 

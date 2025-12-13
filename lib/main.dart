@@ -8,6 +8,7 @@ import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'config/ai_model_config.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
+import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 
@@ -86,9 +87,10 @@ class MyApp extends StatelessWidget {
           }
 
           // Configure navigation routes
-          // Phase 2: Chat UI is default, Form is fallback
+          // Phase 4: Dashboard is home for returning users
+          // Phase 2: Chat UI for new users, Form is fallback
           final router = GoRouter(
-            initialLocation: appState.hasCompletedOnboarding ? '/today' : '/',
+            initialLocation: appState.hasCompletedOnboarding ? '/dashboard' : '/',
             routes: [
               // Default onboarding: Conversational UI (Phase 2)
               GoRoute(
@@ -100,6 +102,12 @@ class MyApp extends StatelessWidget {
                 path: '/onboarding/manual',
                 builder: (context, state) => const OnboardingScreen(),
               ),
+              // Dashboard: Multi-habit list (Phase 4)
+              GoRoute(
+                path: '/dashboard',
+                builder: (context, state) => const HabitListScreen(),
+              ),
+              // Today: Focus mode for single habit (Phase 4 updated)
               GoRoute(
                 path: '/today',
                 builder: (context, state) => const TodayScreen(),

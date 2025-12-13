@@ -18,6 +18,11 @@ import 'controllers/today_screen_controller.dart';
 
 /// TodayScreen - Shows today's habit and graceful consistency metrics
 /// 
+/// **Phase 4: Multi-Habit Support**
+/// - PageView for swiping between habits
+/// - Navigation back to Dashboard
+/// - Updates focused habit on swipe
+/// 
 /// **Vibecoding Architecture:**
 /// This screen is now purely presentational following vibecoding rules:
 /// - UI components handle "how it looks" (layout, styling)
@@ -36,6 +41,8 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   late TodayScreenController _controller;
+  PageController? _pageController;
+  int _currentPageIndex = 0;
   
   @override
   void initState() {
@@ -45,6 +52,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     // Initialize controller after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initController();
+      _initPageController();
       _controller.onScreenResumed();
     });
   }
@@ -56,10 +64,22 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       appState: appState,
     );
   }
+  
+  void _initPageController() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    // Find the index of the currently focused habit
+    final currentHabit = appState.currentHabit;
+    if (currentHabit != null) {
+      _currentPageIndex = appState.habits.indexWhere((h) => h.id == currentHabit.id);
+      if (_currentPageIndex < 0) _currentPageIndex = 0;
+    }
+    _pageController = PageController(initialPage: _currentPageIndex);
+  }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _pageController?.dispose();
     super.dispose();
   }
 
@@ -80,10 +100,23 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           appState: appState,
         );
         
+        final habits = appState.habits;
+        
+        if (habits.isEmpty) {
+          return Scaffold(
+            appBar: _buildAppBar(appState, null),
+            body: SafeArea(
+              child: _NoHabitView(onGoToOnboarding: () => context.go('/')),
+            ),
+          );
+        }
+        
         return Scaffold(
-          appBar: _buildAppBar(appState),
+          appBar: _buildAppBar(appState, habits.length > 1 ? habits : null),
           body: SafeArea(
-            child: _buildBody(appState),
+            child: habits.length == 1
+                ? _buildSingleHabitView(appState, habits[0])
+                : _buildPageView(appState, habits),
           ),
         );
       },
@@ -92,34 +125,58 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   
   // ========== App Bar (Layout Only) ==========
   
-  PreferredSizeWidget _buildAppBar(AppState appState) {
+  PreferredSizeWidget _buildAppBar(AppState appState, List<Habit>? multipleHabits) {
     return AppBar(
-      title: const Text('Today'),
+      leading: multipleHabits != null
+          ? IconButton(
+              icon: const Icon(Icons.grid_view_rounded),
+              tooltip: 'Dashboard',
+              onPressed: () => context.go('/dashboard'),
+            )
+          : null,
+      title: multipleHabits != null
+          ? _buildPageIndicator(multipleHabits.length)
+          : const Text('Today'),
       centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_active),
+          icon: const Icon(Icons.notifications_outlined),
           onPressed: () => appState.showTestNotification(),
           tooltip: 'Test notification',
         ),
         IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () => context.go('/settings'),
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: () => context.push('/settings'),
         ),
       ],
     );
   }
   
+  Widget _buildPageIndicator(int count) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(count, (index) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: _currentPageIndex == index ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: _currentPageIndex == index
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
+    );
+  }
+  
   // ========== Body (Layout Only) ==========
   
-  Widget _buildBody(AppState appState) {
-    final habit = appState.currentHabit;
+  Widget _buildSingleHabitView(AppState appState, Habit habit) {
     final profile = appState.userProfile;
-    final isCompleted = appState.isHabitCompletedToday();
-    
-    if (habit == null) {
-      return _NoHabitView(onGoToOnboarding: () => context.go('/'));
-    }
+    final isCompleted = appState.isHabitCompletedToday(habitId: habit.id);
     
     return _HabitView(
       habit: habit,
@@ -127,6 +184,30 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       isCompleted: isCompleted,
       appState: appState,
       controller: _controller,
+    );
+  }
+  
+  Widget _buildPageView(AppState appState, List<Habit> habits) {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: habits.length,
+      onPageChanged: (index) {
+        setState(() => _currentPageIndex = index);
+        // Update focused habit in AppState
+        appState.setFocusHabit(habits[index].id);
+      },
+      itemBuilder: (context, index) {
+        final habit = habits[index];
+        final isCompleted = appState.isHabitCompletedToday(habitId: habit.id);
+        
+        return _HabitView(
+          habit: habit,
+          profile: appState.userProfile,
+          isCompleted: isCompleted,
+          appState: appState,
+          controller: _controller,
+        );
+      },
     );
   }
 }
