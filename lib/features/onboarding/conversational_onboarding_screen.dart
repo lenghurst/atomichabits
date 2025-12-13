@@ -3,15 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/chat_message.dart';
-import '../../data/models/chat_conversation.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart' as onboarding;
-import '../../data/services/gemini_chat_service.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
-import '../../data/services/onboarding/ai_response_parser.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
-import '../../config/ai_model_config.dart';
 import 'widgets/chat_message_bubble.dart';
 
 /// Conversational onboarding screen - Phase 2 Chat UI
@@ -19,6 +15,8 @@ import 'widgets/chat_message_bubble.dart';
 /// Implements the "Conversational First" experience using Gemini/Claude.
 /// Users chat with an AI coach to create their first habit.
 /// Falls back to manual form on frustration, timeout, or user request.
+///
+/// Uses OnboardingOrchestrator as the "brain" - this screen is just the UI.
 class ConversationalOnboardingScreen extends StatefulWidget {
   const ConversationalOnboardingScreen({super.key});
 
@@ -33,13 +31,8 @@ class _ConversationalOnboardingScreenState
   final ScrollController _scrollController = ScrollController();
   final FocusNode _inputFocusNode = FocusNode();
 
-  ChatConversation? _conversation;
-  bool _isLoading = false;
   bool _isInitialized = false;
   String? _userName;
-
-  // Track extracted data for habit creation
-  onboarding.OnboardingData? _extractedData;
 
   @override
   void initState() {
@@ -58,14 +51,14 @@ class _ConversationalOnboardingScreenState
     super.dispose();
   }
 
-  /// Initialize the AI conversation
+  /// Initialize the AI conversation via the orchestrator
   Future<void> _initializeConversation() async {
     if (_isInitialized) return;
 
-    final geminiService = context.read<GeminiChatService>();
+    final orchestrator = context.read<OnboardingOrchestrator>();
 
     // Check if AI is available
-    if (!AIModelConfig.hasAnyAI) {
+    if (!orchestrator.isAiAvailable) {
       // No AI configured - go directly to manual form
       if (mounted) {
         context.go('/onboarding/manual');
@@ -73,22 +66,25 @@ class _ConversationalOnboardingScreenState
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      // Start a new onboarding conversation
-      _conversation = await geminiService.startConversation(
-        type: ConversationType.onboarding,
-      );
+      // Start a new onboarding conversation via orchestrator
+      final greeting = await orchestrator.startConversation();
 
-      // Get the initial greeting from AI
-      await geminiService.getInitialGreeting(conversation: _conversation!);
+      if (greeting == null) {
+        // Failed to start - switch to manual mode
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Having trouble connecting to AI. Using manual form.'),
+            ),
+          );
+          context.go('/onboarding/manual');
+        }
+        return;
+      }
 
       setState(() {
         _isInitialized = true;
-        _isLoading = false;
       });
 
       _scrollToBottom();
@@ -105,87 +101,49 @@ class _ConversationalOnboardingScreenState
     }
   }
 
-  /// Send a message to the AI
+  /// Send a message via the orchestrator
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty || _isLoading || _conversation == null) return;
+    if (text.isEmpty) return;
 
-    // Validate message
-    final validation = ConversationGuardrails.validateMessage(text);
-    if (validation == MessageValidation.empty) return;
+    final orchestrator = context.read<OnboardingOrchestrator>();
+    if (orchestrator.isLoading) return;
 
-    // Check for frustration - trigger escape hatch
-    if (validation == MessageValidation.frustrated) {
-      _showEscapeHatchDialog();
-      return;
-    }
-
-    // Check for conversation length
-    if (_conversation!.messages.length >= AIModelConfig.maxConversationTurns * 2) {
-      _showConversationTooLongDialog();
-      return;
-    }
-
-    // Capture user's name if not already set (look for "I'm X" or "My name is X")
+    // Capture user's name if not already set
     if (_userName == null) {
       _userName = _extractUserName(text);
     }
 
     _messageController.clear();
-    setState(() {
-      _isLoading = true;
-    });
 
-    try {
-      final geminiService = context.read<GeminiChatService>();
-
-      // Send message and get streaming response
-      final response = await geminiService.sendMessage(
-        userMessage: text,
-        conversation: _conversation!,
-        onChunk: (chunk) {
-          // Trigger rebuild to show streaming content
-          if (mounted) {
-            setState(() {});
-            _scrollToBottom();
-          }
-        },
-      );
-
-      // Check if response contains habit data
-      if (response.status == MessageStatus.complete) {
-        final habitData = AiResponseParser.extractHabitData(response.content);
-        if (habitData != null && AiResponseParser.isValidHabitData(habitData)) {
-          setState(() {
-            _extractedData = habitData;
-          });
-
-          // Show confirmation dialog
-          if (mounted) {
-            _showHabitConfirmationDialog(habitData);
-          }
+    // Send message through orchestrator (handles guardrails, rate limiting, etc.)
+    final result = await orchestrator.sendMessage(
+      text,
+      onChunk: (chunk) {
+        // Trigger rebuild to show streaming content
+        if (mounted) {
+          setState(() {});
+          _scrollToBottom();
         }
-      }
+      },
+    );
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      _scrollToBottom();
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
+    // Handle result
+    if (result.shouldSwitchToManual) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        _showSwitchToManualDialog(result.switchReason ?? 'Let\'s use the form instead.');
+      }
+      return;
+    }
+
+    // Check if we have complete habit data
+    if (result.hasCompleteData && result.extractedData != null) {
+      if (mounted) {
+        _showHabitConfirmationDialog(result.extractedData!);
       }
     }
+
+    _scrollToBottom();
   }
 
   /// Extract user's name from their message
@@ -217,8 +175,8 @@ class _ConversationalOnboardingScreenState
     });
   }
 
-  /// Show escape hatch dialog when user is frustrated
-  void _showEscapeHatchDialog() {
+  /// Show dialog to switch to manual mode
+  void _showSwitchToManualDialog(String reason) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -229,7 +187,7 @@ class _ConversationalOnboardingScreenState
             Text('Switch to Form?'),
           ],
         ),
-        content: Text(ConversationGuardrails.escapeHatchMessage),
+        content: Text(reason),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -247,32 +205,12 @@ class _ConversationalOnboardingScreenState
     );
   }
 
-  /// Show dialog when conversation is too long
-  void _showConversationTooLongDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Let\'s Wrap Up'),
-        content: Text(ConversationGuardrails.conversationTooLongMessage),
-        actions: [
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/onboarding/manual');
-            },
-            child: const Text('Use Quick Form'),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// Show confirmation dialog when habit data is extracted
   void _showHabitConfirmationDialog(onboarding.OnboardingData data) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Text(data.habitEmoji ?? ''),
@@ -302,21 +240,21 @@ class _ConversationalOnboardingScreenState
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               // Continue chatting
             },
             child: const Text('Keep Editing'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               context.go('/onboarding/manual');
             },
             child: const Text('Edit in Form'),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               _saveHabitAndComplete(data);
             },
             child: const Text('Start Building!'),
@@ -388,6 +326,9 @@ class _ConversationalOnboardingScreenState
     await appState.createHabit(habit);
     await appState.completeOnboarding();
 
+    // Clean up orchestrator state
+    context.read<OnboardingOrchestrator>().resetConversation();
+
     // Navigate to Today screen
     if (mounted) {
       context.go('/today');
@@ -452,32 +393,40 @@ class _ConversationalOnboardingScreenState
       );
     }
 
-    if (_conversation == null || _conversation!.messages.isEmpty) {
-      return const Center(
-        child: Text('Starting conversation...'),
-      );
-    }
+    return Consumer<OnboardingOrchestrator>(
+      builder: (context, orchestrator, _) {
+        final conversation = orchestrator.conversation;
 
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      itemCount: _conversation!.messages.length + (_isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        // Show typing indicator at the end if loading
-        if (_isLoading && index == _conversation!.messages.length) {
-          return const TypingIndicatorBubble();
+        if (conversation == null || conversation.messages.isEmpty) {
+          return const Center(
+            child: Text('Starting conversation...'),
+          );
         }
 
-        final message = _conversation!.messages[index];
+        final messages = conversation.messages;
 
-        // Skip system messages
-        if (message.role == MessageRole.system) {
-          return const SizedBox.shrink();
-        }
+        return ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.only(top: 16, bottom: 8),
+          itemCount: messages.length + (orchestrator.isLoading ? 1 : 0),
+          itemBuilder: (context, index) {
+            // Show typing indicator at the end if loading
+            if (orchestrator.isLoading && index == messages.length) {
+              return const TypingIndicatorBubble();
+            }
 
-        return ChatMessageBubble(
-          message: message,
-          showAvatar: true,
+            final message = messages[index];
+
+            // Skip system messages
+            if (message.role == MessageRole.system) {
+              return const SizedBox.shrink();
+            }
+
+            return ChatMessageBubble(
+              message: message,
+              showAvatar: true,
+            );
+          },
         );
       },
     );
@@ -486,71 +435,77 @@ class _ConversationalOnboardingScreenState
   Widget _buildInputArea() {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Text input
-          Expanded(
-            child: Container(
-              constraints: const BoxConstraints(maxHeight: 120),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(24),
+    return Consumer<OnboardingOrchestrator>(
+      builder: (context, orchestrator, _) {
+        final isLoading = orchestrator.isLoading;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
               ),
-              child: TextField(
-                controller: _messageController,
-                focusNode: _inputFocusNode,
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
-                enabled: !_isLoading && _isInitialized,
-                decoration: InputDecoration(
-                  hintText: _isLoading
-                      ? 'Waiting for response...'
-                      : 'Type your message...',
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Text input
+              Expanded(
+                child: Container(
+                  constraints: const BoxConstraints(maxHeight: 120),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    focusNode: _inputFocusNode,
+                    maxLines: null,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
+                    enabled: !isLoading && _isInitialized,
+                    decoration: InputDecoration(
+                      hintText: isLoading
+                          ? 'Waiting for response...'
+                          : 'Type your message...',
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
+              const SizedBox(width: 8),
 
-          // Send button
-          Container(
-            decoration: BoxDecoration(
-              color: _isLoading
-                  ? theme.colorScheme.surfaceContainerHighest
-                  : theme.colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              onPressed: _isLoading ? null : _sendMessage,
-              icon: Icon(
-                Icons.send_rounded,
-                color: _isLoading
-                    ? theme.colorScheme.onSurfaceVariant
-                    : Colors.white,
+              // Send button
+              Container(
+                decoration: BoxDecoration(
+                  color: isLoading
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: isLoading ? null : _sendMessage,
+                  icon: Icon(
+                    Icons.send_rounded,
+                    color: isLoading
+                        ? theme.colorScheme.onSurfaceVariant
+                        : Colors.white,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
