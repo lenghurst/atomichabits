@@ -8,16 +8,22 @@ import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
 
 /// Central state management for the app
+///
+/// **PHASE 3 UPDATE: Multiple Habits & Focus Mode**
+/// - Supports a List<Habit> instead of single habit
+/// - Maintains backward compatibility via currentHabit getter
+/// - Automatic migration from legacy single-habit storage
+///
 /// Uses Provider for simple, beginner-friendly state management
 /// Now includes Hive persistence for data that survives app restarts
 /// Handles Hook Model: Trigger (notifications) → Action → Reward → Investment
-/// 
+///
 /// **Graceful Consistency Philosophy:**
 /// - Replaces fragile streaks with holistic consistency scoring
 /// - Implements "Never Miss Twice" recovery system
 /// - Celebrates recovery, not perfection
 /// - Long-term averages matter more than perfect days
-/// 
+///
 /// **Never Miss Twice Engine (Framework Feature 31):**
 /// This engine is critical for preventing single misses from spiraling.
 /// Key tracked fields:
@@ -27,81 +33,100 @@ import 'services/recovery_engine.dart';
 class AppState extends ChangeNotifier {
   // User profile
   UserProfile? _userProfile;
-  
-  // Current habit (we'll support multiple habits later)
-  Habit? _currentHabit;
-  
+
+  // PHASE 3: List of habits (replacing single _currentHabit)
+  List<Habit> _habits = [];
+
   // Onboarding completion status
   bool _hasCompletedOnboarding = false;
-  
+
   // Hive box for persistent storage
   Box? _dataBox;
-  
+
   // Loading state
   bool _isLoading = true;
-  
+
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
-  
+
   // ========== NEVER MISS TWICE ENGINE (Framework Feature 31) ==========
   // These fields implement the "Never Miss Twice" philosophy:
   // "Missing once is an accident. Missing twice is the start of a new habit."
-  
+
   /// Current recovery need details (includes urgency level)
   RecoveryNeed? _currentRecoveryNeed;
-  
+
   /// Whether to show the recovery prompt UI
   bool _shouldShowRecoveryPrompt = false;
-  
-  /// Tracks consecutive missed days (equivalent to user's suggested `int consecutiveMissedDays`)
-  /// Calculated dynamically from habit.currentMissStreak for accuracy
-  int get consecutiveMissedDays => _currentHabit?.currentMissStreak ?? 0;
-  
-  /// The "Never Miss Twice Score" (0.0-1.0) - percentage of single misses that stayed single
-  /// Higher score = better at recovering before a second miss
-  double get neverMissTwiceScore => _currentHabit?.neverMissTwiceRate ?? 1.0;
-  
+
   // Notification service
   final NotificationService _notificationService = NotificationService();
-  
+
   // AI Suggestion service (local heuristics for now)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
 
-  // Getters to access state
+  // ========== GETTERS ==========
+
   UserProfile? get userProfile => _userProfile;
-  Habit? get currentHabit => _currentHabit;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
-  
+
+  // PHASE 3: Access all habits
+  List<Habit> get allHabits => List.unmodifiable(_habits);
+
+  // PHASE 3: The "Focus Habit" (Primary)
+  // Maintains backward compatibility for widgets expecting a single habit
+  Habit? get currentHabit {
+    if (_habits.isEmpty) return null;
+    // Return the habit marked as primary, or the first one if none
+    try {
+      return _habits.firstWhere((h) => h.isPrimaryHabit);
+    } catch (e) {
+      // No primary habit found, return first
+      return _habits.first;
+    }
+  }
+
+  /// Tracks consecutive missed days (equivalent to user's suggested `int consecutiveMissedDays`)
+  /// Calculated dynamically from habit.currentMissStreak for accuracy
+  int get consecutiveMissedDays => currentHabit?.currentMissStreak ?? 0;
+
+  /// The "Never Miss Twice Score" (0.0-1.0) - percentage of single misses that stayed single
+  /// Higher score = better at recovering before a second miss
+  double get neverMissTwiceScore => currentHabit?.neverMissTwiceRate ?? 1.0;
+
   // ========== Graceful Consistency Getters ==========
-  
+
   /// Current recovery need (null if none needed)
   RecoveryNeed? get currentRecoveryNeed => _currentRecoveryNeed;
-  
+
   /// Whether to show the recovery prompt (user's suggested `bool shouldShowRecoveryPrompt`)
   bool get shouldShowRecoveryPrompt => _shouldShowRecoveryPrompt;
-  
+
   /// Determines if recovery prompt should be shown (for external checks)
   /// Implements user's suggested `bool shouldShowNeverMissTwicePrompt()`
   bool shouldShowNeverMissTwicePrompt() {
-    if (_currentHabit == null) return false;
-    if (_currentHabit!.isPaused) return false;
-    if (_currentHabit!.isCompletedToday) return false;
+    final habit = currentHabit;
+    if (habit == null) return false;
+    if (habit.isPaused) return false;
+    if (habit.isCompletedToday) return false;
     return consecutiveMissedDays >= 1;
   }
-  
+
   /// Get the current graceful consistency metrics
-  ConsistencyMetrics? get consistencyMetrics => _currentHabit?.consistencyMetrics;
-  
+  ConsistencyMetrics? get consistencyMetrics => currentHabit?.consistencyMetrics;
+
   /// Quick access to graceful score (0-100)
-  double get gracefulScore => _currentHabit?.gracefulScore ?? 0;
-  
+  double get gracefulScore => currentHabit?.gracefulScore ?? 0;
+
   /// Quick access to weekly average (0.0-1.0)
-  double get weeklyAverage => _currentHabit?.weeklyAverage ?? 0;
-  
+  double get weeklyAverage => currentHabit?.weeklyAverage ?? 0;
+
   /// Check if habit needs recovery attention
-  bool get needsRecovery => _currentHabit?.needsRecovery ?? false;
+  bool get needsRecovery => currentHabit?.needsRecovery ?? false;
+
+  // ========== INITIALIZATION & MIGRATION ==========
 
   /// Initialize Hive and load persisted data
   /// Call this once when app starts
@@ -109,24 +134,24 @@ class AppState extends ChangeNotifier {
     try {
       // Initialize notification service first
       await _notificationService.initialize();
-      
+
       // Set up notification action handler
       _notificationService.onNotificationAction = _handleNotificationAction;
-      
+
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
-      
-      // Load saved data from Hive
+
+      // Load saved data from Hive (includes migration)
       await _loadFromStorage();
-      
+
       // Schedule notifications if onboarding completed
-      if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
+      if (_hasCompletedOnboarding && currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
-      
+
       // Check for recovery needs (Never Miss Twice)
       _checkRecoveryNeeds();
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -139,6 +164,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// Load data from Hive storage
+  /// PHASE 3: Includes migration from legacy single-habit format
   Future<void> _loadFromStorage() async {
     if (_dataBox == null) return;
 
@@ -151,14 +177,36 @@ class AppState extends ChangeNotifier {
       _userProfile = UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
     }
 
-    // Load current habit
-    final habitJson = _dataBox!.get('currentHabit');
-    if (habitJson != null) {
-      _currentHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
+    // PHASE 3: Load List of Habits (new format)
+    final habitsJson = _dataBox!.get('habits');
+
+    if (habitsJson != null) {
+      // New format: List of habits
+      _habits = (habitsJson as List)
+          .map((json) => Habit.fromJson(Map<String, dynamic>.from(json)))
+          .toList();
+    } else {
+      // LEGACY MIGRATION: Check for single 'currentHabit'
+      final legacyHabitJson = _dataBox!.get('currentHabit');
+      if (legacyHabitJson != null) {
+        final legacyHabit = Habit.fromJson(Map<String, dynamic>.from(legacyHabitJson));
+
+        // Mark legacy habit as primary and add to list
+        final migratedHabit = legacyHabit.copyWith(isPrimaryHabit: true);
+        _habits = [migratedHabit];
+
+        // Save immediately in new format and clear old key
+        await _dataBox!.put('habits', _habits.map((h) => h.toJson()).toList());
+        await _dataBox!.delete('currentHabit');
+
+        if (kDebugMode) {
+          debugPrint('🛠️ Migrated legacy habit to list format: ${migratedHabit.name}');
+        }
+      }
     }
 
     if (kDebugMode) {
-      debugPrint('Loaded from storage: onboarding=$_hasCompletedOnboarding, profile=${_userProfile?.name}, habit=${_currentHabit?.name}');
+      debugPrint('Loaded ${_habits.length} habits. Focus: ${currentHabit?.name}');
     }
   }
 
@@ -175,13 +223,13 @@ class AppState extends ChangeNotifier {
         await _dataBox!.put('userProfile', _userProfile!.toJson());
       }
 
-      // Save current habit
-      if (_currentHabit != null) {
-        await _dataBox!.put('currentHabit', _currentHabit!.toJson());
+      // PHASE 3: Save List of Habits
+      if (_habits.isNotEmpty) {
+        await _dataBox!.put('habits', _habits.map((h) => h.toJson()).toList());
       }
 
       if (kDebugMode) {
-        debugPrint('Saved to storage successfully');
+        debugPrint('Saved to storage successfully (${_habits.length} habits)');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -190,23 +238,138 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ========== USER PROFILE ==========
+
   /// Sets the user profile (from onboarding)
   Future<void> setUserProfile(UserProfile profile) async {
     _userProfile = profile;
-    await _saveToStorage(); // Persist to storage
-    notifyListeners(); // Tell UI to rebuild
-  }
-
-  /// Creates a new habit
-  Future<void> createHabit(Habit habit) async {
-    _currentHabit = habit;
-    await _saveToStorage(); // Persist to storage
+    await _saveToStorage();
     notifyListeners();
   }
 
+  // ========== HABIT CRUD OPERATIONS (PHASE 3) ==========
+
+  /// Create a new habit
+  /// If it's the first habit, it automatically becomes Primary
+  Future<void> createHabit(Habit habit) async {
+    // If this is the only habit, ensure it's primary
+    final isFirst = _habits.isEmpty;
+    final newHabit = habit.copyWith(
+      isPrimaryHabit: isFirst || habit.isPrimaryHabit,
+      focusCycleStart: (isFirst || habit.isPrimaryHabit) ? DateTime.now() : null,
+    );
+
+    // If new habit is primary, unset others
+    if (newHabit.isPrimaryHabit) {
+      _unfocusOtherHabits();
+    }
+
+    _habits.add(newHabit);
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('➕ Created habit: ${newHabit.name} (primary: ${newHabit.isPrimaryHabit})');
+    }
+  }
+
+  /// Update an existing habit by ID
+  Future<void> updateHabit(Habit updatedHabit) async {
+    final index = _habits.indexWhere((h) => h.id == updatedHabit.id);
+    if (index != -1) {
+      // Handle focus switching logic
+      if (updatedHabit.isPrimaryHabit && !_habits[index].isPrimaryHabit) {
+        _unfocusOtherHabits();
+      }
+
+      _habits[index] = updatedHabit;
+      await _saveToStorage();
+      notifyListeners();
+    }
+  }
+
+  /// Delete a habit by ID
+  Future<void> deleteHabit(String id) async {
+    final index = _habits.indexWhere((h) => h.id == id);
+    if (index == -1) return;
+
+    final wasPrimary = _habits[index].isPrimaryHabit;
+    _habits.removeAt(index);
+
+    // If we deleted the primary habit, promote the first remaining one
+    if (wasPrimary && _habits.isNotEmpty) {
+      _habits[0] = _habits[0].copyWith(
+        isPrimaryHabit: true,
+        focusCycleStart: DateTime.now(),
+      );
+    }
+
+    await _saveToStorage();
+    notifyListeners();
+
+    if (kDebugMode) {
+      debugPrint('🗑️ Deleted habit (was primary: $wasPrimary)');
+    }
+  }
+
+  /// Set the Focus (Primary) habit by ID
+  Future<void> setFocusHabit(String id) async {
+    bool changed = false;
+    for (int i = 0; i < _habits.length; i++) {
+      if (_habits[i].id == id) {
+        if (!_habits[i].isPrimaryHabit) {
+          _habits[i] = _habits[i].copyWith(
+            isPrimaryHabit: true,
+            focusCycleStart: DateTime.now(),
+          );
+          changed = true;
+        }
+      } else {
+        if (_habits[i].isPrimaryHabit) {
+          _habits[i] = _habits[i].copyWith(isPrimaryHabit: false);
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      await _saveToStorage();
+      await _scheduleNotifications(); // Reschedule for new focus
+      _checkRecoveryNeeds(); // Update recovery state for new focus
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('🎯 Focus habit changed to: ${currentHabit?.name}');
+      }
+    }
+  }
+
+  /// Get a habit by ID
+  Habit? getHabitById(String id) {
+    try {
+      return _habits.firstWhere((h) => h.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Helper: Ensure only one habit is primary
+  void _unfocusOtherHabits() {
+    for (int i = 0; i < _habits.length; i++) {
+      if (_habits[i].isPrimaryHabit) {
+        _habits[i] = _habits[i].copyWith(isPrimaryHabit: false);
+      }
+    }
+  }
+
+  // ========== COMPLETION LOGIC ==========
+
   /// Marks habit as completed for today
   /// Returns true if this was a new completion (triggers reward flow)
-  /// 
+  ///
+  /// PHASE 3: Accepts optional habitId parameter
+  /// If not provided, completes the Focus (primary) habit
+  ///
   /// **Graceful Consistency Updates:**
   /// - Adds completion to history for rolling averages
   /// - Tracks recovery events if bouncing back from a miss
@@ -215,21 +378,30 @@ class AppState extends ChangeNotifier {
   Future<bool> completeHabitForToday({
     bool fromNotification = false,
     bool usedTinyVersion = false,
+    String? habitId,
   }) async {
-    if (_currentHabit == null) return false;
+    // Determine target habit
+    Habit? targetHabit;
+    if (habitId != null) {
+      targetHabit = getHabitById(habitId);
+    } else {
+      targetHabit = currentHabit;
+    }
+
+    if (targetHabit == null) return false;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     // Check if already completed today
-    if (_currentHabit!.lastCompletedDate != null) {
-      final lastCompleted = _currentHabit!.lastCompletedDate!;
+    if (targetHabit.lastCompletedDate != null) {
+      final lastCompleted = targetHabit.lastCompletedDate!;
       final lastDate = DateTime(
         lastCompleted.year,
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       if (lastDate == today) {
         // Already completed today
         if (kDebugMode) {
@@ -240,23 +412,23 @@ class AppState extends ChangeNotifier {
     }
 
     // Calculate new streak (check if yesterday was completed)
-    int newStreak = _currentHabit!.currentStreak;
+    int newStreak = targetHabit.currentStreak;
     bool isRecovery = false;
     int daysMissed = 0;
     DateTime? missStartDate;
-    
-    if (_currentHabit!.lastCompletedDate != null) {
-      final lastCompleted = _currentHabit!.lastCompletedDate!;
+
+    if (targetHabit.lastCompletedDate != null) {
+      final lastCompleted = targetHabit.lastCompletedDate!;
       final yesterday = today.subtract(const Duration(days: 1));
       final lastDate = DateTime(
         lastCompleted.year,
         lastCompleted.month,
         lastCompleted.day,
       );
-      
+
       // If last completion was yesterday, continue streak
       if (lastDate == yesterday) {
-        newStreak = _currentHabit!.currentStreak + 1;
+        newStreak = targetHabit.currentStreak + 1;
       } else {
         // **GRACEFUL CONSISTENCY**: Not a "reset" - this is a RECOVERY!
         // The old fragile streak mentality would reset to 0.
@@ -266,7 +438,7 @@ class AppState extends ChangeNotifier {
         isRecovery = true;
         daysMissed = today.difference(lastDate).inDays - 1;
         missStartDate = lastDate.add(const Duration(days: 1));
-        
+
         // Log the graceful recovery philosophy in action
         if (kDebugMode) {
           debugPrint('💫 Graceful Recovery: Not a failure, just a comeback!');
@@ -277,26 +449,26 @@ class AppState extends ChangeNotifier {
       // First completion
       newStreak = 1;
     }
-    
+
     // Update completion history
-    final newCompletionHistory = List<DateTime>.from(_currentHabit!.completionHistory)
+    final newCompletionHistory = List<DateTime>.from(targetHabit.completionHistory)
       ..add(now);
-    
+
     // Update recovery history if this was a recovery
-    final newRecoveryHistory = List<RecoveryEvent>.from(_currentHabit!.recoveryHistory);
-    
+    final newRecoveryHistory = List<RecoveryEvent>.from(targetHabit.recoveryHistory);
+
     // Track "Never Miss Twice" wins specifically
-    int newSingleMissRecoveries = _currentHabit!.singleMissRecoveries;
-    
+    int newSingleMissRecoveries = targetHabit.singleMissRecoveries;
+
     if (isRecovery && missStartDate != null) {
       newRecoveryHistory.add(RecoveryEvent(
         missDate: missStartDate,
         recoveryDate: now,
         daysMissed: daysMissed,
-        missReason: _currentHabit!.lastMissReason,
+        missReason: targetHabit.lastMissReason,
         usedTinyVersion: usedTinyVersion,
       ));
-      
+
       // "Never Miss Twice" win = recovered after only 1 day missed
       if (daysMissed == 1) {
         newSingleMissRecoveries++;
@@ -305,28 +477,28 @@ class AppState extends ChangeNotifier {
           debugPrint('   Total NMT wins: $newSingleMissRecoveries');
         }
       }
-      
+
       if (kDebugMode) {
         debugPrint('🔄 Recovery recorded! Bounced back after $daysMissed day(s)');
       }
     }
-    
+
     // Update flexible tracking metrics
-    final newDaysShowedUp = _currentHabit!.daysShowedUp + 1;
-    final newMinimumVersionCount = usedTinyVersion 
-        ? _currentHabit!.minimumVersionCount + 1 
-        : _currentHabit!.minimumVersionCount;
-    final newFullCompletionCount = !usedTinyVersion 
-        ? _currentHabit!.fullCompletionCount + 1 
-        : _currentHabit!.fullCompletionCount;
-    
+    final newDaysShowedUp = targetHabit.daysShowedUp + 1;
+    final newMinimumVersionCount = usedTinyVersion
+        ? targetHabit.minimumVersionCount + 1
+        : targetHabit.minimumVersionCount;
+    final newFullCompletionCount = !usedTinyVersion
+        ? targetHabit.fullCompletionCount + 1
+        : targetHabit.fullCompletionCount;
+
     // Update identity votes and longest streak
-    final newIdentityVotes = _currentHabit!.identityVotes + 1;
-    final newLongestStreak = newStreak > _currentHabit!.longestStreak 
-        ? newStreak 
-        : _currentHabit!.longestStreak;
-    
-    _currentHabit = _currentHabit!.copyWith(
+    final newIdentityVotes = targetHabit.identityVotes + 1;
+    final newLongestStreak = newStreak > targetHabit.longestStreak
+        ? newStreak
+        : targetHabit.longestStreak;
+
+    final updatedHabit = targetHabit.copyWith(
       currentStreak: newStreak,
       lastCompletedDate: now,
       completionHistory: newCompletionHistory,
@@ -340,20 +512,21 @@ class AppState extends ChangeNotifier {
       fullCompletionCount: newFullCompletionCount,
       singleMissRecoveries: newSingleMissRecoveries,
     );
-    
-    await _saveToStorage(); // Persist the updated data
-    
-    // Clear recovery state since we just completed
-    _currentRecoveryNeed = null;
-    _shouldShowRecoveryPrompt = false;
-    
-    // Trigger Reward + Investment flow
-    _shouldShowRewardFlow = true;
-    
+
+    // Update habit in list
+    await updateHabit(updatedHabit);
+
+    // Clear recovery state and trigger reward flow only for primary habit
+    if (updatedHabit.isPrimaryHabit) {
+      _currentRecoveryNeed = null;
+      _shouldShowRecoveryPrompt = false;
+      _shouldShowRewardFlow = true;
+    }
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      final metrics = _currentHabit!.consistencyMetrics;
+      final metrics = updatedHabit.consistencyMetrics;
       debugPrint('✅ Habit completed! New streak: $newStreak');
       debugPrint('📊 Graceful Score: ${metrics.gracefulScore.toStringAsFixed(1)}');
       debugPrint('📈 Weekly Average: ${(metrics.weeklyAverage * 100).toStringAsFixed(0)}%');
@@ -367,35 +540,24 @@ class AppState extends ChangeNotifier {
         }
       }
     }
-    
+
     return true; // New completion
   }
 
   /// Marks onboarding as complete
   Future<void> completeOnboarding() async {
     _hasCompletedOnboarding = true;
-    await _saveToStorage(); // Persist to storage
-    
+    await _saveToStorage();
+
     // Schedule daily notifications
     await _scheduleNotifications();
-    
+
     notifyListeners();
   }
 
-  /// Checks if habit was completed today
+  /// Checks if habit was completed today (for primary habit)
   bool isHabitCompletedToday() {
-    if (_currentHabit?.lastCompletedDate == null) return false;
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final lastCompleted = _currentHabit!.lastCompletedDate!;
-    final lastDate = DateTime(
-      lastCompleted.year,
-      lastCompleted.month,
-      lastCompleted.day,
-    );
-
-    return lastDate == today;
+    return currentHabit?.isCompletedToday ?? false;
   }
 
   /// Clear all data (useful for testing/reset)
@@ -404,78 +566,79 @@ class AppState extends ChangeNotifier {
       await _dataBox!.clear();
     }
     _userProfile = null;
-    _currentHabit = null;
+    _habits = [];
     _hasCompletedOnboarding = false;
     await _notificationService.cancelAllNotifications();
     notifyListeners();
   }
-  
+
   // ========== Notification Methods ==========
-  
-  /// Schedule daily notifications for habit reminder
+
+  /// Schedule daily notifications for habit reminder (primary habit only)
   Future<void> _scheduleNotifications() async {
-    if (_currentHabit == null || _userProfile == null) return;
-    
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) return;
+
     await _notificationService.scheduleDailyHabitReminder(
-      habit: _currentHabit!,
+      habit: habit,
       profile: _userProfile!,
     );
   }
-  
+
   /// Handle notification action buttons (Mark Done, Snooze)
   void _handleNotificationAction(String action) {
     if (kDebugMode) {
       debugPrint('📱 Notification action: $action');
     }
-    
+
     if (action == 'mark_done') {
       // Mark habit as complete from notification
       completeHabitForToday(fromNotification: true);
     } else if (action == 'snooze') {
       // Schedule snooze notification
-      if (_currentHabit != null && _userProfile != null) {
+      final habit = currentHabit;
+      if (habit != null && _userProfile != null) {
         _notificationService.scheduleSnoozeNotification(
-          habit: _currentHabit!,
+          habit: habit,
           profile: _userProfile!,
         );
       }
     }
   }
-  
+
   /// Update reminder time and reschedule notifications
   /// Called from Investment flow
   Future<void> updateReminderTime(String newTime) async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+    final habit = currentHabit;
+    if (habit == null) return;
+
+    final updatedHabit = habit.copyWith(
       implementationTime: newTime,
     );
-    
-    await _saveToStorage();
-    
+
+    await updateHabit(updatedHabit);
+
     // Reschedule notifications with new time
     await _scheduleNotifications();
-    
-    notifyListeners();
-    
+
     if (kDebugMode) {
       debugPrint('⏰ Reminder time updated to: $newTime');
     }
   }
-  
+
   /// Show test notification (for debugging)
   Future<void> showTestNotification() async {
     await _notificationService.showTestNotification();
   }
-  
+
   // ========== Reward + Investment Flow Methods ==========
-  
+
   /// Dismiss the reward flow
   void dismissRewardFlow() {
     _shouldShowRewardFlow = false;
     notifyListeners();
   }
-  
+
   /// Check if we should show reward flow when app comes to foreground
   bool checkAndTriggerRewardFlow() {
     // If habit was just completed and we haven't shown reward yet
@@ -484,165 +647,174 @@ class AppState extends ChangeNotifier {
     }
     return false;
   }
-  
+
   // ========== Graceful Consistency & Recovery Methods ==========
-  
+
   /// Check if habit needs recovery attention (Never Miss Twice)
   /// This should be called when app starts or comes to foreground
   void _checkRecoveryNeeds() {
-    if (_currentHabit == null || _userProfile == null) {
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) {
       _currentRecoveryNeed = null;
       _shouldShowRecoveryPrompt = false;
       return;
     }
-    
+
     _currentRecoveryNeed = RecoveryEngine.checkRecoveryNeed(
-      habit: _currentHabit!,
+      habit: habit,
       profile: _userProfile!,
-      completionHistory: _currentHabit!.completionHistory,
+      completionHistory: habit.completionHistory,
     );
-    
+
     // Show recovery prompt if there's a recovery need
     _shouldShowRecoveryPrompt = _currentRecoveryNeed != null;
-    
+
     if (kDebugMode && _currentRecoveryNeed != null) {
       debugPrint('⚠️ Recovery needed: ${_currentRecoveryNeed!.daysMissed} day(s) missed');
       debugPrint('🎯 Urgency: ${_currentRecoveryNeed!.urgency}');
     }
   }
-  
+
   /// Manually trigger recovery check (e.g., when app comes to foreground)
   void checkRecoveryNeeds() {
     _checkRecoveryNeeds();
     notifyListeners();
   }
-  
+
   /// Dismiss the recovery prompt (user acknowledged it)
   void dismissRecoveryPrompt() {
     _shouldShowRecoveryPrompt = false;
     notifyListeners();
   }
-  
+
   /// Record why the user missed (for pattern tracking)
   Future<void> recordMissReason(MissReason reason) async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+    final habit = currentHabit;
+    if (habit == null) return;
+
+    final updatedHabit = habit.copyWith(
       lastMissReason: reason.name,
     );
-    
-    await _saveToStorage();
-    notifyListeners();
-    
+
+    await updateHabit(updatedHabit);
+
     if (kDebugMode) {
       debugPrint('📝 Recorded miss reason: ${reason.label}');
     }
   }
-  
+
   /// Update failure playbook for habit
   Future<void> updateFailurePlaybook(FailurePlaybook playbook) async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+    final habit = currentHabit;
+    if (habit == null) return;
+
+    final updatedHabit = habit.copyWith(
       failurePlaybook: playbook,
     );
-    
-    await _saveToStorage();
-    notifyListeners();
-    
+
+    await updateHabit(updatedHabit);
+
     if (kDebugMode) {
       debugPrint('📋 Updated failure playbook: ${playbook.scenario}');
     }
   }
-  
+
   /// Pause the habit (planned break)
-  Future<void> pauseHabit() async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+  Future<void> pauseHabit({String? habitId}) async {
+    final habit = habitId != null ? getHabitById(habitId) : currentHabit;
+    if (habit == null) return;
+
+    final updatedHabit = habit.copyWith(
       isPaused: true,
       pausedAt: DateTime.now(),
     );
-    
-    await _saveToStorage();
-    
-    // Clear recovery needs since habit is paused
-    _currentRecoveryNeed = null;
-    _shouldShowRecoveryPrompt = false;
-    
+
+    await updateHabit(updatedHabit);
+
+    // Clear recovery needs if pausing primary habit
+    if (habit.isPrimaryHabit) {
+      _currentRecoveryNeed = null;
+      _shouldShowRecoveryPrompt = false;
+    }
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('⏸️ Habit paused');
+      debugPrint('⏸️ Habit paused: ${habit.name}');
     }
   }
-  
+
   /// Resume the habit from pause
-  Future<void> resumeHabit() async {
-    if (_currentHabit == null) return;
-    
-    _currentHabit = _currentHabit!.copyWith(
+  Future<void> resumeHabit({String? habitId}) async {
+    final habit = habitId != null ? getHabitById(habitId) : currentHabit;
+    if (habit == null) return;
+
+    final updatedHabit = habit.copyWith(
       isPaused: false,
       pausedAt: null,
     );
-    
-    await _saveToStorage();
-    
-    // Check recovery needs after resuming
-    _checkRecoveryNeeds();
-    
+
+    await updateHabit(updatedHabit);
+
+    // Check recovery needs after resuming primary habit
+    if (habit.isPrimaryHabit) {
+      _checkRecoveryNeeds();
+    }
+
     notifyListeners();
-    
+
     if (kDebugMode) {
-      debugPrint('▶️ Habit resumed');
+      debugPrint('▶️ Habit resumed: ${habit.name}');
     }
   }
-  
+
   /// Get recovery message for current recovery need
   String? getRecoveryMessage() {
     if (_currentRecoveryNeed == null) return null;
     return RecoveryEngine.getRecoveryMessage(_currentRecoveryNeed!);
   }
-  
+
   /// Get recovery title for current recovery need
   String? getRecoveryTitle() {
     if (_currentRecoveryNeed == null) return null;
     return RecoveryEngine.getRecoveryTitle(_currentRecoveryNeed!.urgency);
   }
-  
+
   /// Get zoom-out perspective message
   String? getZoomOutMessage() {
-    if (_currentHabit == null) return null;
-    final metrics = _currentHabit!.consistencyMetrics;
+    final habit = currentHabit;
+    if (habit == null) return null;
+    final metrics = habit.consistencyMetrics;
     return RecoveryEngine.getZoomOutMessage(
       totalDays: metrics.totalDays,
       completedDays: metrics.daysShowedUp,
       currentMissStreak: metrics.currentMissStreak,
     );
   }
-  
+
   // ========== AI Suggestion Methods (Async with Remote LLM + Local Fallback) ==========
-  
+
   /// Get temptation bundling suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
-  /// 
+  ///
   /// Flow: Remote LLM (5s timeout) → Local fallback if needed
   Future<List<String>> getTemptationBundleSuggestionsForCurrentHabit() async {
-    if (_currentHabit == null || _userProfile == null) {
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) {
       return [];
     }
-    
+
     try {
       return await _aiSuggestionService.getTemptationBundleSuggestions(
         identity: _userProfile!.identity,
-        habitName: _currentHabit!.name,
-        tinyVersion: _currentHabit!.tinyVersion,
-        implementationTime: _currentHabit!.implementationTime,
-        implementationLocation: _currentHabit!.implementationLocation,
-        existingTemptationBundle: _currentHabit!.temptationBundle,
-        existingPreRitual: _currentHabit!.preHabitRitual,
-        existingEnvironmentCue: _currentHabit!.environmentCue,
-        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
+        habitName: habit.name,
+        tinyVersion: habit.tinyVersion,
+        implementationTime: habit.implementationTime,
+        implementationLocation: habit.implementationLocation,
+        existingTemptationBundle: habit.temptationBundle,
+        existingPreRitual: habit.preHabitRitual,
+        existingEnvironmentCue: habit.environmentCue,
+        existingEnvironmentDistraction: habit.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -651,25 +823,26 @@ class AppState extends ChangeNotifier {
       return [];
     }
   }
-  
+
   /// Get pre-habit ritual suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
   Future<List<String>> getPreHabitRitualSuggestionsForCurrentHabit() async {
-    if (_currentHabit == null || _userProfile == null) {
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) {
       return [];
     }
-    
+
     try {
       return await _aiSuggestionService.getPreHabitRitualSuggestions(
         identity: _userProfile!.identity,
-        habitName: _currentHabit!.name,
-        tinyVersion: _currentHabit!.tinyVersion,
-        implementationTime: _currentHabit!.implementationTime,
-        implementationLocation: _currentHabit!.implementationLocation,
-        existingTemptationBundle: _currentHabit!.temptationBundle,
-        existingPreRitual: _currentHabit!.preHabitRitual,
-        existingEnvironmentCue: _currentHabit!.environmentCue,
-        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
+        habitName: habit.name,
+        tinyVersion: habit.tinyVersion,
+        implementationTime: habit.implementationTime,
+        implementationLocation: habit.implementationLocation,
+        existingTemptationBundle: habit.temptationBundle,
+        existingPreRitual: habit.preHabitRitual,
+        existingEnvironmentCue: habit.environmentCue,
+        existingEnvironmentDistraction: habit.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -678,25 +851,26 @@ class AppState extends ChangeNotifier {
       return [];
     }
   }
-  
+
   /// Get environment cue suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
   Future<List<String>> getEnvironmentCueSuggestionsForCurrentHabit() async {
-    if (_currentHabit == null || _userProfile == null) {
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) {
       return [];
     }
-    
+
     try {
       return await _aiSuggestionService.getEnvironmentCueSuggestions(
         identity: _userProfile!.identity,
-        habitName: _currentHabit!.name,
-        tinyVersion: _currentHabit!.tinyVersion,
-        implementationTime: _currentHabit!.implementationTime,
-        implementationLocation: _currentHabit!.implementationLocation,
-        existingTemptationBundle: _currentHabit!.temptationBundle,
-        existingPreRitual: _currentHabit!.preHabitRitual,
-        existingEnvironmentCue: _currentHabit!.environmentCue,
-        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
+        habitName: habit.name,
+        tinyVersion: habit.tinyVersion,
+        implementationTime: habit.implementationTime,
+        implementationLocation: habit.implementationLocation,
+        existingTemptationBundle: habit.temptationBundle,
+        existingPreRitual: habit.preHabitRitual,
+        existingEnvironmentCue: habit.environmentCue,
+        existingEnvironmentDistraction: habit.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -705,25 +879,26 @@ class AppState extends ChangeNotifier {
       return [];
     }
   }
-  
+
   /// Get environment distraction removal suggestions for current habit (async)
   /// Returns empty list if habit data is incomplete
   Future<List<String>> getEnvironmentDistractionSuggestionsForCurrentHabit() async {
-    if (_currentHabit == null || _userProfile == null) {
+    final habit = currentHabit;
+    if (habit == null || _userProfile == null) {
       return [];
     }
-    
+
     try {
       return await _aiSuggestionService.getEnvironmentDistractionSuggestions(
         identity: _userProfile!.identity,
-        habitName: _currentHabit!.name,
-        tinyVersion: _currentHabit!.tinyVersion,
-        implementationTime: _currentHabit!.implementationTime,
-        implementationLocation: _currentHabit!.implementationLocation,
-        existingTemptationBundle: _currentHabit!.temptationBundle,
-        existingPreRitual: _currentHabit!.preHabitRitual,
-        existingEnvironmentCue: _currentHabit!.environmentCue,
-        existingEnvironmentDistraction: _currentHabit!.environmentDistraction,
+        habitName: habit.name,
+        tinyVersion: habit.tinyVersion,
+        implementationTime: habit.implementationTime,
+        implementationLocation: habit.implementationLocation,
+        existingTemptationBundle: habit.temptationBundle,
+        existingPreRitual: habit.preHabitRitual,
+        existingEnvironmentCue: habit.environmentCue,
+        existingEnvironmentDistraction: habit.environmentDistraction,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -732,7 +907,7 @@ class AppState extends ChangeNotifier {
       return [];
     }
   }
-  
+
   /// Get combined suggestions for "Improve this habit" feature (async)
   /// Returns a map with all suggestion types
   Future<Map<String, List<String>>> getAllSuggestionsForCurrentHabit() async {
@@ -743,7 +918,7 @@ class AppState extends ChangeNotifier {
       getEnvironmentCueSuggestionsForCurrentHabit(),
       getEnvironmentDistractionSuggestionsForCurrentHabit(),
     ]);
-    
+
     return {
       'temptationBundle': results[0],
       'preHabitRitual': results[1],
