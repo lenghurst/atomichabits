@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2024 (v1.0.0+1 — AI Onboarding Spec)
+> **Last Updated:** December 2025 (v1.2.0 — Phase 2 Conversational UI)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -83,11 +83,12 @@ When stale branches accumulate (> 10 unmerged):
 | Recovery Notifications | ✅ Live | - | NotificationService | 9 AM after missed day |
 | Vibecoding Architecture | ✅ Live | Controllers/Helpers/Widgets | - | Clean separation pattern |
 | Settings Screen | 🚧 Stub | SettingsScreen | - | UI only, no persistence |
-| **AI Onboarding (Phase 1)** | 🚧 In Progress | OnboardingScreen | OnboardingOrchestrator | See AI_ONBOARDING_SPEC.md |
+| **AI Onboarding (Phase 1)** | ✅ Complete | OnboardingScreen + MagicWandButton | OnboardingOrchestrator | Magic Wand auto-fill |
+| **AI Onboarding (Phase 2)** | ✅ Complete | ConversationalOnboardingScreen | OnboardingOrchestrator | Chat UI is default |
 | Multiple Habits | ❌ Not Started | - | - | Roadmap item |
 | History/Calendar View | ❌ Not Started | - | - | Roadmap item |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
-| Bad Habit Protocol | ❌ Not Started | - | - | Phase 2, needs Phase 1 |
+| Bad Habit Protocol | 🟡 Partial | - | - | Needs ClaudeChatService (Tier 2) |
 
 ---
 
@@ -97,22 +98,36 @@ When stale branches accumulate (> 10 unmerged):
 ```
 lib/
 ├── main.dart                           # App entry, Provider setup, GoRouter
+├── config/
+│   └── ai_model_config.dart            # AI API keys, tiers, guardrails
 ├── data/
 │   ├── app_state.dart                  # Central state (ChangeNotifier)
 │   ├── notification_service.dart       # Notifications + scheduling
 │   ├── ai_suggestion_service.dart      # AI suggestions (remote + local)
 │   ├── models/
-│   │   ├── habit.dart                  # Habit data model
+│   │   ├── habit.dart                  # Habit data model (+ AI fields)
 │   │   ├── user_profile.dart           # User identity model
-│   │   └── consistency_metrics.dart    # Graceful Consistency scoring
+│   │   ├── consistency_metrics.dart    # Graceful Consistency scoring
+│   │   ├── onboarding_data.dart        # AI ↔ Habit DTO
+│   │   ├── chat_conversation.dart      # Conversation state
+│   │   └── chat_message.dart           # Individual message model
 │   └── services/
 │       ├── recovery_engine.dart        # Never Miss Twice detection
 │       ├── consistency_service.dart    # Consistency calculations
 │       ├── keystone_analyzer.dart      # Habit analysis
-│       └── review_service.dart         # Review functionality
+│       ├── review_service.dart         # Review functionality
+│       ├── gemini_chat_service.dart    # Tier 1 AI (Gemini)
+│       └── onboarding/
+│           ├── onboarding_orchestrator.dart  # The "Brain" (ChangeNotifier)
+│           ├── ai_response_parser.dart       # JSON extraction
+│           └── conversation_guardrails.dart  # Frustration detection
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart      # First-time setup
+│   │   ├── onboarding_screen.dart                # Form UI (Tier 3 fallback)
+│   │   ├── conversational_onboarding_screen.dart # Chat UI (default)
+│   │   └── widgets/
+│   │       ├── magic_wand_button.dart            # AI auto-fill button
+│   │       └── chat_message_bubble.dart          # User/AI message bubbles
 │   ├── today/
 │   │   ├── today_screen.dart           # Main screen (thin orchestrator)
 │   │   ├── controllers/
@@ -207,7 +222,8 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | Version | Date | Key Changes |
 |---------|------|-------------|
 | 1.0.0+1 | Dec 2024 | Current main: Full Graceful Consistency, Never Miss Twice, Vibecoding |
-| 1.1.0 | Dec 2024 | (In Progress) AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
+| 1.1.0 | Dec 2025 | AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
+| 1.2.0 | Dec 2025 | AI Onboarding Phase 2: Conversational UI (Chat is default, Form is fallback) |
 
 ---
 
@@ -240,35 +256,67 @@ Run `git branch -r --no-merged main` for full list.
 
 ---
 
-## AI Onboarding Architecture (NEW - December 2024)
+## AI Onboarding Architecture (Updated December 2025)
 
 ### Three-Tier Strategy
 
-| Tier | Model | Role | When Used |
-|------|-------|------|-----------|
-| Tier 1 | Gemini 2.5 Flash | The Architect | Default, fast extraction |
-| Tier 2 | Claude 4.5 Sonnet | The Coach | Premium users, bad habits |
-| Tier 3 | Manual Input | Safety Net | Offline, API failure, user opt-out |
+| Tier | Model | Role | When Used | Status |
+|------|-------|------|-----------|--------|
+| Tier 1 | Gemini 2.5 Flash | The Architect | Default, fast extraction | ✅ Live |
+| Tier 2 | Claude 4.5 Sonnet | The Coach | Premium users, bad habits | 🟡 Pending |
+| Tier 3 | Manual Input | Safety Net | Offline, API failure, user opt-out | ✅ Live |
 
-### New Files (Phase 1)
+### Routing Architecture
+
+| Route | Screen | Purpose |
+|-------|--------|---------|
+| `/` | `ConversationalOnboardingScreen` | Chat UI (default for new users) |
+| `/onboarding/manual` | `OnboardingScreen` | Form UI (Tier 3 fallback) |
+
+### Vibecoding Flow
+
+```
+ConversationalOnboardingScreen (UI)
+         ↓
+   Consumer<OnboardingOrchestrator>
+         ↓
+OnboardingOrchestrator (Brain - ChangeNotifier)
+   ├── startConversation() → ChatMessage (greeting)
+   ├── sendMessage() → ConversationResult
+   │   ├── message: ChatMessage
+   │   ├── extractedData: OnboardingData?
+   │   └── shouldSwitchToManual: bool
+   └── conversation → ChatConversation
+         ↓
+GeminiChatService (API - Tier 1)
+   ├── sendMessage() with streaming
+   └── getInitialGreeting()
+```
+
+### Key Files (Phase 1 + 2)
 
 ```
 lib/
+├── config/
+│   └── ai_model_config.dart           # API keys, tiers, limits
 ├── data/
 │   ├── models/
 │   │   ├── onboarding_data.dart       # Maps to Habit.dart
-│   │   └── onboarding_state.dart      # State machine enum
-│   ├── config/
-│   │   ├── ai_model_config.dart       # API keys, model names
-│   │   └── conversation_guardrails.dart  # Limits, frustration detection
+│   │   ├── chat_conversation.dart     # Conversation state
+│   │   └── chat_message.dart          # Message model
 │   └── services/
-│       └── onboarding_orchestrator.dart  # Tier selection, flow
+│       ├── gemini_chat_service.dart   # Tier 1 AI backend
+│       └── onboarding/
+│           ├── onboarding_orchestrator.dart   # The "Brain"
+│           ├── ai_response_parser.dart        # JSON extraction
+│           └── conversation_guardrails.dart   # Escape hatch patterns
 ├── features/
 │   └── onboarding/
-│       ├── widgets/
-│       │   └── magic_wand_button.dart # ✨ AI assist button
-│       └── helpers/
-│           └── ai_response_parser.dart # JSON extraction
+│       ├── conversational_onboarding_screen.dart  # Chat UI (Phase 2)
+│       ├── onboarding_screen.dart                 # Form UI (Tier 3)
+│       └── widgets/
+│           ├── magic_wand_button.dart             # AI auto-fill (Phase 1)
+│           └── chat_message_bubble.dart           # Chat bubbles (Phase 2)
 ```
 
 ### New Habit Model Fields (v4.0.0)
@@ -288,11 +336,12 @@ final String? recoveryPlan;     // Never Miss Twice plan
 
 1. **JSON Output Contract:** AI outputs `[HABIT_DATA]...[/HABIT_DATA]` markers
 2. **Frustration Detection:** Regex patterns trigger escape to manual mode
-3. **State Machine:** Enforces conversation flow to prevent AI "getting lost"
-4. **Backward Compatibility:** All new fields default to safe values
+3. **ConversationResult:** Structured return type from `sendMessage()` for clean UI handling
+4. **Streaming Support:** `onChunk` callback for real-time message display
+5. **Backward Compatibility:** All new fields default to safe values
 
 ---
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2024*
+*Last synced to main: December 2025*
