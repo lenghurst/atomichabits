@@ -36,7 +36,9 @@ lib/
 │   ├── app_state.dart                 # Central state management (Provider)
 │   │                                   # + Graceful Consistency logic
 │   │                                   # + Recovery detection (Never Miss Twice)
+│   │                                   # + Resume Sync Strategy (Widget split-brain fix)
 │   ├── notification_service.dart      # Daily reminders + Recovery notifications
+│   │                                   # + cancelDailyReminder() for widget sync
 │   ├── ai_suggestion_service.dart     # AI-powered habit optimization
 │   ├── models/
 │   │   ├── habit.dart                 # Habit data model with consistency tracking
@@ -119,10 +121,11 @@ In other words:
 ├───────────────────────────────────────────────────────────────────┤
 │                        STATE LAYER                               │
 │  ┌──────────────────────────────────────────────────────────┐    │
-│  │  AppState (Provider ChangeNotifier)                       │    │
+│  │  AppState (Provider ChangeNotifier + WidgetsBindingObserver) │
 │  │  - Central state management                               │    │
 │  │  - Business logic (completeHabitForToday, getZoomOut...)  │    │
 │  │  - Data persistence (Hive)                                │    │
+│  │  - Resume Sync Strategy (widget split-brain reconciliation)│   │
 │  └──────────────────────────────────────────────────────────┘    │
 │                                                                   │
 ├───────────────────────────────────────────────────────────────────┤
@@ -1000,10 +1003,21 @@ flutter test test/models/consistency_metrics_test.dart
 | `lib/features/today/widgets/recovery_banner.dart` | Inline recovery indicator |
 | `test/app_state/never_miss_twice_test.dart` | Comprehensive unit tests |
 
-## 🔮 Future Features (Not Yet Implemented)
+## 🔮 Roadmap — Future Features
 
+### ✅ Recently Completed
+- [x] **Home Screen Widget Sync** — Resume Sync Strategy fixes split-brain issue
+- [x] **Never Miss Twice Engine** — Complete recovery detection and messaging
+- [x] **Graceful Consistency Scoring** — Replaces fragile streaks
+- [x] **Vibecoding Architecture** — Clean separation of UI, logic, and helpers
+- [x] **AI Suggestion System** — Local heuristics for habit optimization
+
+### 🚧 In Progress / Next Sprint
+- [ ] **Home Screen Widget Implementation** — Android widget using `home_widget` package
 - [ ] Multiple habits support with Focus Mode
 - [ ] Habit history and calendar view
+
+### 📋 Backlog
 - [ ] Habit stacking (link habits together)
 - [ ] Failure Playbooks — Pre-planned recovery strategies
 - [ ] Weekly Review with AI synthesis
@@ -1012,6 +1026,8 @@ flutter test test/models/consistency_metrics_test.dart
 - [ ] Backup and restore functionality
 - [ ] Habit pause/vacation mode
 - [ ] Social accountability (optional)
+- [ ] iOS Widget support
+- [ ] Real LLM API integration for suggestions
 
 ## 🛠️ Technologies Used
 
@@ -1111,6 +1127,54 @@ The implementation ensures:
 - Days showed up NEVER reset
 - Recovery is celebrated, not hidden
 - Compassionate messaging at all urgency levels
+
+### 🔄 Resume Sync Strategy (Version 1.2.2) — Widget Split-Brain Fix
+
+**The Problem:**
+When users complete a habit via the home screen widget, the widget's background isolate writes directly to Hive storage. If the app is suspended in memory, its in-memory `AppState` doesn't know about this update. This creates a "split-brain" scenario:
+- Widget says: "Completed!" ✅
+- App says: "Not completed!" ❌
+- User opens app → sees incorrect state
+- Daily notification still fires → annoys the user
+
+**The Solution:**
+Implemented a lifecycle-aware state reconciliation system that syncs in-memory state with Hive when the app resumes.
+
+**Key Components:**
+
+1. **WidgetsBindingObserver in AppState**
+   - `AppState` now extends `ChangeNotifier with WidgetsBindingObserver`
+   - Registers lifecycle observer on `initialize()`
+   - Listens for `AppLifecycleState.resumed`
+
+2. **`_reconcileWithHive()` Method**
+   - Reloads habit data from Hive
+   - Compares with in-memory state
+   - Detects external completions (Hive=complete, memory=incomplete)
+   - Syncs state, cancels notifications, triggers reward flow
+
+3. **`cancelDailyReminder()` in NotificationService**
+   - Cancels notification IDs 0 (daily) and 1 (snooze)
+   - Called when external completion detected
+   - Prevents nagging user for completed habits
+
+4. **Concurrency Guard**
+   - `_isReconciling` lock prevents race conditions
+   - Timestamp tracking for conflict resolution
+   - Safe handling of simultaneous widget/app updates
+
+**User Experience Improvement:**
+- Widget completion → App shows "Completed!" immediately on open
+- Widget completion → Daily notification cancelled automatically
+- Widget completion → Reward flow (confetti) still triggers!
+
+**Files Modified:**
+- `lib/data/app_state.dart` — Added lifecycle observer + reconciliation
+- `lib/data/notification_service.dart` — Added `cancelDailyReminder()`
+- `lib/features/today/controllers/today_screen_controller.dart` — Backup reconciliation
+- `lib/features/today/today_screen.dart` — Async lifecycle handling
+
+---
 
 ### 🎨 Vibecoding Architecture Refactor (Version 1.2.0)
 
@@ -1365,6 +1429,57 @@ Understanding how data moves through the app helps when debugging or adding feat
 │     - Investment prompt (set tomorrow's reminder)                         │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Resume Sync Flow (When Widget Completes Habit Externally)
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                  USER TAPS WIDGET TO COMPLETE HABIT                       │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  1️⃣ Widget Background Isolate                                             │
+│     - Runs in separate isolate (app may be suspended)                     │
+│     - Updates Hive directly: habit.lastCompletedDate = now               │
+│     - App's in-memory AppState is UNAWARE of this change                 │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  2️⃣ User Opens App (AppLifecycleState.resumed)                           │
+│     - AppState.didChangeAppLifecycleState() triggered                     │
+│     - Calls: _reconcileWithHive()                                        │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  3️⃣ _reconcileWithHive() — The Split-Brain Detector                      │
+│     - Captures in-memory state: wasCompletedInMemory = false             │
+│     - Loads fresh from Hive: hiveCompletedToday = true                   │
+│     - MISMATCH DETECTED! 🎯                                               │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  4️⃣ State Reconciliation                                                 │
+│     - _currentHabit = hiveHabit (sync in-memory with Hive)              │
+│     - _externalCompletionDetected = true (flag for UI)                   │
+│     - notificationService.cancelDailyReminder() ← CRITICAL               │
+│     - _shouldShowRewardFlow = true (dopamine for widget users!)         │
+│     - notifyListeners() ← triggers UI rebuild                           │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  5️⃣ UI Updates + Reward Flow                                             │
+│     - TodayScreen rebuilds with correct "Completed" state               │
+│     - Controller.onScreenResumed() shows RewardInvestmentDialog         │
+│     - User gets confetti celebration even for widget completion! 🎉     │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ### Recovery Detection Flow (When User Opens App After Missing)
 
