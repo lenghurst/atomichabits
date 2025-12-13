@@ -44,6 +44,12 @@ class HabitListScreen extends StatelessWidget {
             ),
             centerTitle: true,
             actions: [
+              // History button (Phase 5)
+              IconButton(
+                icon: const Icon(Icons.calendar_month_outlined),
+                tooltip: 'History',
+                onPressed: () => context.push('/history'),
+              ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 tooltip: 'Settings',

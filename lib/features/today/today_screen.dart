@@ -139,6 +139,12 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           : const Text('Today'),
       centerTitle: true,
       actions: [
+        // History button (Phase 5)
+        IconButton(
+          icon: const Icon(Icons.calendar_month_outlined),
+          tooltip: 'History',
+          onPressed: () => context.push('/history'),
+        ),
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
           onPressed: () => appState.showTestNotification(),
