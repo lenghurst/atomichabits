@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
+import 'data/services/gemini_chat_service.dart';
+import 'data/services/onboarding/onboarding_orchestrator.dart';
+import 'config/ai_model_config.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -14,21 +17,43 @@ void main() async {
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
   
-  runApp(const MyApp());
+  // Initialize AI services
+  final geminiService = GeminiChatService(
+    apiKey: AIModelConfig.geminiApiKey.isNotEmpty 
+        ? AIModelConfig.geminiApiKey 
+        : null,
+  );
+  await geminiService.init();
+  
+  runApp(MyApp(geminiService: geminiService));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final GeminiChatService geminiService;
+  
+  const MyApp({super.key, required this.geminiService});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) {
-        final appState = AppState();
-        // Initialize and load persisted data
-        appState.initialize();
-        return appState;
-      },
+    return MultiProvider(
+      providers: [
+        // App State (central state management)
+        ChangeNotifierProvider(
+          create: (context) {
+            final appState = AppState();
+            appState.initialize();
+            return appState;
+          },
+        ),
+        // Gemini Chat Service (AI backend)
+        Provider<GeminiChatService>.value(value: geminiService),
+        // Onboarding Orchestrator (AI orchestration)
+        ProxyProvider<GeminiChatService, OnboardingOrchestrator>(
+          update: (context, geminiService, previous) {
+            return OnboardingOrchestrator(geminiService: geminiService);
+          },
+        ),
+      ],
       child: Consumer<AppState>(
         builder: (context, appState, child) {
           // Show loading screen while initializing
@@ -87,6 +112,13 @@ class MyApp extends StatelessWidget {
               cardTheme: const CardThemeData(
                 elevation: 2,
                 margin: EdgeInsets.zero,
+              ),
+              // Custom snackbar theme for AI feedback
+              snackBarTheme: const SnackBarThemeData(
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
               ),
             ),
             routerConfig: router,

@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
+import '../../data/models/onboarding_data.dart';
+import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../widgets/suggestion_dialog.dart';
+import 'widgets/magic_wand_button.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
@@ -31,6 +34,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   // Implementation intention: Time
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
+  
+  // AI Magic Wand state
+  bool _isAiLoading = false;
 
   @override
   void dispose() {
@@ -75,6 +81,106 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  // Handle AI-generated habit data from Magic Wand
+  void _onAiHabitGenerated(OnboardingData data) {
+    setState(() {
+      // Fill in the tiny version if provided
+      if (data.tinyVersion != null && data.tinyVersion!.isNotEmpty) {
+        _tinyVersionController.text = data.tinyVersion!;
+      }
+      
+      // Fill in the location if provided
+      if (data.implementationLocation != null && data.implementationLocation!.isNotEmpty) {
+        _locationController.text = data.implementationLocation!;
+      }
+      
+      // Fill in the time if provided
+      if (data.implementationTime != null && data.implementationTime!.isNotEmpty) {
+        final timeParsed = _parseTimeString(data.implementationTime!);
+        if (timeParsed != null) {
+          _selectedTime = timeParsed;
+        }
+      }
+      
+      // Fill in optional fields
+      if (data.temptationBundle != null && data.temptationBundle!.isNotEmpty) {
+        _temptationBundleController.text = data.temptationBundle!;
+      }
+      
+      if (data.preHabitRitual != null && data.preHabitRitual!.isNotEmpty) {
+        _preHabitRitualController.text = data.preHabitRitual!;
+      }
+      
+      if (data.environmentCue != null && data.environmentCue!.isNotEmpty) {
+        _environmentCueController.text = data.environmentCue!;
+      }
+      
+      if (data.environmentDistraction != null && data.environmentDistraction!.isNotEmpty) {
+        _environmentDistractionController.text = data.environmentDistraction!;
+      }
+      
+      // Also fill habit name if user hasn't entered one
+      if (data.name != null && data.name!.isNotEmpty && _habitNameController.text.trim().isEmpty) {
+        _habitNameController.text = data.name!;
+      }
+    });
+  }
+
+  // Parse time string from AI (handles "HH:MM" and descriptive times)
+  TimeOfDay? _parseTimeString(String timeStr) {
+    // Try parsing HH:MM format
+    final timeRegex = RegExp(r'(\d{1,2}):(\d{2})');
+    final match = timeRegex.firstMatch(timeStr);
+    
+    if (match != null) {
+      final hour = int.tryParse(match.group(1)!);
+      final minute = int.tryParse(match.group(2)!);
+      if (hour != null && minute != null && hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+    
+    // Try parsing descriptive times
+    final lowerTimeStr = timeStr.toLowerCase();
+    if (lowerTimeStr.contains('morning') || lowerTimeStr.contains('breakfast')) {
+      return const TimeOfDay(hour: 8, minute: 0);
+    } else if (lowerTimeStr.contains('afternoon') || lowerTimeStr.contains('lunch')) {
+      return const TimeOfDay(hour: 12, minute: 0);
+    } else if (lowerTimeStr.contains('evening') || lowerTimeStr.contains('dinner')) {
+      return const TimeOfDay(hour: 18, minute: 0);
+    } else if (lowerTimeStr.contains('night') || lowerTimeStr.contains('bed')) {
+      return const TimeOfDay(hour: 22, minute: 0);
+    }
+    
+    return null;
+  }
+
+  // Handle AI loading state
+  void _onAiLoadingChanged(bool isLoading) {
+    setState(() {
+      _isAiLoading = isLoading;
+    });
+  }
+
+  // Handle AI errors
+  void _onAiError(String error) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.warning_amber, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(child: Text(error)),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade700,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   // Helper: Show suggestion dialog for temptation bundle (async with loading state)
@@ -505,21 +611,52 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Habit name
-                TextFormField(
-                  controller: _habitNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'What habit do you want to build?',
-                    hintText: 'e.g., "Read every day"',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.check_circle),
+                // Habit name with Magic Wand button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _habitNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'What habit do you want to build?',
+                          hintText: 'e.g., "Read every day"',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.check_circle),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a habit name';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: MagicWandButton(
+                        habitName: _habitNameController.text,
+                        identity: _identityController.text,
+                        isBreakHabit: false,
+                        onHabitGenerated: _onAiHabitGenerated,
+                        onLoadingChanged: _onAiLoadingChanged,
+                        onError: _onAiError,
+                      ),
+                    ),
+                  ],
+                ),
+                // AI Magic Wand hint
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                  child: Text(
+                    'Tap the AI button to auto-fill habit details',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a habit name';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 24),
 
