@@ -37,6 +37,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   // AI Magic Wand state
   bool _isAiLoading = false;
+  
+  // Store the full AI data to preserve invisible fields (motivation, rootCause, etc.)
+  // This prevents "Data Amnesia" - losing AI-generated metadata when saving
+  OnboardingData? _lastAiData;
 
   @override
   void dispose() {
@@ -86,6 +90,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Handle AI-generated habit data from Magic Wand
   void _onAiHabitGenerated(OnboardingData data) {
     setState(() {
+      // CRITICAL: Store the full AI data to preserve invisible fields
+      // This includes: motivation, rootCause, replacesHabit, substitutionPlan, habitEmoji, recoveryPlan
+      // Without this, Tier 2 Claude coaching would lose context about WHY the user started
+      _lastAiData = data;
+      
       // Fill in the tiny version if provided
       if (data.tinyVersion != null && data.tinyVersion!.isNotEmpty) {
         _tinyVersionController.text = data.tinyVersion!;
@@ -496,6 +505,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       // Create first habit with implementation intentions + Make it Attractive
+      // CRITICAL: Merge Manual Input + AI Metadata to prevent "Data Amnesia"
       final habit = Habit(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _habitNameController.text.trim(),
@@ -504,7 +514,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         createdAt: DateTime.now(),
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim(),
-        // New "Make it Attractive" and environment design fields
+        
+        // "Make it Attractive" and environment design fields (from form)
         temptationBundle: _temptationBundleController.text.trim().isEmpty 
             ? null 
             : _temptationBundleController.text.trim(),
@@ -517,6 +528,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         environmentDistraction: _environmentDistractionController.text.trim().isEmpty 
             ? null 
             : _environmentDistractionController.text.trim(),
+        
+        // === AI METADATA: The "Invisible" Fields ===
+        // These come from _lastAiData (if Magic Wand was used)
+        // They enable Tier 2 Claude coaching to understand:
+        // - Why the user started this habit (motivation)
+        // - What triggers/problems they're addressing (rootCause)
+        // - What bad habit they're replacing (replacesHabit)
+        // - Their fallback plan when tempted (substitutionPlan, recoveryPlan)
+        isBreakHabit: _lastAiData?.habitType == HabitType.breakHabit,
+        replacesHabit: _lastAiData?.replacesHabit,
+        rootCause: _lastAiData?.rootCause,
+        substitutionPlan: _lastAiData?.substitutionPlan,
+        habitEmoji: _lastAiData?.habitEmoji ?? '✨', // Default emoji
+        motivation: _lastAiData?.motivation,
+        recoveryPlan: _lastAiData?.recoveryPlan,
       );
 
       // Save to state (now with persistence!)
