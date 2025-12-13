@@ -8,25 +8,54 @@ import '../../../config/ai_model_config.dart';
 import 'ai_response_parser.dart';
 import 'conversation_guardrails.dart';
 
+/// Result of sending a message in conversation mode
+class ConversationResult {
+  final ChatMessage? message;
+  final OnboardingData? extractedData;
+  final bool shouldSwitchToManual;
+  final String? switchReason;
+
+  const ConversationResult({
+    this.message,
+    this.extractedData,
+    this.shouldSwitchToManual = false,
+    this.switchReason,
+  });
+
+  bool get hasCompleteData =>
+      extractedData != null && extractedData!.isComplete;
+}
+
 /// Orchestrates the AI onboarding flow
-/// 
-/// The "Brain" of the Phase 1 Magic Wand feature.
+///
+/// The "Brain" of the AI onboarding feature.
+/// Phase 1: Magic Wand (one-shot completion)
+/// Phase 2: Conversational flow (multi-turn chat)
+///
 /// Connects UI to AI services, handles tier selection, and manages fallbacks.
-class OnboardingOrchestrator {
+class OnboardingOrchestrator extends ChangeNotifier {
   final GeminiChatService _geminiService;
-  
+
   /// Current conversation state
   ChatConversation? _conversation;
-  
+
   /// Number of messages sent in current conversation
   int _messageCount = 0;
-  
+
   /// Last request timestamp for rate limiting
   DateTime? _lastRequestTime;
-  
+
+  /// Currently loading
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  /// Extracted habit data (accumulated during conversation)
+  OnboardingData? _extractedData;
+  OnboardingData? get extractedData => _extractedData;
+
   /// Loading state callback
   final void Function(bool isLoading)? onLoadingChanged;
-  
+
   /// Error callback
   final void Function(String error)? onError;
 
@@ -271,11 +300,167 @@ Now create a personalized plan for this user!
   void resetConversation() {
     _conversation = null;
     _messageCount = 0;
+    _extractedData = null;
+    notifyListeners();
   }
 
   /// Get conversation summary for debugging
   String get conversationSummary {
     if (_conversation == null) return 'No active conversation';
     return 'Conversation: ${_conversation!.id}, Messages: $_messageCount/${AIModelConfig.maxConversationTurns}';
+  }
+
+  // ============================================================
+  // Phase 2: Conversational Onboarding
+  // ============================================================
+
+  /// Get the current conversation (if any)
+  ChatConversation? get conversation => _conversation;
+
+  /// Start a new conversational onboarding session
+  ///
+  /// Returns the initial greeting message from the AI.
+  Future<ChatMessage?> startConversation() async {
+    if (!isAiAvailable) {
+      onError?.call('AI service is not configured.');
+      return null;
+    }
+
+    _setLoading(true);
+
+    try {
+      // Start a new onboarding conversation
+      _conversation = await _geminiService.startConversation(
+        type: ConversationType.onboarding,
+      );
+
+      // Get the initial greeting
+      final greeting = await _geminiService.getInitialGreeting(
+        conversation: _conversation!,
+      );
+
+      _messageCount = 1;
+      notifyListeners();
+
+      return greeting;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('OnboardingOrchestrator: Failed to start conversation: $e');
+      }
+      onError?.call('Failed to start conversation. Please try the manual form.');
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Send a message in the conversational onboarding flow
+  ///
+  /// Returns a [ConversationResult] containing:
+  /// - The AI response message
+  /// - Any extracted habit data
+  /// - Whether to switch to manual mode
+  Future<ConversationResult> sendMessage(
+    String userMessage, {
+    void Function(String chunk)? onChunk,
+  }) async {
+    // Check for frustration (escape hatch)
+    if (shouldFallbackToManual(userMessage)) {
+      return ConversationResult(
+        shouldSwitchToManual: true,
+        switchReason: ConversationGuardrails.escapeHatchMessage,
+      );
+    }
+
+    // Check rate limiting
+    if (!_checkRateLimit()) {
+      return ConversationResult(
+        shouldSwitchToManual: true,
+        switchReason: ConversationGuardrails.rateLimitMessage,
+      );
+    }
+
+    // Check conversation length
+    if (isAtTurnLimit()) {
+      return ConversationResult(
+        shouldSwitchToManual: true,
+        switchReason: ConversationGuardrails.conversationTooLongMessage,
+      );
+    }
+
+    // Ensure conversation exists
+    if (_conversation == null) {
+      await startConversation();
+      if (_conversation == null) {
+        return ConversationResult(
+          shouldSwitchToManual: true,
+          switchReason: ConversationGuardrails.aiFailureMessage,
+        );
+      }
+    }
+
+    _setLoading(true);
+
+    try {
+      final response = await _geminiService.sendMessage(
+        userMessage: userMessage,
+        conversation: _conversation!,
+        onChunk: onChunk,
+      );
+
+      _messageCount++;
+      _lastRequestTime = DateTime.now();
+
+      // Check for errors
+      if (response.status == MessageStatus.error) {
+        if (kDebugMode) {
+          debugPrint('OnboardingOrchestrator: AI error: ${response.errorMessage}');
+        }
+        return ConversationResult(
+          message: response,
+          shouldSwitchToManual: true,
+          switchReason: ConversationGuardrails.aiFailureMessage,
+        );
+      }
+
+      // Try to extract habit data from response
+      OnboardingData? extractedData;
+      if (response.status == MessageStatus.complete) {
+        extractedData = AiResponseParser.extractHabitData(response.content);
+
+        if (extractedData == null) {
+          // Try fallback parsing
+          extractedData = AiResponseParser.extractWithFallback(response.content);
+        }
+
+        if (extractedData != null) {
+          _extractedData = extractedData;
+          notifyListeners();
+        }
+      }
+
+      return ConversationResult(
+        message: response,
+        extractedData: extractedData,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('OnboardingOrchestrator: Send error: $e');
+      }
+      onError?.call('Failed to send message. Please try again.');
+      return ConversationResult(
+        shouldSwitchToManual: true,
+        switchReason: ConversationGuardrails.aiFailureMessage,
+      );
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Helper to set loading state and notify
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    onLoadingChanged?.call(loading);
+    notifyListeners();
   }
 }
