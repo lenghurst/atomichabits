@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.0.0)
+> **Last Updated:** December 2025 (v4.2.0 - Phase 4 Dashboard)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,23 +23,58 @@
 
 ---
 
-## Current Sprint: Multiple Habits & Focus Mode (Phase 3)
+## Current Sprint: History & Calendar View (Phase 5)
+
+**Goal:** Visual calendar showing completion history across all habits
+
+**Status:** 🚧 To Do
+
+**Tasks:**
+- [ ] **UI:** Create `HistoryScreen` with calendar view
+- [ ] **UI:** Show completion dots per day per habit
+- [ ] **Logic:** Aggregate completion data for date ranges
+- [ ] **Integration:** Link from Dashboard and TodayScreen
+
+---
+
+## Previous Sprint: Dashboard (Phase 4 - ✅ Completed)
+
+**Goal:** Multi-Habit Dashboard with Focus Mode Navigation
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **UI:** Created `HabitListScreen` (Dashboard)
+- [x] **UI:** Created `HabitSummaryCard` widget with quick-complete
+- [x] **UI:** Updated `TodayScreen` with PageView swipe navigation
+- [x] **Routing:** Dashboard is now default for returning users (`/dashboard`)
+- [x] **Features:** Stats header (habits count, completed today, avg score)
+- [x] **Features:** Swipe-to-delete with confirmation dialog
+- [x] **Features:** Add habit options (AI Coach / Manual)
+
+**Files Created:**
+- `lib/features/dashboard/habit_list_screen.dart`
+- `lib/features/dashboard/widgets/habit_summary_card.dart`
+
+**Files Modified:**
+- `lib/features/today/today_screen.dart` (PageView support)
+- `lib/main.dart` (routing)
+
+---
+
+## Previous Sprint: Multi-Habit Engine (Phase 3 - ✅ Completed)
 
 **Goal:** Support tracking multiple habits with Focus Mode selection
 
-**Status:** 🚧 To Do / In Progress
+**Status:** ✅ Complete (December 2025)
 
-**Spec:** See `AI_ONBOARDING_SPEC.md` (v4.0.0)
-
-**Tasks:**
-- [ ] **State:** Refactor `AppState` from `_currentHabit` to `List<Habit> _habits`
-- [ ] **State:** Add `_focusedHabitId` for Focus Mode
-- [ ] **State:** Add CRUD methods: `createHabit()`, `updateHabit()`, `deleteHabit()`
-- [ ] **UI:** Create `HabitListScreen` with swipe-to-focus
-- [ ] **UI:** Update `TodayScreen` for multi-habit display
-- [ ] **UI:** Add "Add Another Habit" flow from settings
-- [ ] **Migration:** Handle existing single-habit data on upgrade
-- [ ] **Testing:** Test focus mode switching
+**Completed:**
+- [x] **State:** Refactored `AppState` from `_currentHabit` to `List<Habit> _habits`
+- [x] **State:** Added `_focusedHabitId` for Focus Mode
+- [x] **State:** Added CRUD methods: `createHabit()`, `updateHabit()`, `deleteHabit()`
+- [x] **State:** Added focus methods: `setFocusHabit()`, `setPrimaryHabit()`, `graduateHabit()`
+- [x] **Migration:** Legacy single-habit data auto-migrated on upgrade
+- [x] **Backward Compat:** `currentHabit` getter works identically
 
 ---
 
@@ -83,7 +118,8 @@ See Sprint History below for details.
 | Item | Description | Complexity | Blocked By |
 |------|-------------|------------|------------|
 | **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | ✅ Complete |
-| **Multiple Habits** | Support tracking multiple habits with focus mode | High | Nothing |
+| **Multiple Habits (Phase 3)** | Support tracking multiple habits with focus mode | High | ✅ Complete |
+| **Dashboard (Phase 4)** | Multi-habit list view with quick actions | High | ✅ Complete |
 | **History/Calendar View** | Visual calendar showing completion history | Medium | Nothing |
 | **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
 
@@ -356,6 +392,8 @@ done | sort
 | Time to onboard new AI | ~30 min | < 10 min | With Big Three docs |
 | Phase 1 Magic Wand | ✅ | ✅ | Complete! |
 | Phase 2 Conversational UI | ✅ | ✅ | Complete! |
+| Phase 3 Multi-Habit Engine | ✅ | ✅ | Complete! |
+| Phase 4 Dashboard | ✅ | ✅ | Complete! |
 
 ---
 
