@@ -150,6 +150,36 @@ class Habit {
   /// Progression milestones achieved
   final List<HabitMilestone> milestones;
 
+  // ========== NEW: AI Onboarding Fields (v4.0.0) ==========
+
+  /// Whether this is a "break" habit (vs "build" habit)
+  /// true = breaking a bad habit, false = building a good habit
+  final bool isBreakHabit;
+
+  /// For break habits: what bad habit this replaces
+  /// e.g., "Doomscrolling", "Smoking", "Stress eating"
+  final String? replacesHabit;
+
+  /// Root cause/trigger for the habit being replaced
+  /// e.g., "Boredom", "Anxiety", "Stress relief"
+  final String? rootCause;
+
+  /// The healthy substitution plan for break habits
+  /// e.g., "5-minute walk instead", "Breathing exercises"
+  final String? substitutionPlan;
+
+  /// Emoji representing this habit (for visual identity)
+  /// e.g., "📚", "🏃", "🧘"
+  final String? habitEmoji;
+
+  /// User's motivation/why for this habit
+  /// e.g., "To be healthier", "Expand my knowledge"
+  final String? motivation;
+
+  /// Simple recovery plan (for Never Miss Twice)
+  /// e.g., "If I slip, take one deep breath and try again"
+  final String? recoveryPlan;
+
   Habit({
     required this.id,
     required this.name,
@@ -200,6 +230,14 @@ class Habit {
     this.difficultyLevel = 1,
     this.currentDifficultyDescription,
     this.milestones = const [],
+    // AI Onboarding fields
+    this.isBreakHabit = false,
+    this.replacesHabit,
+    this.rootCause,
+    this.substitutionPlan,
+    this.habitEmoji,
+    this.motivation,
+    this.recoveryPlan,
   });
 
   /// Creates a copy of this habit with some fields updated
@@ -244,6 +282,14 @@ class Habit {
     int? difficultyLevel,
     String? currentDifficultyDescription,
     List<HabitMilestone>? milestones,
+    // AI Onboarding fields
+    bool? isBreakHabit,
+    String? replacesHabit,
+    String? rootCause,
+    String? substitutionPlan,
+    String? habitEmoji,
+    String? motivation,
+    String? recoveryPlan,
   }) {
     return Habit(
       id: id,
@@ -288,6 +334,14 @@ class Habit {
       difficultyLevel: difficultyLevel ?? this.difficultyLevel,
       currentDifficultyDescription: currentDifficultyDescription ?? this.currentDifficultyDescription,
       milestones: milestones ?? this.milestones,
+      // AI Onboarding fields
+      isBreakHabit: isBreakHabit ?? this.isBreakHabit,
+      replacesHabit: replacesHabit ?? this.replacesHabit,
+      rootCause: rootCause ?? this.rootCause,
+      substitutionPlan: substitutionPlan ?? this.substitutionPlan,
+      habitEmoji: habitEmoji ?? this.habitEmoji,
+      motivation: motivation ?? this.motivation,
+      recoveryPlan: recoveryPlan ?? this.recoveryPlan,
     );
   }
   
@@ -449,6 +503,14 @@ class Habit {
       'difficultyLevel': difficultyLevel,
       'currentDifficultyDescription': currentDifficultyDescription,
       'milestones': milestones.map((m) => m.toJson()).toList(),
+      // AI Onboarding fields
+      'isBreakHabit': isBreakHabit,
+      'replacesHabit': replacesHabit,
+      'rootCause': rootCause,
+      'substitutionPlan': substitutionPlan,
+      'habitEmoji': habitEmoji,
+      'motivation': motivation,
+      'recoveryPlan': recoveryPlan,
     };
   }
 
@@ -562,6 +624,14 @@ class Habit {
       difficultyLevel: json['difficultyLevel'] as int? ?? 1,
       currentDifficultyDescription: json['currentDifficultyDescription'] as String?,
       milestones: milestones,
+      // AI Onboarding fields (backward compatible - default to safe values)
+      isBreakHabit: json['isBreakHabit'] as bool? ?? false,
+      replacesHabit: json['replacesHabit'] as String?,
+      rootCause: json['rootCause'] as String?,
+      substitutionPlan: json['substitutionPlan'] as String?,
+      habitEmoji: json['habitEmoji'] as String?,
+      motivation: json['motivation'] as String?,
+      recoveryPlan: json['recoveryPlan'] as String?,
     );
   }
 }

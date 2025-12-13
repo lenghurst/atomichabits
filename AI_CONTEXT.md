@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2024 (v1.0.0+1 — Never Miss Twice Engine)
+> **Last Updated:** December 2024 (v1.0.0+1 — AI Onboarding Spec)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -20,8 +20,9 @@ AI agents (Claude, Codex, etc.) working on this codebase have historically:
 □ 1. Read README.md (project overview, architecture)
 □ 2. Read AI_CONTEXT.md (current state, what's implemented) ← YOU ARE HERE
 □ 3. Read ROADMAP.md (what's next, priorities)
-□ 4. Check for stale branches: git branch -r | wc -l
-□ 5. If stale branches > 10, consider cleanup (see Branch Hygiene below)
+□ 4. Read AI_ONBOARDING_SPEC.md (AI feature specification)
+□ 5. Check for stale branches: git branch -r | wc -l
+□ 6. If stale branches > 10, consider cleanup (see Branch Hygiene below)
 ```
 
 ### Mandatory Session End Checklist
@@ -82,9 +83,11 @@ When stale branches accumulate (> 10 unmerged):
 | Recovery Notifications | ✅ Live | - | NotificationService | 9 AM after missed day |
 | Vibecoding Architecture | ✅ Live | Controllers/Helpers/Widgets | - | Clean separation pattern |
 | Settings Screen | 🚧 Stub | SettingsScreen | - | UI only, no persistence |
+| **AI Onboarding (Phase 1)** | 🚧 In Progress | OnboardingScreen | OnboardingOrchestrator | See AI_ONBOARDING_SPEC.md |
 | Multiple Habits | ❌ Not Started | - | - | Roadmap item |
 | History/Calendar View | ❌ Not Started | - | - | Roadmap item |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
+| Bad Habit Protocol | ❌ Not Started | - | - | Phase 2, needs Phase 1 |
 
 ---
 
@@ -204,6 +207,7 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | Version | Date | Key Changes |
 |---------|------|-------------|
 | 1.0.0+1 | Dec 2024 | Current main: Full Graceful Consistency, Never Miss Twice, Vibecoding |
+| 1.1.0 | Dec 2024 | (In Progress) AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
 
 ---
 
@@ -223,15 +227,69 @@ Run `git branch -r --no-merged main` for full list.
 
 ---
 
-## Documentation Files (The "Big Three")
+## Documentation Files (The "Big Four")
 
 | File | Purpose | Update Frequency |
 |------|---------|------------------|
 | `README.md` | User-facing docs, architecture, testing guide | On major features |
 | `AI_CONTEXT.md` | AI agent state checkpoint | Every session end |
 | `ROADMAP.md` | Priorities, sprint tracking | Every session end |
+| `AI_ONBOARDING_SPEC.md` | AI onboarding feature specification | On AI feature changes |
 
-**Rule:** These three files MUST always be in sync with `main` branch.
+**Rule:** These files MUST always be in sync with `main` branch.
+
+---
+
+## AI Onboarding Architecture (NEW - December 2024)
+
+### Three-Tier Strategy
+
+| Tier | Model | Role | When Used |
+|------|-------|------|-----------|
+| Tier 1 | Gemini 2.5 Flash | The Architect | Default, fast extraction |
+| Tier 2 | Claude 4.5 Sonnet | The Coach | Premium users, bad habits |
+| Tier 3 | Manual Input | Safety Net | Offline, API failure, user opt-out |
+
+### New Files (Phase 1)
+
+```
+lib/
+├── data/
+│   ├── models/
+│   │   ├── onboarding_data.dart       # Maps to Habit.dart
+│   │   └── onboarding_state.dart      # State machine enum
+│   ├── config/
+│   │   ├── ai_model_config.dart       # API keys, model names
+│   │   └── conversation_guardrails.dart  # Limits, frustration detection
+│   └── services/
+│       └── onboarding_orchestrator.dart  # Tier selection, flow
+├── features/
+│   └── onboarding/
+│       ├── widgets/
+│       │   └── magic_wand_button.dart # ✨ AI assist button
+│       └── helpers/
+│           └── ai_response_parser.dart # JSON extraction
+```
+
+### New Habit Model Fields (v4.0.0)
+
+```dart
+// Added to lib/data/models/habit.dart
+final bool isBreakHabit;        // true = break habit, false = build
+final String? replacesHabit;    // What bad habit this replaces
+final String? rootCause;        // Why the bad habit exists
+final String? substitutionPlan; // Healthy alternative
+final String? habitEmoji;       // Visual identity
+final String? motivation;       // User's why
+final String? recoveryPlan;     // Never Miss Twice plan
+```
+
+### Key Design Decisions
+
+1. **JSON Output Contract:** AI outputs `[HABIT_DATA]...[/HABIT_DATA]` markers
+2. **Frustration Detection:** Regex patterns trigger escape to manual mode
+3. **State Machine:** Enforces conversation flow to prevent AI "getting lost"
+4. **Backward Compatibility:** All new fields default to safe values
 
 ---
 

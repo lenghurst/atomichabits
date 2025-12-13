@@ -10,9 +10,10 @@
 
 ### Before Starting Work
 1. Read `AI_CONTEXT.md` for current architecture state
-2. Check this roadmap for priorities
-3. Check orphaned branches: `git branch -r --no-merged main | wc -l`
-4. If item exists on orphaned branch, consider rebasing instead of recreating
+2. Read `AI_ONBOARDING_SPEC.md` for AI feature specification
+3. Check this roadmap for priorities
+4. Check orphaned branches: `git branch -r --no-merged main | wc -l`
+5. If item exists on orphaned branch, consider rebasing instead of recreating
 
 ### After Completing Work
 1. Update the relevant section below (move items, add details)
@@ -22,20 +23,43 @@
 
 ---
 
-## Current Sprint: Documentation & Workflow
+## Current Sprint: AI Onboarding (Phase 1 - Magic Wand)
+
+**Goal:** Add AI-assisted habit creation to onboarding flow
+
+**Status:** 🚧 In Progress
+
+**Spec:** See `AI_ONBOARDING_SPEC.md` (v4.0.0)
+
+**Tasks:**
+- [x] Create `AI_ONBOARDING_SPEC.md` (v4.0.0 Final)
+- [x] Update `Habit` model with 7 new AI fields (isBreakHabit, replacesHabit, rootCause, substitutionPlan, habitEmoji, motivation, recoveryPlan)
+- [ ] Cherry-pick `GeminiChatService` from orphaned branch
+- [ ] Cherry-pick `ChatConversation` model from orphaned branch
+- [ ] Create `OnboardingData` model (maps to Habit.dart)
+- [ ] Create `AiResponseParser` helper
+- [ ] Create `ConversationGuardrails` config
+- [ ] Create `AIModelConfig` config
+- [ ] Create `MagicWandButton` widget
+- [ ] Add Magic Wand button to `OnboardingScreen`
+- [ ] Update `AI_CONTEXT.md` with new architecture
+- [ ] Commit and create PR
+
+---
+
+## Previous Sprint: Documentation & Workflow (Completed)
 
 **Goal:** Establish AI Handoff Protocol and sync documentation to main
 
-**Status:** 🚧 In Progress
+**Status:** ✅ Completed
 
 **Tasks:**
 - [x] Cherry-pick AI_CONTEXT.md from orphaned branch
 - [x] Cherry-pick ROADMAP.md from orphaned branch
 - [x] Update both files to reflect actual main branch state
 - [x] Add AI Handoff Protocol sections
-- [ ] Update README.md with "Big Three" documentation reference
-- [ ] Commit and create PR
-- [ ] Clean up stale branches (optional)
+- [x] Update README.md with "Big Three" documentation reference
+- [x] Commit and create PR
 
 ---
 
@@ -45,6 +69,7 @@
 
 | Item | Description | Complexity | Blocked By |
 |------|-------------|------------|------------|
+| **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | Phase 1 |
 | **Multiple Habits** | Support tracking multiple habits with focus mode | High | Nothing |
 | **History/Calendar View** | Visual calendar showing completion history | Medium | Nothing |
 | **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
@@ -53,8 +78,8 @@
 
 | Item | Description | Complexity | Notes |
 |------|-------------|------------|-------|
+| **Bad Habit Protocol** | "Break habit" flow with Claude (Tier 2) | Medium | Phase 1 complete |
 | **Habit Stacking** | Link habits together in sequences | Medium | Depends on multi-habit |
-| **Real LLM Integration** | Connect `AiSuggestionService` to actual LLM endpoint | Low | Endpoint URL needed |
 | **Failure Playbooks** | Pre-planned recovery strategies | Medium | UX design needed |
 
 ---
@@ -110,6 +135,25 @@
 ---
 
 ## Sprint History
+
+### Sprint: AI Onboarding Phase 1 (December 2024)
+**Goal:** Add AI-assisted habit creation with "Magic Wand" button
+
+**Context:**
+- Collaborative spec development between Claude, Gemini, and user
+- Three-tier AI architecture: Gemini (fast) → Claude (deep) → Manual (fallback)
+- Discovered valuable AI code on orphaned branches
+
+**In Progress:**
+- 🔄 Creating `AI_ONBOARDING_SPEC.md` (v4.0.0)
+- 🔄 Adding 7 new fields to `Habit` model
+- 🔄 Cherry-picking code from orphaned branches
+
+**Files Created/Modified:**
+- `AI_ONBOARDING_SPEC.md` (new)
+- `lib/data/models/habit.dart` (7 new fields)
+
+---
 
 ### Sprint: Documentation Sync (December 2024)
 **Goal:** Establish AI Handoff Protocol and sync docs to main
@@ -178,14 +222,16 @@
 
 > **Action Required:** Review these branches before starting related work
 
-| Branch Pattern | Contains | Recommendation |
-|----------------|----------|----------------|
-| `claude/setup-atomic-achievements-*` | Home Widget, Multi-habit setup | Cherry-pick widget code |
-| `claude/atomic-habits-android-app-*` | FEATURE_ROADMAP.md | Merge or close |
-| `claude/claude-md-*` | CLAUDE.md | Consider merging |
-| `codex/create-node.js-backend-*` | Backend API | Review for LLM integration |
-| `claude/phase-4-identity-avatar-*` | Avatar feature | Review scope |
-| `claude/habit-substitution-guardrails-*` | Habit substitution | Review scope |
+| Branch Pattern | Contains | Recommendation | Status |
+|----------------|----------|----------------|--------|
+| `claude/ai-conversational-first-page-*` | `GeminiChatService`, `ChatConversation` | **Cherry-pick for Phase 1** | 🔴 Priority |
+| `claude/habit-substitution-guardrails-*` | `BadHabitScreen`, substitution logic | **Cherry-pick for Phase 2** | 🟡 Next |
+| `claude/setup-atomic-achievements-*` | Home Widget, Multi-habit setup | Cherry-pick widget code | 🟡 Later |
+| `claude/merge-missing-code-*` | `PremiumAiOnboardingService` | Review prompts for Claude tier | 🟡 Reference |
+| `claude/phase-4-identity-avatar-*` | Avatar cosmetics system | Review scope for gamification | 🔵 Later |
+| `codex/create-node.js-backend-*` | Backend API | Review for LLM backend | 🔵 Later |
+| `claude/claude-md-*` | CLAUDE.md | Consider merging | 🔵 Optional |
+| `claude/atomic-habits-android-app-*` | FEATURE_ROADMAP.md | Close (superseded) | ⚪ Delete |
 
 **Cleanup Command:**
 ```bash
