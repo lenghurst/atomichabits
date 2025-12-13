@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.2.0 - Phase 4 Dashboard)
+> **Last Updated:** December 2025 (v4.3.0 - Phase 5 History & Calendar)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,17 +23,48 @@
 
 ---
 
-## Current Sprint: History & Calendar View (Phase 5)
+## Current Sprint: Settings & Polish (Phase 6)
 
-**Goal:** Visual calendar showing completion history across all habits
+**Goal:** Complete settings persistence and app polish
 
 **Status:** 🚧 To Do
 
 **Tasks:**
-- [ ] **UI:** Create `HistoryScreen` with calendar view
-- [ ] **UI:** Show completion dots per day per habit
-- [ ] **Logic:** Aggregate completion data for date ranges
-- [ ] **Integration:** Link from Dashboard and TodayScreen
+- [ ] **Settings:** Connect SettingsScreen to actual preferences
+- [ ] **Settings:** Notification time picker
+- [ ] **Settings:** Theme selection (light/dark)
+- [ ] **Polish:** App icon and splash screen
+- [ ] **Polish:** Error boundaries and crash reporting
+
+---
+
+## Previous Sprint: History & Calendar View (Phase 5 - ✅ Completed)
+
+**Goal:** Visual calendar showing completion history across all habits
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **UI:** Created `HistoryScreen` with stats overview
+- [x] **UI:** Created `CalendarMonthView` widget with completion dots
+- [x] **UI:** Show recovery days with special blue styling
+- [x] **UI:** Month navigation with previous/next buttons
+- [x] **Features:** Stats: Current streak, longest streak, total days, consistency, identity votes, recoveries
+- [x] **Features:** Milestones system (First Week, Three Weeks, One Month, Habit Formed, Century Club, One Year)
+- [x] **Features:** Contextual insights based on habit data
+- [x] **Features:** Habit switcher for multi-habit users
+- [x] **Integration:** History button on TodayScreen app bar
+- [x] **Integration:** History button on Dashboard app bar
+- [x] **Routing:** `/history` route added
+
+**Files Created:**
+- `lib/features/history/history_screen.dart`
+- `lib/features/history/widgets/calendar_month_view.dart`
+
+**Files Modified:**
+- `lib/features/today/today_screen.dart` (History button)
+- `lib/features/dashboard/habit_list_screen.dart` (History button)
+- `lib/main.dart` (routing)
 
 ---
 
@@ -120,7 +151,7 @@ See Sprint History below for details.
 | **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | ✅ Complete |
 | **Multiple Habits (Phase 3)** | Support tracking multiple habits with focus mode | High | ✅ Complete |
 | **Dashboard (Phase 4)** | Multi-habit list view with quick actions | High | ✅ Complete |
-| **History/Calendar View** | Visual calendar showing completion history | Medium | Nothing |
+| **History/Calendar View** | Visual calendar showing completion history | Medium | ✅ Complete |
 | **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
 
 ### 🟡 Medium Priority
@@ -394,6 +425,7 @@ done | sort
 | Phase 2 Conversational UI | ✅ | ✅ | Complete! |
 | Phase 3 Multi-Habit Engine | ✅ | ✅ | Complete! |
 | Phase 4 Dashboard | ✅ | ✅ | Complete! |
+| Phase 5 History & Calendar | ✅ | ✅ | Complete! |
 
 ---
 
