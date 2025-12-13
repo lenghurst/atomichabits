@@ -7,6 +7,7 @@ import 'data/services/gemini_chat_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'config/ai_model_config.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 
@@ -47,10 +48,13 @@ class MyApp extends StatelessWidget {
         ),
         // Gemini Chat Service (AI backend)
         Provider<GeminiChatService>.value(value: geminiService),
-        // Onboarding Orchestrator (AI orchestration)
-        ProxyProvider<GeminiChatService, OnboardingOrchestrator>(
+        // Onboarding Orchestrator (AI orchestration) - ChangeNotifier for Phase 2
+        ChangeNotifierProxyProvider<GeminiChatService, OnboardingOrchestrator>(
+          create: (context) => OnboardingOrchestrator(
+            geminiService: context.read<GeminiChatService>(),
+          ),
           update: (context, geminiService, previous) {
-            return OnboardingOrchestrator(geminiService: geminiService);
+            return previous ?? OnboardingOrchestrator(geminiService: geminiService);
           },
         ),
       ],
@@ -82,11 +86,18 @@ class MyApp extends StatelessWidget {
           }
 
           // Configure navigation routes
+          // Phase 2: Chat UI is default, Form is fallback
           final router = GoRouter(
             initialLocation: appState.hasCompletedOnboarding ? '/today' : '/',
             routes: [
+              // Default onboarding: Conversational UI (Phase 2)
               GoRoute(
                 path: '/',
+                builder: (context, state) => const ConversationalOnboardingScreen(),
+              ),
+              // Manual onboarding: Form UI (Tier 3 fallback)
+              GoRoute(
+                path: '/onboarding/manual',
                 builder: (context, state) => const OnboardingScreen(),
               ),
               GoRoute(

@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2024 (v1.0.0+1 — AI Onboarding Spec)
+> **Last Updated:** December 2025 (v4.0.0 — AI Onboarding Phase 2 Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -83,7 +83,8 @@ When stale branches accumulate (> 10 unmerged):
 | Recovery Notifications | ✅ Live | - | NotificationService | 9 AM after missed day |
 | Vibecoding Architecture | ✅ Live | Controllers/Helpers/Widgets | - | Clean separation pattern |
 | Settings Screen | 🚧 Stub | SettingsScreen | - | UI only, no persistence |
-| **AI Onboarding (Phase 1)** | 🚧 In Progress | OnboardingScreen | OnboardingOrchestrator | See AI_ONBOARDING_SPEC.md |
+| **AI Onboarding (Phase 1)** | ✅ Live | OnboardingScreen + MagicWandButton | OnboardingOrchestrator | Magic Wand auto-fill |
+| **AI Onboarding (Phase 2)** | ✅ Live | ConversationalOnboardingScreen | OnboardingOrchestrator | Chat UI default route |
 | Multiple Habits | ❌ Not Started | - | - | Roadmap item |
 | History/Calendar View | ❌ Not Started | - | - | Roadmap item |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
@@ -207,7 +208,8 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | Version | Date | Key Changes |
 |---------|------|-------------|
 | 1.0.0+1 | Dec 2024 | Current main: Full Graceful Consistency, Never Miss Twice, Vibecoding |
-| 1.1.0 | Dec 2024 | (In Progress) AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
+| 1.1.0 | Dec 2025 | AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
+| 1.2.0 | Dec 2025 | AI Onboarding Phase 2: Conversational UI, Chat default route |
 
 ---
 
@@ -250,25 +252,31 @@ Run `git branch -r --no-merged main` for full list.
 | Tier 2 | Claude 4.5 Sonnet | The Coach | Premium users, bad habits |
 | Tier 3 | Manual Input | Safety Net | Offline, API failure, user opt-out |
 
-### New Files (Phase 1)
+### New Files (Phase 1 + Phase 2)
 
 ```
 lib/
 ├── data/
 │   ├── models/
 │   │   ├── onboarding_data.dart       # Maps to Habit.dart
-│   │   └── onboarding_state.dart      # State machine enum
+│   │   ├── chat_message.dart          # ChatMessage model
+│   │   └── chat_conversation.dart     # Conversation state
 │   ├── config/
 │   │   ├── ai_model_config.dart       # API keys, model names
 │   │   └── conversation_guardrails.dart  # Limits, frustration detection
 │   └── services/
-│       └── onboarding_orchestrator.dart  # Tier selection, flow
+│       ├── gemini_chat_service.dart   # Gemini API integration
+│       └── onboarding/
+│           ├── onboarding_orchestrator.dart  # Tier selection, flow
+│           ├── ai_response_parser.dart       # JSON extraction
+│           └── conversation_guardrails.dart  # Frustration detection
 ├── features/
 │   └── onboarding/
-│       ├── widgets/
-│       │   └── magic_wand_button.dart # ✨ AI assist button
-│       └── helpers/
-│           └── ai_response_parser.dart # JSON extraction
+│       ├── onboarding_screen.dart           # Form UI (Tier 3 fallback)
+│       ├── conversational_onboarding_screen.dart  # Chat UI (default)
+│       └── widgets/
+│           ├── magic_wand_button.dart       # ✨ AI assist button
+│           └── chat_message_bubble.dart     # Chat bubbles + typing indicator
 ```
 
 ### New Habit Model Fields (v4.0.0)
@@ -295,4 +303,46 @@ final String? recoveryPlan;     // Never Miss Twice plan
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2024*
+---
+
+## Phase 2: Conversational UI Architecture
+
+### Route Configuration
+```dart
+// main.dart - GoRouter configuration
+'/'                → ConversationalOnboardingScreen (Chat AI Coach)
+'/onboarding/manual' → OnboardingScreen (Form-based fallback)
+'/today'           → TodayScreen
+'/settings'        → SettingsScreen
+```
+
+### Conversation Flow
+```
+1. User opens app (first time)
+2. ConversationalOnboardingScreen loads
+3. AI greeting: "Hi! What's your name?"
+4. User provides name
+5. AI guides through: Identity → Habit → 2-Min Rule → Implementation
+6. When AI has complete data, shows confirmation dialog
+7. User confirms → saves Habit + UserProfile → navigates to /today
+```
+
+### Escape Hatch Triggers
+```dart
+// ConversationGuardrails.frustrationPatterns
+- "just let me type", "skip", "too long"
+- "stupid", "this is taking", "never mind"
+- "stop asking", "manual", "forget it"
+```
+
+### Key Classes (Phase 2)
+| Class | Purpose |
+|-------|---------|
+| `ConversationalOnboardingScreen` | Chat UI, message list, input field |
+| `ChatMessageBubble` | Message styling, avatars, typing indicator |
+| `ConversationResult` | Response from orchestrator (data + display text) |
+| `OnboardingOrchestrator.sendConversationalMessage()` | Main chat method |
+
+---
+
+*Last synced to main: December 2025*

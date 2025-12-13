@@ -8,11 +8,48 @@ import '../../../config/ai_model_config.dart';
 import 'ai_response_parser.dart';
 import 'conversation_guardrails.dart';
 
+/// Result of a conversational message exchange
+class ConversationResult {
+  final ChatMessage? response;
+  final OnboardingData? extractedData;
+  final String? displayText;
+  final String? error;
+  final bool shouldFallbackToManual;
+
+  ConversationResult({
+    this.response,
+    this.extractedData,
+    this.displayText,
+    this.error,
+    this.shouldFallbackToManual = false,
+  });
+
+  factory ConversationResult.success({
+    required ChatMessage response,
+    OnboardingData? extractedData,
+    String? displayText,
+  }) {
+    return ConversationResult(
+      response: response,
+      extractedData: extractedData,
+      displayText: displayText,
+    );
+  }
+
+  factory ConversationResult.error(String message) {
+    return ConversationResult(error: message);
+  }
+
+  factory ConversationResult.fallback() {
+    return ConversationResult(shouldFallbackToManual: true);
+  }
+}
+
 /// Orchestrates the AI onboarding flow
 /// 
-/// The "Brain" of the Phase 1 Magic Wand feature.
+/// The "Brain" of both Phase 1 (Magic Wand) and Phase 2 (Conversational UI).
 /// Connects UI to AI services, handles tier selection, and manages fallbacks.
-class OnboardingOrchestrator {
+class OnboardingOrchestrator extends ChangeNotifier {
   final GeminiChatService _geminiService;
   
   /// Current conversation state
@@ -24,10 +61,25 @@ class OnboardingOrchestrator {
   /// Last request timestamp for rate limiting
   DateTime? _lastRequestTime;
   
-  /// Loading state callback
+  /// Loading state
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  
+  /// Error state
+  String? _error;
+  String? get error => _error;
+  
+  /// Extracted habit data (Phase 2)
+  OnboardingData? _extractedData;
+  OnboardingData? get extractedData => _extractedData;
+  
+  /// Current conversation accessor
+  ChatConversation? get conversation => _conversation;
+  
+  /// Loading state callback (legacy - kept for backward compatibility)
   final void Function(bool isLoading)? onLoadingChanged;
   
-  /// Error callback
+  /// Error callback (legacy - kept for backward compatibility)
   final void Function(String error)? onError;
 
   OnboardingOrchestrator({
@@ -271,11 +323,185 @@ Now create a personalized plan for this user!
   void resetConversation() {
     _conversation = null;
     _messageCount = 0;
+    _extractedData = null;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
   }
 
   /// Get conversation summary for debugging
   String get conversationSummary {
     if (_conversation == null) return 'No active conversation';
     return 'Conversation: ${_conversation!.id}, Messages: $_messageCount/${AIModelConfig.maxConversationTurns}';
+  }
+
+  // ============================================================
+  // PHASE 2: Conversational Chat Methods
+  // ============================================================
+
+  /// Start a new onboarding conversation
+  Future<ChatConversation> startConversation() async {
+    _conversation = await _geminiService.startConversation(
+      type: ConversationType.onboarding,
+    );
+    _messageCount = 0;
+    _extractedData = null;
+    _error = null;
+    notifyListeners();
+    return _conversation!;
+  }
+
+  /// Send a conversational message and get a response
+  /// 
+  /// Phase 2: Handles the full chat flow with:
+  /// - Frustration detection (escape hatch)
+  /// - Rate limiting
+  /// - Turn limit enforcement
+  /// - Habit data extraction from AI responses
+  Future<ConversationResult> sendConversationalMessage({
+    required String userMessage,
+    required String userName,
+  }) async {
+    // Check rate limiting
+    if (!_checkRateLimit()) {
+      return ConversationResult.error('Please wait a moment before trying again.');
+    }
+
+    // Check turn limit
+    if (isAtTurnLimit()) {
+      return ConversationResult.fallback();
+    }
+
+    // Check for frustration patterns
+    if (shouldFallbackToManual(userMessage)) {
+      return ConversationResult.fallback();
+    }
+
+    // Start conversation if needed
+    if (_conversation == null) {
+      await startConversation();
+    }
+
+    _isLoading = true;
+    _error = null;
+    onLoadingChanged?.call(true);
+    notifyListeners();
+
+    try {
+      // Build the conversational prompt
+      final prompt = _buildConversationalPrompt(
+        userMessage: userMessage,
+        userName: userName,
+      );
+
+      // Send message with timeout
+      final response = await _sendWithTimeout(prompt);
+
+      if (response == null || response.status == MessageStatus.error) {
+        _error = 'Failed to get response. Please try again.';
+        onError?.call(_error!);
+        return ConversationResult.error(_error!);
+      }
+
+      // Extract any habit data from the response
+      final extractedData = AiResponseParser.extractHabitData(response.content);
+      if (extractedData != null) {
+        _extractedData = extractedData;
+      }
+
+      // Get display text (strip JSON markers for UI)
+      final displayText = AiResponseParser.extractConversationalText(response.content);
+
+      return ConversationResult.success(
+        response: response,
+        extractedData: extractedData,
+        displayText: displayText,
+      );
+
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('OnboardingOrchestrator: Conversation error: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      _error = 'An error occurred. Please try again.';
+      onError?.call(_error!);
+      return ConversationResult.error(_error!);
+    } finally {
+      _isLoading = false;
+      onLoadingChanged?.call(false);
+      notifyListeners();
+    }
+  }
+
+  /// Build the conversational prompt for ongoing chat
+  String _buildConversationalPrompt({
+    required String userMessage,
+    required String userName,
+  }) {
+    // Build context from collected data
+    final collectedInfo = <String>[];
+    if (_extractedData != null) {
+      if (_extractedData!.identity != null) {
+        collectedInfo.add('- Identity: ${_extractedData!.identity}');
+      }
+      if (_extractedData!.name != null) {
+        collectedInfo.add('- Habit name: ${_extractedData!.name}');
+      }
+      if (_extractedData!.tinyVersion != null) {
+        collectedInfo.add('- 2-minute version: ${_extractedData!.tinyVersion}');
+      }
+      if (_extractedData!.implementationTime != null) {
+        collectedInfo.add('- Time: ${_extractedData!.implementationTime}');
+      }
+      if (_extractedData!.implementationLocation != null) {
+        collectedInfo.add('- Location: ${_extractedData!.implementationLocation}');
+      }
+    }
+
+    final contextSection = collectedInfo.isNotEmpty
+        ? '''
+[PROGRESS SO FAR]
+${collectedInfo.join('\n')}
+
+'''
+        : '';
+
+    return '''
+You are an expert Atomic Habits coach helping $userName create their first habit.
+
+$contextSection[USER MESSAGE]
+$userName says: "$userMessage"
+
+[INSTRUCTIONS]
+1. Respond naturally as a coach - be warm but concise
+2. Guide them through the habit creation process step by step
+3. Use the Identity → Habit → 2-Minute Rule → Implementation Intention flow
+4. When you have enough information (identity, habit, time, location), include a [HABIT_DATA] JSON block
+
+[HABIT_DATA FORMAT]
+When ready to summarize the habit plan, include:
+[HABIT_DATA]
+{
+  "identity": "I am someone who...",
+  "name": "The habit name",
+  "tinyVersion": "2-minute version",
+  "implementationTime": "HH:MM or descriptive",
+  "implementationLocation": "Where",
+  "environmentCue": "Optional cue",
+  "temptationBundle": "Optional bundle",
+  "preHabitRitual": "Optional ritual",
+  "isComplete": true
+}
+[/HABIT_DATA]
+
+Only include [HABIT_DATA] when you have collected ALL required fields (identity, name, tinyVersion, time, location).
+''';
+  }
+
+  /// Set loading state with notification
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    onLoadingChanged?.call(loading);
+    notifyListeners();
   }
 }
