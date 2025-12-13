@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
@@ -24,7 +25,15 @@ import 'services/recovery_engine.dart';
 /// - consecutiveMissedDays: tracks current miss streak (via currentMissStreak)
 /// - shouldShowRecoveryPrompt: triggers recovery flow UI
 /// - neverMissTwiceScore: percentage of single-day misses that stayed single
-class AppState extends ChangeNotifier {
+///
+/// **Resume Sync Strategy (Split-Brain Fix):**
+/// Implements lifecycle-aware state reconciliation to handle the scenario where
+/// the home screen widget completes a habit via background isolate while the app
+/// is suspended. When the app resumes:
+/// 1. Reloads habit data from Hive
+/// 2. Detects external completions (widget wrote to Hive)
+/// 3. Syncs in-memory state, cancels notifications, triggers reward flow
+class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // User profile
   UserProfile? _userProfile;
   
@@ -42,7 +51,21 @@ class AppState extends ChangeNotifier {
   
   // Reward + Investment flow state
   bool _shouldShowRewardFlow = false;
-  
+
+  // ========== RESUME SYNC STRATEGY (Split-Brain Fix) ==========
+  // These fields track state for reconciliation with widget updates
+
+  /// Tracks if we detected an external completion (from widget)
+  /// Used to ensure reward flow triggers even when app was backgrounded
+  bool _externalCompletionDetected = false;
+
+  /// Concurrency guard: timestamp of last in-app state modification
+  /// Used to prevent overwriting fresher widget data
+  DateTime? _lastStateModification;
+
+  /// Lock to prevent concurrent reconciliation operations
+  bool _isReconciling = false;
+
   // ========== NEVER MISS TWICE ENGINE (Framework Feature 31) ==========
   // These fields implement the "Never Miss Twice" philosophy:
   // "Missing once is an accident. Missing twice is the start of a new habit."
@@ -73,6 +96,10 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+
+  /// Whether an external completion was detected (from widget)
+  /// This flag helps UI show reward flow for widget completions
+  bool get externalCompletionDetected => _externalCompletionDetected;
   
   // ========== Graceful Consistency Getters ==========
   
@@ -107,26 +134,32 @@ class AppState extends ChangeNotifier {
   /// Call this once when app starts
   Future<void> initialize() async {
     try {
+      // Register lifecycle observer for Resume Sync Strategy
+      WidgetsBinding.instance.addObserver(this);
+
       // Initialize notification service first
       await _notificationService.initialize();
-      
+
       // Set up notification action handler
       _notificationService.onNotificationAction = _handleNotificationAction;
-      
+
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
-      
+
       // Load saved data from Hive
       await _loadFromStorage();
-      
+
+      // Record initial state modification timestamp
+      _lastStateModification = DateTime.now();
+
       // Schedule notifications if onboarding completed
       if (_hasCompletedOnboarding && _currentHabit != null && _userProfile != null) {
         await _scheduleNotifications();
       }
-      
+
       // Check for recovery needs (Never Miss Twice)
       _checkRecoveryNeeds();
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -136,6 +169,169 @@ class AppState extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Clean up lifecycle observer
+  /// Call when app is being disposed
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // ========== LIFECYCLE OBSERVER (Resume Sync Strategy) ==========
+
+  /// Called when app lifecycle state changes
+  /// Key for detecting when app returns from background after widget update
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (kDebugMode) {
+        debugPrint('📱 App resumed - checking for external changes...');
+      }
+      _reconcileWithHive();
+    }
+  }
+
+  /// Reconciles in-memory state with Hive storage
+  ///
+  /// **Critical for Split-Brain Fix:**
+  /// When the widget completes a habit, it writes directly to Hive.
+  /// This method detects that external change and:
+  /// 1. Updates in-memory state to match Hive
+  /// 2. Cancels the daily reminder notification (no nagging!)
+  /// 3. Triggers the reward flow (dopamine hit for widget users)
+  ///
+  /// **Concurrency Guard:**
+  /// Uses timestamps and a reconciliation lock to prevent race conditions
+  /// if user does something in-app at the exact same moment the widget updates.
+  Future<void> _reconcileWithHive() async {
+    // Prevent concurrent reconciliation
+    if (_isReconciling) {
+      if (kDebugMode) {
+        debugPrint('⏳ Reconciliation already in progress, skipping...');
+      }
+      return;
+    }
+
+    _isReconciling = true;
+
+    try {
+      if (_dataBox == null || _currentHabit == null) {
+        _isReconciling = false;
+        return;
+      }
+
+      // Capture current in-memory state BEFORE loading from Hive
+      final wasCompletedInMemory = isHabitCompletedToday();
+      final inMemoryHabitId = _currentHabit!.id;
+
+      // Load fresh data from Hive
+      final habitJson = _dataBox!.get('currentHabit');
+      if (habitJson == null) {
+        _isReconciling = false;
+        return;
+      }
+
+      final hiveHabit = Habit.fromJson(Map<String, dynamic>.from(habitJson));
+
+      // Safety check: ensure we're comparing the same habit
+      if (hiveHabit.id != inMemoryHabitId) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Habit ID mismatch during reconciliation - skipping');
+        }
+        _isReconciling = false;
+        return;
+      }
+
+      // Check if Hive has a completion that in-memory doesn't know about
+      final hiveCompletedToday = _isHabitCompletedTodayFromData(hiveHabit);
+
+      if (hiveCompletedToday && !wasCompletedInMemory) {
+        // 🎯 SPLIT-BRAIN DETECTED: Widget completed the habit!
+        if (kDebugMode) {
+          debugPrint('🔄 External completion detected! Syncing state...');
+          debugPrint('   Hive says: Completed');
+          debugPrint('   Memory said: Not completed');
+        }
+
+        // Update in-memory state to match Hive
+        _currentHabit = hiveHabit;
+        _externalCompletionDetected = true;
+
+        // CRITICAL: Cancel daily reminder so we don't nag the user
+        await _notificationService.cancelDailyReminder();
+        if (kDebugMode) {
+          debugPrint('🔕 Daily reminder cancelled');
+        }
+
+        // Clear recovery state (habit is done!)
+        _currentRecoveryNeed = null;
+        _shouldShowRecoveryPrompt = false;
+
+        // CRITICAL: Trigger reward flow so widget users get their dopamine hit
+        _shouldShowRewardFlow = true;
+        if (kDebugMode) {
+          debugPrint('🎉 Reward flow triggered for widget completion');
+        }
+
+        notifyListeners();
+      } else if (!hiveCompletedToday && !wasCompletedInMemory) {
+        // No completion detected, but sync any other changes from Hive
+        // (e.g., streak data, recovery history updated by widget)
+        if (_habitDataDiffers(_currentHabit!, hiveHabit)) {
+          if (kDebugMode) {
+            debugPrint('🔄 Syncing non-completion changes from Hive...');
+          }
+          _currentHabit = hiveHabit;
+          _checkRecoveryNeeds();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error during reconciliation: $e');
+      }
+    } finally {
+      _isReconciling = false;
+    }
+  }
+
+  /// Check if habit was completed today from a Habit object
+  /// (Helper for reconciliation - doesn't use in-memory _currentHabit)
+  bool _isHabitCompletedTodayFromData(Habit habit) {
+    if (habit.lastCompletedDate == null) return false;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastCompleted = habit.lastCompletedDate!;
+    final lastDate = DateTime(
+      lastCompleted.year,
+      lastCompleted.month,
+      lastCompleted.day,
+    );
+
+    return lastDate == today;
+  }
+
+  /// Check if two habits have meaningful differences (excluding lastCompletedDate)
+  /// Used to detect if widget made other updates we should sync
+  bool _habitDataDiffers(Habit a, Habit b) {
+    return a.currentStreak != b.currentStreak ||
+        a.identityVotes != b.identityVotes ||
+        a.daysShowedUp != b.daysShowedUp ||
+        a.completionHistory.length != b.completionHistory.length;
+  }
+
+  /// Public method to manually trigger reconciliation
+  /// Called by UI when app comes to foreground (backup to lifecycle observer)
+  Future<void> reconcileWithHiveIfNeeded() async {
+    await _reconcileWithHive();
+  }
+
+  /// Clear the external completion flag after reward flow is shown
+  void clearExternalCompletionFlag() {
+    _externalCompletionDetected = false;
   }
 
   /// Load data from Hive storage

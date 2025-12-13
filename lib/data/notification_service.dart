@@ -286,7 +286,7 @@ class NotificationService {
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
     if (!_initialized) return;
-    
+
     try {
       await _notifications.cancelAll();
       if (kDebugMode) {
@@ -295,6 +295,31 @@ class NotificationService {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ Failed to cancel notifications: $e');
+      }
+    }
+  }
+
+  /// Cancel the daily habit reminder notification
+  ///
+  /// **Critical for Resume Sync Strategy:**
+  /// When the widget marks a habit as complete, the app needs to cancel
+  /// the daily reminder so we don't nag the user for something they already did.
+  ///
+  /// This cancels:
+  /// - ID 0: Daily scheduled reminder
+  /// - ID 1: Snooze notification (in case one is pending)
+  Future<void> cancelDailyReminder() async {
+    if (!_initialized) return;
+
+    try {
+      await _notifications.cancel(0); // Daily reminder
+      await _notifications.cancel(1); // Snooze notification
+      if (kDebugMode) {
+        debugPrint('🔕 Daily reminder cancelled (widget completion detected)');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to cancel daily reminder: $e');
       }
     }
   }

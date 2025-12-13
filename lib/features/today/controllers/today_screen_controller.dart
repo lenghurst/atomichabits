@@ -27,11 +27,30 @@ class TodayScreenController {
   });
   
   // ========== Lifecycle Callbacks ==========
-  
+
   /// Called when screen loads or app comes to foreground
-  /// Checks if any dialogs should be shown
-  void onScreenResumed() {
+  ///
+  /// **Resume Sync Strategy:**
+  /// When app resumes, we need to:
+  /// 1. Reconcile with Hive (detect widget completions)
+  /// 2. Check if reward flow should be shown (including for widget completions)
+  /// 3. Check if recovery prompt should be shown
+  Future<void> onScreenResumed() async {
+    debugPrint('📱 TodayScreen resumed - triggering reconciliation...');
+
+    // Trigger reconciliation as backup to AppState's lifecycle observer
+    // This ensures we catch widget updates even if there's a race condition
+    await appState.reconcileWithHiveIfNeeded();
+
+    // Now check what dialogs should be shown
+    // Note: reconcileWithHiveIfNeeded() may have set shouldShowRewardFlow = true
+    // if it detected an external completion from the widget
     if (appState.shouldShowRewardFlow) {
+      // Check if this was from a widget completion for logging
+      if (appState.externalCompletionDetected) {
+        debugPrint('🎉 Showing reward for WIDGET completion');
+        appState.clearExternalCompletionFlag();
+      }
       showRewardDialog();
     } else if (appState.shouldShowRecoveryPrompt) {
       showRecoveryDialog();

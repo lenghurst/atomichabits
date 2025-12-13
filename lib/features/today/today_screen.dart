@@ -41,10 +41,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Initialize controller after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initController();
+      // Note: onScreenResumed is now async for Resume Sync Strategy
       _controller.onScreenResumed();
     });
   }
