@@ -7,6 +7,53 @@ A Flutter mobile habit-tracking app based on:
 
 > **"Graceful Consistency > Fragile Streaks"** — Our core philosophy
 
+---
+
+## 🤖 AI Agent Quick Start (READ THIS FIRST!)
+
+### The "Big Three" Documentation Files
+
+This project uses three core documentation files that **must stay in sync with the `main` branch**:
+
+| File | Purpose | When to Update |
+|------|---------|----------------|
+| **README.md** | Project overview, architecture, user-facing docs | On major features |
+| **AI_CONTEXT.md** | Current state checkpoint for AI agents | Every session end |
+| **ROADMAP.md** | Priorities, sprint tracking, technical debt | Every session end |
+
+### AI Handoff Protocol
+
+**Problem Solved:** AI agents (Claude, Codex, etc.) historically created documentation on feature branches that were never merged, leading to orphaned work and context loss between sessions.
+
+**Session Start Checklist:**
+```
+□ Read README.md (this file)
+□ Read AI_CONTEXT.md (current state, architecture)
+□ Read ROADMAP.md (priorities, what's next)
+□ Check stale branches: git branch -r --no-merged main | wc -l
+```
+
+**Session End Checklist:**
+```
+□ Commit all changes to feature branch
+□ Update AI_CONTEXT.md with changes made
+□ Update ROADMAP.md if priorities changed
+□ Cherry-pick docs to main: git checkout main && git checkout <branch> -- AI_CONTEXT.md ROADMAP.md
+□ Create/update PR
+□ Report status to user
+```
+
+### Branch Hygiene
+
+Before starting new work, check if similar work exists on orphaned branches:
+```bash
+git branch -r --no-merged main | grep -i "<feature-keyword>"
+```
+
+If found, consider rebasing/cherry-picking instead of recreating.
+
+---
+
 ## 🎯 Project Overview
 
 This app helps users build real habits by focusing on identity-based behavior change. Instead of just setting goals, users define who they want to become, then create tiny habits that align with that identity.
