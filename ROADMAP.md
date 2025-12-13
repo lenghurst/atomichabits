@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2024 (v1.0.0+1)
+> **Last Updated:** December 2025 (v4.0.0)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,43 +23,33 @@
 
 ---
 
-## Current Sprint: AI Onboarding (Phase 1 - Magic Wand)
+## Current Sprint: AI Onboarding (Phase 2 - Conversational UI)
 
-**Goal:** Add AI-assisted habit creation to onboarding flow
+**Goal:** Implement the "Conversational First" Experience (Tier 1 & 2)
 
-**Status:** 🚧 In Progress
+**Status:** 🚧 To Do / In Progress
 
 **Spec:** See `AI_ONBOARDING_SPEC.md` (v4.0.0)
 
 **Tasks:**
-- [x] Create `AI_ONBOARDING_SPEC.md` (v4.0.0 Final)
-- [x] Update `Habit` model with 7 new AI fields (isBreakHabit, replacesHabit, rootCause, substitutionPlan, habitEmoji, motivation, recoveryPlan)
-- [ ] Cherry-pick `GeminiChatService` from orphaned branch
-- [ ] Cherry-pick `ChatConversation` model from orphaned branch
-- [ ] Create `OnboardingData` model (maps to Habit.dart)
-- [ ] Create `AiResponseParser` helper
-- [ ] Create `ConversationGuardrails` config
-- [ ] Create `AIModelConfig` config
-- [ ] Create `MagicWandButton` widget
-- [ ] Add Magic Wand button to `OnboardingScreen`
-- [ ] Update `AI_CONTEXT.md` with new architecture
-- [ ] Commit and create PR
+- [ ] **UI:** Create `ConversationalOnboardingScreen` (Chat UI)
+- [ ] **UI:** Create `ChatMessageWidget` (User vs AI bubbles)
+- [ ] **Logic:** Implement `OnboardingOrchestrator.sendMessage()` with State Machine
+- [ ] **Logic:** Wire up `GeminiChatService` for Tier 1 chat
+- [ ] **Logic:** Create `ClaudeChatService` (Tier 2) for "Bad Habit" coaching
+- [ ] **Migration:** Make Chat the default route (`/`); move Form to (`/onboarding/manual`)
+- [ ] **Testing:** Verify "Escape Hatch" (frustration detection) triggers correctly
+- [ ] **Testing:** Test timeout/retry logic in real network conditions
 
 ---
 
-## Previous Sprint: Documentation & Workflow (Completed)
+## Previous Sprint: AI Onboarding Phase 1 (✅ Completed)
 
-**Goal:** Establish AI Handoff Protocol and sync documentation to main
+**Goal:** Infrastructure & "Magic Wand" MVP
 
-**Status:** ✅ Completed
+**Status:** ✅ Complete (December 2025)
 
-**Tasks:**
-- [x] Cherry-pick AI_CONTEXT.md from orphaned branch
-- [x] Cherry-pick ROADMAP.md from orphaned branch
-- [x] Update both files to reflect actual main branch state
-- [x] Add AI Handoff Protocol sections
-- [x] Update README.md with "Big Three" documentation reference
-- [x] Commit and create PR
+See Sprint History below for details.
 
 ---
 
@@ -69,7 +59,7 @@
 
 | Item | Description | Complexity | Blocked By |
 |------|-------------|------------|------------|
-| **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | Phase 1 |
+| **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | ✅ Phase 1 Complete |
 | **Multiple Habits** | Support tracking multiple habits with focus mode | High | Nothing |
 | **History/Calendar View** | Visual calendar showing completion history | Medium | Nothing |
 | **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
@@ -78,7 +68,7 @@
 
 | Item | Description | Complexity | Notes |
 |------|-------------|------------|-------|
-| **Bad Habit Protocol** | "Break habit" flow with Claude (Tier 2) | Medium | Phase 1 complete |
+| **Bad Habit Protocol** | "Break habit" flow with Claude (Tier 2) | Medium | Part of Phase 2 |
 | **Habit Stacking** | Link habits together in sequences | Medium | Depends on multi-habit |
 | **Failure Playbooks** | Pre-planned recovery strategies | Medium | UX design needed |
 
@@ -136,22 +126,53 @@
 
 ## Sprint History
 
-### Sprint: AI Onboarding Phase 1 (December 2024)
-**Goal:** Add AI-assisted habit creation with "Magic Wand" button
+### Sprint: AI Onboarding Phase 1 - Magic Wand (December 2025) ✅
+
+**Goal:** Infrastructure & "Magic Wand" MVP
 
 **Context:**
+- Solved "Empty State Problem" without full chat UI complexity
+- Fixed critical "Data Amnesia" bug (AI metadata was being lost on save)
 - Collaborative spec development between Claude, Gemini, and user
 - Three-tier AI architecture: Gemini (fast) → Claude (deep) → Manual (fallback)
-- Discovered valuable AI code on orphaned branches
 
-**In Progress:**
-- 🔄 Creating `AI_ONBOARDING_SPEC.md` (v4.0.0)
-- 🔄 Adding 7 new fields to `Habit` model
-- 🔄 Cherry-picking code from orphaned branches
+**Completed:**
+- ✅ Created `AI_ONBOARDING_SPEC.md` v4.0.0 (comprehensive spec)
+- ✅ Updated `Habit` model with 7 new AI fields
+- ✅ Cherry-picked `GeminiChatService`, `ChatConversation`, `ChatMessage` from orphaned branches
+- ✅ Created `OnboardingData` model (DTO for AI ↔ Habit mapping)
+- ✅ Created `AiResponseParser` helper (`[HABIT_DATA]` JSON extraction)
+- ✅ Created `ConversationGuardrails` config (frustration detection patterns)
+- ✅ Created `AIModelConfig` config (API keys, timeouts, tier selection)
+- ✅ Created `OnboardingOrchestrator` service (The "Brain")
+- ✅ Created `MagicWandButton` widget (The "Body")
+- ✅ Integrated Magic Wand button into `OnboardingScreen`
+- ✅ **Fixed "Data Amnesia"** - AI metadata fields now preserved on save
+- ✅ Updated `main.dart` with MultiProvider for AI services
+- ✅ Updated `AI_CONTEXT.md` with new architecture
 
-**Files Created/Modified:**
-- `AI_ONBOARDING_SPEC.md` (new)
-- `lib/data/models/habit.dart` (7 new fields)
+**Files Created:**
+- `AI_ONBOARDING_SPEC.md`
+- `lib/data/models/onboarding_data.dart`
+- `lib/data/models/chat_conversation.dart` (cherry-picked)
+- `lib/data/models/chat_message.dart` (cherry-picked)
+- `lib/data/services/gemini_chat_service.dart` (cherry-picked)
+- `lib/data/services/onboarding/onboarding_orchestrator.dart`
+- `lib/data/services/onboarding/ai_response_parser.dart`
+- `lib/data/services/onboarding/conversation_guardrails.dart`
+- `lib/config/ai_model_config.dart`
+- `lib/features/onboarding/widgets/magic_wand_button.dart`
+
+**Files Modified:**
+- `lib/data/models/habit.dart` (7 new AI fields)
+- `lib/features/onboarding/onboarding_screen.dart` (Magic Wand integration + Data Amnesia fix)
+- `lib/main.dart` (MultiProvider setup)
+
+**Key Commits:**
+- `d54a6c9` - fix(onboarding): Prevent Data Amnesia - preserve AI metadata fields
+- `0614614` - feat(onboarding): Implement Phase 1 Magic Wand AI feature
+- `5a17228` - feat(onboarding): Add Phase 1 backend/logic infrastructure
+- `fcbe9d5` - feat(ai-onboarding): Add AI Onboarding spec and Phase 1 infrastructure
 
 ---
 
@@ -224,7 +245,7 @@
 
 | Branch Pattern | Contains | Recommendation | Status |
 |----------------|----------|----------------|--------|
-| `claude/ai-conversational-first-page-*` | `GeminiChatService`, `ChatConversation` | **Cherry-pick for Phase 1** | 🔴 Priority |
+| `claude/ai-conversational-first-page-*` | `GeminiChatService`, `ChatConversation` | ✅ **Cherry-picked for Phase 1** | ✅ Done |
 | `claude/habit-substitution-guardrails-*` | `BadHabitScreen`, substitution logic | **Cherry-pick for Phase 2** | 🟡 Next |
 | `claude/setup-atomic-achievements-*` | Home Widget, Multi-habit setup | Cherry-pick widget code | 🟡 Later |
 | `claude/merge-missing-code-*` | `PremiumAiOnboardingService` | Review prompts for Claude tier | 🟡 Reference |
@@ -247,7 +268,7 @@ done | sort
 
 ### For AI Agents
 1. **Session Start:** Read this file to understand priorities
-2. **Pick Work:** Choose from "Immediate Priority" section
+2. **Pick Work:** Choose from "Current Sprint" or "Immediate Priority"
 3. **Check Branches:** See if work already exists on orphaned branch
 4. **Do Work:** Follow AI_CONTEXT.md for architecture
 5. **Session End:** Update this file, cherry-pick to main
@@ -267,9 +288,10 @@ done | sort
 | Test coverage | ~70% | 80%+ | Good foundation |
 | Doc sync to main | ✅ Now | Always | New protocol |
 | Time to onboard new AI | ~30 min | < 10 min | With Big Three docs |
+| Phase 1 Magic Wand | ✅ | ✅ | Complete! |
 
 ---
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2024*
+*Last synced to main: December 2025*
