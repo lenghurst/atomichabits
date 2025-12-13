@@ -23,23 +23,44 @@
 
 ---
 
-## Current Sprint: AI Onboarding (Phase 2 - Conversational UI)
+## Current Sprint: Multiple Habits & Focus Mode (Phase 3)
 
-**Goal:** Implement the "Conversational First" Experience (Tier 1 & 2)
+**Goal:** Support tracking multiple habits with Focus Mode selection
 
 **Status:** 🚧 To Do / In Progress
 
 **Spec:** See `AI_ONBOARDING_SPEC.md` (v4.0.0)
 
 **Tasks:**
-- [ ] **UI:** Create `ConversationalOnboardingScreen` (Chat UI)
-- [ ] **UI:** Create `ChatMessageWidget` (User vs AI bubbles)
-- [ ] **Logic:** Implement `OnboardingOrchestrator.sendMessage()` with State Machine
-- [ ] **Logic:** Wire up `GeminiChatService` for Tier 1 chat
-- [ ] **Logic:** Create `ClaudeChatService` (Tier 2) for "Bad Habit" coaching
-- [ ] **Migration:** Make Chat the default route (`/`); move Form to (`/onboarding/manual`)
-- [ ] **Testing:** Verify "Escape Hatch" (frustration detection) triggers correctly
-- [ ] **Testing:** Test timeout/retry logic in real network conditions
+- [ ] **State:** Refactor `AppState` from `_currentHabit` to `List<Habit> _habits`
+- [ ] **State:** Add `_focusedHabitId` for Focus Mode
+- [ ] **State:** Add CRUD methods: `createHabit()`, `updateHabit()`, `deleteHabit()`
+- [ ] **UI:** Create `HabitListScreen` with swipe-to-focus
+- [ ] **UI:** Update `TodayScreen` for multi-habit display
+- [ ] **UI:** Add "Add Another Habit" flow from settings
+- [ ] **Migration:** Handle existing single-habit data on upgrade
+- [ ] **Testing:** Test focus mode switching
+
+---
+
+## Previous Sprint: AI Onboarding Phase 2 (✅ Completed)
+
+**Goal:** Implement the "Conversational First" Experience (Tier 1)
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **UI:** Created `ConversationalOnboardingScreen` (Chat UI)
+- [x] **UI:** Created `ChatMessageBubble` (User vs AI bubbles with typing indicator)
+- [x] **Logic:** Implemented `OnboardingOrchestrator.sendConversationalMessage()` with response parsing
+- [x] **Logic:** Wired up `GeminiChatService` for Tier 1 chat
+- [x] **Logic:** Integrated `ConversationGuardrails` for frustration detection
+- [x] **Migration:** Chat is now default route (`/`); Form at `/onboarding/manual`
+- [x] **Testing:** Escape hatch dialog triggers on frustration patterns
+
+**Deferred to Phase 3+:**
+- [ ] Create `ClaudeChatService` (Tier 2) for "Bad Habit" premium coaching
+- [ ] Test timeout/retry logic in real network conditions
 
 ---
 
@@ -53,13 +74,15 @@ See Sprint History below for details.
 
 ---
 
+---
+
 ## Immediate Priority (Next 1-2 Sprints)
 
 ### 🔴 High Priority
 
 | Item | Description | Complexity | Blocked By |
 |------|-------------|------------|------------|
-| **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | ✅ Phase 1 Complete |
+| **AI Onboarding Phase 2** | Full conversational onboarding with Gemini/Claude | High | ✅ Complete |
 | **Multiple Habits** | Support tracking multiple habits with focus mode | High | Nothing |
 | **History/Calendar View** | Visual calendar showing completion history | Medium | Nothing |
 | **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
@@ -125,6 +148,49 @@ See Sprint History below for details.
 ---
 
 ## Sprint History
+
+### Sprint: AI Onboarding Phase 2 - Conversational UI (December 2025) ✅
+
+**Goal:** Implement "Conversational First" Experience
+
+**Context:**
+- Chat UI as default onboarding route
+- Form-based onboarding preserved as manual fallback (Tier 3)
+- Frustration detection for seamless escape hatch
+
+**Completed:**
+- ✅ Created `ConversationalOnboardingScreen` (Chat UI)
+  - Name collection → Identity → Habit creation flow
+  - Escape hatch dialog (frustration detection)
+  - Habit confirmation dialog with data preview
+  - Auto-scroll, typing indicator, error handling
+- ✅ Created `ChatMessageBubble` widget
+  - User/AI message styling with avatars
+  - Animated typing indicator (staggered dots)
+  - Error state display, streaming support
+- ✅ Updated `OnboardingOrchestrator`
+  - Added `ConversationResult` class
+  - Added `sendConversationalMessage()` for Phase 2 chat
+  - Added `startConversation()` method
+  - Integrated `ConversationGuardrails` frustration detection
+  - Habit data extraction ([HABIT_DATA] parsing)
+- ✅ Updated `main.dart` routing
+  - `/` → ConversationalOnboardingScreen (chat default)
+  - `/onboarding/manual` → OnboardingScreen (form fallback)
+  - ChangeNotifierProxyProvider for OnboardingOrchestrator
+
+**Files Created:**
+- `lib/features/onboarding/conversational_onboarding_screen.dart`
+- `lib/features/onboarding/widgets/chat_message_bubble.dart`
+
+**Files Modified:**
+- `lib/data/services/onboarding/onboarding_orchestrator.dart`
+- `lib/main.dart`
+
+**Key Commits:**
+- `2cb2972` - feat(onboarding): Implement Phase 2 Conversational UI
+
+---
 
 ### Sprint: AI Onboarding Phase 1 - Magic Wand (December 2025) ✅
 
@@ -289,6 +355,7 @@ done | sort
 | Doc sync to main | ✅ Now | Always | New protocol |
 | Time to onboard new AI | ~30 min | < 10 min | With Big Three docs |
 | Phase 1 Magic Wand | ✅ | ✅ | Complete! |
+| Phase 2 Conversational UI | ✅ | ✅ | Complete! |
 
 ---
 
