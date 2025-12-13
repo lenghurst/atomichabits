@@ -39,24 +39,24 @@ dependencies:
   provider: 6.1.5+1
   
   # Navigation - GoRouter (declarative routing)
-  go_router: ^14.0.0
-  
+  go_router: ^17.0.0
+
   # Local storage for habits and user data
-  shared_preferences: 2.5.3
+  # Note: shared_preferences removed - app uses Hive for all storage (20x faster)
   hive: 2.2.3
   hive_flutter: 1.1.0
-  
+
   # Notifications for daily habit reminders
-  flutter_local_notifications: ^18.0.1
-  
+  flutter_local_notifications: ^19.5.0
+
   # Timezone support for scheduled notifications
   timezone: ^0.9.4
-  
+
   # Confetti animation for rewards
   confetti: ^0.7.0
-  
+
   # HTTP client for remote LLM suggestions
-  http: 1.5.0
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
