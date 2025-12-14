@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.4.0 — Phase 6 Settings & Polish Complete)
+> **Last Updated:** December 2025 (v4.4.1 — Phase 6.5 Brand Polish Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -221,6 +221,7 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 1.4.0 | Dec 2025 | Phase 4: Dashboard (HabitListScreen, quick-complete) |
 | 1.5.0 | Dec 2025 | Phase 5: History & Calendar View (HistoryScreen, CalendarMonthView) |
 | 1.6.0 | Dec 2025 | Phase 6: Settings & Polish (AppSettings, Error Boundaries, Dynamic Theming) |
+| 1.6.1 | Dec 2025 | Phase 6.5: Brand Polish (Custom App Icon, Splash Screen, ErrorReporter) |
 
 ---
 

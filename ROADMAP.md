@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.4.0 - Phase 6 Settings & Polish)
+> **Last Updated:** December 2025 (v4.4.1 - Phase 6.5 Brand Polish)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -34,6 +34,40 @@
 - [ ] Analytics Dashboard with trend charts
 - [ ] Android/iOS Home Screen Widgets
 - [ ] Backup and Restore functionality
+
+---
+
+## Previous Sprint: Brand Polish (Phase 6.5 - ✅ Completed)
+
+**Goal:** Custom app icon, splash screen, and enhanced error reporting
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **Branding:** Generated custom app icon (atom + arrow design, deep purple)
+- [x] **Android:** All mipmap icon sizes (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+- [x] **iOS:** All AppIcon sizes (20px to 1024px, alpha removed)
+- [x] **Android Splash:** Custom launch_background.xml with branded colors
+- [x] **iOS Splash:** LaunchScreen.storyboard with deep purple background
+- [x] **Error Reporting:** Enhanced `ErrorReporter` class with structured logging
+- [x] **Config:** flutter_launcher_icons.yaml for future regeneration
+- [x] **Assets:** Brand assets directory structure
+
+**Files Created:**
+- `assets/branding/app_icon.png` (1024x1024 source icon)
+- `flutter_launcher_icons.yaml` (icon generation config)
+- `android/app/src/main/res/values/colors.xml` (brand colors)
+- `android/app/src/main/res/drawable/splash_icon.png`
+
+**Files Modified:**
+- All Android mipmap icons (ic_launcher.png)
+- All iOS AppIcon images
+- `android/app/src/main/res/drawable/launch_background.xml`
+- `android/app/src/main/res/drawable-v21/launch_background.xml`
+- `ios/Runner/Base.lproj/LaunchScreen.storyboard`
+- `ios/Runner/Assets.xcassets/LaunchImage.imageset/*`
+- `lib/core/error_boundary.dart` (ErrorReporter class)
+- `pubspec.yaml` (version bump, assets, dev dependencies)
 
 ---
 

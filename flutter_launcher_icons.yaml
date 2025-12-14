@@ -1,0 +1,36 @@
+# Flutter Launcher Icons Configuration
+# Phase 6.5: Brand Polish
+#
+# Run: flutter pub run flutter_launcher_icons
+# Documentation: https://pub.dev/packages/flutter_launcher_icons
+
+flutter_launcher_icons:
+  # Android configuration
+  android: true
+  ios: true
+  
+  # Path to the icon image (1024x1024 recommended)
+  image_path: "assets/branding/app_icon.png"
+  
+  # Minimum SDK version for adaptive icons (Android 8.0+)
+  min_sdk_android: 21
+  
+  # Android adaptive icon configuration
+  adaptive_icon_background: "#673AB7"  # Deep Purple (matches app theme)
+  adaptive_icon_foreground: "assets/branding/app_icon.png"
+  
+  # iOS configuration
+  remove_alpha_ios: true  # iOS requires no alpha channel
+
+  # Web configuration (for future PWA support)
+  web:
+    generate: true
+    image_path: "assets/branding/app_icon.png"
+    background_color: "#673AB7"
+    theme_color: "#673AB7"
+    
+  # Windows configuration (for future desktop support)
+  windows:
+    generate: true
+    image_path: "assets/branding/app_icon.png"
+    icon_size: 48
