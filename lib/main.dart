@@ -11,6 +11,7 @@ import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/history/history_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -115,6 +116,11 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+              ),
+              // History: Calendar view (Phase 5)
+              GoRoute(
+                path: '/history',
+                builder: (context, state) => const HistoryScreen(),
               ),
             ],
           );

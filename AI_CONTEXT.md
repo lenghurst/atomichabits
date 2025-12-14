@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.2.0 — Phase 4 Dashboard Complete)
+> **Last Updated:** December 2025 (v4.3.0 — Phase 5 History & Calendar Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -88,7 +88,7 @@ When stale branches accumulate (> 10 unmerged):
 | **Multi-Habit Engine (Phase 3)** | ✅ Live | - | AppState (List<Habit>) | CRUD + Focus Mode |
 | **Dashboard (Phase 4)** | ✅ Live | HabitListScreen | AppState | Habit cards, quick-complete, swipe-delete |
 | **Focus Mode Swipe (Phase 4)** | ✅ Live | TodayScreen (PageView) | AppState | Swipe between habits |
-| History/Calendar View | ❌ Not Started | - | - | Phase 5 |
+| **History/Calendar View (Phase 5)** | ✅ Live | HistoryScreen, CalendarMonthView | AppState | Stats, calendar dots, milestones |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
 | Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
 
@@ -212,6 +212,9 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 1.0.0+1 | Dec 2024 | Current main: Full Graceful Consistency, Never Miss Twice, Vibecoding |
 | 1.1.0 | Dec 2025 | AI Onboarding Phase 1: Magic Wand, 7 new Habit fields |
 | 1.2.0 | Dec 2025 | AI Onboarding Phase 2: Conversational UI, Chat default route |
+| 1.3.0 | Dec 2025 | Phase 3: Multi-Habit Engine (List<Habit>, Focus Mode) |
+| 1.4.0 | Dec 2025 | Phase 4: Dashboard (HabitListScreen, quick-complete) |
+| 1.5.0 | Dec 2025 | Phase 5: History & Calendar View (HistoryScreen, CalendarMonthView) |
 
 ---
 
@@ -315,6 +318,7 @@ final String? recoveryPlan;     // Never Miss Twice plan
 '/'                → ConversationalOnboardingScreen (Chat AI Coach)
 '/onboarding/manual' → OnboardingScreen (Form-based fallback)
 '/today'           → TodayScreen
+'/history'         → HistoryScreen (Calendar view)
 '/settings'        → SettingsScreen
 ```
 
