@@ -238,27 +238,102 @@ class ErrorScreen extends StatelessWidget {
 ///   // ... rest of main
 /// }
 /// ```
+/// 
+/// **Phase 6.5: Enhanced with structured logging**
 void setupGlobalErrorHandling() {
   // Handle Flutter framework errors
   FlutterError.onError = (FlutterErrorDetails details) {
+    // Log error with structured format
+    ErrorReporter.reportError(
+      error: details.exception,
+      stackTrace: details.stack,
+      context: 'FlutterError',
+      library: details.library,
+    );
+    
     if (kDebugMode) {
-      // In debug mode, print the error
+      // In debug mode, also show the default Flutter error UI
       FlutterError.presentError(details);
-    } else {
-      // In release mode, log to a service (future: crash reporting)
-      Zone.current.handleUncaughtError(details.exception, details.stack!);
     }
   };
   
   // Handle errors outside Flutter framework (async errors)
   PlatformDispatcher.instance.onError = (error, stack) {
-    if (kDebugMode) {
-      debugPrint('🚨 Uncaught error: $error');
-      debugPrint('Stack: $stack');
-    }
+    ErrorReporter.reportError(
+      error: error,
+      stackTrace: stack,
+      context: 'PlatformDispatcher',
+    );
     // Return true to indicate the error was handled
     return true;
   };
+  
+  if (kDebugMode) {
+    debugPrint('✅ Global error handling initialized');
+  }
+}
+
+/// Error Reporter - Phase 6.5: Structured error logging
+/// 
+/// Provides a central point for error reporting that can be
+/// extended to integrate with crash reporting services like
+/// Sentry, Firebase Crashlytics, or custom backends.
+/// 
+/// **Current Implementation:** Console logging (debug mode)
+/// **Future:** Add Sentry/Crashlytics integration
+class ErrorReporter {
+  /// Report an error with optional context
+  static void reportError({
+    required Object error,
+    StackTrace? stackTrace,
+    String? context,
+    String? library,
+    Map<String, dynamic>? extras,
+  }) {
+    final timestamp = DateTime.now().toIso8601String();
+    
+    if (kDebugMode) {
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════════════════════╗');
+      debugPrint('║ 🚨 ERROR REPORT                                          ║');
+      debugPrint('╠══════════════════════════════════════════════════════════╣');
+      debugPrint('║ Time: $timestamp');
+      if (context != null) debugPrint('║ Context: $context');
+      if (library != null) debugPrint('║ Library: $library');
+      debugPrint('║ Error: $error');
+      if (extras != null) {
+        debugPrint('║ Extras: $extras');
+      }
+      debugPrint('╚══════════════════════════════════════════════════════════╝');
+      if (stackTrace != null) {
+        debugPrint('Stack trace:');
+        debugPrint('$stackTrace');
+      }
+      debugPrint('');
+    }
+    
+    // TODO: Add production crash reporting service integration
+    // Examples:
+    // - Sentry.captureException(error, stackTrace: stackTrace);
+    // - FirebaseCrashlytics.instance.recordError(error, stackTrace);
+  }
+  
+  /// Log a non-fatal warning
+  static void logWarning(String message, {Map<String, dynamic>? extras}) {
+    if (kDebugMode) {
+      debugPrint('⚠️ WARNING: $message');
+      if (extras != null) {
+        debugPrint('   Extras: $extras');
+      }
+    }
+  }
+  
+  /// Log an informational message
+  static void logInfo(String message) {
+    if (kDebugMode) {
+      debugPrint('ℹ️ INFO: $message');
+    }
+  }
 }
 
 /// Extension on BuildContext for easy error handling
