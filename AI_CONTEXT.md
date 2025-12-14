@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.3.0 — Phase 5 History & Calendar Complete)
+> **Last Updated:** December 2025 (v4.4.0 — Phase 6 Settings & Polish Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -82,13 +82,15 @@ When stale branches accumulate (> 10 unmerged):
 | Daily Notifications | ✅ Live | - | NotificationService | With snooze and mark-done actions |
 | Recovery Notifications | ✅ Live | - | NotificationService | 9 AM after missed day |
 | Vibecoding Architecture | ✅ Live | Controllers/Helpers/Widgets | - | Clean separation pattern |
-| Settings Screen | 🚧 Stub | SettingsScreen | - | UI only, no persistence |
+| Settings Screen | ✅ Live | SettingsScreen | AppState (AppSettings) | Theme, notifications, sound, haptics |
 | **AI Onboarding (Phase 1)** | ✅ Live | OnboardingScreen + MagicWandButton | OnboardingOrchestrator | Magic Wand auto-fill |
 | **AI Onboarding (Phase 2)** | ✅ Live | ConversationalOnboardingScreen | OnboardingOrchestrator | Chat UI default route |
 | **Multi-Habit Engine (Phase 3)** | ✅ Live | - | AppState (List<Habit>) | CRUD + Focus Mode |
 | **Dashboard (Phase 4)** | ✅ Live | HabitListScreen | AppState | Habit cards, quick-complete, swipe-delete |
 | **Focus Mode Swipe (Phase 4)** | ✅ Live | TodayScreen (PageView) | AppState | Swipe between habits |
 | **History/Calendar View (Phase 5)** | ✅ Live | HistoryScreen, CalendarMonthView | AppState | Stats, calendar dots, milestones |
+| **Settings & Polish (Phase 6)** | ✅ Live | SettingsScreen | AppState (AppSettings) | Theme, notifications, sound, haptics |
+| **Error Boundaries (Phase 6)** | ✅ Live | ErrorBoundary, ErrorScreen | - | Global error handling |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
 | Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
 
@@ -99,7 +101,9 @@ When stale branches accumulate (> 10 unmerged):
 ### Project Structure
 ```
 lib/
-├── main.dart                           # App entry, Provider setup, GoRouter
+├── main.dart                           # App entry, Provider setup, GoRouter, Error handling
+├── core/
+│   └── error_boundary.dart             # Error handling widgets and utilities
 ├── data/
 │   ├── app_state.dart                  # Central state (ChangeNotifier)
 │   ├── notification_service.dart       # Notifications + scheduling
@@ -107,7 +111,8 @@ lib/
 │   ├── models/
 │   │   ├── habit.dart                  # Habit data model
 │   │   ├── user_profile.dart           # User identity model
-│   │   └── consistency_metrics.dart    # Graceful Consistency scoring
+│   │   ├── consistency_metrics.dart    # Graceful Consistency scoring
+│   │   └── app_settings.dart           # User preferences model
 │   └── services/
 │       ├── recovery_engine.dart        # Never Miss Twice detection
 │       ├── consistency_service.dart    # Consistency calculations
@@ -124,7 +129,7 @@ lib/
 │   │   └── helpers/
 │   │       └── recovery_ui_helpers.dart  # Pure styling functions
 │   └── settings/
-│       └── settings_screen.dart        # Settings (stub)
+│       └── settings_screen.dart        # Settings (fully functional)
 ├── widgets/                            # Shared widgets
 │   ├── graceful_consistency_card.dart
 │   ├── recovery_prompt_dialog.dart
@@ -215,6 +220,7 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 1.3.0 | Dec 2025 | Phase 3: Multi-Habit Engine (List<Habit>, Focus Mode) |
 | 1.4.0 | Dec 2025 | Phase 4: Dashboard (HabitListScreen, quick-complete) |
 | 1.5.0 | Dec 2025 | Phase 5: History & Calendar View (HistoryScreen, CalendarMonthView) |
+| 1.6.0 | Dec 2025 | Phase 6: Settings & Polish (AppSettings, Error Boundaries, Dynamic Theming) |
 
 ---
 
@@ -317,9 +323,10 @@ final String? recoveryPlan;     // Never Miss Twice plan
 // main.dart - GoRouter configuration
 '/'                → ConversationalOnboardingScreen (Chat AI Coach)
 '/onboarding/manual' → OnboardingScreen (Form-based fallback)
-'/today'           → TodayScreen
+'/dashboard'       → HabitListScreen (Multi-habit dashboard)
+'/today'           → TodayScreen (Focus mode with PageView)
 '/history'         → HistoryScreen (Calendar view)
-'/settings'        → SettingsScreen
+'/settings'        → SettingsScreen (Full settings persistence)
 ```
 
 ### Conversation Flow
@@ -348,6 +355,44 @@ final String? recoveryPlan;     // Never Miss Twice plan
 | `ChatMessageBubble` | Message styling, avatars, typing indicator |
 | `ConversationResult` | Response from orchestrator (data + display text) |
 | `OnboardingOrchestrator.sendConversationalMessage()` | Main chat method |
+
+---
+
+---
+
+## Phase 6: Settings & Polish Architecture
+
+### AppSettings Model
+```dart
+// lib/data/models/app_settings.dart
+class AppSettings {
+  final ThemeMode themeMode;           // system, light, dark
+  final bool soundEnabled;              // Play sounds on completion
+  final bool hapticsEnabled;            // Vibrate on interactions
+  final bool notificationsEnabled;      // Global notification toggle
+  final String defaultNotificationTime; // HH:MM format
+  final bool showQuotes;                // Motivational quotes
+}
+```
+
+### Error Handling Architecture
+```dart
+// lib/core/error_boundary.dart
+- ErrorBoundary widget: Catches errors in widget subtree
+- ErrorScreen: User-friendly error display with retry
+- setupGlobalErrorHandling(): Flutter + async error handling
+- BuildContext extensions: showErrorSnackBar, showSuccessSnackBar
+```
+
+### Dynamic Theming
+```dart
+// main.dart
+MaterialApp.router(
+  themeMode: appState.themeMode,  // From AppState settings
+  theme: ThemeData(...),           // Light theme
+  darkTheme: ThemeData(...),       // Dark theme
+)
+```
 
 ---
 

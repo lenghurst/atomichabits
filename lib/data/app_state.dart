@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
 import 'models/consistency_metrics.dart';
+import 'models/app_settings.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
@@ -45,6 +48,10 @@ class AppState extends ChangeNotifier {
   // Onboarding completion status
   bool _hasCompletedOnboarding = false;
   
+  // ========== Phase 6: App Settings ==========
+  /// User preferences (theme, sound, haptics, notifications)
+  AppSettings _settings = const AppSettings();
+  
   // Hive box for persistent storage
   Box? _dataBox;
   
@@ -83,6 +90,22 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   bool get shouldShowRewardFlow => _shouldShowRewardFlow;
+  
+  // ========== Phase 6: Settings Getters ==========
+  /// Current app settings
+  AppSettings get settings => _settings;
+  
+  /// Current theme mode
+  ThemeMode get themeMode => _settings.themeMode;
+  
+  /// Whether sound is enabled
+  bool get soundEnabled => _settings.soundEnabled;
+  
+  /// Whether haptics are enabled
+  bool get hapticsEnabled => _settings.hapticsEnabled;
+  
+  /// Whether notifications are enabled
+  bool get notificationsEnabled => _settings.notificationsEnabled;
   
   // ========== Phase 3: Multi-Habit Getters ==========
   
@@ -213,6 +236,15 @@ class AppState extends ChangeNotifier {
 
     // Load onboarding status
     _hasCompletedOnboarding = _dataBox!.get('hasCompletedOnboarding', defaultValue: false);
+    
+    // Phase 6: Load app settings
+    final settingsJson = _dataBox!.get('appSettings');
+    if (settingsJson != null) {
+      _settings = AppSettings.fromJson(Map<String, dynamic>.from(settingsJson));
+      if (kDebugMode) {
+        debugPrint('⚙️ Loaded settings: $_settings');
+      }
+    }
 
     // Load user profile
     final profileJson = _dataBox!.get('userProfile');
@@ -275,6 +307,9 @@ class AppState extends ChangeNotifier {
     try {
       // Save onboarding status
       await _dataBox!.put('hasCompletedOnboarding', _hasCompletedOnboarding);
+      
+      // Phase 6: Save app settings
+      await _dataBox!.put('appSettings', _settings.toJson());
 
       // Save user profile
       if (_userProfile != null) {
@@ -702,8 +737,134 @@ class AppState extends ChangeNotifier {
     _habits = [];  // Phase 3: Clear habits list
     _focusedHabitId = null;
     _hasCompletedOnboarding = false;
+    _settings = const AppSettings();  // Phase 6: Reset settings
     await _notificationService.cancelAllNotifications();
     notifyListeners();
+  }
+  
+  // ========== Phase 6: Settings Methods ==========
+  
+  /// Update theme mode
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _settings = _settings.copyWith(themeMode: mode);
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('🎨 Theme changed to: $mode');
+    }
+  }
+  
+  /// Update sound setting
+  Future<void> setSoundEnabled(bool enabled) async {
+    _settings = _settings.copyWith(soundEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('🔊 Sound ${enabled ? "enabled" : "disabled"}');
+    }
+  }
+  
+  /// Update haptics setting
+  Future<void> setHapticsEnabled(bool enabled) async {
+    _settings = _settings.copyWith(hapticsEnabled: enabled);
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('📳 Haptics ${enabled ? "enabled" : "disabled"}');
+    }
+  }
+  
+  /// Update notifications setting
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    _settings = _settings.copyWith(notificationsEnabled: enabled);
+    await _saveToStorage();
+    
+    if (enabled && hasHabits && _userProfile != null) {
+      await _scheduleNotifications();
+    } else if (!enabled) {
+      await _notificationService.cancelAllNotifications();
+    }
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('🔔 Notifications ${enabled ? "enabled" : "disabled"}');
+    }
+  }
+  
+  /// Update default notification time
+  Future<void> setDefaultNotificationTime(String time) async {
+    _settings = _settings.copyWith(defaultNotificationTime: time);
+    await _saveToStorage();
+    
+    // Reschedule notifications with new time
+    if (_settings.notificationsEnabled && hasHabits && _userProfile != null) {
+      await _scheduleNotifications();
+    }
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('⏰ Default notification time set to: $time');
+    }
+  }
+  
+  /// Update show quotes setting
+  Future<void> setShowQuotes(bool show) async {
+    _settings = _settings.copyWith(showQuotes: show);
+    await _saveToStorage();
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('💬 Quotes ${show ? "enabled" : "disabled"}');
+    }
+  }
+  
+  /// Update all settings at once
+  Future<void> updateSettings(AppSettings newSettings) async {
+    final notificationsChanged = _settings.notificationsEnabled != newSettings.notificationsEnabled;
+    final timeChanged = _settings.defaultNotificationTime != newSettings.defaultNotificationTime;
+    
+    _settings = newSettings;
+    await _saveToStorage();
+    
+    // Handle notification changes
+    if (notificationsChanged || timeChanged) {
+      if (newSettings.notificationsEnabled && hasHabits && _userProfile != null) {
+        await _scheduleNotifications();
+      } else if (!newSettings.notificationsEnabled) {
+        await _notificationService.cancelAllNotifications();
+      }
+    }
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('⚙️ Settings updated: $newSettings');
+    }
+  }
+  
+  /// Trigger haptic feedback if enabled
+  void triggerHaptic(HapticFeedbackType type) {
+    if (!_settings.hapticsEnabled) return;
+    
+    switch (type) {
+      case HapticFeedbackType.light:
+        HapticFeedback.lightImpact();
+        break;
+      case HapticFeedbackType.medium:
+        HapticFeedback.mediumImpact();
+        break;
+      case HapticFeedbackType.heavy:
+        HapticFeedback.heavyImpact();
+        break;
+      case HapticFeedbackType.selection:
+        HapticFeedback.selectionClick();
+        break;
+    }
   }
   
   // ========== Notification Methods ==========

@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.3.0 - Phase 5 History & Calendar)
+> **Last Updated:** December 2025 (v4.4.0 - Phase 6 Settings & Polish)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,18 +23,49 @@
 
 ---
 
-## Current Sprint: Settings & Polish (Phase 6)
+## Current Sprint: Phase 7 (Future)
+
+**Goal:** TBD - Weekly Review, Analytics Dashboard, or Platform Expansion
+
+**Status:** 🚧 Planning
+
+**Potential Tasks:**
+- [ ] Weekly Review with AI synthesis
+- [ ] Analytics Dashboard with trend charts
+- [ ] Android/iOS Home Screen Widgets
+- [ ] Backup and Restore functionality
+
+---
+
+## Previous Sprint: Settings & Polish (Phase 6 - ✅ Completed)
 
 **Goal:** Complete settings persistence and app polish
 
-**Status:** 🚧 To Do
+**Status:** ✅ Complete (December 2025)
 
-**Tasks:**
-- [ ] **Settings:** Connect SettingsScreen to actual preferences
-- [ ] **Settings:** Notification time picker
-- [ ] **Settings:** Theme selection (light/dark)
-- [ ] **Polish:** App icon and splash screen
-- [ ] **Polish:** Error boundaries and crash reporting
+**Completed:**
+- [x] **Model:** Created `AppSettings` data model with persistence
+- [x] **State:** Integrated settings into `AppState` with Hive storage
+- [x] **Theming:** Dynamic theme switching (System/Light/Dark)
+- [x] **UI:** Full `SettingsScreen` refactor with all functional settings
+- [x] **Features:** Notification time picker
+- [x] **Features:** Sound and haptic feedback toggles
+- [x] **Features:** Motivational quotes toggle
+- [x] **Features:** Reset all data with confirmation
+- [x] **Polish:** Global error handling with `setupGlobalErrorHandling()`
+- [x] **Polish:** Error boundary widget for graceful error recovery
+- [x] **Polish:** Error/success snackbar extensions
+
+**Files Created:**
+- `lib/data/models/app_settings.dart`
+- `lib/core/error_boundary.dart`
+
+**Files Modified:**
+- `lib/data/app_state.dart` (settings integration + methods)
+- `lib/main.dart` (dynamic theming + error handling)
+- `lib/features/settings/settings_screen.dart` (full refactor)
+
+---
 
 ---
 
@@ -152,7 +183,7 @@ See Sprint History below for details.
 | **Multiple Habits (Phase 3)** | Support tracking multiple habits with focus mode | High | ✅ Complete |
 | **Dashboard (Phase 4)** | Multi-habit list view with quick actions | High | ✅ Complete |
 | **History/Calendar View** | Visual calendar showing completion history | Medium | ✅ Complete |
-| **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | Nothing |
+| **Settings Implementation** | Connect SettingsScreen to actual preferences | Low | ✅ Complete |
 
 ### 🟡 Medium Priority
 
@@ -206,7 +237,7 @@ See Sprint History below for details.
 | Item | Priority | Status | Notes |
 |------|----------|--------|-------|
 | Stale branches cleanup | High | 🔴 Open | 18+ unmerged branches |
-| Settings persistence | Medium | 🔴 Open | UI stub exists |
+| Settings persistence | Medium | ✅ Done | Full persistence via Hive |
 | Hive type adapters | Medium | 🔴 Open | Manual JSON maps work but fragile |
 | iOS notification permissions | Medium | 🔴 Open | Android-only code paths |
 | Timezone change handling | Low | 🔴 Open | Fixed to UTC/Local |
@@ -426,6 +457,7 @@ done | sort
 | Phase 3 Multi-Habit Engine | ✅ | ✅ | Complete! |
 | Phase 4 Dashboard | ✅ | ✅ | Complete! |
 | Phase 5 History & Calendar | ✅ | ✅ | Complete! |
+| Phase 6 Settings & Polish | ✅ | ✅ | Complete! |
 
 ---
 
