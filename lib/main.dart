@@ -6,6 +6,7 @@ import 'data/app_state.dart';
 import 'data/services/gemini_chat_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'config/ai_model_config.dart';
+import 'core/error_boundary.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
@@ -16,6 +17,9 @@ import 'features/history/history_screen.dart';
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Phase 6: Setup global error handling
+  setupGlobalErrorHandling();
   
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
@@ -125,9 +129,11 @@ class MyApp extends StatelessWidget {
             ],
           );
 
+          // Phase 6: Dynamic theming based on AppState settings
           return MaterialApp.router(
             title: 'Atomic Habits Hook App',
             debugShowCheckedModeBanner: false,
+            themeMode: appState.themeMode,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.deepPurple,
@@ -139,6 +145,23 @@ class MyApp extends StatelessWidget {
                 margin: EdgeInsets.zero,
               ),
               // Custom snackbar theme for AI feedback
+              snackBarTheme: const SnackBarThemeData(
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+              ),
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.deepPurple,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              cardTheme: const CardThemeData(
+                elevation: 2,
+                margin: EdgeInsets.zero,
+              ),
               snackBarTheme: const SnackBarThemeData(
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
