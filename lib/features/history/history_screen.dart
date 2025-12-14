@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../review/weekly_review_dialog.dart';
 import 'widgets/calendar_month_view.dart';
 
 /// History Screen - Visualize Habit Progress
@@ -91,6 +92,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             title: Text(habit.name),
             centerTitle: true,
             actions: [
+              // Weekly Review button (Phase 7)
+              IconButton(
+                icon: const Icon(Icons.auto_awesome),
+                tooltip: 'Weekly Review',
+                onPressed: () => WeeklyReviewDialog.show(context, habit),
+              ),
               // Habit picker for multi-habit users
               if (appState.habits.length > 1)
                 PopupMenuButton<String>(
@@ -375,6 +382,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Phase 7: Weekly Review Card
+        _buildWeeklyReviewCard(context, habit),
+        
+        const SizedBox(height: 16),
+        
         Row(
           children: [
             const Icon(Icons.lightbulb_outline, size: 20),
@@ -409,6 +421,86 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         )),
       ],
+    );
+  }
+  
+  /// Phase 7: Weekly Review promotional card
+  Widget _buildWeeklyReviewCard(BuildContext context, Habit habit) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Check if user has at least 7 days of data
+    final daysSinceCreation = DateTime.now().difference(habit.createdAt).inDays;
+    final hasEnoughData = daysSinceCreation >= 7;
+    
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: hasEnoughData 
+            ? () => WeeklyReviewDialog.show(context, habit)
+            : null,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primaryContainer.withOpacity(0.8),
+                colorScheme.secondaryContainer.withOpacity(0.6),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Weekly Review',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasEnoughData
+                          ? 'Get AI-powered insights on your progress'
+                          : '${7 - daysSinceCreation} more days until your first review',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (hasEnoughData)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

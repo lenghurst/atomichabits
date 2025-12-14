@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.4.1 - Phase 6.5 Brand Polish)
+> **Last Updated:** December 2025 (v4.5.0 - Phase 7 Weekly Review with AI)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,17 +23,55 @@
 
 ---
 
-## Current Sprint: Phase 7 (Future)
+## Current Sprint: Phase 7 (Weekly Review - ✅ Completed)
 
-**Goal:** TBD - Weekly Review, Analytics Dashboard, or Platform Expansion
+**Goal:** AI-powered Weekly Review feature to close the Hook Model loop
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **Service:** Created `WeeklyReviewService` for data aggregation and prompt building
+- [x] **AI Integration:** Added `generateWeeklyAnalysis()` to `GeminiChatService`
+- [x] **UI:** Created `WeeklyReviewDialog` with 7-day progress, stats, AI insights
+- [x] **Fallback:** Local heuristic generation when AI unavailable
+- [x] **History Integration:** Weekly Review card + app bar button
+- [x] **Dashboard Integration:** Quick access button with habit picker
+
+**Files Created:**
+- `lib/data/services/weekly_review_service.dart`
+- `lib/features/review/weekly_review_dialog.dart`
+
+**Files Modified:**
+- `lib/data/services/gemini_chat_service.dart` (generateWeeklyAnalysis method)
+- `lib/main.dart` (WeeklyReviewService provider)
+- `lib/features/history/history_screen.dart` (review card + button)
+- `lib/features/dashboard/habit_list_screen.dart` (review button)
+- `pubspec.yaml` (version bump to 4.5.0+1)
+
+---
+
+## Next Sprint: Phase 8 (Analytics Dashboard)
+
+**Goal:** Visualize Graceful Consistency Score trends with interactive charts
 
 **Status:** 🚧 Planning
 
+**Recommended Approach:**
+Leverage `fl_chart` package to provide immediate visual gratification for the data already collected.
+
 **Potential Tasks:**
-- [ ] Weekly Review with AI synthesis
-- [ ] Analytics Dashboard with trend charts
-- [ ] Android/iOS Home Screen Widgets
-- [ ] Backup and Restore functionality
+- [ ] Add `fl_chart: ^0.66.0` dependency
+- [ ] Create `AnalyticsDashboardScreen` with trend visualizations
+- [ ] Line chart: Graceful Consistency Score over time (7/30/90 days)
+- [ ] Bar chart: Weekly completion rates comparison
+- [ ] Pie chart: Completion vs missed breakdown
+- [ ] Add dashboard access from History screen or Settings
+- [ ] Optional: Export data as image or PDF
+
+**Alternative Phase 8 Options:**
+- [ ] Android/iOS Home Screen Widgets (high visibility, platform-specific)
+- [ ] Backup and Restore functionality (data safety)
+- [ ] Bad Habit Protocol with Claude Tier 2 (advanced coaching)
 
 ---
 
@@ -232,7 +270,7 @@ See Sprint History below for details.
 ## Next Phase (Growth & Polish)
 
 ### Features
-- [ ] **Weekly Review with AI** — AI synthesis of weekly progress
+- [x] **Weekly Review with AI** — ✅ AI synthesis of weekly progress (Phase 7)
 - [ ] **Weekly/Monthly Analytics Dashboard** — Trend charts, insights
 - [ ] **Pattern Detection from Miss Reasons** — Identify recurring issues
 - [ ] **Backup and Restore** — Export/import habit data
@@ -280,6 +318,48 @@ See Sprint History below for details.
 ---
 
 ## Sprint History
+
+### Sprint: Weekly Review with AI (Phase 7) - December 2025 ✅
+
+**Goal:** Implement "Investment" phase of Hook Model - AI-powered weekly insights
+
+**Context:**
+- Closes the Hook Model loop: Trigger → Action → Variable Reward → **Investment**
+- Users invest time reviewing progress, which increases commitment to next cycle
+- Leverages existing `GeminiChatService` infrastructure
+
+**Completed:**
+- ✅ Added `generateWeeklyAnalysis()` to `GeminiChatService` for single-turn AI
+- ✅ Created `WeeklyReviewService` with data aggregation and prompt building
+- ✅ Created `WeeklyReviewDialog` with 7-day progress dots and stats
+- ✅ Implemented local fallback heuristics when AI unavailable
+- ✅ Integrated Weekly Review button (✨) into History screen
+- ✅ Integrated Weekly Review button into Dashboard with habit picker
+- ✅ Registered `WeeklyReviewService` via `ProxyProvider`
+
+**Files Created:**
+- `lib/data/services/weekly_review_service.dart`
+- `lib/features/review/weekly_review_dialog.dart`
+
+**Files Modified:**
+- `lib/data/services/gemini_chat_service.dart` (new method)
+- `lib/main.dart` (provider registration)
+- `lib/features/history/history_screen.dart` (review card + button)
+- `lib/features/dashboard/habit_list_screen.dart` (review button + picker)
+- `pubspec.yaml` (version 4.5.0+1)
+- `AI_CONTEXT.md`, `ROADMAP.md` (documentation)
+
+**Key Commits:**
+- `8966769` - feat(review): Implement Phase 7 Weekly Review with AI (v4.5.0)
+
+**AI Prompt Design Principles:**
+- Graceful Consistency philosophy (no shaming)
+- Identity-focused language ("becoming the person...")
+- Celebrates recovery ("Never Miss Twice")
+- Actionable tips (2-minute rule suggestions)
+- Under 50 words, warm but professional
+
+---
 
 ### Sprint: AI Onboarding Phase 2 - Conversational UI (December 2025) ✅
 
@@ -492,6 +572,7 @@ done | sort
 | Phase 4 Dashboard | ✅ | ✅ | Complete! |
 | Phase 5 History & Calendar | ✅ | ✅ | Complete! |
 | Phase 6 Settings & Polish | ✅ | ✅ | Complete! |
+| Phase 7 Weekly Review with AI | ✅ | ✅ | Complete! |
 
 ---
 

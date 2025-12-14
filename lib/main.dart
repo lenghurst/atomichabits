@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/app_state.dart';
 import 'data/services/gemini_chat_service.dart';
+import 'data/services/weekly_review_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'config/ai_model_config.dart';
 import 'core/error_boundary.dart';
@@ -54,6 +55,11 @@ class MyApp extends StatelessWidget {
         ),
         // Gemini Chat Service (AI backend)
         Provider<GeminiChatService>.value(value: geminiService),
+        // Weekly Review Service (Phase 7)
+        ProxyProvider<GeminiChatService, WeeklyReviewService>(
+          update: (context, geminiService, previous) =>
+              previous ?? WeeklyReviewService(geminiService),
+        ),
         // Onboarding Orchestrator (AI orchestration) - ChangeNotifier for Phase 2
         ChangeNotifierProxyProvider<GeminiChatService, OnboardingOrchestrator>(
           create: (context) => OnboardingOrchestrator(
