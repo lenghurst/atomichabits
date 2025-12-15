@@ -8,6 +8,12 @@ import '../data/services/recovery_engine.dart';
 /// has missed habit completions. Implements the philosophy:
 /// "One miss is an accident. Two misses is the start of a new habit."
 /// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - "Slipped up yesterday?" instead of "Missed yesterday?"
+/// - "Get back on track" instead of "Do the 2-minute version"
+/// - Purple color scheme instead of amber/orange
+/// 
 /// Features:
 /// - Urgency-appropriate messaging (gentle → important → compassionate)
 /// - Zoom-out perspective (show overall progress context)
@@ -19,6 +25,7 @@ class RecoveryPromptDialog extends StatefulWidget {
   final VoidCallback onDismiss;
   final Function(MissReason)? onMissReasonSelected;
   final String? zoomOutMessage;
+  final bool isBreakHabit;
   
   const RecoveryPromptDialog({
     super.key,
@@ -27,6 +34,7 @@ class RecoveryPromptDialog extends StatefulWidget {
     required this.onDismiss,
     this.onMissReasonSelected,
     this.zoomOutMessage,
+    this.isBreakHabit = false,
   });
 
   @override
@@ -60,6 +68,10 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
   }
 
   MaterialColor _getUrgencyColor() {
+    // Phase 12: Purple for break habits
+    if (widget.isBreakHabit) {
+      return Colors.purple;
+    }
     switch (widget.recoveryNeed.urgency) {
       case RecoveryUrgency.gentle:
         return Colors.amber;
@@ -71,6 +83,10 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
   }
   
   Color _getUrgencyBackgroundColor() {
+    // Phase 12: Purple for break habits
+    if (widget.isBreakHabit) {
+      return Colors.purple.shade50;
+    }
     switch (widget.recoveryNeed.urgency) {
       case RecoveryUrgency.gentle:
         return Colors.amber.shade50;
@@ -83,14 +99,20 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
 
   @override
   Widget build(BuildContext context) {
-    final title = RecoveryEngine.getRecoveryTitle(widget.recoveryNeed.urgency);
-    final subtitle = RecoveryEngine.getRecoverySubtitle(
-      widget.recoveryNeed.urgency,
-      widget.recoveryNeed.daysMissed,
-    );
-    final message = RecoveryEngine.getRecoveryMessage(widget.recoveryNeed);
-    final actionText = RecoveryEngine.getRecoveryActionText(widget.recoveryNeed.urgency);
-    final emoji = RecoveryEngine.getRecoveryEmoji(widget.recoveryNeed.urgency);
+    // Phase 12: Different text for break habits
+    final title = widget.isBreakHabit 
+        ? RecoveryEngine.getBreakHabitRecoveryTitle(widget.recoveryNeed.urgency)
+        : RecoveryEngine.getRecoveryTitle(widget.recoveryNeed.urgency);
+    final subtitle = widget.isBreakHabit
+        ? RecoveryEngine.getBreakHabitRecoverySubtitle(widget.recoveryNeed.urgency, widget.recoveryNeed.daysMissed)
+        : RecoveryEngine.getRecoverySubtitle(widget.recoveryNeed.urgency, widget.recoveryNeed.daysMissed);
+    final message = widget.isBreakHabit
+        ? RecoveryEngine.getBreakHabitRecoveryMessage(widget.recoveryNeed)
+        : RecoveryEngine.getRecoveryMessage(widget.recoveryNeed);
+    final actionText = widget.isBreakHabit
+        ? RecoveryEngine.getBreakHabitRecoveryActionText(widget.recoveryNeed.urgency)
+        : RecoveryEngine.getRecoveryActionText(widget.recoveryNeed.urgency);
+    final emoji = widget.isBreakHabit ? '🛡️' : RecoveryEngine.getRecoveryEmoji(widget.recoveryNeed.urgency);
     final urgencyColor = _getUrgencyColor();
     
     return FadeTransition(

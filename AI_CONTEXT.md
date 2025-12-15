@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.5.0 — Phase 7 Weekly Review with AI)
+> **Last Updated:** December 2025 (v4.9.0 — Phase 12 Bad Habit Protocol)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -63,6 +63,10 @@ When stale branches accumulate (> 10 unmerged):
 | Navigation | GoRouter | ^14.0.0 |
 | Persistence | Hive | ^2.2.3 |
 | Notifications | flutter_local_notifications | ^19.2.1 |
+| Home Widgets | home_widget | ^0.7.0 |
+| Charts | fl_chart | ^0.69.0 |
+| File Sharing | share_plus | ^10.1.4 |
+| File Picking | file_picker | ^8.1.6 |
 | UI | Material Design 3 | - |
 
 ---
@@ -92,8 +96,10 @@ When stale branches accumulate (> 10 unmerged):
 | **Settings & Polish (Phase 6)** | ✅ Live | SettingsScreen | AppState (AppSettings) | Theme, notifications, sound, haptics |
 | **Error Boundaries (Phase 6)** | ✅ Live | ErrorBoundary, ErrorScreen | - | Global error handling |
 | **Weekly Review with AI (Phase 7)** | ✅ Live | WeeklyReviewDialog | WeeklyReviewService | AI-powered weekly insights |
-| Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
-| Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
+| **Home Screen Widgets (Phase 9)** | ✅ Live | Native (Android/iOS) | HomeWidgetService | One-tap habit completion |
+| **Analytics Dashboard (Phase 10)** | ✅ Live | AnalyticsScreen | AnalyticsService | Graceful Consistency charts |
+| **Backup & Restore (Phase 11)** | ✅ Live | DataManagementScreen | BackupService | JSON export/import |
+| **Bad Habit Protocol (Phase 12)** | ✅ Live | Updated UI components | Habit.isBreakHabit | Break habits with purple theme |
 
 ---
 
@@ -123,6 +129,9 @@ lib/
 │       ├── consistency_service.dart    # Consistency calculations
 │       ├── gemini_chat_service.dart    # Chat + One-shot AI analysis
 │       ├── weekly_review_service.dart  # [Phase 7] Weekly data aggregation
+│       ├── home_widget_service.dart    # [Phase 9] Home screen widget sync
+│       ├── analytics_service.dart      # [Phase 10] Analytics data computation
+│       ├── backup_service.dart         # [Phase 11] Backup/restore logic
 │       └── onboarding/
 │           ├── onboarding_orchestrator.dart  # AI orchestration
 │           ├── ai_response_parser.dart       # JSON extraction
@@ -150,9 +159,12 @@ lib/
 │   │   └── widgets/
 │   │       └── calendar_month_view.dart
 │   ├── settings/
-│   │   └── settings_screen.dart        # Settings (fully functional)
-│   └── review/                         # [Phase 7]
-│       └── weekly_review_dialog.dart   # AI-powered weekly insights
+│   │   ├── settings_screen.dart        # Settings (fully functional)
+│   │   └── data_management_screen.dart # [Phase 11] Backup & Restore UI
+│   ├── review/                         # [Phase 7]
+│   │   └── weekly_review_dialog.dart   # AI-powered weekly insights
+│   └── analytics/                      # [Phase 10]
+│       └── analytics_screen.dart       # Graceful Consistency charts
 ├── widgets/                            # Shared widgets
 │   ├── graceful_consistency_card.dart
 │   ├── recovery_prompt_dialog.dart
@@ -261,6 +273,9 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 1.6.0 | Dec 2025 | Phase 6: Settings & Polish (AppSettings, Error Boundaries, Dynamic Theming) |
 | 1.6.1 | Dec 2025 | Phase 6.5: Brand Polish (Custom App Icon, Splash Screen, ErrorReporter) |
 | 4.5.0 | Dec 2025 | Phase 7: Weekly Review with AI (WeeklyReviewService, WeeklyReviewDialog) |
+| 4.6.0 | Dec 2025 | Phase 9: Home Screen Widgets (Android + iOS native widgets) |
+| 4.7.0 | Dec 2025 | Phase 10: Analytics Dashboard (fl_chart, AnalyticsService, trend visualization) |
+| 4.8.0 | Dec 2025 | Phase 11: Data Safety (BackupService, DataManagementScreen, JSON export/import) |
 
 ---
 
@@ -485,6 +500,379 @@ If AI is unavailable (offline, API error), local heuristics generate appropriate
 
 ### GeminiChatService Extension
 Added `generateWeeklyAnalysis(String prompt)` method for single-turn, non-conversational AI requests.
+
+---
+
+## Phase 9: Home Screen Widgets Architecture
+
+### Overview
+Home Screen Widgets enable one-tap habit completion from the device's home screen without opening the app. Supports both Android and iOS.
+
+### New Files
+```
+lib/
+└── data/
+    └── services/
+        └── home_widget_service.dart    # Widget data sync, callbacks
+
+android/
+├── app/src/main/
+│   ├── kotlin/.../HabitWidgetProvider.kt  # Widget provider
+│   ├── res/layout/habit_widget.xml        # Widget layout
+│   ├── res/xml/habit_widget_info.xml      # Widget config
+│   └── res/drawable/widget_*.xml          # Widget styles
+
+ios/
+└── HabitWidget/
+    ├── HabitWidget.swift     # WidgetKit implementation
+    ├── Info.plist            # Widget extension config
+    └── README.md             # iOS setup guide
+```
+
+### Key Components
+
+| Component | Platform | Purpose |
+|-----------|----------|---------|
+| `HomeWidgetService` | Flutter | Data sync, callback handling |
+| `HabitWidgetProvider` | Android | AppWidgetProvider implementation |
+| `HabitWidget` | iOS | WidgetKit StaticConfiguration |
+| `HabitEntry` | iOS | TimelineEntry for widget data |
+
+### Data Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Flutter App                            │
+│  AppState → completeHabit() → _updateHomeWidget()           │
+│                        ↓                                     │
+│              HomeWidgetService.updateWidgetData()           │
+│                        ↓                                     │
+│         HomeWidget.saveWidgetData() (shared prefs)          │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Native Widget                             │
+│  Android: SharedPreferences → HabitWidgetProvider           │
+│  iOS: UserDefaults (App Group) → HabitTimelineProvider      │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Widget Tap                                │
+│  URL: atomichabits://complete_habit?id=<habit_id>           │
+│                        ↓                                     │
+│  backgroundCallback() → Mark completed in shared storage     │
+│                        ↓                                     │
+│  App opens → _processPendingWidgetCompletion() → sync       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Widget Features
+- **Habit Name + Emoji**: Shows current focused habit
+- **Stats Display**: Current streak or Graceful Score
+- **Complete Button**: One-tap habit completion
+- **Visual State**: Different colors for completed/incomplete
+
+### iOS Setup Requirements
+The iOS widget requires Xcode configuration:
+1. Add Widget Extension target
+2. Configure App Groups for data sharing
+3. See `ios/HabitWidget/README.md` for detailed steps
+
+### Shared Data Keys
+```dart
+keyHabitId = 'habit_id'
+keyHabitName = 'habit_name'
+keyHabitEmoji = 'habit_emoji'
+keyIdentity = 'identity'
+keyIsCompleted = 'is_completed_today'
+keyCurrentStreak = 'current_streak'
+keyGracefulScore = 'graceful_score'
+keyTinyVersion = 'tiny_version'
+keyLastUpdate = 'last_update'
+```
+
+### URL Scheme
+- **Scheme**: `atomichabits://`
+- **Complete Action**: `atomichabits://complete_habit?id=<habit_id>`
+
+---
+
+## Phase 10: Analytics Dashboard Architecture
+
+### Overview
+The Analytics Dashboard provides a "Zoom Out" view of habit progress, visualizing Graceful Consistency over time. The key design principle: **missed days appear as small dips, not cliffs**, reinforcing the app's resilience-focused philosophy.
+
+### New Files
+```
+lib/
+├── features/
+│   └── analytics/
+│       └── analytics_screen.dart    # Interactive charts and insights
+└── data/
+    └── services/
+        └── analytics_service.dart   # Historical data computation
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `AnalyticsScreen` | Main UI with charts, period selector, insights |
+| `AnalyticsService` | Data aggregation, rolling score calculation |
+| `AnalyticsDataPoint` | Single data point for charts (date, score, status) |
+| `PeriodSummary` | Summary statistics for a time period |
+| `WeeklyBreakdown` | Bar chart data for weekly view |
+| `AnalyticsPeriod` | Enum for time periods (7/14/30/90 days, All) |
+
+### Chart Types
+
+1. **Line Chart (Main)**
+   - Graceful Consistency Score over time
+   - Curved line with gradient fill
+   - Dot colors: Green (completed), Orange (recovery), Gray (missed)
+   - Touch tooltips showing date, score, status
+
+2. **Bar Chart (Weekly)**
+   - Weekly completion breakdown (days per week)
+   - Color coding: Green (≥70%), Orange (≥40%), Gray (<40%)
+
+### Data Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Habit Data                              │
+│   - completionHistory (List<DateTime>)                       │
+│   - recoveryHistory (List<RecoveryEvent>)                   │
+│   - createdAt (DateTime)                                     │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  AnalyticsService                            │
+│   generateScoreHistory() → List<AnalyticsDataPoint>         │
+│   generatePeriodSummary() → PeriodSummary                   │
+│   generateWeeklyBreakdown() → List<WeeklyBreakdown>         │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   AnalyticsScreen                            │
+│   - Period selector chips                                    │
+│   - Habit header with identity                               │
+│   - Line chart with trend indicator                          │
+│   - Summary card (stats grid)                                │
+│   - Weekly breakdown bar chart                               │
+│   - Contextual insight card                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Rolling Score Calculation
+The `_calculateRollingScore()` method computes a smoothed Graceful Score for each day:
+- Uses 7-day rolling window
+- Considers days since habit creation (doesn't penalize new habits)
+- Formula: `completionRate × 100` (simplified for visualization)
+
+### Insight Generation
+Insights are generated based on period data:
+- **Recovery + Stable Score**: "Your recoveries kept your score stable"
+- **High Completion (≥80%)**: "Excellent consistency! Building evidence..."
+- **Missed Days + Small Dip**: "Notice how the score dips gently, not crashes"
+- **Declining Score**: "Let's focus on the 2-minute version"
+- **Default**: "Every completion is a vote for your identity"
+
+### Navigation
+- **Route**: `/analytics`
+- **Access**: Analytics button (📊) in Dashboard app bar
+- **Condition**: Only shown when habits exist
+
+---
+
+## Phase 11: Data Safety (Backup & Restore) Architecture
+
+### Overview
+The Data Safety feature protects user investment by enabling comprehensive backup and restore functionality. After building analytics, users have significant data worth protecting. This is a prerequisite for Release Candidate status.
+
+### Philosophy
+"Protecting user investment is as important as enabling it."
+- Users invest time and effort tracking habits
+- Completion history, recovery wins, and consistency data are valuable
+- Essential for device migration, data safety, and peace of mind
+
+### New Files
+```
+lib/
+├── features/
+│   └── settings/
+│       └── data_management_screen.dart  # Backup/Restore UI
+└── data/
+    └── services/
+        └── backup_service.dart          # Export/Import logic
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `BackupService` | JSON serialization, file I/O, validation |
+| `DataManagementScreen` | UI for backup/restore operations |
+| `BackupResult` | Sealed class for operation results |
+| `BackupSummary` | Preview of backup contents |
+
+### Backup File Format
+```json
+{
+  "version": 1,
+  "appName": "Atomic Habits Hook App",
+  "exportedAt": "2025-12-15T10:30:00.000Z",
+  "habits": [...],
+  "userProfile": {...},
+  "appSettings": {...},
+  "focusedHabitId": "uuid",
+  "hasCompletedOnboarding": true
+}
+```
+
+### Data Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Export Flow                            │
+│                                                             │
+│   Hive Box → BackupService.exportBackup()                   │
+│            → Generate JSON with all data                     │
+│            → Write to temp file                              │
+│            → Open System Share Sheet                         │
+│            → Record backup timestamp                         │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                       Import Flow                            │
+│                                                             │
+│   File Picker → BackupService.importBackup()                │
+│              → Read and parse JSON                          │
+│              → Validate structure and required keys          │
+│              → Show preview (BackupSummary)                  │
+│              → User confirms overwrite warning               │
+│              → BackupService.restoreBackup()                │
+│              → Clear and restore Hive box                   │
+│              → AppState.reloadFromStorage()                 │
+│              → Navigate to Dashboard                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Validation Rules
+- Required keys: `version`, `exportedAt`, `habits`, `userProfile`
+- `habits` must be a valid JSON array
+- Each habit must have `id` and `name` fields
+- Version must be a positive integer
+
+### What's Included in Backup
+- ✅ All habits (names, identities, tiny versions, settings)
+- ✅ Completion history (every day showed up)
+- ✅ Streaks and scores (current, longest, Graceful Score)
+- ✅ Recovery history (Never Miss Twice wins)
+- ✅ User profile (name, identity statement)
+- ✅ App settings (theme, notifications, sound)
+- ✅ Focused habit ID
+- ✅ Onboarding completion status
+
+### Navigation
+- **Route**: `/data-management`
+- **Access**: Settings → Data & Storage → Backup & Restore
+- **Dependencies**: `path_provider`, `share_plus`, `file_picker`, `intl`
+
+---
+
+## Phase 12: Bad Habit Protocol Architecture
+
+### Overview
+The Bad Habit Protocol enables users to break bad habits alongside building good ones, fully aligning with James Clear's methodology. For bad habits, **avoidance equals completion** — tracked via the same `completionHistory` mechanism but with inverted UI logic.
+
+### Philosophy
+"To break a bad habit: Make it invisible, unattractive, difficult, and unsatisfying." — James Clear
+
+The app leverages the existing (but previously unused) `isBreakHabit` field to invert UI messaging while keeping the underlying consistency engine intact.
+
+### Key Principle: Avoidance = Completion
+For break habits:
+- Marking "complete" means "I successfully avoided today"
+- Streak represents "Days Habit-Free" 
+- Completion rate becomes "Abstinence Rate"
+- Recovery messages change to "Slipped up?" language
+
+### UI Adaptations
+
+| Component | Build Habit | Break Habit |
+|-----------|------------|-------------|
+| Action Button | "Mark as Complete ✓" | "I Stayed Strong Today 🛡️" |
+| Completed Status | "Completed for today! 🎉" | "Avoided today! 💪" |
+| Streak Label | "🔥 Streak" | "🛡️ Days Free" |
+| Progress Label | "Consistency" | "Abstinence Rate" |
+| Color Theme | Green/Orange | Purple |
+| Card Icon | Check circle | Shield |
+| Tiny Version | "Start tiny: {action}" | "Instead, I will: {substitution}" |
+
+### OnboardingScreen Changes
+```dart
+// Build vs Break toggle
+_buildHabitTypeToggle() // Segmented control
+
+// Break habit specific fields (when _isBreakHabit = true)
+- Trigger input: "What triggers this habit?"
+- Root cause input: "Why do you want to break this habit?"
+- Substitution plan: "What will you do instead?"
+```
+
+### RecoveryPromptDialog Changes
+```dart
+// Phase 12: Break habit recovery messages
+getBreakHabitRecoveryTitle()    // "Slipped Up?" vs "Never Miss Twice"
+getBreakHabitRecoverySubtitle() // "One slip doesn't define you"
+getBreakHabitRecoveryMessage()  // Substitution-focused messaging
+getBreakHabitRecoveryActionText() // "I'm staying strong today"
+```
+
+### Analytics Dashboard Changes
+```dart
+// Labels adapt based on habit.isBreakHabit
+- "Abstinence Rate" instead of "Graceful Consistency"
+- "Days Avoided" instead of "Days Completed"  
+- "Avoidance Rate" instead of "Completion Rate"
+- "Longest Abstinence" instead of "Best Streak"
+- "Fresh Starts" instead of "Recoveries"
+- Shield icon (🛡️) instead of flame (🔥)
+```
+
+### HomeWidgetService Changes
+```dart
+// New shared data keys for native widgets
+keyIsBreakHabit = 'is_break_habit'
+keyActionText = 'action_text'     // "Avoid" or "Complete"
+keyStreakLabel = 'streak_label'   // "Days Free" or "Streak"
+```
+
+### Files Modified
+```
+lib/features/onboarding/onboarding_screen.dart     # Build/Break toggle + fields
+lib/features/today/widgets/completion_button.dart  # Action text + colors
+lib/features/today/widgets/habit_card.dart         # Break habit styling
+lib/features/today/today_screen.dart               # Pass isBreakHabit flag
+lib/features/dashboard/widgets/habit_summary_card.dart  # Card adaptations
+lib/features/analytics/analytics_screen.dart       # Label changes
+lib/widgets/recovery_prompt_dialog.dart            # Break habit messages
+lib/data/services/recovery_engine.dart             # New message methods
+lib/data/services/home_widget_service.dart         # Widget data keys
+```
+
+### Habit Model Fields (Already Existed)
+```dart
+// lib/data/models/habit.dart - Phase 12 leverages these existing fields:
+final bool isBreakHabit;        // Toggle for break vs build
+final String? replacesHabit;    // What bad habit this targets
+final String? rootCause;        // Why/trigger for the habit
+final String? substitutionPlan; // Healthy alternative behavior
+```
+
+### Data Handling
+- **No schema changes** — `isBreakHabit` already exists in Habit model
+- **Backward compatible** — defaults to `false` for existing habits
+- **Same persistence** — completionHistory tracks avoidance same as completion
+- **Same analytics** — AnalyticsService treats both habit types identically
 
 ---
 

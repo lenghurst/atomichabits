@@ -9,6 +9,7 @@ import 'models/app_settings.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
+import 'services/home_widget_service.dart';
 
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
@@ -84,6 +85,9 @@ class AppState extends ChangeNotifier {
   
   // AI Suggestion service (local heuristics for now)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
+  
+  // Phase 9: Home Screen Widget service
+  final HomeWidgetService _homeWidgetService = HomeWidgetService();
 
   // Getters to access state
   UserProfile? get userProfile => _userProfile;
@@ -200,6 +204,9 @@ class AppState extends ChangeNotifier {
       // Set up notification action handler
       _notificationService.onNotificationAction = _handleNotificationAction;
       
+      // Phase 9: Initialize home widget service
+      await _homeWidgetService.initialize();
+      
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
       
@@ -213,6 +220,12 @@ class AppState extends ChangeNotifier {
       
       // Check for recovery needs (Never Miss Twice)
       _checkRecoveryNeeds();
+      
+      // Phase 9: Process any pending widget completions
+      await _processPendingWidgetCompletion();
+      
+      // Phase 9: Update widget with current habit data
+      await _updateHomeWidget();
       
       _isLoading = false;
       notifyListeners();
@@ -376,6 +389,10 @@ class AppState extends ChangeNotifier {
     _focusedHabitId = habitToAdd.id;
     
     await _saveToStorage();
+    
+    // Phase 9: Update home widget with new habit
+    await _updateHomeWidget();
+    
     notifyListeners();
     
     if (kDebugMode) {
@@ -444,6 +461,9 @@ class AppState extends ChangeNotifier {
     _currentRecoveryNeed = null;
     _shouldShowRecoveryPrompt = false;
     
+    // Phase 9: Update home widget (may now show different habit or be cleared)
+    await _updateHomeWidget();
+    
     notifyListeners();
     
     if (kDebugMode) {
@@ -466,6 +486,9 @@ class AppState extends ChangeNotifier {
     
     // Check recovery needs for the new focused habit
     _checkRecoveryNeeds();
+    
+    // Phase 9: Update home widget with new focused habit
+    await _updateHomeWidget();
     
     notifyListeners();
     
@@ -677,6 +700,9 @@ class AppState extends ChangeNotifier {
     // Trigger Reward + Investment flow
     _shouldShowRewardFlow = true;
     
+    // Phase 9: Update home widget with completed state
+    await _updateHomeWidget();
+    
     notifyListeners();
     
     if (kDebugMode) {
@@ -739,6 +765,42 @@ class AppState extends ChangeNotifier {
     _hasCompletedOnboarding = false;
     _settings = const AppSettings();  // Phase 6: Reset settings
     await _notificationService.cancelAllNotifications();
+    notifyListeners();
+  }
+  
+  /// Phase 11: Reload data from storage after backup restore
+  /// This re-reads all data from Hive without full re-initialization
+  Future<void> reloadFromStorage() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      // Reload all data from Hive
+      await _loadFromStorage();
+      
+      // Reschedule notifications if needed
+      if (_hasCompletedOnboarding && hasHabits && _userProfile != null) {
+        await _scheduleNotifications();
+      }
+      
+      // Check recovery needs
+      _checkRecoveryNeeds();
+      
+      // Update home widget
+      await _updateHomeWidget();
+      
+      if (kDebugMode) {
+        debugPrint('🔄 Data reloaded from storage after backup restore');
+        debugPrint('   Habits: ${_habits.length}');
+        debugPrint('   Profile: ${_userProfile?.name}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error reloading from storage: $e');
+      }
+    }
+    
+    _isLoading = false;
     notifyListeners();
   }
   
@@ -1238,5 +1300,103 @@ class AppState extends ChangeNotifier {
       'environmentCue': results[2],
       'environmentDistraction': results[3],
     };
+  }
+  
+  // ========== Phase 9: Home Screen Widget Methods ==========
+  
+  /// Get the home widget service for external access (e.g., deep link handling)
+  HomeWidgetService get homeWidgetService => _homeWidgetService;
+  
+  /// Update home screen widget with current habit data
+  /// Called after habit completion, creation, or deletion
+  Future<void> _updateHomeWidget() async {
+    if (currentHabit == null) {
+      // No habit - clear widget data
+      await _homeWidgetService.clearWidgetData();
+      return;
+    }
+    
+    await _homeWidgetService.updateWidgetData(
+      habit: currentHabit!,
+      isCompletedToday: isHabitCompletedToday(),
+    );
+  }
+  
+  /// Process any pending habit completions from widget tap
+  /// Called when app starts or comes to foreground
+  Future<void> _processPendingWidgetCompletion() async {
+    try {
+      final pendingHabitId = await HomeWidgetData.getPendingCompletionId();
+      
+      if (pendingHabitId != null) {
+        if (kDebugMode) {
+          debugPrint('Processing pending widget completion for habit: $pendingHabitId');
+        }
+        
+        // Complete the habit in the app
+        final completed = await completeHabitForToday(
+          habitId: pendingHabitId,
+          fromNotification: false,
+        );
+        
+        if (completed) {
+          if (kDebugMode) {
+            debugPrint('Habit completed from widget tap');
+          }
+        }
+        
+        // Clear the pending completion
+        await HomeWidgetData.clearPendingCompletion();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error processing pending widget completion: $e');
+      }
+    }
+  }
+  
+  /// Handle widget URI callback (for deep link from widget tap)
+  /// Call this when app receives a deep link from the widget
+  Future<bool> handleWidgetUri(Uri? uri) async {
+    if (uri == null) return false;
+    
+    if (_homeWidgetService.isCompleteHabitAction(uri)) {
+      final habitId = _homeWidgetService.getHabitIdFromUri(uri);
+      
+      if (habitId != null) {
+        if (kDebugMode) {
+          debugPrint('Handling widget complete action for habit: $habitId');
+        }
+        
+        // Complete the habit
+        final completed = await completeHabitForToday(
+          habitId: habitId,
+          fromNotification: false,
+        );
+        
+        return completed;
+      }
+    }
+    
+    return false;
+  }
+  
+  /// Listen for widget click events
+  /// Returns a stream of URIs from widget interactions
+  Stream<Uri?> get widgetClickStream => _homeWidgetService.widgetClicks;
+  
+  /// Request to pin widget to home screen (Android only)
+  Future<bool> requestPinWidget() async {
+    return await _homeWidgetService.requestPinWidget();
+  }
+  
+  /// Get count of installed widgets
+  Future<int> getInstalledWidgetCount() async {
+    return await _homeWidgetService.getInstalledWidgetCount();
+  }
+  
+  /// Force refresh home widget (for manual refresh scenarios)
+  Future<void> refreshHomeWidget() async {
+    await _updateHomeWidget();
   }
 }

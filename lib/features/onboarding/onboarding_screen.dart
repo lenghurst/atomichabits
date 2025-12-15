@@ -11,6 +11,13 @@ import 'widgets/magic_wand_button.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
+/// 
+/// **Phase 12: Bad Habit Protocol**
+/// Supports both building good habits and breaking bad habits.
+/// For break habits:
+/// - Habit type toggle (Build vs Break)
+/// - Additional fields: What to replace, Root cause, Substitution plan
+/// - Different UI labeling and guidance
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -38,6 +45,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // AI Magic Wand state
   bool _isAiLoading = false;
   
+  // Phase 12: Break Habit Protocol
+  bool _isBreakHabit = false;
+  final _replacesHabitController = TextEditingController();
+  final _rootCauseController = TextEditingController();
+  final _substitutionPlanController = TextEditingController();
+  
   // Store the full AI data to preserve invisible fields (motivation, rootCause, etc.)
   // This prevents "Data Amnesia" - losing AI-generated metadata when saving
   OnboardingData? _lastAiData;
@@ -53,6 +66,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _preHabitRitualController.dispose();
     _environmentCueController.dispose();
     _environmentDistractionController.dispose();
+    // Phase 12: Break Habit Protocol
+    _replacesHabitController.dispose();
+    _rootCauseController.dispose();
+    _substitutionPlanController.dispose();
     super.dispose();
   }
 
@@ -493,6 +510,120 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  // Phase 12: Build vs Break habit type toggle
+  Widget _buildHabitTypeToggle() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isBreakHabit = false),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !_isBreakHabit ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: !_isBreakHabit
+                      ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_circle_outline,
+                      color: !_isBreakHabit ? Colors.green : Colors.grey,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Build',
+                      style: TextStyle(
+                        fontWeight: !_isBreakHabit ? FontWeight.bold : FontWeight.normal,
+                        color: !_isBreakHabit ? Colors.green : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isBreakHabit = true),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _isBreakHabit ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _isBreakHabit
+                      ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.remove_circle_outline,
+                      color: _isBreakHabit ? Colors.purple : Colors.grey,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Break',
+                      style: TextStyle(
+                        fontWeight: _isBreakHabit ? FontWeight.bold : FontWeight.normal,
+                        color: _isBreakHabit ? Colors.purple : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Phase 12: Break Habit specific fields
+  List<Widget> _buildBreakHabitFields() {
+    return [
+      // What habit are you replacing?
+      TextFormField(
+        controller: _replacesHabitController,
+        decoration: const InputDecoration(
+          labelText: 'What triggers this habit? (Optional)',
+          hintText: 'e.g., "Boredom", "Stress", "After meals"',
+          helperText: 'Understanding triggers helps you break the pattern',
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(Icons.psychology),
+        ),
+        maxLines: 2,
+      ),
+      const SizedBox(height: 16),
+      
+      // Root cause
+      TextFormField(
+        controller: _rootCauseController,
+        decoration: const InputDecoration(
+          labelText: 'Why do you want to break this habit? (Optional)',
+          hintText: 'e.g., "It wastes my time", "Affects my health"',
+          helperText: 'Your motivation will help when cravings hit',
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(Icons.favorite),
+        ),
+        maxLines: 2,
+      ),
+      const SizedBox(height: 24),
+    ];
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
@@ -536,10 +667,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         // - What triggers/problems they're addressing (rootCause)
         // - What bad habit they're replacing (replacesHabit)
         // - Their fallback plan when tempted (substitutionPlan, recoveryPlan)
-        isBreakHabit: _lastAiData?.habitType == HabitType.breakHabit,
-        replacesHabit: _lastAiData?.replacesHabit,
-        rootCause: _lastAiData?.rootCause,
-        substitutionPlan: _lastAiData?.substitutionPlan,
+        // Phase 12: Bad Habit Protocol - merge manual + AI data
+        isBreakHabit: _isBreakHabit || _lastAiData?.habitType == HabitType.breakHabit,
+        replacesHabit: _isBreakHabit 
+            ? (_replacesHabitController.text.trim().isEmpty ? null : _replacesHabitController.text.trim())
+            : _lastAiData?.replacesHabit,
+        rootCause: _isBreakHabit 
+            ? (_rootCauseController.text.trim().isEmpty ? null : _rootCauseController.text.trim())
+            : _lastAiData?.rootCause,
+        substitutionPlan: _isBreakHabit 
+            ? (_substitutionPlanController.text.trim().isEmpty ? null : _substitutionPlanController.text.trim())
+            : _lastAiData?.substitutionPlan,
         habitEmoji: _lastAiData?.habitEmoji ?? '✨', // Default emoji
         motivation: _lastAiData?.motivation,
         recoveryPlan: _lastAiData?.recoveryPlan,
@@ -625,16 +763,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                 // Habit section
                 Text(
-                  '✨ Your First Tiny Habit',
+                  _isBreakHabit ? '🛡️ Breaking a Bad Habit' : '✨ Your First Tiny Habit',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Start with something so easy you can\'t say no.',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                Text(
+                  _isBreakHabit 
+                      ? 'Make it invisible, unattractive, difficult, and unsatisfying.'
+                      : 'Start with something so easy you can\'t say no.',
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
+                const SizedBox(height: 16),
+                
+                // Phase 12: Habit Type Toggle
+                _buildHabitTypeToggle(),
                 const SizedBox(height: 24),
 
                 // Habit name with Magic Wand button
@@ -644,11 +788,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _habitNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'What habit do you want to build?',
-                          hintText: 'e.g., "Read every day"',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.check_circle),
+                        decoration: InputDecoration(
+                          labelText: _isBreakHabit 
+                              ? 'What habit do you want to break?'
+                              : 'What habit do you want to build?',
+                          hintText: _isBreakHabit 
+                              ? 'e.g., "Doomscrolling", "Stress eating"'
+                              : 'e.g., "Read every day"',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: Icon(_isBreakHabit ? Icons.block : Icons.check_circle),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -664,7 +812,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: MagicWandButton(
                         habitName: _habitNameController.text,
                         identity: _identityController.text,
-                        isBreakHabit: false,
+                        isBreakHabit: _isBreakHabit,
                         onHabitGenerated: _onAiHabitGenerated,
                         onLoadingChanged: _onAiLoadingChanged,
                         onError: _onAiError,
@@ -686,19 +834,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Tiny version (2-minute rule)
+                // Phase 12: Break Habit specific fields
+                if (_isBreakHabit) ..._buildBreakHabitFields(),
+                
+                // Tiny version (2-minute rule) - or substitution for break habits
                 TextFormField(
-                  controller: _tinyVersionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Make it tiny (2-minute version)',
-                    hintText: 'e.g., "Read one page"',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.timer),
+                  controller: _isBreakHabit ? _substitutionPlanController : _tinyVersionController,
+                  decoration: InputDecoration(
+                    labelText: _isBreakHabit 
+                        ? 'What will you do instead? (Substitution)'
+                        : 'Make it tiny (2-minute version)',
+                    hintText: _isBreakHabit 
+                        ? 'e.g., "5-minute walk", "Breathing exercises"'
+                        : 'e.g., "Read one page"',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: Icon(_isBreakHabit ? Icons.swap_horiz : Icons.timer),
                   ),
                   maxLines: 2,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a tiny version of your habit';
+                      return _isBreakHabit 
+                          ? 'Please enter a healthy substitution'
+                          : 'Please enter a tiny version of your habit';
                     }
                     return null;
                   },
@@ -942,12 +1099,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: ElevatedButton(
                     onPressed: _completeOnboarding,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: _isBreakHabit ? Colors.purple : Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text(
-                      'Start Building Habits',
-                      style: TextStyle(
+                    child: Text(
+                      _isBreakHabit ? 'Start Breaking This Habit' : 'Start Building Habits',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

@@ -149,11 +149,20 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 
-                // ========== Data Section ==========
-                _buildSectionTitle(context, 'Data'),
+                // ========== Data & Storage Section ==========
+                _buildSectionTitle(context, 'Data & Storage'),
                 Card(
                   child: Column(
                     children: [
+                      // Backup & Restore (Phase 11)
+                      ListTile(
+                        leading: const Icon(Icons.backup),
+                        title: const Text('Backup & Restore'),
+                        subtitle: const Text('Export or import your data'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push('/data-management'),
+                      ),
+                      const Divider(height: 1),
                       ListTile(
                         leading: Icon(Icons.delete_forever, color: Colors.red.shade700),
                         title: Text(
@@ -185,7 +194,7 @@ class SettingsScreen extends StatelessWidget {
                       ListTile(
                         leading: const Icon(Icons.info_outline),
                         title: const Text('App Info'),
-                        subtitle: const Text('Version 4.3.0 (Phase 5+6)'),
+                        subtitle: const Text('Version 4.8.0 (Phase 11)'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showAboutDialog(context),
                       ),
@@ -476,7 +485,7 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (context) => AboutDialog(
         applicationName: 'Atomic Habits Hook App',
-        applicationVersion: '4.3.0 (Phase 5+6)',
+        applicationVersion: '4.8.0 (Phase 11)',
         applicationIcon: const Icon(
           Icons.self_improvement,
           size: 48,
@@ -498,6 +507,10 @@ class SettingsScreen extends StatelessWidget {
           Text('✅ Phase 4: Dashboard'),
           Text('✅ Phase 5: History & Calendar'),
           Text('✅ Phase 6: Settings & Polish'),
+          Text('✅ Phase 7: Weekly Review with AI'),
+          Text('✅ Phase 9: Home Screen Widgets'),
+          Text('✅ Phase 10: Analytics Dashboard'),
+          Text('✅ Phase 11: Backup & Restore'),
         ],
       ),
     );

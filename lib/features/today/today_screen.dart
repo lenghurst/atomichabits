@@ -302,6 +302,9 @@ class _HabitView extends StatelessWidget {
             environmentCue: habit.environmentCue,
             environmentDistraction: habit.environmentDistraction,
             isCompleted: isCompleted,
+            // Phase 12: Bad Habit Protocol
+            isBreakHabit: habit.isBreakHabit,
+            substitutionPlan: habit.substitutionPlan,
           ),
           const SizedBox(height: 24),
 
@@ -338,6 +341,8 @@ class _HabitView extends StatelessWidget {
           CompletionButton(
             isCompleted: isCompleted,
             onComplete: () => controller.handleCompleteHabit(),
+            // Phase 12: Bad Habit Protocol
+            isBreakHabit: habit.isBreakHabit,
           ),
           const SizedBox(height: 24),
           

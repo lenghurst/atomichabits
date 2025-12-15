@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Habit Widget Layout for Atomic Habits Hook App
+    Phase 9: Home Screen Widgets
+    
+    Design:
+    - Shows habit name with emoji at top
+    - Shows streak or graceful score below
+    - Complete button at bottom
+    - Deep purple theme matching app branding
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background"
+    android:gravity="center_horizontal">
+
+    <!-- Habit name with emoji -->
+    <TextView
+        android:id="@+id/habit_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read 1 page"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/widget_text_primary"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Stats (streak or score) -->
+    <TextView
+        android:id="@+id/habit_stats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="5 day streak"
+        android:textSize="12sp"
+        android:textColor="@color/widget_text_secondary"
+        android:gravity="center"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Complete button -->
+    <Button
+        android:id="@+id/complete_button"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:minWidth="100dp"
+        android:text="Complete"
+        android:textSize="12sp"
+        android:textColor="@color/widget_button_text"
+        android:textAllCaps="false"
+        android:background="@drawable/widget_button_default"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"/>
+
+</LinearLayout>

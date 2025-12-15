@@ -5,10 +5,17 @@ import '../../../data/models/habit.dart';
 /// 
 /// Shows:
 /// - Habit name and emoji
-/// - Tiny version
+/// - Tiny version (or substitution plan for break habits)
 /// - Graceful Consistency score with progress bar
 /// - Completion status for today
 /// - Quick complete button
+/// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - Avoidance = completion (tracked via completionHistory)
+/// - Streak label changes to "Days Habit-Free"
+/// - Color palette shifts to emphasize avoidance
+/// - Action text changes to "Stayed Strong" / "Avoided"
 class HabitSummaryCard extends StatelessWidget {
   final Habit habit;
   final int index;
@@ -31,13 +38,17 @@ class HabitSummaryCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final score = habit.gracefulScore;
     final scoreColor = _getScoreColor(score);
+    
+    // Phase 12: Break habit color adjustments
+    final isBreakHabit = habit.isBreakHabit;
+    final completedColor = isBreakHabit ? Colors.purple : Colors.green;
 
     return Card(
       elevation: isCompleted ? 1 : 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: isCompleted
-            ? BorderSide(color: Colors.green.withOpacity(0.3), width: 2)
+            ? BorderSide(color: completedColor.withOpacity(0.3), width: 2)
             : BorderSide.none,
       ),
       child: InkWell(
@@ -68,7 +79,7 @@ class HabitSummaryCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   
-                  // Name and tiny version
+                  // Name and tiny version (or substitution for break habits)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,9 +96,12 @@ class HabitSummaryCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          habit.tinyVersion,
+                          // Phase 12: Show substitution plan for break habits
+                          isBreakHabit && habit.substitutionPlan != null && habit.substitutionPlan!.isNotEmpty
+                              ? habit.substitutionPlan!
+                              : habit.tinyVersion,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                            color: isBreakHabit ? Colors.purple.shade700 : colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -97,7 +111,7 @@ class HabitSummaryCard extends StatelessWidget {
                   ),
                   
                   // Quick complete button
-                  _buildCompletionButton(context),
+                  _buildCompletionButton(context, isBreakHabit),
                 ],
               ),
               
@@ -115,7 +129,8 @@ class HabitSummaryCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Consistency',
+                              // Phase 12: Abstinence Rate for break habits
+                              isBreakHabit ? 'Abstinence Rate' : 'Consistency',
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -146,7 +161,7 @@ class HabitSummaryCard extends StatelessWidget {
                   const SizedBox(width: 16),
                   
                   // Streak badge
-                  _buildStreakBadge(context),
+                  _buildStreakBadge(context, isBreakHabit),
                 ],
               ),
               
@@ -162,24 +177,31 @@ class HabitSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompletionButton(BuildContext context) {
+  Widget _buildCompletionButton(BuildContext context, bool isBreakHabit) {
+    // Phase 12: Different colors and icons for break habits
+    final completedColor = isBreakHabit ? Colors.purple : Colors.green;
+    final completedIcon = isBreakHabit ? Icons.shield : Icons.check_circle;
+    final incompleteIcon = isBreakHabit ? Icons.shield_outlined : Icons.check_circle_outline;
+    
     if (isCompleted) {
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: completedColor.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.check_circle,
-          color: Colors.green,
+        child: Icon(
+          completedIcon,
+          color: completedColor,
           size: 28,
         ),
       );
     }
 
     return Material(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: isBreakHabit 
+          ? Colors.purple.withOpacity(0.1) 
+          : Theme.of(context).colorScheme.primaryContainer,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onQuickComplete,
@@ -187,8 +209,8 @@ class HabitSummaryCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            Icons.check_circle_outline,
-            color: Theme.of(context).colorScheme.primary,
+            incompleteIcon,
+            color: isBreakHabit ? Colors.purple : Theme.of(context).colorScheme.primary,
             size: 28,
           ),
         ),
@@ -196,15 +218,20 @@ class HabitSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStreakBadge(BuildContext context) {
+  Widget _buildStreakBadge(BuildContext context, bool isBreakHabit) {
     final streak = habit.currentStreak;
     final theme = Theme.of(context);
+    
+    // Phase 12: Different styling for break habits
+    final activeColor = isBreakHabit ? Colors.purple : Colors.orange;
+    final activeDarkColor = isBreakHabit ? Colors.purple.shade700 : Colors.orange.shade700;
+    final icon = isBreakHabit ? Icons.shield : Icons.local_fire_department;
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: streak > 0
-            ? Colors.orange.withOpacity(0.1)
+            ? activeColor.withOpacity(0.1)
             : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -212,17 +239,31 @@ class HabitSummaryCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.local_fire_department,
+            icon,
             size: 16,
-            color: streak > 0 ? Colors.orange : theme.colorScheme.onSurfaceVariant,
+            color: streak > 0 ? activeColor : theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: 4),
-          Text(
-            '$streak',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: streak > 0 ? Colors.orange.shade700 : theme.colorScheme.onSurfaceVariant,
-            ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$streak',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: streak > 0 ? activeDarkColor : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (isBreakHabit)
+                Text(
+                  'free',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 8,
+                    color: streak > 0 ? activeDarkColor : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -273,7 +314,7 @@ class HabitSummaryCard extends StatelessWidget {
         context,
         Icons.block,
         'Breaking',
-        Colors.red,
+        Colors.purple,
       ));
     }
 
