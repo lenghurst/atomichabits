@@ -3,44 +3,59 @@ import 'package:flutter/material.dart';
 /// CompletionButton - Shows either "Mark as Complete" or completion status
 /// 
 /// Purely presentational - receives completion state and callback via props.
+/// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - Action text: "I Stayed Strong" instead of "Mark as Complete"
+/// - Completed text: "Avoided today!" instead of "Completed for today!"
+/// - Purple color scheme instead of green
 class CompletionButton extends StatelessWidget {
   final bool isCompleted;
   final VoidCallback onComplete;
+  final bool isBreakHabit;
   
   const CompletionButton({
     super.key,
     required this.isCompleted,
     required this.onComplete,
+    this.isBreakHabit = false,
   });
 
   @override
   Widget build(BuildContext context) {
     if (isCompleted) {
-      return _CompletedStatus();
+      return _CompletedStatus(isBreakHabit: isBreakHabit);
     }
-    return _CompleteButton(onComplete: onComplete);
+    return _CompleteButton(onComplete: onComplete, isBreakHabit: isBreakHabit);
   }
 }
 
 class _CompleteButton extends StatelessWidget {
   final VoidCallback onComplete;
+  final bool isBreakHabit;
   
-  const _CompleteButton({required this.onComplete});
+  const _CompleteButton({required this.onComplete, required this.isBreakHabit});
 
   @override
   Widget build(BuildContext context) {
+    // Phase 12: Different text and color for break habits
+    final buttonColor = isBreakHabit ? Colors.purple : Colors.green;
+    final buttonText = isBreakHabit ? 'I Stayed Strong Today' : 'Mark as Complete ✓';
+    final buttonIcon = isBreakHabit ? Icons.shield : Icons.check;
+    
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
         onPressed: onComplete,
+        icon: Icon(buttonIcon, size: 24),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: buttonColor,
           foregroundColor: Colors.white,
         ),
-        child: const Text(
-          'Mark as Complete ✓',
-          style: TextStyle(
+        label: Text(
+          buttonText,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -51,27 +66,38 @@ class _CompleteButton extends StatelessWidget {
 }
 
 class _CompletedStatus extends StatelessWidget {
+  final bool isBreakHabit;
+  
+  const _CompletedStatus({required this.isBreakHabit});
+  
   @override
   Widget build(BuildContext context) {
+    // Phase 12: Different text, color, and icon for break habits
+    final statusColor = isBreakHabit ? Colors.purple : Colors.green;
+    final bgColor = isBreakHabit ? Colors.purple.shade50 : Colors.green.shade50;
+    final statusText = isBreakHabit ? 'Avoided today!' : 'Completed for today! 🎉';
+    final statusIcon = isBreakHabit ? Icons.shield : Icons.check_circle;
+    final statusEmoji = isBreakHabit ? '💪' : '🎉';
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: bgColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green),
+        border: Border.all(color: statusColor),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle, color: Colors.green),
-          SizedBox(width: 8),
+          Icon(statusIcon, color: statusColor),
+          const SizedBox(width: 8),
           Text(
-            'Completed for today! 🎉',
+            '$statusText $statusEmoji',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.green,
+              color: statusColor,
             ),
           ),
         ],

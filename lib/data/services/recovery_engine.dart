@@ -238,6 +238,87 @@ class RecoveryEngine {
              "That foundation is still there. Ready to build on it?";
     }
   }
+  
+  // ========== Phase 12: Bad Habit Protocol Recovery Messages ==========
+  
+  /// Get the title for break habit recovery prompt
+  static String getBreakHabitRecoveryTitle(RecoveryUrgency urgency) {
+    switch (urgency) {
+      case RecoveryUrgency.gentle:
+        return "Slipped Up?";
+      case RecoveryUrgency.important:
+        return "Getting Back on Track";
+      case RecoveryUrgency.compassionate:
+        return "Welcome Back";
+    }
+  }
+  
+  /// Get subtitle for break habit recovery
+  static String getBreakHabitRecoverySubtitle(RecoveryUrgency urgency, int daysMissed) {
+    switch (urgency) {
+      case RecoveryUrgency.gentle:
+        return "One slip doesn't define you";
+      case RecoveryUrgency.important:
+        return "Relapses are part of recovery";
+      case RecoveryUrgency.compassionate:
+        return "$daysMissed days • Every day is a fresh start";
+    }
+  }
+  
+  /// Generate break habit recovery message
+  static String getBreakHabitRecoveryMessage(RecoveryNeed need) {
+    final habitName = need.habit.name;
+    final substitution = need.habit.substitutionPlan ?? "your healthy alternative";
+    final identity = need.profile.identity;
+    
+    switch (need.urgency) {
+      case RecoveryUrgency.gentle:
+        return _getBreakHabitGentleMessage(habitName, substitution, identity);
+      case RecoveryUrgency.important:
+        return _getBreakHabitImportantMessage(habitName, substitution, identity);
+      case RecoveryUrgency.compassionate:
+        return _getBreakHabitCompassionateMessage(habitName, substitution, identity, need.daysMissed);
+    }
+  }
+  
+  static String _getBreakHabitGentleMessage(String habitName, String substitution, String identity) {
+    final messages = [
+      "Gave in yesterday? No judgment. Today you can try again.\n\nWhen the urge hits, try: \"$substitution\"",
+      "One slip is just data, not defeat.\n\nNext time you're tempted: \"$substitution\"",
+      "The person who $identity doesn't give up after one setback.\n\nYour go-to: \"$substitution\"",
+    ];
+    return messages[DateTime.now().millisecond % messages.length];
+  }
+  
+  static String _getBreakHabitImportantMessage(String habitName, String substitution, String identity) {
+    final messages = [
+      "Two days is a pattern forming. Let's break it now.\n\nYour weapon: \"$substitution\"",
+      "This is the moment that matters. You're not defined by slips.\n\nTry: \"$substitution\"",
+      "Day 2 is tough, but you're tougher.\n\n\"$substitution\" is your way forward.",
+    ];
+    return messages[DateTime.now().millisecond % messages.length];
+  }
+  
+  static String _getBreakHabitCompassionateMessage(String habitName, String substitution, String identity, int days) {
+    final messages = [
+      "It's been $days days. That's okay – recovery isn't linear.\n\nWhen you're ready: \"$substitution\"\n\nEvery attempt counts.",
+      "Relapses happen. What matters is that you're back.\n\nThe person who $identity keeps trying.\n\nStart with: \"$substitution\"",
+      "Breaking habits is hard. $days days doesn't erase your progress.\n\nYour fresh start: \"$substitution\"",
+    ];
+    return messages[DateTime.now().millisecond % messages.length];
+  }
+  
+  /// Get action button text for break habits
+  static String getBreakHabitRecoveryActionText(RecoveryUrgency urgency) {
+    switch (urgency) {
+      case RecoveryUrgency.gentle:
+        return "I'm staying strong today";
+      case RecoveryUrgency.important:
+        return "Break the pattern now";
+      case RecoveryUrgency.compassionate:
+        return "Start fresh today";
+    }
+  }
 }
 
 /// Represents a need for recovery (habit with missed days)

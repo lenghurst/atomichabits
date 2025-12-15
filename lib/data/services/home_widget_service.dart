@@ -12,6 +12,12 @@ import '../models/consistency_metrics.dart';
 /// - Processing widget tap callbacks for habit completion
 /// - Managing widget configuration state
 /// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - Different action text: "Avoid" instead of "Complete"
+/// - Different streak label: "Days Free" instead of "Streak"
+/// - Different color hints for native widgets
+/// 
 /// **Architecture:**
 /// ```
 /// Flutter App ←→ HomeWidgetService ←→ SharedPreferences ←→ Native Widget
@@ -37,6 +43,10 @@ class HomeWidgetService {
   static const String keyGracefulScore = 'graceful_score';
   static const String keyTinyVersion = 'tiny_version';
   static const String keyLastUpdate = 'last_update';
+  // Phase 12: Bad Habit Protocol
+  static const String keyIsBreakHabit = 'is_break_habit';
+  static const String keyActionText = 'action_text';
+  static const String keyStreakLabel = 'streak_label';
   
   // Callback URI scheme
   static const String uriScheme = 'atomichabits';
@@ -72,6 +82,12 @@ class HomeWidgetService {
       // Calculate metrics
       final metrics = habit.consistencyMetrics;
       
+      // Phase 12: Different text for break habits
+      final actionText = habit.isBreakHabit 
+          ? (isCompletedToday ? 'Stayed Strong' : 'Avoid')
+          : (isCompletedToday ? 'Done!' : 'Complete');
+      final streakLabel = habit.isBreakHabit ? 'Days Free' : 'Streak';
+      
       // Save all data to shared storage
       await Future.wait([
         HomeWidget.saveWidgetData<String>(keyHabitId, habit.id),
@@ -83,13 +99,17 @@ class HomeWidgetService {
         HomeWidget.saveWidgetData<double>(keyGracefulScore, metrics.gracefulScore),
         HomeWidget.saveWidgetData<String>(keyTinyVersion, habit.tinyVersion),
         HomeWidget.saveWidgetData<String>(keyLastUpdate, DateTime.now().toIso8601String()),
+        // Phase 12: Bad Habit Protocol
+        HomeWidget.saveWidgetData<bool>(keyIsBreakHabit, habit.isBreakHabit),
+        HomeWidget.saveWidgetData<String>(keyActionText, actionText),
+        HomeWidget.saveWidgetData<String>(keyStreakLabel, streakLabel),
       ]);
       
       // Trigger widget refresh on both platforms
       await _refreshWidgets();
       
       if (kDebugMode) {
-        debugPrint('Widget updated for habit: ${habit.name} (completed: $isCompletedToday)');
+        debugPrint('Widget updated for habit: ${habit.name} (completed: $isCompletedToday, isBreak: ${habit.isBreakHabit})');
         debugPrint('  Streak: ${habit.currentStreak}, Score: ${metrics.gracefulScore.toStringAsFixed(1)}');
       }
     } catch (e) {
@@ -112,6 +132,10 @@ class HomeWidgetService {
         HomeWidget.saveWidgetData<double?>(keyGracefulScore, null),
         HomeWidget.saveWidgetData<String?>(keyTinyVersion, null),
         HomeWidget.saveWidgetData<String?>(keyLastUpdate, null),
+        // Phase 12: Bad Habit Protocol
+        HomeWidget.saveWidgetData<bool?>(keyIsBreakHabit, null),
+        HomeWidget.saveWidgetData<String?>(keyActionText, null),
+        HomeWidget.saveWidgetData<String?>(keyStreakLabel, null),
       ]);
       
       await _refreshWidgets();

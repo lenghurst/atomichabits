@@ -10,6 +10,12 @@ import '../../data/services/analytics_service.dart';
 /// Visualizes Graceful Consistency over time with interactive charts.
 /// Key design principle: Missed days appear as small dips, not cliffs.
 /// This visually reinforces the "Graceful Consistency > Fragile Streaks" philosophy.
+/// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - "Abstinence Rate" instead of "Graceful Consistency"
+/// - "Days Avoided" instead of "Days Completed"
+/// - Purple color scheme instead of green/primary
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
@@ -226,7 +232,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Graceful Consistency',
+                  // Phase 12: Different label for break habits
+                  _selectedHabit!.isBreakHabit ? 'Abstinence Rate' : 'Graceful Consistency',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -244,7 +251,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(summary.trendEmoji),
+                      // Phase 12: Shield emoji for break habits
+                      Text(_selectedHabit!.isBreakHabit ? '🛡️' : summary.trendEmoji),
                       const SizedBox(width: 4),
                       Text(
                         '${summary.scoreChange >= 0 ? '+' : ''}${summary.scoreChange.toStringAsFixed(1)}',
@@ -260,7 +268,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Small dips are normal. Recovery is what matters.',
+              // Phase 12: Different message for break habits
+              _selectedHabit!.isBreakHabit 
+                  ? 'Slips are normal. Getting back on track is what matters.'
+                  : 'Small dips are normal. Recovery is what matters.',
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: 12,
@@ -511,18 +522,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: _buildStatItem(
                     context,
                     '${summary.completedDays}/${summary.totalDays}',
-                    'Days Completed',
-                    Icons.check_circle_outline,
-                    Colors.green,
+                    // Phase 12: Different label for break habits
+                    _selectedHabit!.isBreakHabit ? 'Days Avoided' : 'Days Completed',
+                    _selectedHabit!.isBreakHabit ? Icons.shield_outlined : Icons.check_circle_outline,
+                    _selectedHabit!.isBreakHabit ? Colors.purple : Colors.green,
                   ),
                 ),
                 Expanded(
                   child: _buildStatItem(
                     context,
                     '${(summary.completionRate * 100).toStringAsFixed(0)}%',
-                    'Completion Rate',
+                    // Phase 12: Different label for break habits
+                    _selectedHabit!.isBreakHabit ? 'Avoidance Rate' : 'Completion Rate',
                     Icons.percent,
-                    theme.colorScheme.primary,
+                    _selectedHabit!.isBreakHabit ? Colors.purple : theme.colorScheme.primary,
                   ),
                 ),
               ],
@@ -534,18 +547,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: _buildStatItem(
                     context,
                     '${summary.recoveryDays}',
-                    'Recoveries',
+                    // Phase 12: Different label for break habits
+                    _selectedHabit!.isBreakHabit ? 'Fresh Starts' : 'Recoveries',
                     Icons.replay,
-                    Colors.orange,
+                    _selectedHabit!.isBreakHabit ? Colors.purple.shade300 : Colors.orange,
                   ),
                 ),
                 Expanded(
                   child: _buildStatItem(
                     context,
                     '${summary.longestStreak}',
-                    'Best Streak',
-                    Icons.local_fire_department,
-                    Colors.deepOrange,
+                    // Phase 12: Different label for break habits
+                    _selectedHabit!.isBreakHabit ? 'Longest Abstinence' : 'Best Streak',
+                    _selectedHabit!.isBreakHabit ? Icons.shield : Icons.local_fire_department,
+                    _selectedHabit!.isBreakHabit ? Colors.purple : Colors.deepOrange,
                   ),
                 ),
               ],

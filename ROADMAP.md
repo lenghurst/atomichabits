@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.8.0 - Phase 11 Data Safety)
+> **Last Updated:** December 2025 (v4.9.0 - Phase 12 Bad Habit Protocol)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,13 +23,56 @@
 
 ---
 
-## Current Sprint: Phase 11 (Data Safety - ✅ Completed)
+## Current Sprint: Phase 12 (Bad Habit Protocol - ✅ Completed)
+
+**Goal:** Enable users to break bad habits alongside building good ones
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "Make it invisible, unattractive, difficult, and unsatisfying." For break habits, avoidance equals completion — tracked via the same `completionHistory` mechanism but with inverted UI logic.
+
+**Completed:**
+- [x] **OnboardingScreen:** Added Build vs Break toggle with habit type selection
+- [x] **OnboardingScreen:** Break habit fields (trigger, root cause, substitution plan)
+- [x] **CompletionButton:** "I Stayed Strong Today" action text for break habits
+- [x] **CompletionButton:** Purple theme + shield icon for break habits
+- [x] **HabitCard:** Break habit styling with "BREAKING" label and substitution display
+- [x] **HabitSummaryCard:** Different colors, icons, and labels for break habits
+- [x] **RecoveryPromptDialog:** "Slipped up?" messaging for break habits
+- [x] **RecoveryEngine:** New break habit recovery messages and action text
+- [x] **AnalyticsScreen:** "Abstinence Rate" labels and purple theme for break habits
+- [x] **HomeWidgetService:** Break habit data keys (action text, streak label)
+- [x] **Documentation:** Updated AI_CONTEXT.md and ROADMAP.md
+
+**UI Adaptations:**
+| Component | Build Habit | Break Habit |
+|-----------|------------|-------------|
+| Action Button | "Mark as Complete ✓" | "I Stayed Strong Today 🛡️" |
+| Streak Label | "🔥 Streak" | "🛡️ Days Free" |
+| Progress Label | "Consistency" | "Abstinence Rate" |
+| Color Theme | Green | Purple |
+
+**Files Modified:**
+- `lib/features/onboarding/onboarding_screen.dart`
+- `lib/features/today/widgets/completion_button.dart`
+- `lib/features/today/widgets/habit_card.dart`
+- `lib/features/today/today_screen.dart`
+- `lib/features/dashboard/widgets/habit_summary_card.dart`
+- `lib/features/analytics/analytics_screen.dart`
+- `lib/widgets/recovery_prompt_dialog.dart`
+- `lib/data/services/recovery_engine.dart`
+- `lib/data/services/home_widget_service.dart`
+- `pubspec.yaml` (version 4.9.0+1)
+
+**No Schema Changes:** Uses existing `isBreakHabit`, `replacesHabit`, `rootCause`, `substitutionPlan` fields
+
+---
+
+## Previous Sprint: Phase 11 (Data Safety - ✅ Completed)
 
 **Goal:** Protect user investment with comprehensive backup and restore functionality
 
 **Status:** ✅ Complete (December 2025)
-
-**Rationale:** After maximizing User Investment via History and Analytics, we must now protect that investment. Data Safety is a prerequisite for Release Candidate status.
 
 **Completed:**
 - [x] **Dependencies:** Added `path_provider`, `share_plus`, `file_picker`, `intl`
@@ -37,33 +80,10 @@
 - [x] **UI:** Created `DataManagementScreen` with backup/restore UI
 - [x] **Export Flow:** Generate JSON → Open System Share Sheet → Record timestamp
 - [x] **Import Flow:** File picker → Validate JSON → Preview → Confirm warning → Restore
-- [x] **Validation:** Required keys check, habit structure validation, version check
-- [x] **Integration:** Added `reloadFromStorage()` to AppState for restore reload
-- [x] **Navigation:** `/data-management` route + Settings entry point
-- [x] **UI Polish:** Last backup timestamp, tips section, included items list
 
 **Files Created:**
 - `lib/data/services/backup_service.dart`
 - `lib/features/settings/data_management_screen.dart`
-
-**Files Modified:**
-- `lib/main.dart` (added `/data-management` route + import)
-- `lib/data/app_state.dart` (added `reloadFromStorage()` method)
-- `lib/features/settings/settings_screen.dart` (Data & Storage section + navigation)
-- `pubspec.yaml` (dependencies, version 4.8.0+1)
-
-**Backup Format:**
-```json
-{
-  "version": 1,
-  "exportedAt": "2025-12-15T10:30:00.000Z",
-  "habits": [...],
-  "userProfile": {...},
-  "appSettings": {...},
-  "focusedHabitId": "uuid",
-  "hasCompletedOnboarding": true
-}
-```
 
 ---
 
@@ -160,23 +180,24 @@
 
 ---
 
-## Next Sprint: Phase 12 (TBD)
+## Next Sprint: Phase 13 (TBD)
 
 **Status:** 🔵 Planning
 
 **Options for Next Phase:**
-- [ ] **Bad Habit Protocol** — Claude Tier 2 for "break habit" coaching
-- [ ] **Habit Stacking** — Link habits in sequences
-- [ ] **Pattern Detection** — AI analysis of miss reasons
+- [ ] **Habit Stacking** — Link habits in sequences ("After X, I will Y")
+- [ ] **Pattern Detection** — AI analysis of miss reasons and triggers
 - [ ] **Social Accountability** — Optional sharing features
 - [ ] **Accessibility** — Dynamic type, contrast, larger tap targets
 - [ ] **Cloud Sync** — Sync data across devices (Firebase/Supabase)
 - [ ] **Notifications Enhancement** — Smart timing based on completion patterns
+- [ ] **Habit Templates** — Pre-built common habits with AI suggestions
 
 **Release Candidate Checklist:**
 - [x] Phase 9: Home Screen Widgets
 - [x] Phase 10: Analytics Dashboard  
 - [x] Phase 11: Backup & Restore
+- [x] Phase 12: Bad Habit Protocol
 - [ ] Final polish and testing
 - [ ] App Store / Play Store preparation
 

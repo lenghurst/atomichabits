@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 /// 
 /// Purely presentational widget following vibecoding principles.
 /// All data comes via props, no business logic inside.
+/// 
+/// **Phase 12: Bad Habit Protocol**
+/// For break habits (isBreakHabit=true):
+/// - Shows substitution plan instead of "Start tiny"
+/// - Different color scheme (purple instead of amber)
+/// - Different header icon (block instead of check)
 class HabitCard extends StatelessWidget {
   final String habitName;
   final String tinyVersion;
@@ -13,6 +19,8 @@ class HabitCard extends StatelessWidget {
   final String? environmentCue;
   final String? environmentDistraction;
   final bool isCompleted;
+  final bool isBreakHabit;
+  final String? substitutionPlan;
   
   const HabitCard({
     super.key,
@@ -24,6 +32,8 @@ class HabitCard extends StatelessWidget {
     this.environmentCue,
     this.environmentDistraction,
     required this.isCompleted,
+    this.isBreakHabit = false,
+    this.substitutionPlan,
   });
 
   @override
@@ -55,21 +65,49 @@ class HabitCard extends StatelessWidget {
   }
   
   Widget _buildHeader() {
+    // Phase 12: Different icons and colors for break habits
+    final completedColor = isBreakHabit ? Colors.purple : Colors.green;
+    final completedIcon = isBreakHabit ? Icons.shield : Icons.check_circle;
+    final incompleteIcon = isBreakHabit ? Icons.block_outlined : Icons.circle_outlined;
+    
     return Row(
       children: [
         Icon(
-          isCompleted ? Icons.check_circle : Icons.circle_outlined,
+          isCompleted ? completedIcon : incompleteIcon,
           size: 32,
-          color: isCompleted ? Colors.green : Colors.grey,
+          color: isCompleted ? completedColor : (isBreakHabit ? Colors.purple.shade200 : Colors.grey),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            habitName,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isBreakHabit)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  margin: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'BREAKING',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              Text(
+                habitName,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -77,11 +115,21 @@ class HabitCard extends StatelessWidget {
   }
   
   Widget _buildTinyVersionBox() {
+    // Phase 12: Show substitution plan for break habits
+    if (isBreakHabit && substitutionPlan != null && substitutionPlan!.isNotEmpty) {
+      return _InfoBox(
+        color: Colors.purple.shade50,
+        icon: Icons.swap_horiz,
+        iconColor: Colors.purple,
+        text: 'Instead, I will: $substitutionPlan',
+      );
+    }
+    
     return _InfoBox(
-      color: Colors.amber.shade50,
-      icon: Icons.timer,
-      iconColor: Colors.amber,
-      text: 'Start tiny: $tinyVersion',
+      color: isBreakHabit ? Colors.purple.shade50 : Colors.amber.shade50,
+      icon: isBreakHabit ? Icons.block : Icons.timer,
+      iconColor: isBreakHabit ? Colors.purple : Colors.amber,
+      text: isBreakHabit ? 'Avoiding: $tinyVersion' : 'Start tiny: $tinyVersion',
     );
   }
   

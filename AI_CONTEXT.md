@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.8.0 — Phase 11 Data Safety)
+> **Last Updated:** December 2025 (v4.9.0 — Phase 12 Bad Habit Protocol)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -99,7 +99,7 @@ When stale branches accumulate (> 10 unmerged):
 | **Home Screen Widgets (Phase 9)** | ✅ Live | Native (Android/iOS) | HomeWidgetService | One-tap habit completion |
 | **Analytics Dashboard (Phase 10)** | ✅ Live | AnalyticsScreen | AnalyticsService | Graceful Consistency charts |
 | **Backup & Restore (Phase 11)** | ✅ Live | DataManagementScreen | BackupService | JSON export/import |
-| Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
+| **Bad Habit Protocol (Phase 12)** | ✅ Live | Updated UI components | Habit.isBreakHabit | Break habits with purple theme |
 
 ---
 
@@ -775,6 +775,104 @@ lib/
 - **Route**: `/data-management`
 - **Access**: Settings → Data & Storage → Backup & Restore
 - **Dependencies**: `path_provider`, `share_plus`, `file_picker`, `intl`
+
+---
+
+## Phase 12: Bad Habit Protocol Architecture
+
+### Overview
+The Bad Habit Protocol enables users to break bad habits alongside building good ones, fully aligning with James Clear's methodology. For bad habits, **avoidance equals completion** — tracked via the same `completionHistory` mechanism but with inverted UI logic.
+
+### Philosophy
+"To break a bad habit: Make it invisible, unattractive, difficult, and unsatisfying." — James Clear
+
+The app leverages the existing (but previously unused) `isBreakHabit` field to invert UI messaging while keeping the underlying consistency engine intact.
+
+### Key Principle: Avoidance = Completion
+For break habits:
+- Marking "complete" means "I successfully avoided today"
+- Streak represents "Days Habit-Free" 
+- Completion rate becomes "Abstinence Rate"
+- Recovery messages change to "Slipped up?" language
+
+### UI Adaptations
+
+| Component | Build Habit | Break Habit |
+|-----------|------------|-------------|
+| Action Button | "Mark as Complete ✓" | "I Stayed Strong Today 🛡️" |
+| Completed Status | "Completed for today! 🎉" | "Avoided today! 💪" |
+| Streak Label | "🔥 Streak" | "🛡️ Days Free" |
+| Progress Label | "Consistency" | "Abstinence Rate" |
+| Color Theme | Green/Orange | Purple |
+| Card Icon | Check circle | Shield |
+| Tiny Version | "Start tiny: {action}" | "Instead, I will: {substitution}" |
+
+### OnboardingScreen Changes
+```dart
+// Build vs Break toggle
+_buildHabitTypeToggle() // Segmented control
+
+// Break habit specific fields (when _isBreakHabit = true)
+- Trigger input: "What triggers this habit?"
+- Root cause input: "Why do you want to break this habit?"
+- Substitution plan: "What will you do instead?"
+```
+
+### RecoveryPromptDialog Changes
+```dart
+// Phase 12: Break habit recovery messages
+getBreakHabitRecoveryTitle()    // "Slipped Up?" vs "Never Miss Twice"
+getBreakHabitRecoverySubtitle() // "One slip doesn't define you"
+getBreakHabitRecoveryMessage()  // Substitution-focused messaging
+getBreakHabitRecoveryActionText() // "I'm staying strong today"
+```
+
+### Analytics Dashboard Changes
+```dart
+// Labels adapt based on habit.isBreakHabit
+- "Abstinence Rate" instead of "Graceful Consistency"
+- "Days Avoided" instead of "Days Completed"  
+- "Avoidance Rate" instead of "Completion Rate"
+- "Longest Abstinence" instead of "Best Streak"
+- "Fresh Starts" instead of "Recoveries"
+- Shield icon (🛡️) instead of flame (🔥)
+```
+
+### HomeWidgetService Changes
+```dart
+// New shared data keys for native widgets
+keyIsBreakHabit = 'is_break_habit'
+keyActionText = 'action_text'     // "Avoid" or "Complete"
+keyStreakLabel = 'streak_label'   // "Days Free" or "Streak"
+```
+
+### Files Modified
+```
+lib/features/onboarding/onboarding_screen.dart     # Build/Break toggle + fields
+lib/features/today/widgets/completion_button.dart  # Action text + colors
+lib/features/today/widgets/habit_card.dart         # Break habit styling
+lib/features/today/today_screen.dart               # Pass isBreakHabit flag
+lib/features/dashboard/widgets/habit_summary_card.dart  # Card adaptations
+lib/features/analytics/analytics_screen.dart       # Label changes
+lib/widgets/recovery_prompt_dialog.dart            # Break habit messages
+lib/data/services/recovery_engine.dart             # New message methods
+lib/data/services/home_widget_service.dart         # Widget data keys
+```
+
+### Habit Model Fields (Already Existed)
+```dart
+// lib/data/models/habit.dart - Phase 12 leverages these existing fields:
+final bool isBreakHabit;        // Toggle for break vs build
+final String? replacesHabit;    // What bad habit this targets
+final String? rootCause;        // Why/trigger for the habit
+final String? substitutionPlan; // Healthy alternative behavior
+```
+
+### Data Handling
+- **No schema changes** — `isBreakHabit` already exists in Habit model
+- **Backward compatible** — defaults to `false` for existing habits
+- **Same persistence** — completionHistory tracks avoidance same as completion
+- **Same analytics** — AnalyticsService treats both habit types identically
 
 ---
 
