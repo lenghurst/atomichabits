@@ -20,6 +20,7 @@ import 'features/settings/settings_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/analytics/analytics_screen.dart';
 import 'features/settings/data_management_screen.dart';
+import 'features/settings/habit_edit_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -172,6 +173,14 @@ class _MyAppState extends State<MyApp> {
               GoRoute(
                 path: '/data-management',
                 builder: (context, state) => const DataManagementScreen(),
+              ),
+              // Habit Edit: Edit habit properties + stacking (Phase 13)
+              GoRoute(
+                path: '/habit/:habitId/edit',
+                builder: (context, state) {
+                  final habitId = state.pathParameters['habitId'] ?? '';
+                  return HabitEditScreen(habitId: habitId);
+                },
               ),
             ],
           );

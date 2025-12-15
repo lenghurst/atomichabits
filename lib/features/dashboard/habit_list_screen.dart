@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../../data/models/completion_result.dart';
+import '../../widgets/stack_prompt_dialog.dart';
 import '../review/weekly_review_dialog.dart';
 import 'widgets/habit_summary_card.dart';
 
@@ -13,6 +15,11 @@ import 'widgets/habit_summary_card.dart';
 /// - Tap to focus on a habit (navigates to TodayScreen)
 /// - Add new habit button
 /// - Swipe to delete (with confirmation)
+/// 
+/// Phase 13: Habit Stacking
+/// - Displays stacked habits indented under their anchors
+/// - Long-press to edit habit (stacking config)
+/// - Chain Reaction prompt on quick-complete
 class HabitListScreen extends StatelessWidget {
   const HabitListScreen({super.key});
 
@@ -123,17 +130,20 @@ class HabitListScreen extends StatelessWidget {
   }
 
   Widget _buildHabitList(BuildContext context, AppState appState, List<Habit> habits) {
+    // Phase 13: Use habitsWithStacks to show habits in stack order
+    final orderedHabits = appState.habitsWithStacks;
+    
     // Calculate overall stats
-    final completedToday = habits.where((h) => _isCompletedToday(h)).length;
-    final avgScore = habits.isNotEmpty
-        ? habits.map((h) => h.gracefulScore).reduce((a, b) => a + b) / habits.length
+    final completedToday = orderedHabits.where((h) => _isCompletedToday(h)).length;
+    final avgScore = orderedHabits.isNotEmpty
+        ? orderedHabits.map((h) => h.gracefulScore).reduce((a, b) => a + b) / orderedHabits.length
         : 0.0;
 
     return CustomScrollView(
       slivers: [
         // Stats header
         SliverToBoxAdapter(
-          child: _buildStatsHeader(context, habits.length, completedToday, avgScore),
+          child: _buildStatsHeader(context, orderedHabits.length, completedToday, avgScore),
         ),
         
         // Habit cards
@@ -142,40 +152,86 @@ class HabitListScreen extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final habit = habits[index];
+                final habit = orderedHabits[index];
+                // Phase 13: Calculate indent depth for stacked habits
+                final stackDepth = appState.getStackDepth(habit.id);
+                final isStacked = habit.anchorHabitId != null;
+                
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Dismissible(
-                    key: Key(habit.id),
-                    direction: DismissDirection.endToStart,
-                    background: _buildDismissBackground(),
-                    confirmDismiss: (_) => _confirmDelete(context, habit),
-                    onDismissed: (_) => appState.deleteHabit(habit.id),
-                    child: HabitSummaryCard(
-                      habit: habit,
-                      index: index,
-                      isCompleted: _isCompletedToday(habit),
-                      onTap: () {
-                        appState.setFocusHabit(habit.id);
-                        context.push('/today');
-                      },
-                      onQuickComplete: () async {
-                        final success = await appState.completeHabitForToday(habitId: habit.id);
-                        if (success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${habit.name} completed!'),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      },
-                    ),
+                  padding: EdgeInsets.only(
+                    bottom: 12,
+                    // Phase 13: Indent stacked habits
+                    left: stackDepth * 24.0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Phase 13: Show chain link indicator for stacked habits
+                      if (isStacked)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, bottom: 4),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.subdirectory_arrow_right,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'stacked ${habit.stackPosition ?? "after"}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      Dismissible(
+                        key: Key(habit.id),
+                        direction: DismissDirection.endToStart,
+                        background: _buildDismissBackground(),
+                        confirmDismiss: (_) => _confirmDelete(context, habit),
+                        onDismissed: (_) => appState.deleteHabit(habit.id),
+                        child: HabitSummaryCard(
+                          habit: habit,
+                          index: index,
+                          isCompleted: _isCompletedToday(habit),
+                          onTap: () {
+                            appState.setFocusHabit(habit.id);
+                            context.push('/today');
+                          },
+                          // Phase 13: Long-press to edit habit (stacking config)
+                          onEdit: () => context.push('/habit/${habit.id}/edit'),
+                          onQuickComplete: () async {
+                            final result = await appState.completeHabitForToday(habitId: habit.id);
+                            if (result != null && result.wasNewCompletion && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${habit.name} completed!'),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              
+                              // Phase 13: If there's a chain reaction, navigate to TodayScreen
+                              if (result.shouldTriggerStack && result.nextHabitInChain != null) {
+                                // Set focus to the completed habit to show chain reaction dialog
+                                await appState.setFocusHabit(habit.id);
+                                if (context.mounted) {
+                                  context.push('/today');
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
-              childCount: habits.length,
+              childCount: orderedHabits.length,
             ),
           ),
         ),

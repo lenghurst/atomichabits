@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../data/app_state.dart';
 import '../../../data/models/consistency_metrics.dart';
+import '../../../data/models/completion_result.dart';
 import '../../../widgets/reward_investment_dialog.dart';
 import '../../../widgets/recovery_prompt_dialog.dart';
+import '../../../widgets/stack_prompt_dialog.dart';
 import '../widgets/improvement_suggestions_dialog.dart';
 import '../widgets/consistency_details_sheet.dart';
 
@@ -154,20 +157,59 @@ class TodayScreenController {
   // ========== Action Handlers ==========
   
   /// Handles the "Mark as Complete" button press
+  /// Phase 13: Updated to handle Chain Reaction flow for stacked habits
   Future<void> handleCompleteHabit() async {
     debugPrint('🔘 Mark as Complete button pressed');
     
-    final wasNewCompletion = await appState.completeHabitForToday();
+    final result = await appState.completeHabitForToday();
     
-    debugPrint('📊 Was new completion: $wasNewCompletion');
+    debugPrint('📊 Was new completion: ${result.wasNewCompletion}');
     
-    if (wasNewCompletion && _isContextMounted) {
+    if (result.wasNewCompletion && _isContextMounted) {
       debugPrint('✨ Triggering reward dialog');
-      showRewardDialog();
-    } else if (!wasNewCompletion) {
+      
+      // Phase 13: Check for stacked habit (Chain Reaction)
+      if (result.hasStackedHabit) {
+        debugPrint('🔗 Chain Reaction: Showing stack prompt for ${result.nextStackedHabitName}');
+        // Show Chain Reaction dialog instead of reward dialog
+        _showStackPromptDialog(result);
+      } else {
+        // Normal flow - show reward dialog
+        showRewardDialog();
+      }
+    } else if (!result.wasNewCompletion) {
       debugPrint('⚠️ Habit already completed today');
       _showSnackBar('Already completed for today!');
     }
+  }
+  
+  /// Phase 13: Show Chain Reaction prompt dialog
+  void _showStackPromptDialog(CompletionResult result) {
+    if (!result.hasStackedHabit) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => StackPromptDialog(
+        completedHabitName: result.completedHabitName,
+        nextHabitName: result.nextStackedHabitName!,
+        nextHabitEmoji: result.nextStackedHabitEmoji,
+        nextHabitTinyVersion: result.nextStackedHabitTinyVersion,
+        isBreakHabit: result.isNextStackedBreakHabit ?? false,
+        onStartNow: () async {
+          Navigator.of(dialogContext).pop();
+          // Focus on the stacked habit and stay on Today screen
+          appState.setFocusHabit(result.nextStackedHabitId!);
+          // Dismiss reward flow since we're continuing to next habit
+          appState.dismissRewardFlow();
+        },
+        onNotNow: () {
+          Navigator.of(dialogContext).pop();
+          // Show normal reward dialog after dismissing stack prompt
+          showRewardDialog();
+        },
+      ),
+    );
   }
   
   /// Handles navigation to settings
@@ -184,11 +226,16 @@ class TodayScreenController {
   
   void _handleDoTinyVersion(BuildContext dialogContext) async {
     Navigator.of(dialogContext).pop();
-    final wasNewCompletion = await appState.completeHabitForToday(
+    final result = await appState.completeHabitForToday(
       usedTinyVersion: true,
     );
-    if (wasNewCompletion && _isContextMounted) {
-      showRewardDialog();
+    if (result.wasNewCompletion && _isContextMounted) {
+      // Phase 13: Check for stacked habit (Chain Reaction)
+      if (result.hasStackedHabit) {
+        _showStackPromptDialog(result);
+      } else {
+        showRewardDialog();
+      }
     }
   }
   

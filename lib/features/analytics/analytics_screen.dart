@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../../data/models/habit_pattern.dart';
 import '../../data/services/analytics_service.dart';
+import '../../data/services/pattern_detection_service.dart';
 
 /// Phase 10: Analytics Dashboard Screen
 /// 
@@ -16,6 +18,12 @@ import '../../data/services/analytics_service.dart';
 /// - "Abstinence Rate" instead of "Graceful Consistency"
 /// - "Days Avoided" instead of "Days Completed"
 /// - Purple color scheme instead of green/primary
+/// 
+/// **Phase 14: Pattern Detection**
+/// Dynamic Insight Cards showing detected friction patterns:
+/// - "⚠️ Friction Detected: You miss 'Gym' mostly on Mondays"
+/// - Pattern tags like "🌙 Night Owl", "⚡ Low Energy"
+/// - Actionable suggestions for improvement
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
@@ -25,6 +33,7 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final AnalyticsService _analyticsService = AnalyticsService();
+  final PatternDetectionService _patternService = PatternDetectionService(); // Phase 14
   AnalyticsPeriod _selectedPeriod = AnalyticsPeriod.month30;
   Habit? _selectedHabit;
   
@@ -116,6 +125,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   // Weekly breakdown
                   if (weeklyData.isNotEmpty)
                     _buildWeeklyBreakdownCard(context, weeklyData),
+                  const SizedBox(height: 24),
+                  
+                  // Phase 14: Pattern Detection Insight Cards
+                  _buildPatternInsightsCard(context),
                   const SizedBox(height: 24),
                   
                   // Resilience insight
@@ -734,6 +747,245 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       ),
     );
+  }
+  
+  /// Phase 14: Build Pattern Detection Insight Cards
+  Widget _buildPatternInsightsCard(BuildContext context) {
+    final habit = _selectedHabit;
+    if (habit == null) return const SizedBox.shrink();
+    
+    // Analyze patterns from miss history
+    final patternSummary = _patternService.analyzeHabit(
+      habit: habit,
+      missHistory: habit.missHistory,
+      completionHistory: habit.completionHistory,
+      recoveryHistory: habit.recoveryHistory,
+    );
+    
+    // If no patterns detected, show encouraging message
+    if (patternSummary.patterns.isEmpty) {
+      return _buildNoPatternCard(context);
+    }
+    
+    final theme = Theme.of(context);
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with health score
+            Row(
+              children: [
+                Icon(
+                  Icons.analytics,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Friction Patterns',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                // Health score badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getHealthScoreColor(patternSummary.healthScore).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${patternSummary.healthScore.toInt()}% Health',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: _getHealthScoreColor(patternSummary.healthScore),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Pattern tags row
+            if (patternSummary.allTags.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: patternSummary.allTags.map((tag) {
+                  return Chip(
+                    label: Text(tag, style: const TextStyle(fontSize: 12)),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // Pattern cards
+            ...patternSummary.patterns.take(3).map((pattern) => 
+              _buildPatternCard(context, pattern)
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Build individual pattern card
+  Widget _buildPatternCard(BuildContext context, HabitPattern pattern) {
+    final theme = Theme.of(context);
+    final color = pattern.isPositive ? Colors.green : _getSeverityColor(pattern.severity);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pattern header
+          Row(
+            children: [
+              Text(
+                pattern.type.emoji,
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  pattern.type.name,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+              // Severity badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${pattern.severity.emoji} ${pattern.occurrences}x',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Description
+          Text(
+            pattern.description,
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          
+          // Suggestion
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.lightbulb_outline,
+                size: 16,
+                color: Colors.amber.shade700,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  pattern.suggestion,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Card shown when no patterns detected
+  Widget _buildNoPatternCard(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Card(
+      color: Colors.green.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Text('✨', style: TextStyle(fontSize: 32)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'No Friction Patterns Detected',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Keep tracking! As you log more miss reasons, '
+                    'we\'ll detect patterns and suggest improvements.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Get color based on health score
+  Color _getHealthScoreColor(double score) {
+    if (score >= 80) return Colors.green;
+    if (score >= 60) return Colors.amber;
+    if (score >= 40) return Colors.orange;
+    return Colors.red;
+  }
+  
+  /// Get color based on severity
+  Color _getSeverityColor(PatternSeverity severity) {
+    switch (severity) {
+      case PatternSeverity.low:
+        return Colors.blue;
+      case PatternSeverity.medium:
+        return Colors.orange;
+      case PatternSeverity.high:
+        return Colors.red;
+    }
   }
   
   Widget _buildResilienceInsight(BuildContext context, PeriodSummary summary) {

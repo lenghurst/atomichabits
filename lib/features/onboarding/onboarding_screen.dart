@@ -51,6 +51,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _rootCauseController = TextEditingController();
   final _substitutionPlanController = TextEditingController();
   
+  // Phase 13: Habit Stacking
+  String? _anchorHabitId;
+  String _stackPosition = 'after'; // 'after' is the default
+  
   // Store the full AI data to preserve invisible fields (motivation, rootCause, etc.)
   // This prevents "Data Amnesia" - losing AI-generated metadata when saving
   OnboardingData? _lastAiData;
@@ -624,6 +628,99 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ];
   }
 
+  // Phase 13: Habit Stacking section
+  Widget _buildHabitStackingSection() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final existingHabits = appState.habits;
+    
+    // Don't show stacking if there are no existing habits to stack on
+    if (existingHabits.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.link, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              '\ud83d\udd17 Chain Reaction (Optional)',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Stack this habit onto an existing one for better consistency.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+        const SizedBox(height: 16),
+        
+        // Anchor Habit Dropdown
+        DropdownButtonFormField<String>(
+          value: _anchorHabitId,
+          decoration: const InputDecoration(
+            labelText: 'Stack after which habit?',
+            hintText: 'Choose an existing habit (or leave blank)',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.layers),
+          ),
+          items: [
+            const DropdownMenuItem<String>(
+              value: null,
+              child: Text('None - Stand-alone habit'),
+            ),
+            ...existingHabits.map((habit) {
+              return DropdownMenuItem<String>(
+                value: habit.id,
+                child: Text(
+                  '${habit.habitEmoji ?? '\u2728'} ${habit.name}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _anchorHabitId = value;
+            });
+          },
+        ),
+        
+        if (_anchorHabitId != null) ...[
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.green.shade700, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'After completing \"${existingHabits.firstWhere((h) => h.id == _anchorHabitId).name}\", you\\'ll be prompted to do this habit.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final appState = Provider.of<AppState>(context, listen: false);
@@ -681,6 +778,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         habitEmoji: _lastAiData?.habitEmoji ?? '✨', // Default emoji
         motivation: _lastAiData?.motivation,
         recoveryPlan: _lastAiData?.recoveryPlan,
+        
+        // Phase 13: Habit Stacking fields
+        anchorHabitId: _anchorHabitId,
+        stackPosition: _anchorHabitId != null ? _stackPosition : null,
+        anchorEvent: _anchorHabitId != null && _stackPosition == 'after' ? 'completion' : null,
       );
 
       // Save to state (now with persistence!)
@@ -1090,6 +1192,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 32),
+
+                // === HABIT STACKING SECTION (Phase 13) ===
+                _buildHabitStackingSection(),
                 const SizedBox(height: 32),
 
                 // Complete button

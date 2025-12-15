@@ -14,10 +14,15 @@ import '../data/services/recovery_engine.dart';
 /// - "Get back on track" instead of "Do the 2-minute version"
 /// - Purple color scheme instead of amber/orange
 /// 
+/// **Phase 14: Pattern Detection**
+/// Enhanced miss reason picker with category grouping for pattern analysis:
+/// - Time, Energy, Location, Forgetfulness, Unexpected categories
+/// - Structured data enables pattern detection in PatternDetectionService
+/// 
 /// Features:
 /// - Urgency-appropriate messaging (gentle → important → compassionate)
 /// - Zoom-out perspective (show overall progress context)
-/// - Optional miss reason selection
+/// - Category-grouped miss reason selection (Phase 14)
 /// - "Do the 2-minute version" quick action
 class RecoveryPromptDialog extends StatefulWidget {
   final RecoveryNeed recoveryNeed;
@@ -44,6 +49,7 @@ class RecoveryPromptDialog extends StatefulWidget {
 class _RecoveryPromptDialogState extends State<RecoveryPromptDialog> 
     with SingleTickerProviderStateMixin {
   bool _showMissReasonPicker = false;
+  MissReasonCategory? _selectedCategory; // Phase 14: Category selection
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
@@ -240,7 +246,7 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
                 ),
                 const SizedBox(height: 12),
                 
-                // Miss reason picker toggle
+                // Phase 14: Enhanced miss reason picker with categories
                 if (widget.onMissReasonSelected != null) ...[
                   if (!_showMissReasonPicker)
                     TextButton.icon(
@@ -253,48 +259,7 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
                     )
                   else ...[
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'What got in the way?',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const Spacer(),
-                              GestureDetector(
-                                onTap: () => setState(() => _showMissReasonPicker = false),
-                                child: const Icon(Icons.close, size: 18),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: MissReason.values.map((reason) {
-                              return ActionChip(
-                                label: Text('${reason.emoji} ${reason.label}'),
-                                onPressed: () {
-                                  widget.onMissReasonSelected?.call(reason);
-                                  setState(() => _showMissReasonPicker = false);
-                                },
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildMissReasonPicker(),
                   ],
                 ],
                 const SizedBox(height: 8),
@@ -312,6 +277,92 @@ class _RecoveryPromptDialogState extends State<RecoveryPromptDialog>
           ),
         ),
       ),
+    );
+  }
+  
+  /// Phase 14: Build category-based miss reason picker
+  /// Groups reasons by category for better pattern detection
+  Widget _buildMissReasonPicker() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                _selectedCategory == null 
+                    ? 'What got in the way?' 
+                    : '${_selectedCategory!.emoji} ${_selectedCategory!.label}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              if (_selectedCategory != null)
+                GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = null),
+                  child: const Icon(Icons.arrow_back, size: 18),
+                )
+              else
+                GestureDetector(
+                  onTap: () => setState(() => _showMissReasonPicker = false),
+                  child: const Icon(Icons.close, size: 18),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Show categories or reasons within selected category
+          if (_selectedCategory == null)
+            _buildCategorySelector()
+          else
+            _buildReasonSelector(_selectedCategory!),
+        ],
+      ),
+    );
+  }
+  
+  /// Build category selection chips
+  Widget _buildCategorySelector() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: MissReasonCategory.values.map((category) {
+        return ActionChip(
+          avatar: Text(category.emoji, style: const TextStyle(fontSize: 14)),
+          label: Text(category.label),
+          onPressed: () => setState(() => _selectedCategory = category),
+        );
+      }).toList(),
+    );
+  }
+  
+  /// Build reason selection within a category
+  Widget _buildReasonSelector(MissReasonCategory category) {
+    final reasons = MissReason.inCategory(category);
+    
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: reasons.map((reason) {
+        return ActionChip(
+          avatar: Text(reason.emoji, style: const TextStyle(fontSize: 14)),
+          label: Text(reason.label),
+          onPressed: () {
+            widget.onMissReasonSelected?.call(reason);
+            setState(() {
+              _showMissReasonPicker = false;
+              _selectedCategory = null;
+            });
+          },
+        );
+      }).toList(),
     );
   }
 }
