@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.9.0 - Phase 12 Bad Habit Protocol)
+> **Last Updated:** December 2025 (v4.11.0 - Phase 14 Pattern Detection)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,7 +23,101 @@
 
 ---
 
-## Current Sprint: Phase 12 (Bad Habit Protocol - ✅ Completed)
+## Current Sprint: Phase 14 (Pattern Detection - ✅ Completed)
+
+**Goal:** Transform "Miss Reasons" into actionable insights - "The Safety Net"
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "Failure is data, not defeat. Every miss reason reveals a pattern to fix."
+
+**Architecture:** Local-First, Cloud-Boosted
+- Local Heuristics: Real-time pattern tags via `PatternDetectionService` (O(n) complexity)
+- LLM Synthesis: Weekly pattern insights via `WeeklyReviewService` integration
+
+**Completed:**
+- [x] **MissReason Enum:** Enhanced with 5 categories (time, energy, location, forgetfulness, unexpected) + 17 specific reasons
+- [x] **MissReasonCategory Enum:** New grouping for pattern detection
+- [x] **MissEvent Class:** Structured miss tracking with date, reason, scheduled time, recovery status
+- [x] **HabitPattern Model:** Pattern detection output with type, severity, confidence, suggestions
+- [x] **PatternSummary Model:** Aggregated pattern insights with health score and tags
+- [x] **PatternDetectionService:** Local heuristics engine with 7 pattern types
+- [x] **Habit Model Update:** Added `missHistory` field for structured miss tracking
+- [x] **RecoveryPromptDialog Update:** Category-based miss reason picker (2-step selection)
+- [x] **AppState Update:** `recordMissReason()` now stores structured `MissEvent` in history
+- [x] **AnalyticsScreen Update:** Pattern Insight Cards with friction detection and suggestions
+- [x] **WeeklyReviewService Update:** Pattern tags included in LLM prompt for personalized coaching
+
+**Pattern Types Detected:**
+| Pattern | Tag | Description |
+|---------|-----|-------------|
+| Wrong Time | 🌙 Night Owl / 🌅 Morning Struggle | Habit scheduled at suboptimal time |
+| Problematic Day | 📅 [Day] Struggle | Specific days consistently challenging |
+| Energy Gap | ⚡ Low Energy Pattern | Energy-related misses dominate |
+| Location Mismatch | 📍 Location Dependent | Environment disrupts habit |
+| Forgetting | 🧠 Memory Gap | Forgetfulness issues |
+| Weekend Variance | 🎉 Weekend Wobble | Different weekend behavior |
+| Strong Recovery | 💪 Quick Recovery | Positive - good at bouncing back |
+
+**Files Created:**
+- `lib/data/models/habit_pattern.dart` (MissEvent, HabitPattern, PatternSummary)
+- `lib/data/services/pattern_detection_service.dart`
+
+**Files Modified:**
+- `lib/data/models/consistency_metrics.dart` (MissReason enum enhanced with categories)
+- `lib/data/models/habit.dart` (added missHistory field)
+- `lib/data/app_state.dart` (recordMissReason stores MissEvent)
+- `lib/widgets/recovery_prompt_dialog.dart` (category-based picker)
+- `lib/features/analytics/analytics_screen.dart` (Pattern Insight Cards)
+- `lib/data/services/weekly_review_service.dart` (LLM pattern integration)
+
+**No Schema Changes:** New `missHistory` field uses existing JSON persistence with backward compatibility
+
+---
+
+## Previous Sprint: Phase 13 (Habit Stacking - ✅ Completed)
+
+**Goal:** Enable "Chain Reaction" habit linking where completing one habit prompts the next
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "The best way to build a new habit is to identify a current habit you already do each day and then stack your new behavior on top." — James Clear
+
+**Key Principle:** After completing a habit, the app prompts the user to start any stacked habits immediately, leveraging existing momentum.
+
+**Completed:**
+- [x] **CompletionResult Model:** New return type for `completeHabitForToday()` with stacking info
+- [x] **AppState Methods:** `getStackedHabits()`, `getNextStackedHabit()`, `habitsWithStacksSorted`, `wouldCreateCircularStack()`
+- [x] **StackPromptDialog:** Chain Reaction prompt with "Let's Do It" / "Not Now" actions
+- [x] **TodayScreenController:** Updated to handle Chain Reaction flow after completion
+- [x] **HabitListScreen:** Shows Chain Reaction prompt on quick-complete, sorts habits with stacks adjacent
+- [x] **HabitSummaryCard:** Shows stacking indicator chip ("After X" / "Before X")
+- [x] **Documentation:** Updated AI_CONTEXT.md and ROADMAP.md
+
+**UI Adaptations:**
+| Component | Normal Flow | Chain Reaction Flow |
+|-----------|------------|---------------------|
+| After Completion | Show Reward Dialog | Show Stack Prompt Dialog |
+| Dashboard | Unsorted habits | Stacks sorted adjacent |
+| Summary Card | Basic info | Shows stacking indicator |
+
+**Files Created:**
+- `lib/data/models/completion_result.dart`
+- `lib/widgets/stack_prompt_dialog.dart`
+
+**Files Modified:**
+- `lib/data/app_state.dart` (stacking methods, CompletionResult return type)
+- `lib/features/today/controllers/today_screen_controller.dart`
+- `lib/features/dashboard/habit_list_screen.dart`
+- `lib/features/dashboard/widgets/habit_summary_card.dart`
+- `lib/features/today/today_screen_old.dart`
+- `pubspec.yaml` (version 4.10.0+1)
+
+**No Schema Changes:** Uses existing `anchorHabitId`, `anchorEvent`, `stackPosition` fields
+
+---
+
+## Previous Sprint: Phase 12 (Bad Habit Protocol - ✅ Completed)
 
 **Goal:** Enable users to break bad habits alongside building good ones
 
@@ -180,24 +274,25 @@
 
 ---
 
-## Next Sprint: Phase 13 (TBD)
+## Next Sprint: Phase 15 (TBD)
 
 **Status:** 🔵 Planning
 
 **Options for Next Phase:**
-- [ ] **Habit Stacking** — Link habits in sequences ("After X, I will Y")
-- [ ] **Pattern Detection** — AI analysis of miss reasons and triggers
+- [ ] **Smart Notifications** — AI-powered timing based on completion patterns and detected friction
 - [ ] **Social Accountability** — Optional sharing features
 - [ ] **Accessibility** — Dynamic type, contrast, larger tap targets
 - [ ] **Cloud Sync** — Sync data across devices (Firebase/Supabase)
-- [ ] **Notifications Enhancement** — Smart timing based on completion patterns
 - [ ] **Habit Templates** — Pre-built common habits with AI suggestions
+- [ ] **Advanced Stacking UI** — Visual habit chain builder
 
 **Release Candidate Checklist:**
 - [x] Phase 9: Home Screen Widgets
 - [x] Phase 10: Analytics Dashboard  
 - [x] Phase 11: Backup & Restore
 - [x] Phase 12: Bad Habit Protocol
+- [x] Phase 13: Habit Stacking
+- [x] Phase 14: Pattern Detection
 - [ ] Final polish and testing
 - [ ] App Store / Play Store preparation
 
@@ -389,9 +484,8 @@ See Sprint History below for details.
 
 | Item | Description | Complexity | Notes |
 |------|-------------|------------|-------|
-| **Bad Habit Protocol** | "Break habit" flow with Claude (Tier 2) | Medium | Part of Phase 2 |
-| **Habit Stacking** | Link habits together in sequences | Medium | Depends on multi-habit |
 | **Failure Playbooks** | Pre-planned recovery strategies | Medium | UX design needed |
+| **Stacking UI** | UI for setting up habit stacks | Low | Enhancement to Phase 13 |
 
 ---
 
@@ -401,7 +495,7 @@ See Sprint History below for details.
 - [x] **Weekly Review with AI** — ✅ AI synthesis of weekly progress (Phase 7)
 - [x] **Analytics Dashboard** — ✅ Trend charts, insights (Phase 10)
 - [x] **Backup and Restore** — ✅ Export/import habit data (Phase 11)
-- [ ] **Pattern Detection from Miss Reasons** — Identify recurring issues
+- [x] **Pattern Detection from Miss Reasons** — ✅ Friction patterns with actionable insights (Phase 14)
 - [ ] **Habit Pause/Vacation Mode** — Planned breaks without penalty
 - [ ] **Social Accountability** — Optional sharing features
 
@@ -835,6 +929,9 @@ done | sort
 | Phase 9 Home Screen Widgets | ✅ | ✅ | Complete! |
 | Phase 10 Analytics Dashboard | ✅ | ✅ | Complete! |
 | Phase 11 Backup & Restore | ✅ | ✅ | Complete! |
+| Phase 12 Bad Habit Protocol | ✅ | ✅ | Complete! |
+| Phase 13 Habit Stacking | ✅ | ✅ | Complete! |
+| Phase 14 Pattern Detection | ✅ | ✅ | Complete! |
 | Release Candidate Ready | 🟡 | ✅ | Pending final polish |
 
 ---

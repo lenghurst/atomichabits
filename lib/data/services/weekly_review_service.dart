@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 
 import '../models/habit.dart';
 import '../models/consistency_metrics.dart';
+import '../models/habit_pattern.dart'; // Phase 14: Pattern Detection
 import 'gemini_chat_service.dart';
+import 'pattern_detection_service.dart'; // Phase 14
 
 /// Result of a weekly review generation
 class WeeklyReviewResult {
@@ -75,13 +77,19 @@ enum DayStatus { completed, missed, pending }
 /// 
 /// Part of Phase 7: Analytics & Expansion
 /// 
+/// **Phase 14: Pattern Detection Integration**
+/// Now includes pattern detection tags in AI prompts for personalized insights.
+/// The LLM synthesizes local pattern data into actionable coaching.
+/// 
 /// This service:
 /// 1. Aggregates habit data for the past 7 days
-/// 2. Builds a context-aware prompt for Gemini
-/// 3. Falls back to local heuristics if AI is unavailable
-/// 4. Returns structured results for UI consumption
+/// 2. Detects friction patterns using PatternDetectionService (Phase 14)
+/// 3. Builds a context-aware prompt for Gemini with pattern insights
+/// 4. Falls back to local heuristics if AI is unavailable
+/// 5. Returns structured results for UI consumption
 class WeeklyReviewService {
   final GeminiChatService _geminiService;
+  final PatternDetectionService _patternService = PatternDetectionService(); // Phase 14
 
   WeeklyReviewService(this._geminiService);
 
@@ -207,6 +215,7 @@ class WeeklyReviewService {
   }
 
   /// Build the AI prompt for weekly review generation
+  /// Phase 14: Now includes pattern detection insights for personalized coaching
   String _buildPrompt(Habit habit, ConsistencyMetrics metrics, WeeklyStats stats) {
     // Build day-by-day history string
     final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -236,6 +245,9 @@ class WeeklyReviewService {
     if (habit.isBreakHabit && habit.replacesHabit != null) {
       habitContext.writeln('Breaking habit: "${habit.replacesHabit}"');
     }
+    
+    // Phase 14: Add pattern detection insights
+    final patternSection = _buildPatternSection(habit);
 
     return '''
 You are an empathetic habit coach using the "Graceful Consistency" philosophy from Atomic Habits.
@@ -254,7 +266,7 @@ ${historyLines.join('\n')}
 - Total identity votes: ${metrics.identityVotes}
 - Quick recoveries this week: ${stats.recoveriesThisWeek}
 - Current streak: ${metrics.currentStreak} days
-
+$patternSection
 ## Your Task
 Write a 2-3 sentence personalized weekly review. Follow these rules:
 
@@ -274,6 +286,42 @@ Write ONLY the review text, no headers or labels.
 ''';
   }
 
+  /// Phase 14: Build pattern section for the AI prompt
+  /// Synthesizes local pattern detection into coaching context
+  String _buildPatternSection(Habit habit) {
+    // Analyze patterns from miss history
+    final patternSummary = _patternService.analyzeHabit(
+      habit: habit,
+      missHistory: habit.missHistory,
+      completionHistory: habit.completionHistory,
+      recoveryHistory: habit.recoveryHistory,
+    );
+    
+    // If no significant patterns, return empty section
+    if (patternSummary.patterns.isEmpty) {
+      return '\n## Friction Patterns\nNo significant patterns detected yet.\n';
+    }
+    
+    final section = StringBuffer();
+    section.writeln('\n## Friction Patterns Detected');
+    
+    // Add pattern tags
+    if (patternSummary.allTags.isNotEmpty) {
+      section.writeln('Pattern tags: ${patternSummary.allTags.join(', ')}');
+    }
+    
+    // Add top patterns with descriptions
+    for (final pattern in patternSummary.patterns.take(2)) {
+      section.writeln('- ${pattern.type.emoji} ${pattern.type.name}: ${pattern.description}');
+      section.writeln('  Suggestion: ${pattern.suggestion}');
+    }
+    
+    section.writeln('Pattern health score: ${patternSummary.healthScore.toInt()}/100');
+    section.writeln('');
+    
+    return section.toString();
+  }
+  
   /// Generate a local fallback review when AI is unavailable
   String _generateLocalFallback(
     Habit habit, 

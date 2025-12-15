@@ -1,4 +1,5 @@
 import 'consistency_metrics.dart';
+import 'habit_pattern.dart'; // Phase 14: Pattern Detection
 
 /// Represents a single habit in the app
 /// Based on Atomic Habits principles
@@ -11,6 +12,7 @@ import 'consistency_metrics.dart';
 /// - Bright-Line Rules
 /// - Failure Playbooks
 /// - Focus Mode for multi-habit management
+/// - Phase 14: Pattern Detection (missHistory tracking)
 class Habit {
   final String id;
   final String name;
@@ -48,7 +50,12 @@ class Habit {
   final List<RecoveryEvent> recoveryHistory;
   
   /// Last recorded miss reason (for pattern tracking)
+  /// @deprecated Use missHistory instead for structured data
   final String? lastMissReason;
+  
+  /// Phase 14: Structured miss history for pattern detection
+  /// Stores detailed miss events with reasons, timing, and recovery status
+  final List<MissEvent> missHistory;
   
   /// Failure playbooks - user's pre-planned recovery strategies
   final List<FailurePlaybook> failurePlaybooks;
@@ -198,6 +205,7 @@ class Habit {
     this.completionHistory = const [],
     this.recoveryHistory = const [],
     this.lastMissReason,
+    this.missHistory = const [], // Phase 14: Pattern Detection
     this.failurePlaybooks = const [],
     this.failurePlaybook,
     this.identityVotes = 0,
@@ -256,6 +264,7 @@ class Habit {
     List<DateTime>? completionHistory,
     List<RecoveryEvent>? recoveryHistory,
     String? lastMissReason,
+    List<MissEvent>? missHistory, // Phase 14
     List<FailurePlaybook>? failurePlaybooks,
     FailurePlaybook? failurePlaybook,
     int? identityVotes,
@@ -308,6 +317,7 @@ class Habit {
       completionHistory: completionHistory ?? this.completionHistory,
       recoveryHistory: recoveryHistory ?? this.recoveryHistory,
       lastMissReason: lastMissReason ?? this.lastMissReason,
+      missHistory: missHistory ?? this.missHistory, // Phase 14
       failurePlaybooks: failurePlaybooks ?? this.failurePlaybooks,
       failurePlaybook: failurePlaybook ?? this.failurePlaybook,
       identityVotes: identityVotes ?? this.identityVotes,
@@ -471,6 +481,7 @@ class Habit {
       'completionHistory': completionHistory.map((d) => d.toIso8601String()).toList(),
       'recoveryHistory': recoveryHistory.map((r) => r.toJson()).toList(),
       'lastMissReason': lastMissReason,
+      'missHistory': missHistory.map((m) => m.toJson()).toList(), // Phase 14
       'failurePlaybooks': failurePlaybooks.map((p) => p.toJson()).toList(),
       'failurePlaybook': failurePlaybook?.toJson(),
       'identityVotes': identityVotes,
@@ -536,6 +547,14 @@ class Habit {
           .toList();
     }
     
+    // Phase 14: Parse miss history
+    List<MissEvent> missHistory = [];
+    if (json['missHistory'] != null) {
+      missHistory = (json['missHistory'] as List)
+          .map((m) => MissEvent.fromJson(m as Map<String, dynamic>))
+          .toList();
+    }
+    
     // Parse failure playbooks (new list format)
     List<FailurePlaybook> failurePlaybooks = [];
     if (json['failurePlaybooks'] != null) {
@@ -586,6 +605,7 @@ class Habit {
       completionHistory: completionHistory,
       recoveryHistory: recoveryHistory,
       lastMissReason: json['lastMissReason'] as String?,
+      missHistory: missHistory, // Phase 14
       failurePlaybooks: failurePlaybooks,
       failurePlaybook: failurePlaybook,
       identityVotes: json['identityVotes'] as int? ?? completionHistory.length,

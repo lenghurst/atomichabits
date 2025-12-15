@@ -22,6 +22,7 @@ class HabitSummaryCard extends StatelessWidget {
   final bool isCompleted;
   final VoidCallback onTap;
   final VoidCallback onQuickComplete;
+  final VoidCallback? onEdit; // Phase 13: Edit callback for stacking config
 
   const HabitSummaryCard({
     super.key,
@@ -30,6 +31,7 @@ class HabitSummaryCard extends StatelessWidget {
     required this.isCompleted,
     required this.onTap,
     required this.onQuickComplete,
+    this.onEdit,
   });
 
   @override
@@ -53,6 +55,7 @@ class HabitSummaryCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onEdit, // Phase 13: Long-press to edit
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -274,6 +277,7 @@ class HabitSummaryCard extends StatelessWidget {
     return habit.isPrimaryHabit ||
         habit.needsRecovery ||
         habit.isInFocusCycle ||
+        habit.isStacked ||  // Phase 13: Show stacking info
         (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty);
   }
 
@@ -315,6 +319,18 @@ class HabitSummaryCard extends StatelessWidget {
         Icons.block,
         'Breaking',
         Colors.purple,
+      ));
+    }
+
+    // Phase 13: Show stacking indicator
+    if (habit.isStacked) {
+      chips.add(_buildInfoChip(
+        context,
+        Icons.link,
+        habit.stackPosition == 'after' 
+            ? 'After ${habit.anchorDescription}' 
+            : 'Before ${habit.anchorDescription}',
+        Colors.teal,
       ));
     }
 

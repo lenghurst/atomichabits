@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.9.0 — Phase 12 Bad Habit Protocol)
+> **Last Updated:** December 2025 (v4.11.0 — Phase 14 Pattern Detection)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -100,6 +100,8 @@ When stale branches accumulate (> 10 unmerged):
 | **Analytics Dashboard (Phase 10)** | ✅ Live | AnalyticsScreen | AnalyticsService | Graceful Consistency charts |
 | **Backup & Restore (Phase 11)** | ✅ Live | DataManagementScreen | BackupService | JSON export/import |
 | **Bad Habit Protocol (Phase 12)** | ✅ Live | Updated UI components | Habit.isBreakHabit | Break habits with purple theme |
+| **Habit Stacking (Phase 13)** | ✅ Live | StackPromptDialog, HabitSummaryCard | CompletionResult, AppState stacking | Chain Reaction prompts |
+| **Pattern Detection (Phase 14)** | ✅ Live | AnalyticsScreen (Insight Cards), RecoveryPromptDialog | PatternDetectionService, MissEvent | Local heuristics + LLM synthesis |
 
 ---
 
@@ -120,7 +122,8 @@ lib/
 │   ├── models/
 │   │   ├── habit.dart                  # Habit data model
 │   │   ├── user_profile.dart           # User identity model
-│   │   ├── consistency_metrics.dart    # Graceful Consistency scoring
+│   │   ├── consistency_metrics.dart    # Graceful Consistency scoring + MissReason enum
+│   │   ├── habit_pattern.dart          # [Phase 14] MissEvent, HabitPattern, PatternSummary
 │   │   ├── app_settings.dart           # User preferences model
 │   │   ├── chat_message.dart           # Chat message model
 │   │   └── chat_conversation.dart      # Conversation state
@@ -128,9 +131,10 @@ lib/
 │       ├── recovery_engine.dart        # Never Miss Twice detection
 │       ├── consistency_service.dart    # Consistency calculations
 │       ├── gemini_chat_service.dart    # Chat + One-shot AI analysis
-│       ├── weekly_review_service.dart  # [Phase 7] Weekly data aggregation
+│       ├── weekly_review_service.dart  # [Phase 7] Weekly data aggregation + pattern LLM synthesis
 │       ├── home_widget_service.dart    # [Phase 9] Home screen widget sync
 │       ├── analytics_service.dart      # [Phase 10] Analytics data computation
+│       ├── pattern_detection_service.dart # [Phase 14] Local pattern heuristics
 │       ├── backup_service.dart         # [Phase 11] Backup/restore logic
 │       └── onboarding/
 │           ├── onboarding_orchestrator.dart  # AI orchestration
@@ -276,6 +280,8 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 4.6.0 | Dec 2025 | Phase 9: Home Screen Widgets (Android + iOS native widgets) |
 | 4.7.0 | Dec 2025 | Phase 10: Analytics Dashboard (fl_chart, AnalyticsService, trend visualization) |
 | 4.8.0 | Dec 2025 | Phase 11: Data Safety (BackupService, DataManagementScreen, JSON export/import) |
+| 4.9.0 | Dec 2025 | Phase 12: Bad Habit Protocol (isBreakHabit UI inversion, purple theme, break habit fields) |
+| 4.10.0 | Dec 2025 | Phase 13: Habit Stacking (Chain Reaction, CompletionResult, StackPromptDialog) |
 
 ---
 
@@ -873,6 +879,150 @@ final String? substitutionPlan; // Healthy alternative behavior
 - **Backward compatible** — defaults to `false` for existing habits
 - **Same persistence** — completionHistory tracks avoidance same as completion
 - **Same analytics** — AnalyticsService treats both habit types identically
+
+---
+
+## Phase 13: Habit Stacking ("The Chain Reaction") Architecture
+
+### Overview
+Habit Stacking enables users to leverage existing momentum by linking habits together. When one habit is completed, the app prompts the user to start the next stacked habit immediately. This implements James Clear's concept: "After [CURRENT HABIT], I will [NEW HABIT]".
+
+### Philosophy
+"The best way to build a new habit is to identify a current habit you already do each day and then stack your new behavior on top." — James Clear
+
+### Key Principle: Chain Reaction
+When a habit with stacked habits is completed:
+1. Show "Chain Reaction!" dialog
+2. Prompt user to start the next stacked habit
+3. User can start immediately or defer
+4. Creates momentum chains that reinforce habit systems
+
+### New Files
+```
+lib/
+├── data/
+│   └── models/
+│       └── completion_result.dart    # Result of habit completion with stacking info
+└── widgets/
+    └── stack_prompt_dialog.dart      # Chain Reaction prompt UI
+```
+
+### Habit Model Fields (Already Existed)
+```dart
+// lib/data/models/habit.dart - Phase 13 leverages these existing fields:
+final String? anchorHabitId;    // ID of parent habit to stack onto
+final String? anchorEvent;       // Event name (if not stacking on a habit)
+final String stackPosition;      // 'before' or 'after' the anchor
+```
+
+### CompletionResult Model
+```dart
+// lib/data/models/completion_result.dart
+class CompletionResult {
+  final bool wasNewCompletion;      // Was this a new completion?
+  final String completedHabitId;     // ID of completed habit
+  final String completedHabitName;   // Name of completed habit
+  final String? nextStackedHabitId;  // ID of next habit in chain (if any)
+  final String? nextStackedHabitName; // Name of next habit
+  final String? nextStackedHabitEmoji; // Emoji for visual
+  final String? nextStackedHabitTinyVersion; // Tiny version for context
+  final bool? isNextStackedBreakHabit; // Is next habit a break habit?
+  final bool wasRecovery;            // Was this a recovery completion?
+  final int daysMissedBeforeRecovery; // Days missed before recovery
+  final bool usedTinyVersion;        // Did user use tiny version?
+  
+  bool get hasStackedHabit => nextStackedHabitId != null;
+}
+```
+
+### AppState Stacking Methods
+```dart
+// lib/data/app_state.dart - New methods for Phase 13:
+
+// Get habits stacked onto a parent habit
+List<Habit> getStackedHabits(String parentHabitId)
+
+// Get next stacked habit to prompt (uncompleted, not paused)
+Habit? getNextStackedHabit(String parentHabitId)
+
+// Get anchor habit for a stacked habit
+Habit? getAnchorHabit(String childHabitId)
+
+// Get all habits sorted with stacks adjacent
+List<Habit> get habitsWithStacksSorted
+
+// Check for circular dependency prevention
+bool wouldCreateCircularStack(String childId, String parentId)
+```
+
+### UI Components
+
+#### StackPromptDialog
+A dialog shown after completing a habit that has stacked habits:
+- Chain icon header with "Chain Reaction!" title
+- Completed habit badge (green checkmark)
+- Next habit card with emoji, name, tiny version
+- Primary action: "Let's Do It" / "Stay Strong" (for break habits)
+- Secondary action: "Not right now"
+
+#### HabitSummaryCard Updates
+- Shows stacking indicator chip when habit is stacked
+- Displays "After {anchor}" or "Before {anchor}" label
+- Uses teal color for stacking indicator
+
+### Flow Diagram
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   User completes habit                       │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│            AppState.completeHabitForToday()                  │
+│   - Updates habit data                                       │
+│   - Checks for stacked habits via getNextStackedHabit()     │
+│   - Returns CompletionResult with nextStackedHabitId        │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│            TodayScreenController.handleCompleteHabit()       │
+│   - Checks result.hasStackedHabit                            │
+│   - If true: Shows StackPromptDialog                         │
+│   - If false: Shows normal RewardInvestmentDialog           │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   StackPromptDialog                          │
+│   - Shows Chain Reaction prompt                              │
+│   - "Let's Do It" → Focus on stacked habit                  │
+│   - "Not now" → Show normal reward dialog                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Edge Cases Handled
+
+1. **Focus Mode Integration**: Chain Reaction prompts work regardless of focus mode
+2. **Multiple Stacks**: First uncompleted stacked habit is prompted
+3. **Circular Dependencies**: `wouldCreateCircularStack()` prevents infinite loops
+4. **Break Habits in Stacks**: Prompts adapt for break habits (purple theme, "Stay Strong")
+5. **Already Completed**: Only prompts for uncompleted stacked habits
+6. **Paused Habits**: Skips paused habits in stack chain
+
+### Files Modified
+```
+lib/data/app_state.dart                             # Stacking methods, CompletionResult return type
+lib/data/models/completion_result.dart              # NEW: Result model for completions
+lib/widgets/stack_prompt_dialog.dart                # NEW: Chain Reaction dialog
+lib/features/today/controllers/today_screen_controller.dart  # Chain Reaction flow
+lib/features/dashboard/habit_list_screen.dart       # Stack sorting, Chain Reaction prompt
+lib/features/dashboard/widgets/habit_summary_card.dart  # Stacking indicator chip
+lib/features/today/today_screen_old.dart            # Updated return type handling
+lib/features/onboarding/onboarding_screen.dart      # Habit stacking UI section + fields
+```
+
+### Data Handling
+- **No schema changes** — `anchorHabitId`, `anchorEvent`, `stackPosition` already exist
+- **Backward compatible** — existing habits work without stacking
+- **Same persistence** — habits stored as before, stacking is optional
 
 ---
 

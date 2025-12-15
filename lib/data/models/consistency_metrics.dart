@@ -72,21 +72,66 @@ class RecoveryEvent {
   );
 }
 
-/// Common reasons for missing a habit (for pattern tracking)
-enum MissReason {
-  busy('Busy/overwhelmed', '😰'),
-  tired('Low energy', '😴'),
-  forgot('Simply forgot', '🤔'),
-  travel('Traveling', '✈️'),
-  sick('Feeling unwell', '🤒'),
-  social('Social commitments', '👥'),
-  mood('Not in the mood', '😔'),
-  disruption('Routine disrupted', '🔀'),
-  other('Other', '📝');
+/// Category for miss reasons (for pattern detection)
+/// Phase 14: Pattern Detection - "The Safety Net"
+enum MissReasonCategory {
+  /// Time-related issues (wrong time, too busy)
+  time('Time Issues', '⏰'),
+  
+  /// Energy-related issues (tired, sick, mood)
+  energy('Energy Issues', '⚡'),
+  
+  /// Location-related issues (travel, environment)
+  location('Location Issues', '📍'),
+  
+  /// Memory-related issues (forgot, not reminded)
+  forgetfulness('Forgetfulness', '🧠'),
+  
+  /// Unexpected disruptions (emergency, social)
+  unexpected('Unexpected Events', '🔀');
   
   final String label;
   final String emoji;
-  const MissReason(this.label, this.emoji);
+  const MissReasonCategory(this.label, this.emoji);
+}
+
+/// Common reasons for missing a habit (for pattern tracking)
+/// Phase 14: Enhanced with categories for pattern detection
+enum MissReason {
+  // Time category
+  busy('Too busy', '😰', MissReasonCategory.time),
+  wrongTime('Wrong time of day', '🕐', MissReasonCategory.time),
+  noTime('Couldn\'t find time', '⏳', MissReasonCategory.time),
+  
+  // Energy category
+  tired('Low energy', '😴', MissReasonCategory.energy),
+  sick('Feeling unwell', '🤒', MissReasonCategory.energy),
+  mood('Not in the mood', '😔', MissReasonCategory.energy),
+  stressed('Too stressed', '😫', MissReasonCategory.energy),
+  
+  // Location category
+  travel('Traveling', '✈️', MissReasonCategory.location),
+  wrongPlace('Wrong location', '📍', MissReasonCategory.location),
+  noEquipment('Missing equipment', '🎒', MissReasonCategory.location),
+  
+  // Forgetfulness category
+  forgot('Simply forgot', '🤔', MissReasonCategory.forgetfulness),
+  noReminder('No reminder', '🔔', MissReasonCategory.forgetfulness),
+  distracted('Got distracted', '🌀', MissReasonCategory.forgetfulness),
+  
+  // Unexpected category
+  disruption('Routine disrupted', '🔀', MissReasonCategory.unexpected),
+  social('Social commitments', '👥', MissReasonCategory.unexpected),
+  emergency('Emergency/Urgent', '🚨', MissReasonCategory.unexpected),
+  other('Other', '📝', MissReasonCategory.unexpected);
+  
+  final String label;
+  final String emoji;
+  final MissReasonCategory category;
+  const MissReason(this.label, this.emoji, this.category);
+  
+  /// Full display string with emoji
+  String get display => '$emoji $label';
   
   static MissReason? fromString(String? value) {
     if (value == null) return null;
@@ -94,6 +139,11 @@ enum MissReason {
       (e) => e?.name == value,
       orElse: () => null,
     );
+  }
+  
+  /// Get all reasons in a specific category
+  static List<MissReason> inCategory(MissReasonCategory category) {
+    return MissReason.values.where((r) => r.category == category).toList();
   }
 }
 

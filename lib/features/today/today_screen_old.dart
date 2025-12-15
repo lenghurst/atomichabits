@@ -78,10 +78,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         onDoTinyVersion: () async {
           Navigator.of(dialogContext).pop();
           // Complete the habit with tiny version flag
-          final wasNewCompletion = await appState.completeHabitForToday(
+          // Phase 13: Now returns CompletionResult
+          final result = await appState.completeHabitForToday(
             usedTinyVersion: true,
           );
-          if (wasNewCompletion && mounted) {
+          if (result != null && result.wasNewCompletion && mounted) {
             _showRewardInvestmentDialog(appState);
           }
         },
@@ -964,15 +965,16 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   debugPrint('🔘 Mark as Complete button pressed');
                   
                   // Complete habit and check if it's a new completion
-                  final wasNewCompletion = await appState.completeHabitForToday();
+                  // Phase 13: Now returns CompletionResult
+                  final result = await appState.completeHabitForToday();
                   
-                  debugPrint('📊 Was new completion: $wasNewCompletion, mounted: $mounted');
+                  debugPrint('📊 Result: ${result?.wasNewCompletion}, mounted: $mounted');
                   
                   // Show reward flow if this was a new completion
-                  if (wasNewCompletion && mounted) {
+                  if (result != null && result.wasNewCompletion && mounted) {
                     debugPrint('✨ Triggering reward dialog');
                     _showRewardInvestmentDialog(appState);
-                  } else if (!wasNewCompletion) {
+                  } else if (result == null || !result.wasNewCompletion) {
                     debugPrint('⚠️ Habit already completed today');
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(

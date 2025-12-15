@@ -5,7 +5,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
 import 'models/user_profile.dart';
 import 'models/consistency_metrics.dart';
+import 'models/habit_pattern.dart'; // Phase 14: Pattern Detection
 import 'models/app_settings.dart';
+import 'models/completion_result.dart';
 import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
@@ -163,6 +165,99 @@ class AppState extends ChangeNotifier {
   /// Get graduated habits (completed focus cycle)
   List<Habit> get graduatedHabits {
     return _habits.where((h) => h.hasGraduated).toList();
+  }
+  
+  // ========== Phase 13: Habit Stacking Getters ==========
+  
+  /// Get habits stacked onto a specific parent habit
+  /// Returns habits where anchorHabitId == parentId
+  List<Habit> getStackedHabits(String parentHabitId) {
+    return _habits.where((h) => h.anchorHabitId == parentHabitId).toList();
+  }
+  
+  /// Get the first stacked habit (for Chain Reaction prompt)
+  /// Returns the first habit that is:
+  /// 1. Stacked onto the parent (anchorHabitId matches)
+  /// 2. Has stackPosition == 'after'
+  /// 3. Not completed today
+  /// 4. Not paused
+  Habit? getNextStackedHabit(String parentHabitId) {
+    final stackedHabits = _habits.where((h) => 
+      h.anchorHabitId == parentHabitId &&
+      h.stackPosition == 'after' &&
+      !h.isCompletedToday &&
+      !h.isPaused
+    ).toList();
+    
+    if (stackedHabits.isEmpty) return null;
+    
+    // Return the first one (could be extended to prioritize by creation date or custom order)
+    return stackedHabits.first;
+  }
+  
+  /// Get the anchor habit for a stacked habit
+  Habit? getAnchorHabit(String childHabitId) {
+    final childHabit = getHabitById(childHabitId);
+    if (childHabit?.anchorHabitId == null) return null;
+    return getHabitById(childHabit!.anchorHabitId!);
+  }
+  
+  /// Get all stacked habits (habits with an anchor)
+  List<Habit> get stackedHabits {
+    return _habits.where((h) => h.isStacked).toList();
+  }
+  
+  /// Get habits sorted with stacks adjacent
+  /// Returns habits in order: anchor habits followed by their stacked habits
+  List<Habit> get habitsWithStacksSorted {
+    final result = <Habit>[];
+    final processed = <String>{};
+    
+    // First, add non-stacked habits (root habits)
+    for (final habit in _habits) {
+      if (!habit.isStacked && !processed.contains(habit.id)) {
+        result.add(habit);
+        processed.add(habit.id);
+        
+        // Add stacked habits immediately after
+        final stacked = getStackedHabits(habit.id);
+        for (final stackedHabit in stacked) {
+          if (!processed.contains(stackedHabit.id)) {
+            result.add(stackedHabit);
+            processed.add(stackedHabit.id);
+          }
+        }
+      }
+    }
+    
+    // Add any remaining stacked habits (orphaned stacks)
+    for (final habit in _habits) {
+      if (!processed.contains(habit.id)) {
+        result.add(habit);
+        processed.add(habit.id);
+      }
+    }
+    
+    return result;
+  }
+  
+  /// Check if there would be a circular dependency
+  /// Returns true if setting childId's anchor to parentId would create a cycle
+  bool wouldCreateCircularStack(String childId, String parentId) {
+    // Check if parentId eventually stacks onto childId
+    String? currentId = parentId;
+    final visited = <String>{};
+    
+    while (currentId != null) {
+      if (currentId == childId) return true; // Found a cycle
+      if (visited.contains(currentId)) return false; // Already visited, no cycle to child
+      visited.add(currentId);
+      
+      final habit = getHabitById(currentId);
+      currentId = habit?.anchorHabitId;
+    }
+    
+    return false;
   }
   
   // ========== Graceful Consistency Getters ==========
@@ -543,27 +638,30 @@ class AppState extends ChangeNotifier {
   }
 
   /// Marks habit as completed for today
-  /// Returns true if this was a new completion (triggers reward flow)
+  /// Returns CompletionResult with details about the completion and any stacked habits
   /// 
   /// **Phase 3:** Can specify habitId to complete a specific habit,
   /// otherwise completes the focused habit (currentHabit).
+  /// 
+  /// **Phase 13:** Returns CompletionResult which includes nextStackedHabitId
+  /// for the Chain Reaction feature.
   /// 
   /// **Graceful Consistency Updates:**
   /// - Adds completion to history for rolling averages
   /// - Tracks recovery events if bouncing back from a miss
   /// - Updates identity votes count
   /// - Updates longest streak if needed
-  Future<bool> completeHabitForToday({
+  Future<CompletionResult> completeHabitForToday({
     String? habitId,
     bool fromNotification = false,
     bool usedTinyVersion = false,
   }) async {
     // Phase 3: Find the habit to complete
     final targetId = habitId ?? currentHabit?.id;
-    if (targetId == null) return false;
+    if (targetId == null) return CompletionResult.noHabit();
     
     final habitIndex = _habits.indexWhere((h) => h.id == targetId);
-    if (habitIndex == -1) return false;
+    if (habitIndex == -1) return CompletionResult.noHabit();
     
     final habit = _habits[habitIndex];
 
@@ -584,7 +682,7 @@ class AppState extends ChangeNotifier {
         if (kDebugMode) {
           debugPrint('Habit "${habit.name}" already completed today');
         }
-        return false;
+        return CompletionResult.alreadyCompleted(habit.id, habit.name);
       }
     }
 
@@ -705,6 +803,9 @@ class AppState extends ChangeNotifier {
     
     notifyListeners();
     
+    // Phase 13: Check for stacked habits (Chain Reaction)
+    final nextStackedHabit = getNextStackedHabit(habit.id);
+    
     if (kDebugMode) {
       final updatedHabit = _habits[habitIndex];
       final metrics = updatedHabit.consistencyMetrics;
@@ -720,9 +821,25 @@ class AppState extends ChangeNotifier {
           debugPrint('   ⭐ This was a "Never Miss Twice" win!');
         }
       }
+      if (nextStackedHabit != null) {
+        debugPrint('🔗 Chain Reaction: Next stacked habit is "${nextStackedHabit.name}"');
+      }
     }
     
-    return true; // New completion
+    // Return CompletionResult with stacking info
+    return CompletionResult(
+      wasNewCompletion: true,
+      completedHabitId: habit.id,
+      completedHabitName: habit.name,
+      nextStackedHabitId: nextStackedHabit?.id,
+      nextStackedHabitName: nextStackedHabit?.name,
+      nextStackedHabitEmoji: nextStackedHabit?.habitEmoji,
+      nextStackedHabitTinyVersion: nextStackedHabit?.tinyVersion,
+      isNextStackedBreakHabit: nextStackedHabit?.isBreakHabit,
+      wasRecovery: isRecovery,
+      daysMissedBeforeRecovery: daysMissed,
+      usedTinyVersion: usedTinyVersion,
+    );
   }
 
   /// Marks onboarding as complete
@@ -1051,6 +1168,7 @@ class AppState extends ChangeNotifier {
   
   /// Record why the user missed (for pattern tracking)
   /// Phase 3: Records for the focused habit
+  /// Phase 14: Also adds to missHistory for pattern detection
   Future<void> recordMissReason(MissReason reason, {String? habitId}) async {
     final targetId = habitId ?? currentHabit?.id;
     if (targetId == null) return;
@@ -1058,16 +1176,46 @@ class AppState extends ChangeNotifier {
     final index = _habits.indexWhere((h) => h.id == targetId);
     if (index == -1) return;
     
-    _habits[index] = _habits[index].copyWith(
+    final habit = _habits[index];
+    
+    // Phase 14: Create structured miss event for pattern detection
+    final missEvent = MissEvent(
+      date: DateTime.now(),
+      reason: reason,
+      scheduledHour: _parseScheduledHour(habit.implementationTime),
+      wasRecovered: false, // Will be updated if user recovers
+    );
+    
+    // Add to miss history (keep last 90 days)
+    final cutoff = DateTime.now().subtract(const Duration(days: 90));
+    final updatedMissHistory = [
+      ...habit.missHistory.where((m) => m.date.isAfter(cutoff)),
+      missEvent,
+    ];
+    
+    _habits[index] = habit.copyWith(
       lastMissReason: reason.name,
+      missHistory: updatedMissHistory,
     );
     
     await _saveToStorage();
     notifyListeners();
     
     if (kDebugMode) {
-      debugPrint('📝 Recorded miss reason: ${reason.label} for ${_habits[index].name}');
+      debugPrint('📝 Recorded miss reason: ${reason.label} for ${habit.name}');
+      debugPrint('📊 Total miss events: ${updatedMissHistory.length}');
     }
+  }
+  
+  /// Parse scheduled hour from implementation time string
+  int? _parseScheduledHour(String time) {
+    try {
+      final parts = time.split(':');
+      if (parts.isNotEmpty) {
+        return int.parse(parts[0]);
+      }
+    } catch (_) {}
+    return null;
   }
   
   /// Update failure playbook for habit
@@ -1334,14 +1482,17 @@ class AppState extends ChangeNotifier {
         }
         
         // Complete the habit in the app
-        final completed = await completeHabitForToday(
+        final result = await completeHabitForToday(
           habitId: pendingHabitId,
           fromNotification: false,
         );
         
-        if (completed) {
+        if (result.wasNewCompletion) {
           if (kDebugMode) {
             debugPrint('Habit completed from widget tap');
+            if (result.hasStackedHabit) {
+              debugPrint('🔗 Stacked habit available: ${result.nextStackedHabitName}');
+            }
           }
         }
         
@@ -1369,12 +1520,12 @@ class AppState extends ChangeNotifier {
         }
         
         // Complete the habit
-        final completed = await completeHabitForToday(
+        final result = await completeHabitForToday(
           habitId: habitId,
           fromNotification: false,
         );
         
-        return completed;
+        return result.wasNewCompletion;
       }
     }
     

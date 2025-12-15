@@ -194,7 +194,7 @@ class SettingsScreen extends StatelessWidget {
                       ListTile(
                         leading: const Icon(Icons.info_outline),
                         title: const Text('App Info'),
-                        subtitle: const Text('Version 4.8.0 (Phase 11)'),
+                        subtitle: const Text('Version 4.10.0 (Phase 13)'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showAboutDialog(context),
                       ),
@@ -485,7 +485,7 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (context) => AboutDialog(
         applicationName: 'Atomic Habits Hook App',
-        applicationVersion: '4.8.0 (Phase 11)',
+        applicationVersion: '4.10.0 (Phase 13)',
         applicationIcon: const Icon(
           Icons.self_improvement,
           size: 48,
@@ -511,6 +511,8 @@ class SettingsScreen extends StatelessWidget {
           Text('✅ Phase 9: Home Screen Widgets'),
           Text('✅ Phase 10: Analytics Dashboard'),
           Text('✅ Phase 11: Backup & Restore'),
+          Text('✅ Phase 12: Bad Habit Protocol'),
+          Text('✅ Phase 13: Habit Stacking'),
         ],
       ),
     );
