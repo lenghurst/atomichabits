@@ -576,6 +576,50 @@ class GeminiChatService {
     return _storage.loadRecent();
   }
 
+  /// Generate a one-shot weekly analysis (non-conversational)
+  /// 
+  /// This bypasses the chat history management and returns a single response.
+  /// Used for Weekly Review feature (Phase 7).
+  Future<String?> generateWeeklyAnalysis(String prompt) async {
+    // Check connectivity
+    if (!await isOnline()) {
+      if (kDebugMode) {
+        debugPrint('Weekly Review: No internet connection');
+      }
+      return null;
+    }
+
+    // Check if API is configured
+    if (_model == null) {
+      if (kDebugMode) {
+        debugPrint('Weekly Review: API key not configured');
+      }
+      return null;
+    }
+
+    try {
+      // Single-turn generation (no chat history)
+      final response = await _model!.generateContent([
+        Content.text(prompt),
+      ]);
+
+      final text = response.text;
+      if (text != null && text.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('Weekly Review: Generated ${text.length} chars');
+        }
+        return text.trim();
+      }
+
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Weekly Review API error: $e');
+      }
+      return null;
+    }
+  }
+
   /// Create a habit from onboarding data
   Habit? createHabitFromOnboarding(ChatConversation conversation) {
     final data = conversation.onboardingData;

@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.4.1 — Phase 6.5 Brand Polish Complete)
+> **Last Updated:** December 2025 (v4.5.0 — Phase 7 Weekly Review with AI)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -91,6 +91,7 @@ When stale branches accumulate (> 10 unmerged):
 | **History/Calendar View (Phase 5)** | ✅ Live | HistoryScreen, CalendarMonthView | AppState | Stats, calendar dots, milestones |
 | **Settings & Polish (Phase 6)** | ✅ Live | SettingsScreen | AppState (AppSettings) | Theme, notifications, sound, haptics |
 | **Error Boundaries (Phase 6)** | ✅ Live | ErrorBoundary, ErrorScreen | - | Global error handling |
+| **Weekly Review with AI (Phase 7)** | ✅ Live | WeeklyReviewDialog | WeeklyReviewService | AI-powered weekly insights |
 | Home Screen Widget | ❌ Not Started | - | - | Exists on orphaned branch |
 | Bad Habit Protocol | ❌ Not Started | - | - | Tier 2 Claude integration |
 
@@ -104,6 +105,8 @@ lib/
 ├── main.dart                           # App entry, Provider setup, GoRouter, Error handling
 ├── core/
 │   └── error_boundary.dart             # Error handling widgets and utilities
+├── config/
+│   └── ai_model_config.dart            # API keys, model configuration
 ├── data/
 │   ├── app_state.dart                  # Central state (ChangeNotifier)
 │   ├── notification_service.dart       # Notifications + scheduling
@@ -112,15 +115,25 @@ lib/
 │   │   ├── habit.dart                  # Habit data model
 │   │   ├── user_profile.dart           # User identity model
 │   │   ├── consistency_metrics.dart    # Graceful Consistency scoring
-│   │   └── app_settings.dart           # User preferences model
+│   │   ├── app_settings.dart           # User preferences model
+│   │   ├── chat_message.dart           # Chat message model
+│   │   └── chat_conversation.dart      # Conversation state
 │   └── services/
 │       ├── recovery_engine.dart        # Never Miss Twice detection
 │       ├── consistency_service.dart    # Consistency calculations
-│       ├── keystone_analyzer.dart      # Habit analysis
-│       └── review_service.dart         # Review functionality
+│       ├── gemini_chat_service.dart    # Chat + One-shot AI analysis
+│       ├── weekly_review_service.dart  # [Phase 7] Weekly data aggregation
+│       └── onboarding/
+│           ├── onboarding_orchestrator.dart  # AI orchestration
+│           ├── ai_response_parser.dart       # JSON extraction
+│           └── conversation_guardrails.dart  # Frustration detection
 ├── features/
 │   ├── onboarding/
-│   │   └── onboarding_screen.dart      # First-time setup
+│   │   ├── onboarding_screen.dart      # Form-based (Tier 3)
+│   │   ├── conversational_onboarding_screen.dart  # Chat UI (default)
+│   │   └── widgets/
+│   │       ├── magic_wand_button.dart
+│   │       └── chat_message_bubble.dart
 │   ├── today/
 │   │   ├── today_screen.dart           # Main screen (thin orchestrator)
 │   │   ├── controllers/
@@ -128,8 +141,18 @@ lib/
 │   │   ├── widgets/                    # Presentational components
 │   │   └── helpers/
 │   │       └── recovery_ui_helpers.dart  # Pure styling functions
-│   └── settings/
-│       └── settings_screen.dart        # Settings (fully functional)
+│   ├── dashboard/
+│   │   ├── habit_list_screen.dart      # Multi-habit dashboard
+│   │   └── widgets/
+│   │       └── habit_summary_card.dart
+│   ├── history/
+│   │   ├── history_screen.dart         # Calendar view + stats
+│   │   └── widgets/
+│   │       └── calendar_month_view.dart
+│   ├── settings/
+│   │   └── settings_screen.dart        # Settings (fully functional)
+│   └── review/                         # [Phase 7]
+│       └── weekly_review_dialog.dart   # AI-powered weekly insights
 ├── widgets/                            # Shared widgets
 │   ├── graceful_consistency_card.dart
 │   ├── recovery_prompt_dialog.dart
@@ -157,6 +180,21 @@ AppState (ChangeNotifier)
 │  (Presentational)│     │   (Behavior)    │     │ (Pure Functions)│
 │  Props in/out   │     │  Side effects   │     │  No state       │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### AI Architecture (Two Modes)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     GeminiChatService                           │
+├─────────────────────────────────┬───────────────────────────────┤
+│   Conversational Mode           │   One-Shot Analysis Mode      │
+│   (Streaming Chat)              │   (Single Response)           │
+├─────────────────────────────────┼───────────────────────────────┤
+│   sendMessage()                 │   generateWeeklyAnalysis()    │
+│   - Maintains chat history      │   - No history management     │
+│   - Streams response chunks     │   - Returns complete string   │
+│   - Used by: Onboarding         │   - Used by: Weekly Review    │
+└─────────────────────────────────┴───────────────────────────────┘
 ```
 
 ---
@@ -222,6 +260,7 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 1.5.0 | Dec 2025 | Phase 5: History & Calendar View (HistoryScreen, CalendarMonthView) |
 | 1.6.0 | Dec 2025 | Phase 6: Settings & Polish (AppSettings, Error Boundaries, Dynamic Theming) |
 | 1.6.1 | Dec 2025 | Phase 6.5: Brand Polish (Custom App Icon, Splash Screen, ErrorReporter) |
+| 4.5.0 | Dec 2025 | Phase 7: Weekly Review with AI (WeeklyReviewService, WeeklyReviewDialog) |
 
 ---
 
@@ -394,6 +433,58 @@ MaterialApp.router(
   darkTheme: ThemeData(...),       // Dark theme
 )
 ```
+
+---
+
+---
+
+## Phase 7: Weekly Review with AI Architecture
+
+### Overview
+The Weekly Review feature provides AI-powered personalized insights based on habit performance data. It closes the "Hook Model" loop by turning user effort into personalized investment.
+
+### New Files
+```
+lib/
+├── data/
+│   └── services/
+│       └── weekly_review_service.dart    # Data aggregation & prompt building
+└── features/
+    └── review/
+        └── weekly_review_dialog.dart     # Review UI with stats & AI insights
+```
+
+### Key Classes
+
+| Class | Purpose |
+|-------|---------|
+| `WeeklyReviewService` | Aggregates 7-day habit data, builds AI prompts, provides local fallback |
+| `WeeklyReviewResult` | Result model with review text, stats, AI/fallback flag |
+| `WeeklyStats` | Summary stats: days completed, week history, score, recoveries |
+| `WeeklyReviewDialog` | Modal dialog showing 7-day progress, stats, AI review |
+
+### AI Prompt Design
+The service builds a context-aware prompt including:
+- Habit name, identity, motivation
+- 7-day completion history (emoji format)
+- Graceful Consistency Score and change
+- Recovery count and identity votes
+- Rules for tone (compassionate, identity-focused, no shaming)
+
+### Fallback Logic
+If AI is unavailable (offline, API error), local heuristics generate appropriate responses:
+- Perfect week → Celebrate identity commitment
+- Recoveries → Praise resilience
+- Struggling → Suggest 2-minute rule
+- No completions → Compassionate fresh start
+
+### Integration Points
+- **History Screen**: Weekly Review card in insights section + app bar button
+- **Dashboard**: Weekly Review button (✨) in app bar for quick access
+- **Provider**: `WeeklyReviewService` registered via `ProxyProvider`
+
+### GeminiChatService Extension
+Added `generateWeeklyAnalysis(String prompt)` method for single-turn, non-conversational AI requests.
 
 ---
 

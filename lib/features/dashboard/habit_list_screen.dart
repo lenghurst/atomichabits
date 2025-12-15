@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
+import '../review/weekly_review_dialog.dart';
 import 'widgets/habit_summary_card.dart';
 
 /// Dashboard screen showing all habits
@@ -44,6 +45,13 @@ class HabitListScreen extends StatelessWidget {
             ),
             centerTitle: true,
             actions: [
+              // Weekly Review button (Phase 7)
+              if (habits.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.auto_awesome),
+                  tooltip: 'Weekly Review',
+                  onPressed: () => _showWeeklyReviewPicker(context, habits),
+                ),
               // History button (Phase 5)
               IconButton(
                 icon: const Icon(Icons.calendar_month_outlined),
@@ -303,5 +311,90 @@ class HabitListScreen extends StatelessWidget {
       habit.lastCompletedDate!.day,
     );
     return lastDate == today;
+  }
+
+  /// Phase 7: Show picker for weekly review if multiple habits
+  void _showWeeklyReviewPicker(BuildContext context, List<Habit> habits) {
+    // Filter habits with at least 7 days of data
+    final eligibleHabits = habits.where((h) {
+      final daysSinceCreation = DateTime.now().difference(h.createdAt).inDays;
+      return daysSinceCreation >= 7;
+    }).toList();
+    
+    if (eligibleHabits.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Weekly reviews available after 7 days of tracking'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    // If only one eligible habit, show review directly
+    if (eligibleHabits.length == 1) {
+      WeeklyReviewDialog.show(context, eligibleHabits.first);
+      return;
+    }
+    
+    // Show picker for multiple habits
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome, size: 24),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Weekly Review',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Select a habit to review',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...eligibleHabits.map((habit) => ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  child: Text(
+                    habit.habitEmoji ?? '✨',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+                title: Text(habit.name),
+                subtitle: Text(
+                  '${habit.gracefulScore.toInt()}% consistency',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  WeeklyReviewDialog.show(context, habit);
+                },
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
