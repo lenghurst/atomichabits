@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- String resources for Atomic Habits Hook App -->
+<resources>
+    <string name="app_name">Atomic Habits</string>
+    
+    <!-- Phase 9: Home Screen Widget Strings -->
+    <string name="widget_name">Habit Widget</string>
+    <string name="widget_description">Track and complete your habit with one tap</string>
+</resources>

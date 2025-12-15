@@ -52,6 +52,13 @@ class HabitListScreen extends StatelessWidget {
                   tooltip: 'Weekly Review',
                   onPressed: () => _showWeeklyReviewPicker(context, habits),
                 ),
+              // Analytics button (Phase 10)
+              if (habits.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.analytics_outlined),
+                  tooltip: 'Analytics',
+                  onPressed: () => context.push('/analytics'),
+                ),
               // History button (Phase 5)
               IconButton(
                 icon: const Icon(Icons.calendar_month_outlined),

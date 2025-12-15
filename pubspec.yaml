@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 4.5.0+1
+version: 4.8.0+1
 
 environment:
   sdk: ^3.9.2
@@ -57,6 +57,18 @@ dependencies:
   
   # HTTP client for remote LLM suggestions
   http: 1.5.0
+  
+  # Phase 9: Home Screen Widgets for one-tap habit completion
+  home_widget: ^0.7.0
+  
+  # Phase 10: Analytics Dashboard with charts
+  fl_chart: ^0.69.0
+  
+  # Phase 11: Data Safety (Backup & Restore)
+  path_provider: ^2.1.5
+  share_plus: ^10.1.4
+  file_picker: ^8.1.6
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

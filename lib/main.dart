@@ -1,11 +1,15 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:home_widget/home_widget.dart';
 import 'data/app_state.dart';
 import 'data/services/gemini_chat_service.dart';
 import 'data/services/weekly_review_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
+import 'data/services/home_widget_service.dart';
 import 'config/ai_model_config.dart';
 import 'core/error_boundary.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -14,6 +18,8 @@ import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/history/history_screen.dart';
+import 'features/analytics/analytics_screen.dart';
+import 'features/settings/data_management_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -36,10 +42,24 @@ void main() async {
   runApp(MyApp(geminiService: geminiService));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final GeminiChatService geminiService;
   
   const MyApp({super.key, required this.geminiService});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // Phase 9: Stream subscription for widget clicks
+  StreamSubscription<Uri?>? _widgetClickSubscription;
+
+  @override
+  void dispose() {
+    _widgetClickSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +74,7 @@ class MyApp extends StatelessWidget {
           },
         ),
         // Gemini Chat Service (AI backend)
-        Provider<GeminiChatService>.value(value: geminiService),
+        Provider<GeminiChatService>.value(value: widget.geminiService),
         // Weekly Review Service (Phase 7)
         ProxyProvider<GeminiChatService, WeeklyReviewService>(
           update: (context, geminiService, previous) =>
@@ -97,6 +117,17 @@ class MyApp extends StatelessWidget {
             );
           }
 
+          // Phase 9: Set up widget click listener (once app is loaded)
+          _widgetClickSubscription?.cancel();
+          _widgetClickSubscription = appState.widgetClickStream.listen((uri) {
+            if (uri != null) {
+              if (kDebugMode) {
+                debugPrint('Widget click received: $uri');
+              }
+              appState.handleWidgetUri(uri);
+            }
+          });
+
           // Configure navigation routes
           // Phase 4: Dashboard is home for returning users
           // Phase 2: Chat UI for new users, Form is fallback
@@ -131,6 +162,16 @@ class MyApp extends StatelessWidget {
               GoRoute(
                 path: '/history',
                 builder: (context, state) => const HistoryScreen(),
+              ),
+              // Analytics: Dashboard with charts (Phase 10)
+              GoRoute(
+                path: '/analytics',
+                builder: (context, state) => const AnalyticsScreen(),
+              ),
+              // Data Management: Backup & Restore (Phase 11)
+              GoRoute(
+                path: '/data-management',
+                builder: (context, state) => const DataManagementScreen(),
               ),
             ],
           );

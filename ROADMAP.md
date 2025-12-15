@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.5.0 - Phase 7 Weekly Review with AI)
+> **Last Updated:** December 2025 (v4.8.0 - Phase 11 Data Safety)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -23,7 +23,117 @@
 
 ---
 
-## Current Sprint: Phase 7 (Weekly Review - ✅ Completed)
+## Current Sprint: Phase 11 (Data Safety - ✅ Completed)
+
+**Goal:** Protect user investment with comprehensive backup and restore functionality
+
+**Status:** ✅ Complete (December 2025)
+
+**Rationale:** After maximizing User Investment via History and Analytics, we must now protect that investment. Data Safety is a prerequisite for Release Candidate status.
+
+**Completed:**
+- [x] **Dependencies:** Added `path_provider`, `share_plus`, `file_picker`, `intl`
+- [x] **Service:** Created `BackupService` with export/import/validation logic
+- [x] **UI:** Created `DataManagementScreen` with backup/restore UI
+- [x] **Export Flow:** Generate JSON → Open System Share Sheet → Record timestamp
+- [x] **Import Flow:** File picker → Validate JSON → Preview → Confirm warning → Restore
+- [x] **Validation:** Required keys check, habit structure validation, version check
+- [x] **Integration:** Added `reloadFromStorage()` to AppState for restore reload
+- [x] **Navigation:** `/data-management` route + Settings entry point
+- [x] **UI Polish:** Last backup timestamp, tips section, included items list
+
+**Files Created:**
+- `lib/data/services/backup_service.dart`
+- `lib/features/settings/data_management_screen.dart`
+
+**Files Modified:**
+- `lib/main.dart` (added `/data-management` route + import)
+- `lib/data/app_state.dart` (added `reloadFromStorage()` method)
+- `lib/features/settings/settings_screen.dart` (Data & Storage section + navigation)
+- `pubspec.yaml` (dependencies, version 4.8.0+1)
+
+**Backup Format:**
+```json
+{
+  "version": 1,
+  "exportedAt": "2025-12-15T10:30:00.000Z",
+  "habits": [...],
+  "userProfile": {...},
+  "appSettings": {...},
+  "focusedHabitId": "uuid",
+  "hasCompletedOnboarding": true
+}
+```
+
+---
+
+## Previous Sprint: Phase 10 (Analytics Dashboard - ✅ Completed)
+
+**Goal:** Build a "Zoom Out" view showing resilience where missed days appear as small dips, not cliffs
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **Package:** Added `fl_chart: ^0.69.0` dependency
+- [x] **Service:** Created `AnalyticsService` with rolling score calculation
+- [x] **UI:** Created `AnalyticsScreen` with interactive trend visualizations
+- [x] **Charts:** Line chart for Graceful Consistency Score (7/14/30/90 days)
+- [x] **Charts:** Bar chart for weekly completion breakdown
+- [x] **Resilience Visual:** Missed days as small dips, recoveries highlighted in orange
+- [x] **Period Selector:** 7 Days, 14 Days, 30 Days, 90 Days, All Time
+- [x] **Summary Stats:** Completed days, completion rate, recoveries, best streak
+- [x] **Insights:** Context-aware insight cards based on performance
+- [x] **Navigation:** `/analytics` route + Analytics button on Dashboard
+- [x] **Multi-habit:** Habit picker for users with multiple habits
+
+**Files Created:**
+- `lib/features/analytics/analytics_screen.dart`
+- `lib/data/services/analytics_service.dart`
+
+**Files Modified:**
+- `lib/main.dart` (added `/analytics` route + import)
+- `lib/features/dashboard/habit_list_screen.dart` (Analytics button in app bar)
+- `pubspec.yaml` (fl_chart dependency, version 4.7.0+1)
+
+---
+
+## Previous Sprint: Phase 9 (Home Screen Widgets - ✅ Completed)
+
+**Goal:** One-tap habit completion from home screen without opening the app
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **Service:** Created `HomeWidgetService` for widget data synchronization
+- [x] **Android Widget:** Native `HabitWidgetProvider` with habit name + complete button
+- [x] **iOS Widget:** WidgetKit implementation with `HabitWidget` and `HabitEntry`
+- [x] **Data Sync:** Automatic widget updates on habit completion, creation, deletion
+- [x] **Interactivity:** Widget tap callbacks for habit completion
+- [x] **Deep Links:** URL scheme `atomichabits://` for widget actions
+- [x] **Stats Display:** Shows current streak or Graceful Score on widget
+
+**Files Created:**
+- `lib/data/services/home_widget_service.dart`
+- `android/app/src/main/kotlin/.../HabitWidgetProvider.kt`
+- `android/app/src/main/res/layout/habit_widget.xml`
+- `android/app/src/main/res/xml/habit_widget_info.xml`
+- `android/app/src/main/res/drawable/widget_*.xml`
+- `ios/HabitWidget/HabitWidget.swift`
+- `ios/HabitWidget/Info.plist`
+- `ios/HabitWidget/README.md`
+
+**Files Modified:**
+- `lib/data/app_state.dart` (HomeWidgetService integration)
+- `lib/main.dart` (widget click listener setup)
+- `android/app/src/main/AndroidManifest.xml` (widget receiver + deep links)
+- `android/app/src/main/res/values/colors.xml` (widget colors)
+- `android/app/src/main/res/values/strings.xml` (new file, widget strings)
+- `ios/Runner/Info.plist` (URL scheme for deep links)
+- `pubspec.yaml` (home_widget dependency, version 4.6.0+1)
+
+---
+
+## Previous Sprint: Phase 7 (Weekly Review - ✅ Completed)
 
 **Goal:** AI-powered Weekly Review feature to close the Hook Model loop
 
@@ -50,28 +160,25 @@
 
 ---
 
-## Next Sprint: Phase 8 (Analytics Dashboard)
+## Next Sprint: Phase 12 (TBD)
 
-**Goal:** Visualize Graceful Consistency Score trends with interactive charts
+**Status:** 🔵 Planning
 
-**Status:** 🚧 Planning
+**Options for Next Phase:**
+- [ ] **Bad Habit Protocol** — Claude Tier 2 for "break habit" coaching
+- [ ] **Habit Stacking** — Link habits in sequences
+- [ ] **Pattern Detection** — AI analysis of miss reasons
+- [ ] **Social Accountability** — Optional sharing features
+- [ ] **Accessibility** — Dynamic type, contrast, larger tap targets
+- [ ] **Cloud Sync** — Sync data across devices (Firebase/Supabase)
+- [ ] **Notifications Enhancement** — Smart timing based on completion patterns
 
-**Recommended Approach:**
-Leverage `fl_chart` package to provide immediate visual gratification for the data already collected.
-
-**Potential Tasks:**
-- [ ] Add `fl_chart: ^0.66.0` dependency
-- [ ] Create `AnalyticsDashboardScreen` with trend visualizations
-- [ ] Line chart: Graceful Consistency Score over time (7/30/90 days)
-- [ ] Bar chart: Weekly completion rates comparison
-- [ ] Pie chart: Completion vs missed breakdown
-- [ ] Add dashboard access from History screen or Settings
-- [ ] Optional: Export data as image or PDF
-
-**Alternative Phase 8 Options:**
-- [ ] Android/iOS Home Screen Widgets (high visibility, platform-specific)
-- [ ] Backup and Restore functionality (data safety)
-- [ ] Bad Habit Protocol with Claude Tier 2 (advanced coaching)
+**Release Candidate Checklist:**
+- [x] Phase 9: Home Screen Widgets
+- [x] Phase 10: Analytics Dashboard  
+- [x] Phase 11: Backup & Restore
+- [ ] Final polish and testing
+- [ ] App Store / Play Store preparation
 
 ---
 
@@ -271,9 +378,9 @@ See Sprint History below for details.
 
 ### Features
 - [x] **Weekly Review with AI** — ✅ AI synthesis of weekly progress (Phase 7)
-- [ ] **Weekly/Monthly Analytics Dashboard** — Trend charts, insights
+- [x] **Analytics Dashboard** — ✅ Trend charts, insights (Phase 10)
+- [x] **Backup and Restore** — ✅ Export/import habit data (Phase 11)
 - [ ] **Pattern Detection from Miss Reasons** — Identify recurring issues
-- [ ] **Backup and Restore** — Export/import habit data
 - [ ] **Habit Pause/Vacation Mode** — Planned breaks without penalty
 - [ ] **Social Accountability** — Optional sharing features
 
@@ -284,8 +391,8 @@ See Sprint History below for details.
 - [ ] **Timezone Robustness** — Detect TZ changes and reschedule notifications
 
 ### Platform Expansion
-- [ ] **Android Home Screen Widget** — One-tap completion from launcher
-- [ ] **iOS Widget Support** — WidgetKit implementation
+- [x] **Android Home Screen Widget** — ✅ One-tap completion from launcher (Phase 9)
+- [x] **iOS Widget Support** — ✅ WidgetKit implementation (Phase 9)
 
 ---
 
@@ -318,6 +425,137 @@ See Sprint History below for details.
 ---
 
 ## Sprint History
+
+### Sprint: Data Safety (Phase 11) - December 2025 ✅
+
+**Goal:** Protect user investment with comprehensive backup and restore functionality
+
+**Context:**
+- Users have invested significant time building habits and tracking progress
+- After Analytics (Phase 10), data protection becomes essential
+- Prerequisite for Release Candidate status
+- Philosophy: "Protecting user investment is as important as enabling it"
+
+**Completed:**
+- ✅ Added `path_provider`, `share_plus`, `file_picker`, `intl` dependencies
+- ✅ Created `BackupService` with export/import/validation logic
+- ✅ Created `DataManagementScreen` with full backup/restore UI
+- ✅ Export flow: JSON generation → System Share Sheet → Timestamp recording
+- ✅ Import flow: File picker → Validation → Preview → Confirm → Restore
+- ✅ Backup validation with required keys and structure checks
+- ✅ Added `reloadFromStorage()` to AppState for seamless restore
+- ✅ Added `/data-management` route
+- ✅ Updated Settings with "Data & Storage" section
+
+**Files Created:**
+- `lib/data/services/backup_service.dart`
+- `lib/features/settings/data_management_screen.dart`
+
+**Files Modified:**
+- `lib/main.dart` (added `/data-management` route + import)
+- `lib/data/app_state.dart` (added `reloadFromStorage()` method)
+- `lib/features/settings/settings_screen.dart` (Data & Storage section)
+- `pubspec.yaml` (dependencies, version 4.8.0+1)
+- `AI_CONTEXT.md`, `ROADMAP.md` (documentation)
+
+**Key Design Decisions:**
+- JSON format with versioning for future compatibility
+- Filename: `atomic_habits_backup_YYYY-MM-DD.json`
+- System share sheet for maximum platform compatibility
+- Destructive restore requires explicit confirmation
+- Backup includes ALL user data (habits, history, settings, profile)
+
+---
+
+### Sprint: Analytics Dashboard (Phase 10) - December 2025 ✅
+
+**Goal:** Build a "Zoom Out" view showing resilience, where missed days appear as small dips
+
+**Context:**
+- Provides visual gratification for collected data (Hook Model: Variable Reward)
+- Reinforces "Graceful Consistency > Fragile Streaks" philosophy
+- Missed days appear as gentle dips, not catastrophic cliffs
+- Leverages `fl_chart` package for interactive visualizations
+
+**Completed:**
+- ✅ Added `fl_chart: ^0.69.0` dependency
+- ✅ Created `AnalyticsService` with rolling score calculation
+- ✅ Created `AnalyticsScreen` with interactive trend charts
+- ✅ Line chart: Graceful Consistency over time (7/14/30/90 days, All Time)
+- ✅ Bar chart: Weekly completion breakdown
+- ✅ Resilience visual: Different dot colors for completed/recovery/missed
+- ✅ Period summary: Stats card with completion rate, recoveries, best streak
+- ✅ Contextual insights based on habit performance
+- ✅ Habit picker for multi-habit users
+- ✅ Added `/analytics` route to GoRouter
+- ✅ Added Analytics button (📊) to Dashboard app bar
+
+**Files Created:**
+- `lib/features/analytics/analytics_screen.dart`
+- `lib/data/services/analytics_service.dart`
+
+**Files Modified:**
+- `lib/main.dart` (added `/analytics` route + import)
+- `lib/features/dashboard/habit_list_screen.dart` (Analytics button in app bar)
+- `pubspec.yaml` (fl_chart dependency, version 4.7.0+1)
+- `AI_CONTEXT.md`, `ROADMAP.md` (documentation)
+
+**Key Design Decisions:**
+- Rolling 7-day window for score smoothing (missed days = dips, not cliffs)
+- Recovery days highlighted in orange (celebrating resilience)
+- Touch tooltips show date, score, and status
+- Insight card adapts to user's performance patterns
+
+---
+
+### Sprint: Home Screen Widgets (Phase 9) - December 2025 ✅
+
+**Goal:** One-tap habit completion from home screen without opening the app
+
+**Context:**
+- Reduces friction for habit completion (Fogg's Behavior Model: Ability)
+- High visibility on home screen acts as environmental cue (Atomic Habits: Make it Obvious)
+- Supports both Android and iOS platforms via `home_widget` package
+
+**Completed:**
+- ✅ Added `home_widget: ^0.7.0` dependency
+- ✅ Created `HomeWidgetService` for data sync and callback handling
+- ✅ Created Android `HabitWidgetProvider` with native widget layout
+- ✅ Created iOS `HabitWidget` using WidgetKit
+- ✅ Integrated widget updates into `AppState` (create, complete, delete, focus)
+- ✅ Implemented background callback for widget tap completion
+- ✅ Added URL scheme `atomichabits://` for deep linking
+
+**Files Created:**
+- `lib/data/services/home_widget_service.dart`
+- `android/app/src/main/kotlin/.../HabitWidgetProvider.kt`
+- `android/app/src/main/res/layout/habit_widget.xml`
+- `android/app/src/main/res/xml/habit_widget_info.xml`
+- `android/app/src/main/res/drawable/widget_*.xml`
+- `android/app/src/main/res/values/strings.xml`
+- `ios/HabitWidget/HabitWidget.swift`
+- `ios/HabitWidget/Info.plist`
+- `ios/HabitWidget/README.md`
+
+**Files Modified:**
+- `lib/data/app_state.dart` (HomeWidgetService integration)
+- `lib/main.dart` (widget click listener)
+- `android/app/src/main/AndroidManifest.xml` (widget receiver)
+- `android/app/src/main/res/values/colors.xml` (widget colors)
+- `ios/Runner/Info.plist` (URL scheme)
+- `pubspec.yaml` (version 4.6.0+1)
+- `AI_CONTEXT.md`, `ROADMAP.md` (documentation)
+
+**Widget Features:**
+- Shows habit name with emoji
+- Shows current streak or Graceful Score
+- One-tap complete button
+- Visual state (purple = incomplete, green = completed)
+- Opens app when tapped elsewhere
+
+**Note:** iOS widget requires manual Xcode setup (App Groups, Widget Extension target). See `ios/HabitWidget/README.md`.
+
+---
 
 ### Sprint: Weekly Review with AI (Phase 7) - December 2025 ✅
 
@@ -573,6 +811,10 @@ done | sort
 | Phase 5 History & Calendar | ✅ | ✅ | Complete! |
 | Phase 6 Settings & Polish | ✅ | ✅ | Complete! |
 | Phase 7 Weekly Review with AI | ✅ | ✅ | Complete! |
+| Phase 9 Home Screen Widgets | ✅ | ✅ | Complete! |
+| Phase 10 Analytics Dashboard | ✅ | ✅ | Complete! |
+| Phase 11 Backup & Restore | ✅ | ✅ | Complete! |
+| Release Candidate Ready | 🟡 | ✅ | Pending final polish |
 
 ---
 

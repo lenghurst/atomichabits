@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Phase 6.5: Brand colors for splash screen -->
+<!-- Brand colors for Atomic Habits Hook App -->
 <resources>
     <!-- Deep Purple - matches Flutter theme -->
     <color name="splash_background">#673AB7</color>
     <color name="primary">#673AB7</color>
     <color name="primary_dark">#512DA8</color>
+    
+    <!-- Phase 9: Home Screen Widget Colors -->
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_background_dark">#1E1E1E</color>
+    <color name="widget_border">#E0E0E0</color>
+    <color name="widget_text_primary">#1F1F1F</color>
+    <color name="widget_text_secondary">#666666</color>
+    <color name="widget_button_default">#673AB7</color>
+    <color name="widget_button_completed">#4CAF50</color>
+    <color name="widget_button_text">#FFFFFF</color>
 </resources>

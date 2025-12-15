@@ -45,5 +45,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Phase 9: URL Schemes for widget deep links -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.atomichabits.hook</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>atomichabits</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

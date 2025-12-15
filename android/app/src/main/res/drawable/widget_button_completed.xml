@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Completed state button for widget
+    Phase 9: Home Screen Widgets
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_button_completed"/>
+    <corners android:radius="18dp"/>
+</shape>
