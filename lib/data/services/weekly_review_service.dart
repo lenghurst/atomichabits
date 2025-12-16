@@ -5,6 +5,8 @@ import '../models/consistency_metrics.dart';
 import '../models/habit_pattern.dart'; // Phase 14: Pattern Detection
 import 'gemini_chat_service.dart';
 import 'pattern_detection_service.dart'; // Phase 14
+import 'smart_nudge/optimized_time_finder.dart'; // Phase 19
+import 'smart_nudge/drift_analysis.dart' as drift; // Phase 19
 
 /// Result of a weekly review generation
 class WeeklyReviewResult {
@@ -22,6 +24,12 @@ class WeeklyReviewResult {
 
   /// Summary stats for UI display
   final WeeklyStats stats;
+  
+  /// Phase 19: Time drift analysis (if significant drift detected)
+  final drift.DriftAnalysis? driftAnalysis;
+  
+  /// Phase 19: Weekly pattern analysis (weekend vs weekday)
+  final drift.WeeklyDriftPattern? weeklyPattern;
 
   WeeklyReviewResult({
     required this.reviewText,
@@ -29,7 +37,14 @@ class WeeklyReviewResult {
     required this.habit,
     required this.metrics,
     required this.stats,
+    this.driftAnalysis,
+    this.weeklyPattern,
   });
+  
+  /// Phase 19: Whether there's a time optimization suggestion
+  bool get hasTimeOptimization => 
+      driftAnalysis?.shouldSuggest == true || 
+      weeklyPattern?.hasWeekendVariance == true;
 }
 
 /// Weekly statistics summary
@@ -90,6 +105,7 @@ enum DayStatus { completed, missed, pending }
 class WeeklyReviewService {
   final GeminiChatService _geminiService;
   final PatternDetectionService _patternService = PatternDetectionService(); // Phase 14
+  final OptimizedTimeFinder _driftDetector = OptimizedTimeFinder(); // Phase 19
 
   WeeklyReviewService(this._geminiService);
 
@@ -97,16 +113,25 @@ class WeeklyReviewService {
   /// 
   /// Returns a [WeeklyReviewResult] containing either an AI-generated
   /// or local fallback review text.
+  /// 
+  /// Phase 19: Now includes time drift analysis and schedule optimization.
   Future<WeeklyReviewResult> generateReview(Habit habit) async {
     final metrics = habit.consistencyMetrics;
     final stats = _calculateWeeklyStats(habit, metrics);
     
-    // Build the prompt
-    final prompt = _buildPrompt(habit, metrics, stats);
+    // Phase 19: Run drift analysis
+    final driftAnalysis = _analyzeDrift(habit);
+    final weeklyPattern = _analyzeWeeklyPattern(habit);
+    
+    // Build the prompt (now includes drift insights)
+    final prompt = _buildPrompt(habit, metrics, stats, driftAnalysis, weeklyPattern);
     
     if (kDebugMode) {
       debugPrint('Weekly Review: Generating for "${habit.name}"');
       debugPrint('Weekly Review: ${stats.daysCompleted}/7 days completed');
+      if (driftAnalysis?.shouldSuggest == true) {
+        debugPrint('Weekly Review: Drift detected - suggest ${driftAnalysis?.suggestedTime?.formatAmPm()}');
+      }
     }
     
     // Try AI generation first
@@ -119,6 +144,8 @@ class WeeklyReviewService {
         habit: habit,
         metrics: metrics,
         stats: stats,
+        driftAnalysis: driftAnalysis,
+        weeklyPattern: weeklyPattern,
       );
     }
     
@@ -133,7 +160,43 @@ class WeeklyReviewService {
       habit: habit,
       metrics: metrics,
       stats: stats,
+      driftAnalysis: driftAnalysis,
+      weeklyPattern: weeklyPattern,
     );
+  }
+  
+  /// Phase 19: Analyze time drift for a habit
+  drift.DriftAnalysis? _analyzeDrift(Habit habit) {
+    if (habit.completionHistory.isEmpty) return null;
+    
+    try {
+      return _driftDetector.analyze(
+        completionHistory: habit.completionHistory,
+        scheduledTime: habit.implementationTime,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Weekly Review: Drift analysis failed: $e');
+      }
+      return null;
+    }
+  }
+  
+  /// Phase 19: Analyze weekly patterns (weekend variance, day-specific issues)
+  drift.WeeklyDriftPattern? _analyzeWeeklyPattern(Habit habit) {
+    if (habit.completionHistory.isEmpty) return null;
+    
+    try {
+      return _driftDetector.analyzeWeeklyPattern(
+        completionHistory: habit.completionHistory,
+        scheduledTime: habit.implementationTime,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Weekly Review: Weekly pattern analysis failed: $e');
+      }
+      return null;
+    }
   }
 
   /// Check if a weekly review should be surfaced to the user
@@ -216,7 +279,14 @@ class WeeklyReviewService {
 
   /// Build the AI prompt for weekly review generation
   /// Phase 14: Now includes pattern detection insights for personalized coaching
-  String _buildPrompt(Habit habit, ConsistencyMetrics metrics, WeeklyStats stats) {
+  /// Phase 19: Now includes time drift analysis for schedule optimization
+  String _buildPrompt(
+    Habit habit, 
+    ConsistencyMetrics metrics, 
+    WeeklyStats stats,
+    drift.DriftAnalysis? driftAnalysis,
+    drift.WeeklyDriftPattern? weeklyPattern,
+  ) {
     // Build day-by-day history string
     final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final now = DateTime.now();
@@ -248,6 +318,9 @@ class WeeklyReviewService {
     
     // Phase 14: Add pattern detection insights
     final patternSection = _buildPatternSection(habit);
+    
+    // Phase 19: Add drift analysis section
+    final driftSection = _buildDriftSection(driftAnalysis, weeklyPattern);
 
     return '''
 You are an empathetic habit coach using the "Graceful Consistency" philosophy from Atomic Habits.
@@ -266,7 +339,7 @@ ${historyLines.join('\n')}
 - Total identity votes: ${metrics.identityVotes}
 - Quick recoveries this week: ${stats.recoveriesThisWeek}
 - Current streak: ${metrics.currentStreak} days
-$patternSection
+$patternSection$driftSection
 ## Your Task
 Write a 2-3 sentence personalized weekly review. Follow these rules:
 
@@ -286,6 +359,54 @@ Write ONLY the review text, no headers or labels.
 ''';
   }
 
+  /// Phase 19: Build drift analysis section for the AI prompt
+  /// Helps the AI suggest schedule optimizations
+  String _buildDriftSection(
+    drift.DriftAnalysis? driftAnalysis, 
+    drift.WeeklyDriftPattern? weeklyPattern,
+  ) {
+    final section = StringBuffer();
+    
+    if (driftAnalysis == null && weeklyPattern == null) {
+      return '';
+    }
+    
+    section.writeln('\n## Schedule Optimization Insights');
+    
+    // Add drift analysis
+    if (driftAnalysis != null && driftAnalysis.sampleSize >= 7) {
+      section.writeln('- Scheduled time: ${driftAnalysis.scheduledTime.formatAmPm()}');
+      section.writeln('- Actual median completion: ${driftAnalysis.medianTime.formatAmPm()}');
+      section.writeln('- Drift: ${driftAnalysis.driftMinutes.abs()} minutes ${driftAnalysis.driftMinutes > 0 ? 'later' : 'earlier'}');
+      section.writeln('- Confidence: ${(driftAnalysis.confidence * 100).toInt()}%');
+      
+      if (driftAnalysis.shouldSuggest && driftAnalysis.suggestedTime != null) {
+        section.writeln('- Suggested new time: ${driftAnalysis.suggestedTime!.formatAmPm()}');
+        section.writeln('- NOTE: The user naturally does this habit at a different time. Consider mentioning this in your review.');
+      }
+    }
+    
+    // Add weekend variance insights
+    if (weeklyPattern != null && weeklyPattern.hasWeekendVariance) {
+      section.writeln('- Weekend variance detected: User does this habit at a different time on weekends');
+      if (weeklyPattern.weekendSuggestedTime != null) {
+        section.writeln('- Weekend suggested time: ${weeklyPattern.weekendSuggestedTime!.formatAmPm()}');
+      }
+    }
+    
+    // Add problematic days
+    if (weeklyPattern != null && weeklyPattern.problematicDays.isNotEmpty) {
+      final dayNames = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      final problemDays = weeklyPattern.problematicDays
+          .map((d) => dayNames[d])
+          .join(', ');
+      section.writeln('- Problematic days: $problemDays (consistent lateness on these days)');
+    }
+    
+    section.writeln('');
+    return section.toString();
+  }
+  
   /// Phase 14: Build pattern section for the AI prompt
   /// Synthesizes local pattern detection into coaching context
   String _buildPatternSection(Habit habit) {

@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v4.11.0 - Phase 14 Pattern Detection)
+> **Last Updated:** December 2025 (v5.7.0 - Phase 22 The Witness Complete)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -10,10 +10,9 @@
 
 ### Before Starting Work
 1. Read `AI_CONTEXT.md` for current architecture state
-2. Read `AI_ONBOARDING_SPEC.md` for AI feature specification
-3. Check this roadmap for priorities
-4. Check orphaned branches: `git branch -r --no-merged main | wc -l`
-5. If item exists on orphaned branch, consider rebasing instead of recreating
+2. Check `lib/data/services/witness_service.dart` (The "Network")
+3. Check `lib/data/services/pattern_detection_service.dart` (The "Brain")
+4. Check `lib/data/notification_service.dart` (The "Voice")
 
 ### After Completing Work
 1. Update the relevant section below (move items, add details)
@@ -23,7 +22,200 @@
 
 ---
 
-## Current Sprint: Phase 14 (Pattern Detection - ✅ Completed)
+## Current Sprint: Phase 22 (The Witness - ✅ Completed)
+
+**Goal:** Transform the app from Single Player (Tool) to Multiplayer (Network) with real-time social accountability
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "Social features are the best way to test if your Viral Engine actually works. Monetization is easier to add once you have retention; Social creates retention."
+
+**Strategic Context:**
+- Phase 21 built Deep Links (The Viral Engine) — **potential energy**
+- Phase 22 activates them with social accountability — **kinetic energy**
+- Together they create the viral loop that drives organic growth
+
+**The Core Loop:**
+```
+1. BUILDER completes habit
+2. WITNESS gets instant notification: "[Name] just cast a vote for [Identity]!"
+3. WITNESS taps notification → sends High Five emoji
+4. BUILDER gets SECOND dopamine hit (social validation)
+5. If BUILDER is drifting → WITNESS can send preemptive nudge
+```
+
+**Architecture:**
+- WitnessService: Real-time event management with Supabase Realtime
+- WitnessEvent Model: Complete event taxonomy (completion, high-five, nudge, drift)
+- UI Components: Dashboard, Accept Screen, High-Five Sheet
+- Notification Extensions: Witness-specific channels
+
+**Completed:**
+- [x] **WitnessEvent Model:** Event types (habitCompleted, highFiveReceived, nudgeReceived, driftWarning, streakMilestone)
+- [x] **WitnessReaction Model:** Quick emoji reactions (🖐️ 🔥 💪 ⚡ 🏆 🎯)
+- [x] **StreakMilestones:** Celebrations at 7, 21, 30, 60, 90, 180, 365 days
+- [x] **WitnessService:** Supabase Realtime subscriptions, completion pings, high-five sending, nudge system
+- [x] **WitnessDashboard:** Three tabs (My Witnesses, I Witness, Activity)
+- [x] **WitnessAcceptScreen:** Deep link landing for contract invites
+- [x] **HighFiveSheet:** Bottom sheet for sending emoji reactions
+- [x] **HighFiveReceivedOverlay:** Celebratory animation for second dopamine hit
+- [x] **NotificationService Extensions:** Witness completion, high-five, nudge, drift warning channels
+- [x] **Database Migration:** witness_events table with RLS and Realtime
+
+**Files Created:**
+- `lib/data/models/witness_event.dart` (WitnessEvent, WitnessReaction, StreakMilestones)
+- `lib/data/services/witness_service.dart` (WitnessService)
+- `lib/features/witness/witness_dashboard.dart` (WitnessDashboard)
+- `lib/features/witness/witness_accept_screen.dart` (WitnessAcceptScreen)
+- `lib/features/witness/high_five_sheet.dart` (HighFiveSheet, HighFiveReceivedOverlay)
+- `lib/features/witness/witness.dart` (Module exports)
+- `supabase/migrations/20241216_phase22_witness_events.sql` (Database migration)
+- `CHANGELOG.md` (Version history)
+
+**Files Modified:**
+- `lib/main.dart` (WitnessService provider + routes)
+- `lib/config/supabase_config.dart` (witnessEvents table constant)
+- `lib/data/notification_service.dart` (Witness notification channels)
+- `pubspec.yaml` (Version 5.7.0)
+
+**Routes Added:**
+| Route | Screen | Purpose |
+|-------|--------|---------|
+| `/witness` | WitnessDashboard | Central accountability hub |
+| `/witness/accept/:inviteCode` | WitnessAcceptScreen | Contract invitation acceptance |
+
+**Notification Types:**
+| Type | Recipient | Copy |
+|------|-----------|------|
+| Completion | Witness | "⚡ [Name] just cast a vote for [Identity]!" |
+| High-Five | Builder | "🖐️ High Five from [Witness]!" |
+| Nudge | Builder | "💬 Nudge from [Witness]: [message]" |
+| Drift Warning | Witness | "⚠️ [Builder] is drifting. Nudge them?" |
+| Milestone | Witness | "🔥 [Builder] hit [X] day streak!" |
+
+**The "Shame Nudge" System (Pre-Failure Intervention):**
+- System detects when Builder is about to miss (based on Phase 19 drift analysis)
+- Witness receives warning notification before failure occurs
+- Witness can send encouraging nudge to prevent the miss
+- This creates proactive accountability, not reactive guilt
+
+---
+
+## Previous Sprint: Phase 19 (The Intelligent Nudge - ✅ Completed)
+
+**Goal:** Transform "dumb" static reminders into dynamic, context-aware triggers.
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "The app should observe what you do, not just what you say you'll do."
+
+**Key Concepts Implemented:**
+1. **"The Drift":** Detect when users consistently complete habits at a different time than scheduled
+   - Median completion time calculation
+   - Outlier filtering (> 2 hours from mean)
+   - 45-minute threshold for suggestions
+   - Midnight crossing handling
+   
+2. **"Contextual Empathy":** Change notification copy based on detected patterns
+   - Energy Gap → "Low energy? Just do the 2-minute version"
+   - Morning Struggle → "Don't aim for perfect, just show up"
+   - Weekend Wobble → "Weekend Warrior" mode
+   - Forgetfulness → Habit stacking nudge
+   
+3. **Schedule Optimization:** Weekly Review proposes time updates
+   - Drift analysis integrated into WeeklyReviewService
+   - Weekend variance detection
+   - Problematic day identification
+
+**Architecture Implemented:**
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `OptimizedTimeFinder` | `lib/data/services/smart_nudge/optimized_time_finder.dart` | Drift detection algorithm |
+| `DriftAnalysis` | `lib/data/services/smart_nudge/drift_analysis.dart` | Data models + TimeOfDay |
+| `NudgeCopywriter` | `lib/data/services/smart_nudge/nudge_copywriter.dart` | Context-aware notification copy |
+| `NotificationService` | `lib/data/notification_service.dart` | `scheduleSmartReminder()` method |
+| `TimeDriftSuggestionDialog` | `lib/widgets/time_drift_suggestion_dialog.dart` | Time update UI |
+| `TodayScreenController` | `lib/features/today/controllers/today_screen_controller.dart` | `checkForDriftSuggestion()` |
+| `WeeklyReviewService` | `lib/data/services/weekly_review_service.dart` | Drift analysis in reviews |
+
+**Tiered Model (Freemium):**
+| Tier | Features |
+|------|----------|
+| Free | Local heuristics, basic drift detection, pattern-aware copy |
+| Premium (DeepSeek) | AI-personalized copy, nuanced drift analysis, life event detection |
+| Premium+ (Claude) | Full conversational coaching, cross-habit correlation |
+
+**Files Created:**
+- `lib/data/services/smart_nudge/optimized_time_finder.dart` ✅
+- `lib/data/services/smart_nudge/nudge_copywriter.dart` ✅
+- `lib/data/services/smart_nudge/drift_analysis.dart` ✅
+- `lib/widgets/time_drift_suggestion_dialog.dart` ✅
+- `test/unit/optimized_time_finder_test.dart` ✅
+- `PHASE_19_SPEC.md` ✅
+
+**Files Modified:**
+- `lib/data/notification_service.dart` ✅
+- `lib/features/today/controllers/today_screen_controller.dart` ✅
+- `lib/data/services/weekly_review_service.dart` ✅
+
+**Unit Tests:**
+- Significant drift detection (9:00 AM → 9:45 AM)
+- Outlier handling (ignores one-off 4:00 PM completions)
+- Midnight crossing (11 PM scheduled, 1 AM actual)
+- Insufficient data handling (< 7 completions)
+- Weekend variance detection
+- Confidence calculation
+- Time rounding to nearest 15 minutes
+
+---
+
+## Previous Sprint: Phase 15 (Identity Foundation - ✅ Completed)
+
+**Goal:** Build the Cloud Sync & Auth infrastructure to enable "Multiplayer" features
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "You can't build social features without identity. Build the bridge before crossing it."
+
+**Architecture:** Local-First with Optional Cloud Backup
+- Local Hive storage remains primary (offline-capable)
+- Supabase provides cloud backup and identity
+- Anonymous-first: Users can start immediately, upgrade later
+
+**Completed:**
+- [x] **Supabase Integration:** Added `supabase_flutter` and `google_sign_in` dependencies
+- [x] **SupabaseConfig:** Environment-based configuration with runtime checks
+- [x] **AuthService:** Anonymous login (default), Email/Password upgrade, Google Sign-In
+- [x] **SyncService:** One-way backup (Hive → Supabase) with offline queue
+- [x] **Database Schema:** `users`, `habits`, `habit_completions` tables with RLS
+- [x] **Provider Integration:** AuthService and SyncService in MultiProvider
+- [x] **Reference Files:** Extracted social_screen.dart and elevenlabs_service.dart from orphaned branches
+
+**Key Design Decisions:**
+| Decision | Rationale |
+|----------|-----------|
+| Anonymous-first | Zero friction onboarding, upgrade later |
+| One-way sync (for now) | Prevents conflicts, simpler implementation |
+| Environment variables | Secure credential management |
+| Offline queue | Changes sync when online, never lost |
+| RLS policies | Data isolation enforced at database level |
+
+**Files Created:**
+- `lib/config/supabase_config.dart` (Configuration with env vars)
+- `lib/data/services/auth_service.dart` (Authentication service)
+- `lib/data/services/sync_service.dart` (Cloud sync service)
+- `SUPABASE_SCHEMA.md` (Database schema documentation)
+- `lib/features/social/reference/reference_ui.dart` (Phase 16.3 reference)
+- `lib/data/services/reference/elevenlabs_reference.dart` (Phase 17 reference)
+
+**Files Modified:**
+- `pubspec.yaml` (Supabase + Google Sign-In dependencies, version 4.12.0)
+- `lib/main.dart` (Supabase initialization, service providers)
+
+---
+
+## Previous Sprint: Phase 14 (Pattern Detection - ✅ Completed)
 
 **Goal:** Transform "Miss Reasons" into actionable insights - "The Safety Net"
 
@@ -72,6 +264,65 @@
 - `lib/data/services/weekly_review_service.dart` (LLM pattern integration)
 
 **No Schema Changes:** New `missHistory` field uses existing JSON persistence with backward compatibility
+
+---
+
+## Previous Sprint: Phase 14.5 (The Iron Architect - ✅ Completed)
+
+**Goal:** Refactor AI prompts from "Supportive Coach" to "Behavioral Architect" - stricter, physics-based enforcement of the 2-Minute Rule
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "You are NOT a generic life coach. You are a behavioral engineer. Your goal is to build a system that *cannot fail*, rather than relying on the user's motivation (which will fail)."
+
+**Collaboration:** Elon Musk (physics-based systems thinking) + James Clear (Atomic Habits)
+
+**Architecture:** Strict Behavioral Engineering
+- Aggressive 2-Minute Rule filtering
+- "Never Miss Twice" Protocol embedded in onboarding
+- Pre-mortem failure analysis ("The Trap Door")
+- DeepSeek-V3.2 optimized structure (### HEADERS, CAPITALIZED DIRECTIVES)
+
+**Completed:**
+- [x] **Iron Architect Prompt:** Complete rewrite of onboarding system prompt
+- [x] **2-Minute Rule Enforcement:** Stricter rejection of oversized habits with physics-based framing
+- [x] **Never Miss Twice Protocol:** Recovery plan embedded before habit starts
+- [x] **Pre-mortem Analysis:** "What is the one thing most likely to stop you?" step
+- [x] **DeepSeek Optimization:** ### headers and structured constraints for better reasoning
+- [x] **Recovery Plan Field:** Added `recoveryPlan` to JSON output contract
+
+**Key Changes:**
+
+| Before (Supportive Coach) | After (Iron Architect) |
+|---------------------------|------------------------|
+| "Let's make this smaller" | "Too ambitious for Day 1. Motivation is fickle; systems are reliable." |
+| "What's a 2-minute version?" | "The habit is not 'working out'. The habit is 'putting on your running shoes'." |
+| Optional recovery planning | **Mandatory:** "When (not if) life gets crazy, what's your specific plan?" |
+| No pre-mortem | **The Trap Door:** "What is the one thing most likely to stop you?" |
+
+**Conversation Flow (Strict Order):**
+1. **Identity First:** "Who do you want to become?" (not "What habit?")
+2. **Habit Extraction:** Ask for the behavior
+3. **The Audit:** Apply 2-Minute Rule (aggressive filtering)
+4. **Implementation Intention:** "I will [BEHAVIOR] at [TIME] in [LOCATION]"
+5. **The Trap Door:** Pre-mortem failure analysis
+6. **Recovery Plan:** "If I miss, I will [specific algorithm]"
+
+**Upstream/Downstream Effects:**
+
+| Effect | Description |
+|--------|-------------|
+| 🟢 Higher Conversion | Smaller habits = higher stick rate |
+| 🟢 Better Pattern Data | Fewer "Energy Gap" failures (Phase 14) because habits are 2-minute versions |
+| 🟡 Potential Friction | "Arnault Types" may feel habits are "too small" |
+| 🟢 Mitigation | "Too ambitious for Day 1" frames rejection as compliment to ambition |
+| 🟢 DeepSeek Ready | Prompt structure (### HEADERS, DIRECTIVES) optimized for V3.2 reasoning |
+
+**Files Modified:**
+- `lib/data/services/gemini_chat_service.dart` (AtomicHabitsPrompts.onboarding)
+- `lib/config/ai_prompts.dart` (AtomicHabitsReasoningPrompts.onboarding)
+
+**No Schema Changes:** Recovery plan stored in existing `recoveryPlan` field
 
 ---
 
@@ -274,17 +525,495 @@
 
 ---
 
-## Next Sprint: Phase 15 (TBD)
+## Current Sprint: Phase 16.2 + 16.4 (Vertical Slice - ✅ Completed)
 
-**Status:** 🔵 Planning
+**Goal:** "The Atomic Contract" - End-to-end accountability flow
 
-**Options for Next Phase:**
-- [ ] **Smart Notifications** — AI-powered timing based on completion patterns and detected friction
-- [ ] **Social Accountability** — Optional sharing features
-- [ ] **Accessibility** — Dynamic type, contrast, larger tap targets
-- [ ] **Cloud Sync** — Sync data across devices (Firebase/Supabase)
-- [ ] **Habit Templates** — Pre-built common habits with AI suggestions
-- [ ] **Advanced Stacking UI** — Visual habit chain builder
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "Vertical Slice Sprint" - Build one complete user journey before expanding
+
+**Architecture:** Builder creates contract → Generates invite link → Witness joins via deep link
+
+**Completed:**
+- [x] **Database Schema:** `habit_contracts` table with RLS policies
+- [x] **HabitContract Model:** Full Dart model with enums (ContractStatus, NudgeFrequency, NudgeStyle)
+- [x] **ContractService:** CRUD operations + invite code generation + witnessing logic
+- [x] **CreateContractScreen:** Draft contract UI with habit picker, duration, nudge settings
+- [x] **JoinContractScreen:** Deep link handler for witness acceptance
+- [x] **ContractsListScreen:** Tabbed view (My Habits / Witnessing) - minimal witness dashboard
+- [x] **Routes:** `/contracts`, `/contracts/create`, `/contracts/join/:inviteCode`
+- [x] **Deep Links:** Invite code generation and lookup
+
+**Key Design Decisions:**
+| Decision | Rationale |
+|----------|-----------|
+| Invite codes (not IDs) | Privacy + shorter URLs |
+| Local-first witness list | Works offline, syncs when online |
+| Tabbed contracts view | Simple before complex Phase 16.3 |
+| Builder-initiated only | Witnesses can't create contracts |
+
+**Files Created:**
+- `lib/data/models/habit_contract.dart` (Contract model + enums)
+- `lib/data/services/contract_service.dart` (CRUD + invite logic)
+- `lib/features/contracts/create_contract_screen.dart`
+- `lib/features/contracts/join_contract_screen.dart`
+- `lib/features/contracts/contracts_list_screen.dart`
+
+**Files Modified:**
+- `lib/main.dart` (ContractService provider + routes)
+- `lib/config/supabase_config.dart` (habit_contracts table name)
+- `SUPABASE_SCHEMA.md` (habit_contracts schema + RLS)
+
+---
+
+## Current Sprint: Phase 18 (The Vibe Update - ✅ Completed)
+
+**Goal:** Transform the app from "Utility" to "Toy" — "Juice it or lose it" for increased Time in App
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "If it doesn't feel good, they won't come back. Every interaction should be visceral."
+
+**Architecture:** Sensory Integration + Kinetic UI
+- Sound feedback via `audioplayers` package
+- Haptic patterns via `HapticFeedback` service
+- Spring animations with `ScaleTransition` and `ConfettiWidget`
+
+**Completed:**
+- [x] **SoundService:** Audio playback with completion, recovery, sign, nudge sounds
+- [x] **FeedbackPatterns:** Combined haptic + sound patterns (completion, recovery, contractSign, etc.)
+- [x] **StackPromptDialog Refactor:** Pop animation with ScaleTransition, ConfettiWidget, bouncing chain link
+- [x] **AnimatedNudgeButton:** Recoil animation with rocket launch effect
+- [x] **InlineNudgeButton:** Shake animation for compact contexts
+- [x] **Provider Integration:** SoundService added to MultiProvider
+- [x] **Screenshot Test Framework:** `app_store_screenshots_test.dart` for automated screenshots
+
+**Key Features:**
+| Feature | Implementation | Description |
+|---------|---------------|-------------|
+| Completion Sound | `SoundService.playComplete()` | Satisfying "clunk" on habit done |
+| Recovery Sound | `SoundService.playRecover()` | Triumphant rise on Never Miss Twice |
+| Contract Sign | `FeedbackPatterns.contractSign()` | Tick-tick-thud buildup |
+| Chain Reaction Pop | `StackPromptDialog` | Spring scale + confetti |
+| Nudge Recoil | `AnimatedNudgeButton` | Recoil + rocket launch |
+| Haptic Patterns | `HapticFeedbackType` | Heavy, medium, light, selection |
+
+**Files Created:**
+- `lib/data/services/sound_service.dart` (Audio + FeedbackPatterns)
+- `lib/widgets/animated_nudge_button.dart` (AnimatedNudgeButton, InlineNudgeButton, FloatingNudgeButton)
+- `test/integration/app_store_screenshots_test.dart` (Automated App Store screenshots)
+- `assets/sounds/complete.mp3`, `recover.mp3`, `sign.mp3` (Placeholder audio)
+
+**Files Modified:**
+- `lib/widgets/stack_prompt_dialog.dart` (Animation refactor + sound/haptic integration)
+- `lib/features/contracts/contracts_list_screen.dart` (AnimatedNudgeButton integration)
+- `lib/features/contracts/create_contract_screen.dart` (Contract signing feedback - "The Commitment")
+- `lib/features/today/controllers/today_screen_controller.dart` (Completion + Recovery feedback)
+- `lib/main.dart` (SoundService provider)
+- `pubspec.yaml` (audioplayers dependency, assets/sounds/)
+
+**Screenshot Scenes:**
+1. "Never Miss Twice" - Recovery prompt
+2. "The Watchtower" - Witness dashboard
+3. "AI Architect" - Chat coach
+4. "Chain Reaction" - Habit stacking
+5. "Today View" - Focus mode
+6. "Analytics Dashboard" - Trend charts
+
+---
+
+## Previous Sprint: Phase 19 (The Side Door Strategy - ✅ Completed)
+
+**Goal:** "One App, Multiple Front Doors" - Persona-based marketing without code fragmentation
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "If we are building one 'Everything Store', we cannot have just one front door. We will build Side Doors." — Jeff Bezos
+
+**Architecture:** Chameleon Prompts + Niche Landing Pages
+- Same codebase serves all niches
+- AI adapts language/examples based on detected persona
+- Landing pages set context before onboarding
+
+**Target Niches (Ranked by 4-Point Matrix):**
+
+| Niche | Boss Vacuum | Maker's Guilt | Streak Victim | Digital Desk | Score |
+|-------|-------------|---------------|---------------|--------------|-------|
+| 🥇 Indie Developer | ✅ | ✅ | ✅ (GitHub) | ✅ | 4/4 |
+| 🥈 Writer/Creator | ✅ | ✅ | ✅ (Algorithm) | ✅ | 4/4 |
+| 🥉 PhD Student | ✅ | ✅ | ✅ (Thesis fear) | ✅ | 4/4 |
+| 🌍 Language Learner | ✅ | ⚠️ | ✅ (Duolingo) | ✅ | 3.5/4 |
+| 🚀 Indie Maker | ✅ | ✅ | ✅ | ✅ | 4/4 |
+
+**Matrix Criteria:**
+1. **Boss Vacuum**: No external enforcer (❌ Employees, Sales Teams)
+2. **Maker's Guilt**: Identity tied to output (feel crisis when not shipping)
+3. **Streak Victim**: Already burned by streak apps (Duolingo, GitHub)
+4. **Digital Desk**: At device when doing habit (❌ Swimming, Woodworking)
+
+**Completed:**
+- [x] **NicheConfig System:** `lib/config/niche_config.dart`
+  - UserNiche enum (developer, writer, academic, languageLearner, indieMaker)
+  - NicheConfig with display names, taglines, examples, detection keywords
+  - NicheConfigs map with all persona configurations
+- [x] **NicheDetectionService:** Detect persona from user input
+  - Keyword-based scoring with confidence levels
+  - Streak refugee detection ("lost my streak", "quit Duolingo")
+  - URL-based detection from landing pages
+- [x] **NichePromptAdapter:** Persona-specific prompt injection
+  - `getWelcomeMessage()` with streak refugee handling
+  - `getIdentityPrompt()` with niche-specific examples
+  - `getHabitPrompt()` and `getTinyVersionPrompt()` with relevant examples
+  - `injectNicheContext()` for AI prompt enhancement
+- [x] **OnboardingOrchestrator Update:** Niche-aware conversation
+  - `setNicheFromUrl()` for landing page detection
+  - `detectNicheFromInput()` for conversation-based detection
+  - `_buildNicheContextSection()` for AI prompt injection
+  - Streak refugee context injection
+- [x] **OnboardingData Update:** Niche tracking fields
+  - `userNiche` field
+  - `entrySource` field
+  - `isStreakRefugee` boolean
+- [x] **Landing Page Routes:** Side door URLs in `main.dart`
+  - `/devs` → Developer niche
+  - `/writers` → Writer/Creator niche
+  - `/scholars` → PhD/Academic niche
+  - `/languages` → Language Learner niche
+  - `/makers` → Indie Maker niche
+
+**Niche-Specific Hooks:**
+
+| Niche | Hook Message | Streak Antidote |
+|-------|--------------|-----------------|
+| Developer | "Stop worshipping the Green Squares. Start shipping consistently." | "GitHub green squares are vanity metrics. Shipping is the real score." |
+| Writer | "The Algorithm wants perfection. You are human." | "The algorithm rewards consistency, not perfection." |
+| Academic | "Your thesis is too big. Write one sentence today." | "Your thesis won't be written in one sitting. One sentence is progress." |
+| Language | "The owl doesn't own you." | "Lost your Duolingo streak? Your progress isn't lost." |
+| Maker | "Ship daily, not perfectly." | "Building in public isn't about daily posts. It's about consistent progress." |
+
+**Files Created:**
+- `lib/config/niche_config.dart` (Full niche configuration system)
+
+**Files Modified:**
+- `lib/data/models/onboarding_data.dart` (Niche tracking fields)
+- `lib/data/services/onboarding/onboarding_orchestrator.dart` (Niche detection & prompt injection)
+- `lib/main.dart` (Side door landing routes)
+
+**Marketing Campaign Strategy:**
+1. **Developer Door**: Post on r/programming, HackerNews, dev Twitter
+2. **Writer Door**: Post on r/writing, Medium, creator communities
+3. **Scholar Door**: Post on r/GradSchool, academic Twitter
+4. **Language Door**: Post on r/languagelearning, Duolingo subreddits
+5. **Maker Door**: Post on IndieHackers, r/SideProject
+
+**Convergence Point:** All doors lead to same AI onboarding that asks "Who do you want to become?" and adapts based on detected/set niche.
+
+---
+
+## Current Sprint: Phase 20 (Destroyer Defense - ✅ Completed)
+
+**Goal:** Risk mitigation for "High Performers" - The users with highest standards who will roast you publicly if things break
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "If you ask for the roast, they feel heard, and the anger dissipates before it hits public channels."
+
+**Architecture:** Co-Creator Frame + Escape Valves
+- Frame bugs as "discoveries" to involve users in development
+- Provide private channels for venting before public destruction
+- Manage expectations with prominent alpha/beta labels
+
+**The Risk:** High Performers have high standards. If the app crashes, they won't just delete it; they will roast you on Hacker News.
+
+**The Solution:** "The Co-Creator Frame" — You're not selling a finished product; you're inviting them into the lab.
+
+**Tactics Implemented:**
+
+| Tactic | Implementation | Description |
+|--------|---------------|-------------|
+| Bug Bounty | `CREDITS.md` + Bug Report Dialog | Find a crash → Get name in CREDITS.md |
+| Escape Valve | "Roast the Developer" button | Private channel prevents public destruction |
+| Alpha Shield | `AlphaShieldBanner` widget | Manages expectations: "UI is temporary, data is safe" |
+| Credits Dialog | Settings → Credits | Shows Founding Testers & Hall of Roasts |
+| Feature Request | Settings → Suggest Feature | Converts critics to co-creators |
+
+**Completed:**
+- [x] **CREDITS.md:** Founding Testers section, Hall of Roasts section
+- [x] **FeedbackService:** Bug report templates, roast templates, device info collection
+- [x] **AlphaShieldBanner:** Compact banner (settings) + expanded banner (splash) + splash overlay
+- [x] **AlphaShieldConfig:** Build status enum, banner messages, disclaimer text
+- [x] **Bug Report Dialog:** Name/handle collection, auto-includes device + version info
+- [x] **Roast Dialog:** "Tell us why this sucks" with severity scale and suggestions
+- [x] **Feature Request Dialog:** Converts frustration into constructive feedback
+- [x] **Credits Dialog:** Shows Founding Team, Founding Testers, Hall of Roasts
+- [x] **Settings Integration:** Feedback section with bug report, roast, and feature request buttons
+- [x] **Email Fallback:** Copy to clipboard when email client unavailable
+- [x] **GitHub Issues Link:** Direct link to repo issues for technical bugs
+
+**Files Created:**
+- `CREDITS.md` (Founding Testers + Hall of Roasts)
+- `lib/data/services/feedback_service.dart` (FeedbackService + AlphaShieldConfig)
+- `lib/widgets/alpha_shield_banner.dart` (AlphaShieldBanner + AlphaShieldSplashOverlay + AlphaShieldFAB)
+
+**Files Modified:**
+- `lib/features/settings/settings_screen.dart` (Feedback section + Credits dialog)
+- `pubspec.yaml` (url_launcher, device_info_plus, package_info_plus dependencies)
+
+**Key Design Decisions:**
+| Decision | Rationale |
+|----------|----------|
+| Email-first feedback | Works everywhere, no accounts needed |
+| Copy-to-clipboard fallback | Works even without email client |
+| Name/handle collection | Enables CREDITS.md recognition |
+| Device + version auto-include | Better bug reports without user effort |
+| "Hall of Roasts" gamification | Turns critics into celebrated contributors |
+| Alpha Shield in Settings | Persistent reminder without annoying popup |
+
+**Psychological Framework:**
+1. **The Bug Bounty:** Non-monetary recognition (name in credits) is often more motivating than cash for this demographic
+2. **The Escape Valve:** A private "roast" channel prevents public Twitter/HN destruction
+3. **The Alpha Shield:** Managing expectations upfront prevents disappointment
+4. **The Co-Creator Frame:** "You found a bug" → "You discovered something" reframes the experience
+
+---
+
+## Current Sprint: Phase 21 (The Viral Engine - ✅ Completed)
+
+**Goal:** Deep Links Infrastructure + FTUE Polish + Data Schema Enhancement — The "money maker" from Head of Sales
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "Create a contract to read 1 page a day, post the link on Twitter." — Head of Sales
+
+**Boardroom Review Context:**
+- **CTO:** Validated architecture (supabase + app_links + google_sign_in)
+- **CPO:** Raised FTUE complexity concerns; requested coaching-focused error messages
+- **Head of Sales:** Flagged Deep Links as viral growth driver
+- **Head of Strategy:** Emphasized data collection for 2026 "Behavior Model"
+
+**Architecture:**
+- Phase 21.1: iOS Universal Links + Android App Links + Share Flow
+- Phase 21.2: FTUE Polish with coaching-focused rejection messages
+- Phase 21.3: Nudge effectiveness tracking for Behavior Model
+
+### Phase 21.1: Deep Links Infrastructure
+
+**Completed:**
+- [x] **DeepLinkConfig:** URL builders, parsers, and validation
+- [x] **DeepLinkService:** Initial/incoming link handling, router integration
+- [x] **iOS Universal Links:** Runner.entitlements with applinks:atomichabits.app
+- [x] **Android App Links:** AndroidManifest with autoVerify intent-filters
+- [x] **Web Assets:** apple-app-site-association + assetlinks.json in .well-known
+- [x] **ShareContractSheet:** Beautiful modal for sharing contract invite links
+- [x] **ContractInvitePreview:** Preview card for recipients joining a contract
+- [x] **main.dart Integration:** DeepLinkService in MultiProvider + router wiring
+
+**Deep Link Patterns:**
+| Pattern | Example | Destination |
+|---------|---------|-------------|
+| Contract Invite (short) | /c/ABCD1234 | Join Contract Screen |
+| Contract Invite (query) | /invite?c=ABCD1234 | Join Contract Screen |
+| Niche Landing | /devs, /writers | Conversational Onboarding |
+| App Routes | /dashboard, /settings | Direct Navigation |
+| Custom Scheme | atomichabits://invite?c=X | Deep Link Fallback |
+
+**Files Created:**
+- `lib/config/deep_link_config.dart` (DeepLinkConfig, DeepLinkType, DeepLinkData)
+- `lib/data/services/deep_link_service.dart` (DeepLinkService)
+- `lib/widgets/share_contract_sheet.dart` (ShareContractSheet, ContractInvitePreview)
+- `ios/Runner/Runner.entitlements` (Universal Links)
+- `web/.well-known/apple-app-site-association` (iOS web config)
+- `web/.well-known/assetlinks.json` (Android web config)
+
+**Files Modified:**
+- `android/app/src/main/AndroidManifest.xml` (App Links intent-filters)
+- `lib/main.dart` (DeepLinkService provider + router integration)
+
+### Phase 21.2: FTUE Polish
+
+**Goal:** Turn rejection messages into coaching moments per CPO feedback
+
+**Completed:**
+- [x] **ConversationGuardrails:** Coaching-focused rejection messages
+- [x] **RejectionMessage class:** Headline + Explanation + Coaching + Icon
+- [x] **Oversized rejections:** "Your ambition is impressive!" framing
+- [x] **Vague rejections:** "That's a direction, not a destination" framing
+- [x] **Recovery plan rejections:** "'Try harder' is wishful thinking, not a plan"
+- [x] **ProgressiveDisclosure:** Feature gating based on user progress
+- [x] **HabitConstraintValidator:** Updated with coaching-focused feedback
+
+**Rejection Message Philosophy:**
+1. **Validate:** "Your ambition is impressive!"
+2. **Explain:** "But on Day 1, motivation is high and will fade."
+3. **Guide:** "What could you do in just 2 minutes?"
+
+**Files Created:**
+- `lib/config/conversation_guardrails.dart` (ConversationGuardrails, RejectionMessage, ProgressiveDisclosure)
+
+**Files Modified:**
+- `lib/config/ai_prompts.dart` (HabitConstraintValidator with coaching messages)
+
+### Phase 21.3: Data Schema Enhancement
+
+**Goal:** Track nudge effectiveness for Head of Strategy's "Behavior Model"
+
+**Completed:**
+- [x] **HabitContract Model:** Added nudge tracking fields
+- [x] **ContractService.sendNudge():** Tracks nudge sent timestamp
+- [x] **ContractService.recordDayCompleted():** Tracks nudge response + effectiveness
+- [x] **nudgeEffectivenessRate getter:** % of nudges that led to completion
+- [x] **Event metadata:** Logs nudge response timing and effectiveness
+
+**New Data Fields:**
+| Field | Type | Purpose |
+|-------|------|---------|
+| lastNudgeSentAt | DateTime? | When witness last sent nudge |
+| lastNudgeResponseAt | DateTime? | When builder completed after nudge |
+| nudgesReceivedCount | int | Total nudges received |
+| nudgesRespondedCount | int | Nudges that led to completion |
+
+**Computed Metrics:**
+- `nudgeEffectivenessRate`: nudgesResponded / nudgesReceived × 100
+- `hasOpenNudge`: lastNudgeSentAt > lastNudgeResponseAt
+
+**Files Modified:**
+- `lib/data/models/habit_contract.dart` (Nudge tracking fields + computed properties)
+- `lib/data/services/contract_service.dart` (Nudge effectiveness tracking in sendNudge/recordDayCompleted)
+
+---
+
+**Upstream Effects (2026 Behavior Model):**
+| Data Point | Use Case |
+|------------|----------|
+| Nudge Effectiveness Rate | Optimize nudge frequency per user |
+| Response Time Distribution | Best time to send nudges |
+| Nudge Style Effectiveness | Which tone works best |
+| Pattern + Nudge Correlation | Do nudges help on "hard" days? |
+
+---
+
+## Previous Sprint: Phase 17 (Brain Surgery - ✅ Completed)
+
+**Goal:** Optimize AI prompts for DeepSeek-V3.2's "Thinking in Tool-Use" capability
+
+**Status:** ✅ Complete (December 2025)
+
+**Philosophy:** "REASON before ACTING" — Leverage DeepSeek's breakthrough for stronger constraint enforcement
+
+**Architecture:** Reasoning-First Prompts with Dual-Layer Guardrails
+- Prompt-level: THINKING PROTOCOL, NEGATIVE CONSTRAINTS
+- Client-side: ConversationGuardrails validation
+
+**Completed:**
+- [x] **AtomicHabitsReasoningPrompts:** New prompt library with THINKING PROTOCOL
+- [x] **HabitConstraintValidator:** Client-side validation for 2-minute rule
+- [x] **ConversationGuardrails Update:** Added oversized/vague/multiple habit patterns
+- [x] **GeminiChatService Update:** Enhanced coaching prompts with reasoning markers
+- [x] **OnboardingOrchestrator Update:** Guardrail injection in prompts
+- [x] **AI_ONBOARDING_SPEC.md Update:** v5.0.0 with Reasoning-First design
+
+**Key Design Principles:**
+| Principle | Implementation | Example |
+|-----------|---------------|---------|
+| REASON → ACT | THINKING PROTOCOL | "Is this habit under 2 minutes?" |
+| NEGATIVE CONSTRAINTS | Explicit rejection rules | "Do NOT allow 30-minute habits" |
+| 2-MINUTE CEILING | Strict enforcement | "Exercise" → "Put on workout clothes" |
+| IDENTITY-FIRST | Identity before behavior | "I am someone who..." |
+| DUAL-LAYER | Prompt + Client validation | Both AI and code enforce rules |
+
+**Files Created:**
+- `lib/config/ai_prompts.dart` (AtomicHabitsReasoningPrompts, HabitConstraintValidator)
+
+**Files Modified:**
+- `lib/data/services/onboarding/conversation_guardrails.dart`
+- `lib/data/services/gemini_chat_service.dart`
+- `lib/data/services/onboarding/onboarding_orchestrator.dart`
+- `AI_ONBOARDING_SPEC.md`
+
+---
+
+## Next Sprint: Phase 23 - Clean Slate
+
+**Status:** 🟡 In Progress
+
+**Goal:** Technical debt cleanup and foundation for growth optimizations
+
+**Tasks:**
+- [ ] **Branch Cleanup:** Merge `genspark_ai_developer` to `main`, delete 18+ stale branches
+- [ ] **Documentation Sync:** Update all context files to reflect v5.7.0 state
+- [ ] **Integration Tests:** Add tests for Witness flow (offline handling, edge cases)
+- [ ] **Performance Audit:** Cold start optimization, Supabase initialization
+
+**Rationale:** "Cannot optimize 'Invited User Experience' (Sprint 24) until the foundation is stable."
+
+---
+
+## Future Sprint: Phase 24 - The Red Carpet
+
+**Status:** 📋 Planned
+
+**Goal:** Maximize conversion of invited users via polished onboarding flow
+
+**Features:**
+- [ ] **Deferred Deep Links:** Link → Preview → Download → Auto-navigate to acceptance
+- [ ] **Contract Preview Cards:** Rich previews without app download
+- [ ] **Guest/Lite Witness Mode:** Accept invites without full onboarding
+- [ ] **Smart Onboarding for Invited Users:** Skip unnecessary steps
+
+---
+
+## Future Sprint: Phase 25 - The Cash Register
+
+**Status:** 📋 Planned (Post Viral Loop Validation)
+
+**Goal:** Implement Freemium Monetization
+
+**Features:**
+- [ ] **RevenueCat Integration:** Subscription management
+- [ ] **Tier Logic:** Free (local heuristics, basic), Pro (cloud sync, AI nudges, unlimited contracts)
+- [ ] **Paywall UI:** Premium feature gating
+
+**Rationale:** "Monetize the network after proving the viral loop works."
+
+---
+
+## Completed: Phase 16 Expansion
+
+**Status:** ✅ Complete
+
+**Sub-phases:**
+- [x] **Phase 16.1: Auth UI** — ✅ Settings integration for account management (December 2025)
+- [x] **Phase 16.3: Witness Dashboard (Full)** — ✅ Implemented in Phase 22 with WitnessDashboard
+
+### Phase 16.1: Auth UI in Settings (✅ Completed)
+
+**Goal:** Provide user-facing authentication management in Settings screen
+
+**Status:** ✅ Complete (December 2025)
+
+**Completed:**
+- [x] **Account Section:** Added "Account" section to Settings screen with status display
+- [x] **Auth Status Display:** Shows authentication state (Not Signed In / Anonymous / Verified)
+- [x] **Sign In Flow:** Modal bottom sheet with Google Sign-In, Email/Password, and Anonymous options
+- [x] **Account Upgrade:** Upgrade anonymous accounts to email/password or Google
+- [x] **Sign Out:** Confirmation dialog for signing out
+- [x] **Cloud Sync Status:** Shows sync state, pending changes count, last sync time
+- [x] **Manual Sync:** Refresh button to trigger sync manually
+- [x] **Offline Mode:** Graceful display when Supabase is not configured
+- [x] **SyncService Getters:** Added `isSyncing`, `pendingChangesCount`, `syncNow()` for UI
+
+**Files Modified:**
+- `lib/features/settings/settings_screen.dart` (Auth UI section with full flows)
+- `lib/data/services/sync_service.dart` (Added UI helper getters)
+
+**Key Design Decisions:**
+| Decision | Rationale |
+|----------|----------|
+| Modal bottom sheets | Clean, focused sign-in experience |
+| Status-based UI | Different options for anonymous vs verified |
+| Graceful offline | Works without Supabase configured |
+| Sync visibility | Users understand cloud backup state |
 
 **Release Candidate Checklist:**
 - [x] Phase 9: Home Screen Widgets
@@ -293,8 +1022,68 @@
 - [x] Phase 12: Bad Habit Protocol
 - [x] Phase 13: Habit Stacking
 - [x] Phase 14: Pattern Detection
+- [x] Phase 15: Identity Foundation
+- [x] Phase 16.2: Habit Contracts
+- [x] Phase 17: Brain Surgery (AI Prompts)
+- [x] Phase 18: The Vibe Update
+- [ ] Phase 16: Full Habit Contracts & Witnesses
 - [ ] Final polish and testing
 - [ ] App Store / Play Store preparation
+
+---
+
+## Priority Tasks for Phase 17
+
+> **Strategic Context:** These tasks support the GTM "Cost MVP" strategy (Viral Growth / $0 Spend)
+
+### 🎙️ Smart Voice Entry (High Priority)
+**Goal:** AI-powered speech-to-text for frictionless habit logging
+
+**Implementation:**
+- Leverage `elevenlabs_reference.dart` (extracted from `claude/merge-missing-code-*`)
+- Speech-to-text for habit completion notes
+- Voice-based habit creation ("Hey, I want to start meditating")
+- Context-aware transcription with habit vocabulary
+
+**Files to Reference:**
+- `lib/data/services/reference/elevenlabs_reference.dart`
+
+### 📜 Legal Data Review (Medium Priority)
+**Goal:** GDPR/CCPA compliance for cloud sync
+
+**Implementation:**
+- Data collection policy documentation
+- "Download My Data" feature (export all cloud data)
+- Account deletion with data purge
+- Privacy settings UI in Settings screen
+
+**Blocked By:** Phase 15 (now complete) - needed to know what data is collected
+
+### 🔔 Context-Aware Notifications (Medium Priority)
+**Goal:** Replace generic nudges with "Pattern-Matched" motivation
+
+**Implementation:**
+- Integrate PatternDetectionService with NotificationService
+- AI-generated notification copy based on:
+  - User's detected patterns (e.g., "Night Owl" → evening motivation)
+  - Recovery history (e.g., "You bounced back 3 times this month!")
+  - Identity statements (e.g., "As someone who values health...")
+- Style variants: Guilt, Encouragement, Celebration, Compassion
+
+**Dependencies:**
+- Phase 14: Pattern Detection ✅
+- Phase 7: Weekly Review AI ✅
+
+### 🔗 Deep Links for Viral Invites (High Priority - GTM Critical)
+**Goal:** Enable `atomichabits.app/invite?c=123` for Trojan Horse strategy
+
+**Implementation:**
+- Universal/App Links setup (iOS + Android)
+- Invite code generation tied to User ID
+- Contract preview screen for invitees
+- Attribution tracking for viral loops
+
+**Blocked By:** Phase 16.2 (Habit Contracts)
 
 ---
 
@@ -530,12 +1319,26 @@ See Sprint History below for details.
 
 | Item | Priority | Status | Notes |
 |------|----------|--------|-------|
-| Stale branches cleanup | High | 🔴 Open | 18+ unmerged branches |
+| Stale branches cleanup | High | 🔴 Critical | 18+ stale branches blocking clean PRs |
 | Settings persistence | Medium | ✅ Done | Full persistence via Hive |
 | Hive type adapters | Medium | 🔴 Open | Manual JSON maps work but fragile |
 | iOS notification permissions | Medium | 🔴 Open | Android-only code paths |
 | Timezone change handling | Low | 🔴 Open | Fixed to UTC/Local |
 | Remove unnecessary imports | Low | 🔴 Open | flutter analyze warnings |
+| Supabase env vars setup | High | 🟡 Docs | See SUPABASE_SCHEMA.md for setup |
+
+---
+
+## Branch Cleanup Status (Phase 15)
+
+| Branch Pattern | Content | Action | Status |
+|----------------|---------|--------|--------|
+| `claude/ai-conversational-first-page-*` | Social UI | ✅ Extracted to reference | Keep for now |
+| `claude/merge-missing-code-*` | ElevenLabs Voice | ✅ Extracted to reference | Keep for now |
+| `claude/habit-substitution-guardrails-*` | Bad Habit Logic | 🗑️ DELETE | Superseded by Phase 12 |
+| `codex/create-node.js-backend-*` | Node.js Backend | 🗑️ DELETE | Replaced by Supabase |
+| `claude/setup-atomic-achievements-*` | Home Widgets | 🗑️ DELETE | Superseded by Phase 9 |
+| `claude/phase-4-identity-avatar-*` | Gamification | 📦 Archive | Keep for Phase 18 |
 
 ---
 
@@ -915,10 +1718,10 @@ done | sort
 
 | Metric | Current | Target | Notes |
 |--------|---------|--------|-------|
-| Orphaned branches | 18+ | < 5 | Need cleanup |
+| Orphaned branches | 18+ | < 5 | Key assets extracted, cleanup pending |
 | Test coverage | ~70% | 80%+ | Good foundation |
 | Doc sync to main | ✅ Now | Always | New protocol |
-| Time to onboard new AI | ~30 min | < 10 min | With Big Three docs |
+| Time to onboard new AI | ~30 min | < 10 min | With Big Four docs |
 | Phase 1 Magic Wand | ✅ | ✅ | Complete! |
 | Phase 2 Conversational UI | ✅ | ✅ | Complete! |
 | Phase 3 Multi-Habit Engine | ✅ | ✅ | Complete! |
@@ -932,10 +1735,24 @@ done | sort
 | Phase 12 Bad Habit Protocol | ✅ | ✅ | Complete! |
 | Phase 13 Habit Stacking | ✅ | ✅ | Complete! |
 | Phase 14 Pattern Detection | ✅ | ✅ | Complete! |
-| Release Candidate Ready | 🟡 | ✅ | Pending final polish |
+| Phase 15 Identity Foundation | ✅ | ✅ | Complete! Cloud sync ready |
+| Phase 16.2 Habit Contracts | ✅ | ✅ | Complete! Vertical slice done |
+| Phase 17 Brain Surgery | ✅ | ✅ | Complete! DeepSeek-V3.2 optimized |
+| Phase 18 The Vibe Update | ✅ | ✅ | Complete! Sound + Haptics + Animations + UI Wiring |
+| Phase 16.1 Auth UI in Settings | ✅ | ✅ | Complete! Full auth management |
+| Phase 19 Side Door Strategy | ✅ | ✅ | Complete! Niche-based onboarding |
+| Phase 19 Intelligent Nudge | ✅ | ✅ | Complete! Drift detection + Smart copy |
+| Phase 20 Destroyer Defense | ✅ | ✅ | Complete! Bug bounty + Alpha Shield |
+| Phase 14.5 Iron Architect | ✅ | ✅ | Complete! Stricter 2-Minute Rule prompts |
+| Phase 16.3 Witness Dashboard | ✅ | ✅ | Complete! Integrated in Phase 22 |
+| Phase 22 The Witness | ✅ | ✅ | Complete! Social Accountability Loop |
+| Release Candidate Ready | ✅ | ✅ | v5.7.0 - Social Features Complete |
+| Phase 23 Clean Slate | 🟡 | ✅ | Current: Branch cleanup, testing |
+| Phase 24 The Red Carpet | 📋 | ✅ | Planned: Growth optimization |
+| Phase 25 The Cash Register | 📋 | ✅ | Planned: Monetization (post-viral) |
 
 ---
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2025*
+*Last synced to main: December 2025 (v5.7.0 - Phase 22 The Witness Complete)*

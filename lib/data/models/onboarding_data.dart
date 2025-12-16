@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../config/niche_config.dart';
 
 /// Type of habit being created
 enum HabitType { build, breakHabit }
@@ -36,6 +37,11 @@ class OnboardingData {
   final String? motivation;         // "Expand knowledge"
   final String? recoveryPlan;       // Maps to FailurePlaybook.recoveryAction
   final bool isComplete;            // Ready to save?
+  
+  // === NICHE TRACKING (Phase 19: Side Door Strategy) ===
+  final UserNiche userNiche;        // Detected persona (developer, writer, etc.)
+  final String? entrySource;        // Landing page or referral source
+  final bool isStreakRefugee;       // Came from streak-based app burnout
 
   const OnboardingData({
     this.identity,
@@ -55,6 +61,9 @@ class OnboardingData {
     this.motivation,
     this.recoveryPlan,
     this.isComplete = false,
+    this.userNiche = UserNiche.general,
+    this.entrySource,
+    this.isStreakRefugee = false,
   });
 
   /// Create from JSON (handles AI output aliases)
@@ -77,6 +86,20 @@ class OnboardingData {
       motivation: json['motivation'] as String?,
       recoveryPlan: json['recoveryPlan'] as String?,
       isComplete: json['isComplete'] == true,
+      userNiche: _parseUserNiche(json['userNiche']),
+      entrySource: json['entrySource'] as String?,
+      isStreakRefugee: json['isStreakRefugee'] == true,
+    );
+  }
+  
+  /// Parse UserNiche from string
+  static UserNiche _parseUserNiche(dynamic value) {
+    if (value == null) return UserNiche.general;
+    if (value is UserNiche) return value;
+    final name = value.toString().toLowerCase();
+    return UserNiche.values.firstWhere(
+      (n) => n.name.toLowerCase() == name,
+      orElse: () => UserNiche.general,
     );
   }
 
@@ -99,6 +122,9 @@ class OnboardingData {
     'motivation': motivation,
     'recoveryPlan': recoveryPlan,
     'isComplete': isComplete,
+    'userNiche': userNiche.name,
+    'entrySource': entrySource,
+    'isStreakRefugee': isStreakRefugee,
   };
 
   /// Check if minimum required fields are present
@@ -132,6 +158,9 @@ class OnboardingData {
     String? motivation,
     String? recoveryPlan,
     bool? isComplete,
+    UserNiche? userNiche,
+    String? entrySource,
+    bool? isStreakRefugee,
   }) {
     return OnboardingData(
       identity: identity ?? this.identity,
@@ -151,6 +180,9 @@ class OnboardingData {
       motivation: motivation ?? this.motivation,
       recoveryPlan: recoveryPlan ?? this.recoveryPlan,
       isComplete: isComplete ?? this.isComplete,
+      userNiche: userNiche ?? this.userNiche,
+      entrySource: entrySource ?? this.entrySource,
+      isStreakRefugee: isStreakRefugee ?? this.isStreakRefugee,
     );
   }
 

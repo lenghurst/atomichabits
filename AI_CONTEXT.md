@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 2025 (v4.11.0 — Phase 14 Pattern Detection)
+> **Last Updated:** December 2025 (v5.7.0 — Phase 22 The Witness Complete)
 > **Purpose:** Single source of truth for AI development agents working on this codebase
 > **CRITICAL:** This file MUST be kept in sync with `main` branch. Update after every significant change.
 
@@ -62,6 +62,8 @@ When stale branches accumulate (> 10 unmerged):
 | State Management | Provider | 6.1.5+1 |
 | Navigation | GoRouter | ^14.0.0 |
 | Persistence | Hive | ^2.2.3 |
+| Cloud Backend | Supabase | ^2.8.4 |
+| Auth | supabase_flutter + google_sign_in | ^2.8.4 / ^6.2.2 |
 | Notifications | flutter_local_notifications | ^19.2.1 |
 | Home Widgets | home_widget | ^0.7.0 |
 | Charts | fl_chart | ^0.69.0 |
@@ -102,6 +104,15 @@ When stale branches accumulate (> 10 unmerged):
 | **Bad Habit Protocol (Phase 12)** | ✅ Live | Updated UI components | Habit.isBreakHabit | Break habits with purple theme |
 | **Habit Stacking (Phase 13)** | ✅ Live | StackPromptDialog, HabitSummaryCard | CompletionResult, AppState stacking | Chain Reaction prompts |
 | **Pattern Detection (Phase 14)** | ✅ Live | AnalyticsScreen (Insight Cards), RecoveryPromptDialog | PatternDetectionService, MissEvent | Local heuristics + LLM synthesis |
+| **Identity Foundation (Phase 15)** | ✅ Live | - | AuthService, SyncService | Anonymous-first auth, cloud backup |
+| **Habit Contracts (Phase 16.2)** | ✅ Live | ContractsListScreen, CreateContractScreen, JoinContractScreen | ContractService, HabitContract | Accountability agreements with deep links |
+| **Brain Surgery (Phase 17)** | ✅ Live | AI Prompts | AtomicHabitsReasoningPrompts | DeepSeek-V3.2 optimized prompts |
+| **The Vibe Update (Phase 18)** | ✅ Live | StackPromptDialog, AnimatedNudgeButton | SoundService, FeedbackPatterns | Sound + Haptics + Animations |
+| **The Intelligent Nudge (Phase 19)** | ✅ Live | TimeDriftSuggestionDialog | OptimizedTimeFinder, NudgeCopywriter | Drift detection + Smart copy |
+| **Side Door Strategy (Phase 19)** | ✅ Live | NicheLandingPages | NicheConfig, NichePromptAdapter | Persona-based marketing |
+| **Destroyer Defense (Phase 20)** | ✅ Live | AlphaShieldBanner, FeedbackDialogs | FeedbackService | Bug bounty + Alpha shield |
+| **The Viral Engine (Phase 21)** | ✅ Live | ShareContractSheet, DeepLinkService | DeepLinkConfig | Deep links infrastructure |
+| **The Witness (Phase 22)** | ✅ Live | WitnessDashboard, WitnessAcceptScreen, HighFiveSheet | WitnessService, WitnessEvent | Social accountability loop |
 
 ---
 
@@ -110,11 +121,12 @@ When stale branches accumulate (> 10 unmerged):
 ### Project Structure
 ```
 lib/
-├── main.dart                           # App entry, Provider setup, GoRouter, Error handling
+├── main.dart                           # App entry, Provider setup, GoRouter, Error handling, Supabase init
 ├── core/
 │   └── error_boundary.dart             # Error handling widgets and utilities
 ├── config/
-│   └── ai_model_config.dart            # API keys, model configuration
+│   ├── ai_model_config.dart            # API keys, model configuration
+│   └── supabase_config.dart            # [Phase 15] Supabase URL, anon key, tables
 ├── data/
 │   ├── app_state.dart                  # Central state (ChangeNotifier)
 │   ├── notification_service.dart       # Notifications + scheduling
@@ -124,6 +136,7 @@ lib/
 │   │   ├── user_profile.dart           # User identity model
 │   │   ├── consistency_metrics.dart    # Graceful Consistency scoring + MissReason enum
 │   │   ├── habit_pattern.dart          # [Phase 14] MissEvent, HabitPattern, PatternSummary
+│   │   ├── habit_contract.dart         # [Phase 16.2] HabitContract model + enums
 │   │   ├── app_settings.dart           # User preferences model
 │   │   ├── chat_message.dart           # Chat message model
 │   │   └── chat_conversation.dart      # Conversation state
@@ -136,6 +149,11 @@ lib/
 │       ├── analytics_service.dart      # [Phase 10] Analytics data computation
 │       ├── pattern_detection_service.dart # [Phase 14] Local pattern heuristics
 │       ├── backup_service.dart         # [Phase 11] Backup/restore logic
+│       ├── auth_service.dart           # [Phase 15] Anonymous/Email/Google auth
+│       ├── sync_service.dart           # [Phase 15] Hive → Supabase sync
+│       ├── contract_service.dart       # [Phase 16.2] Habit Contracts CRUD
+│       ├── reference/                  # Reference files from orphaned branches
+│       │   └── elevenlabs_reference.dart  # Phase 17 voice reference
 │       └── onboarding/
 │           ├── onboarding_orchestrator.dart  # AI orchestration
 │           ├── ai_response_parser.dart       # JSON extraction
@@ -167,8 +185,12 @@ lib/
 │   │   └── data_management_screen.dart # [Phase 11] Backup & Restore UI
 │   ├── review/                         # [Phase 7]
 │   │   └── weekly_review_dialog.dart   # AI-powered weekly insights
-│   └── analytics/                      # [Phase 10]
-│       └── analytics_screen.dart       # Graceful Consistency charts
+│   ├── analytics/                      # [Phase 10]
+│   │   └── analytics_screen.dart       # Graceful Consistency charts
+│   └── contracts/                      # [Phase 16.2]
+│       ├── contracts_list_screen.dart  # Tabbed contracts view
+│       ├── create_contract_screen.dart # Create contract UI
+│       └── join_contract_screen.dart   # Deep link handler
 ├── widgets/                            # Shared widgets
 │   ├── graceful_consistency_card.dart
 │   ├── recovery_prompt_dialog.dart
@@ -282,6 +304,16 @@ Score = (Base × 0.4) + (Recovery × 0.2) + (Stability × 0.2) + (NMT × 0.2)
 | 4.8.0 | Dec 2025 | Phase 11: Data Safety (BackupService, DataManagementScreen, JSON export/import) |
 | 4.9.0 | Dec 2025 | Phase 12: Bad Habit Protocol (isBreakHabit UI inversion, purple theme, break habit fields) |
 | 4.10.0 | Dec 2025 | Phase 13: Habit Stacking (Chain Reaction, CompletionResult, StackPromptDialog) |
+| 4.11.0 | Dec 2025 | Phase 14: Pattern Detection (MissEvent, PatternDetectionService, insight cards) |
+| 4.12.0 | Dec 2025 | Phase 15: Identity Foundation (AuthService, SyncService, Supabase integration) |
+| 4.13.0 | Dec 2025 | Phase 16.2: Habit Contracts (ContractService, CreateContract, JoinContract, deep links) |
+| 5.0.0 | Dec 2025 | Phase 17: Brain Surgery (DeepSeek-V3.2 optimized prompts, reasoning-first) |
+| 5.1.0 | Dec 2025 | Phase 18: The Vibe Update (Sound + Haptics + Animations) |
+| 5.2.0 | Dec 2025 | Phase 19: The Intelligent Nudge (Drift detection, smart copy) |
+| 5.3.0 | Dec 2025 | Phase 19: Side Door Strategy (Niche-based marketing) |
+| 5.4.0 | Dec 2025 | Phase 20: Destroyer Defense (Bug bounty, Alpha Shield) |
+| 5.5.0 | Dec 2025 | Phase 21: The Viral Engine (Deep Links, FTUE Polish, Data Schema) |
+| 5.7.0 | Dec 2025 | Phase 22: The Witness (Social Accountability Loop, WitnessService, High-Five System) |
 
 ---
 
@@ -1026,4 +1058,434 @@ lib/features/onboarding/onboarding_screen.dart      # Habit stacking UI section 
 
 ---
 
-*Last synced to main: December 2025*
+## Phase 15: Identity Foundation Architecture
+
+### Overview
+Phase 15 establishes the cloud sync and authentication infrastructure required for "multiplayer" features (Habit Contracts, Witness Dashboards). The design is **anonymous-first** to maintain zero-friction onboarding while enabling users to upgrade their accounts for cloud features.
+
+### New Files
+```
+lib/
+├── config/
+│   └── supabase_config.dart          # Supabase URL, anon key, tables
+└── data/
+    └── services/
+        ├── auth_service.dart          # Authentication service
+        ├── sync_service.dart          # Cloud sync service
+        └── reference/
+            └── elevenlabs_reference.dart  # Voice service reference
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `SupabaseConfig` | Environment-based Supabase configuration |
+| `AuthService` | Anonymous/Email/Google authentication |
+| `SyncService` | One-way Hive → Supabase backup |
+
+### Authentication Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    New User Opens App                        │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Anonymous Sign-In   │ (automatic, silent)   │
+│              │   (UUID assigned)     │                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   User uses app       │ (local Hive storage)  │
+│              │   normally            │                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│         ┌────────────────┼────────────────┐                  │
+│         │                │                │                  │
+│         ▼                ▼                ▼                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           │
+│  │ Stay        │  │ Upgrade to  │  │ Upgrade to  │           │
+│  │ Anonymous   │  │ Email/Pass  │  │ Google      │           │
+│  │ (Local only)│  │ (Cloud sync)│  │ (Cloud sync)│           │
+│  └─────────────┘  └─────────────┘  └─────────────┘           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Sync Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SyncService                               │
+├─────────────────────────────────────────────────────────────┤
+│   Triggers:                                                  │
+│   - createHabit() → syncHabit()                             │
+│   - completeHabit() → syncCompletion()                      │
+│   - updateHabit() → syncHabitUpdate()                       │
+│   - deleteHabit() → syncHabitDeletion()                     │
+├─────────────────────────────────────────────────────────────┤
+│   Offline Queue:                                             │
+│   - Changes queued when offline                              │
+│   - Processed every 5 minutes when online                    │
+│   - forceSyncNow() for manual trigger                       │
+├─────────────────────────────────────────────────────────────┤
+│   Data Flow (One-Way):                                       │
+│   Local Hive → Supabase Cloud                                │
+│   (No cloud → local sync yet, prevents conflicts)           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Database Schema
+See `SUPABASE_SCHEMA.md` for complete SQL definitions.
+
+**Tables:**
+- `users` — User identity and tier
+- `habits` — Habit data backup
+- `habit_completions` — Individual completion records
+
+**Row Level Security:**
+All tables have RLS enabled. Users can only access their own data.
+
+### Configuration
+Supabase is configured via environment variables:
+
+```bash
+flutter run \
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-anon-key
+```
+
+If not configured, the app runs in **local-only mode** with full functionality.
+
+### Provider Registration
+```dart
+// main.dart
+MultiProvider(
+  providers: [
+    ChangeNotifierProvider<AuthService>.value(value: authService),
+    ChangeNotifierProvider<SyncService>.value(value: syncService),
+    // ... other providers
+  ],
+)
+```
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Anonymous-first | Zero friction onboarding |
+| One-way sync | Simpler implementation, no conflict resolution |
+| Environment variables | Secure credential management |
+| Offline queue | Changes never lost, sync when online |
+| RLS policies | Database-level security |
+| Local Hive remains primary | App works fully offline |
+
+### Reference Files Extracted
+For future phases, reference code was extracted from orphaned branches:
+
+1. **`lib/features/social/reference/reference_ui.dart`**
+   - Source: `claude/ai-conversational-first-page-*`
+   - Purpose: Social/Witness UI patterns for Phase 16.3
+
+2. **`lib/data/services/reference/elevenlabs_reference.dart`**
+   - Source: `claude/merge-missing-code-*`
+   - Purpose: Voice synthesis for Phase 17 (Smart Voice Entry)
+
+---
+
+## Phase 16.2: Habit Contracts Architecture
+
+### Overview
+Phase 16.2 implements "The Atomic Contract" - a minimal vertical slice enabling accountability partnerships between a Builder (habit owner) and Witness (accountability partner). The implementation includes deep links (Phase 16.4) for viral sharing.
+
+### Philosophy
+"Vertical Slice Sprint" - Build one complete user journey before expanding.
+- Builder creates contract → Generates invite link → Witness joins via deep link
+
+### New Files
+```
+lib/
+├── data/
+│   ├── models/
+│   │   └── habit_contract.dart       # Contract model + enums
+│   └── services/
+│       └── contract_service.dart     # CRUD + invite logic
+└── features/
+    └── contracts/
+        ├── create_contract_screen.dart   # Draft contract UI
+        ├── join_contract_screen.dart     # Deep link handler
+        └── contracts_list_screen.dart    # Tabbed witness dashboard
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `HabitContract` | Data model with status, nudge settings, invite code |
+| `ContractService` | CRUD operations, invite code generation, witnessing |
+| `CreateContractScreen` | Form to create accountability contracts |
+| `JoinContractScreen` | Handles deep link invite acceptance |
+| `ContractsListScreen` | Tabbed view (My Habits / Witnessing) |
+
+### HabitContract Model
+```dart
+// lib/data/models/habit_contract.dart
+class HabitContract {
+  final String id;
+  final String habitId;
+  final String habitName;
+  final String builderId;
+  final String? builderName;
+  final String? witnessId;
+  final String? witnessName;
+  final String title;
+  final String? commitment;
+  final int durationDays;
+  final ContractStatus status;
+  final NudgeFrequency nudgeFrequency;
+  final NudgeStyle nudgeStyle;
+  final String? inviteCode;
+  final DateTime? createdAt;
+  final DateTime? startedAt;
+  final DateTime? expiresAt;
+}
+
+// Enums
+enum ContractStatus { draft, pending, active, completed, failed, cancelled }
+enum NudgeFrequency { never, daily, weekly, onMiss }
+enum NudgeStyle { encouraging, strict, playful, minimal }
+```
+
+### Contract Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Builder (User A)                           │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Select Habit        │                       │
+│              │   Set Duration        │                       │
+│              │   Choose Nudge Style  │                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Generate Invite     │                       │
+│              │   Code + Deep Link    │                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│         ┌────────────────┴────────────────┐                  │
+│         │                                 │                  │
+│         ▼                                 ▼                  │
+│  ┌─────────────────┐              ┌─────────────────┐        │
+│  │ Share Link      │              │ Copy to         │        │
+│  │ (via Share Sheet)│              │ Clipboard       │        │
+│  └─────────────────┘              └─────────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                   Witness (User B)                           │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Open Deep Link      │                       │
+│              │   /contracts/join/:code│                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Preview Contract    │                       │
+│              │   Builder info,       │                       │
+│              │   Duration, Commitment │                       │
+│              └───────────┬───────────┘                       │
+│                          │                                   │
+│                          ▼                                   │
+│              ┌───────────────────────┐                       │
+│              │   Accept Contract     │                       │
+│              │   (with message)      │                       │
+│              └───────────────────────┘                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Routes
+```dart
+// main.dart - GoRouter configuration
+'/contracts'              → ContractsListScreen (tabbed list)
+'/contracts/create'       → CreateContractScreen (?habitId=xxx)
+'/contracts/join/:inviteCode' → JoinContractScreen (deep link)
+```
+
+### Database Schema
+See `SUPABASE_SCHEMA.md` for complete SQL definition.
+
+```sql
+-- habit_contracts table
+CREATE TABLE habit_contracts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  habit_id UUID NOT NULL,
+  habit_name TEXT NOT NULL,
+  builder_id UUID NOT NULL REFERENCES users(id),
+  builder_name TEXT,
+  witness_id UUID REFERENCES users(id),
+  witness_name TEXT,
+  title TEXT NOT NULL,
+  commitment TEXT,
+  duration_days INTEGER DEFAULT 21,
+  status TEXT DEFAULT 'draft',
+  nudge_frequency TEXT DEFAULT 'daily',
+  nudge_style TEXT DEFAULT 'encouraging',
+  invite_code TEXT UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  started_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ
+);
+```
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Invite codes (not IDs) | Privacy + shorter URLs |
+| Local-first witness list | Works offline, syncs when online |
+| Tabbed contracts view | Simple before complex Phase 16.3 |
+| Builder-initiated only | Witnesses can't create contracts |
+| Minimal witness dashboard | Phase 16.3 will expand |
+
+### Provider Registration
+```dart
+// main.dart
+MultiProvider(
+  providers: [
+    ChangeNotifierProvider<ContractService>.value(value: contractService),
+    // ... other providers
+  ],
+)
+```
+
+### Deep Link Format
+- **Invite Link**: `atomichabits://contracts/join/{inviteCode}`
+- **Web Fallback**: `https://atomichabits.app/invite?c={inviteCode}` (Phase 17)
+
+---
+
+## Phase 22: The Witness Architecture
+
+### Overview
+Phase 22 transforms the app from a **Single Player Tool** to a **Multiplayer Network** with real-time social accountability. It activates the Phase 21 Deep Links infrastructure with social features that create retention through human connection.
+
+### Philosophy
+> "Social features are the best way to test if your Viral Engine actually works. Monetization is easier to add once you have retention; Social creates retention."
+
+### New Files
+```
+lib/
+├── data/
+│   ├── models/
+│   │   └── witness_event.dart           # Event types + reactions
+│   └── services/
+│       └── witness_service.dart         # Real-time accountability
+└── features/
+    └── witness/
+        ├── witness.dart                  # Module exports
+        ├── witness_dashboard.dart        # 3-tab accountability hub
+        ├── witness_accept_screen.dart    # Deep link acceptance
+        └── high_five_sheet.dart          # Quick emoji reactions
+
+supabase/
+└── migrations/
+    └── 20241216_phase22_witness_events.sql  # Database migration
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `WitnessService` | Real-time event management, Supabase subscriptions |
+| `WitnessEvent` | Event taxonomy (completion, high-five, nudge, drift) |
+| `WitnessReaction` | Quick emoji reactions (🖐️ 🔥 💪 ⚡ 🏆 🎯) |
+| `WitnessDashboard` | Central hub with My Witnesses / I Witness / Activity tabs |
+| `WitnessAcceptScreen` | Contract acceptance via deep link |
+| `HighFiveSheet` | Bottom sheet for sending reactions |
+| `HighFiveReceivedOverlay` | Celebratory animation for social validation |
+
+### The Core Loop
+```
+1. BUILDER completes habit
+   └─> WitnessService.sendCompletionPing()
+       └─> Creates WitnessEvent (type: habitCompleted)
+           └─> NotificationService.showWitnessCompletionNotification()
+               └─> Push to WITNESS: "⚡ [Name] just cast a vote for [Identity]!"
+
+2. WITNESS receives notification
+   └─> Taps notification → Opens app
+       └─> Can send High Five via HighFiveSheet
+           └─> WitnessService.sendHighFive(emoji, message)
+               └─> Creates WitnessEvent (type: highFiveReceived)
+                   └─> Push to BUILDER: "🖐️ High Five from [Witness]!"
+
+3. BUILDER receives High Five
+   └─> HighFiveReceivedOverlay animation
+       └─> SECOND DOPAMINE HIT (social validation)
+           └─> Increased retention & motivation
+```
+
+### The Shame Nudge (Pre-Failure Intervention)
+```
+1. PatternDetectionService detects drift pattern
+   └─> WitnessService.checkForDrift(habit)
+       └─> If drifting: Creates WitnessEvent (type: driftWarning)
+           └─> Push to WITNESS: "⚠️ [Builder] is drifting. Nudge them?"
+
+2. WITNESS can send preemptive nudge
+   └─> WitnessService.sendNudge(message)
+       └─> Creates WitnessEvent (type: nudgeReceived)
+           └─> Push to BUILDER: "💬 Nudge from [Witness]: [message]"
+
+Result: Proactive accountability, not reactive guilt
+```
+
+### Routes Added
+```dart
+'/witness'                     → WitnessDashboard
+'/witness/accept/:inviteCode'  → WitnessAcceptScreen
+```
+
+### Notification Types
+| Type | Recipient | Copy |
+|------|-----------|------|
+| Completion | Witness | "⚡ [Name] just cast a vote for [Identity]!" |
+| High-Five | Builder | "🖐️ High Five from [Witness]!" |
+| Nudge | Builder | "💬 Nudge from [Witness]: [message]" |
+| Drift Warning | Witness | "⚠️ [Builder] is drifting. Nudge them?" |
+| Milestone | Witness | "🔥 [Builder] hit [X] day streak!" |
+
+### Database Schema
+```sql
+-- witness_events table
+CREATE TABLE witness_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  contract_id UUID NOT NULL REFERENCES habit_contracts(id),
+  event_type TEXT NOT NULL,
+  sender_id UUID NOT NULL REFERENCES users(id),
+  recipient_id UUID NOT NULL REFERENCES users(id),
+  habit_id UUID,
+  habit_name TEXT,
+  message TEXT,
+  emoji TEXT,
+  streak_count INTEGER,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Realtime for instant push
+ALTER PUBLICATION supabase_realtime ADD TABLE witness_events;
+```
+
+### Integration Points
+- **ContractService**: WitnessService uses active contracts for relationship management
+- **NotificationService**: Extended with witness-specific notification channels
+- **DeepLinkService**: Routes witness/accept/:code to WitnessAcceptScreen
+- **AppState**: Triggers witness notifications on habit completion
+
+---
+
+*Last synced to main: December 2025 (v5.7.0 - Phase 22 The Witness Complete)*

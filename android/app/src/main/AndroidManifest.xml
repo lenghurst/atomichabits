@@ -25,12 +25,66 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
-            <!-- Phase 9: Deep link for widget callbacks -->
+            <!-- Phase 9: Custom scheme deep link for widget callbacks -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="atomichabits"/>
+            </intent-filter>
+            
+            <!-- Phase 21.1: Android App Links for Deep Linking - "The Viral Engine" -->
+            <!-- This enables verified App Links to open the app from atomichabits.app URLs -->
+            <!-- Requires assetlinks.json hosted at https://atomichabits.app/.well-known/assetlinks.json -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <!-- Contract invite links: /c/CODE, /invite?c=CODE, /join/CODE -->
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/c"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/invite"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/join"/>
+                <!-- Contracts route -->
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/contracts"/>
+            </intent-filter>
+            
+            <!-- Phase 19 Side Door: Niche landing pages -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/devs"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/writers"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/scholars"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/languages"/>
+                <data 
+                    android:scheme="https"
+                    android:host="atomichabits.app"
+                    android:pathPrefix="/makers"/>
             </intent-filter>
         </activity>
         
