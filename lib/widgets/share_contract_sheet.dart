@@ -8,6 +8,7 @@ import '../data/services/contract_service.dart';
 /// Share Contract Bottom Sheet
 /// 
 /// Phase 21.1: "The Viral Engine" - Share Flow
+/// Phase 24: "The Clipboard Bridge" - Deferred Deep Linking
 /// 
 /// A beautiful, shareable modal for distributing contract invite links.
 /// Inspired by: Twitter share sheets, Spotify share flows
@@ -18,6 +19,11 @@ import '../data/services/contract_service.dart';
 /// - QR code display (for in-person sharing)
 /// - Preview of what recipient will see
 /// - Social proof messaging
+/// 
+/// Phase 24 Enhancement:
+/// ALWAYS copies to clipboard BEFORE opening share sheet.
+/// This ensures the "Clipboard Bridge" works even if standard deep links fail.
+/// User A shares -> Clipboard populated -> User B installs -> Clipboard detected
 class ShareContractSheet extends StatefulWidget {
   final HabitContract contract;
   final ContractService contractService;
@@ -127,9 +133,14 @@ class _ShareContractSheetState extends State<ShareContractSheet>
   }
 
   Future<void> _shareNative() async {
+    // Phase 24: ALWAYS copy to clipboard BEFORE sharing
+    // This enables the "Clipboard Bridge" for deferred deep linking
+    // Even if the deep link fails, User B can detect the invite from clipboard
+    await Clipboard.setData(ClipboardData(text: _shareText));
+    
     await Share.share(
       _shareText,
-      subject: '${widget.contract.title} - Join my habit contract!',
+      subject: '${widget.contract.title} - Join my pact!',
     );
     HapticFeedback.lightImpact();
     widget.onShared?.call();
