@@ -1319,7 +1319,7 @@ See Sprint History below for details.
 
 | Item | Priority | Status | Notes |
 |------|----------|--------|-------|
-| Stale branches cleanup | High | 🔴 Critical | 18+ stale branches blocking clean PRs |
+| Stale branches cleanup | High | ✅ Done | 19 stale branches deleted (December 2025) |
 | Settings persistence | Medium | ✅ Done | Full persistence via Hive |
 | Hive type adapters | Medium | 🔴 Open | Manual JSON maps work but fragile |
 | iOS notification permissions | Medium | 🔴 Open | Android-only code paths |
