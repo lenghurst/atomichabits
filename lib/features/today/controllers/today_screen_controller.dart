@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/app_state.dart';
 import '../../../data/models/consistency_metrics.dart';
 import '../../../data/models/completion_result.dart';
+import '../../../data/services/sound_service.dart';
+import '../../../data/services/smart_nudge/optimized_time_finder.dart';
+import '../../../data/services/smart_nudge/drift_analysis.dart' as drift;
 import '../../../widgets/reward_investment_dialog.dart';
 import '../../../widgets/recovery_prompt_dialog.dart';
 import '../../../widgets/stack_prompt_dialog.dart';
+import '../../../widgets/time_drift_suggestion_dialog.dart';
 import '../widgets/improvement_suggestions_dialog.dart';
 import '../widgets/consistency_details_sheet.dart';
 
@@ -24,6 +30,15 @@ class TodayScreenController {
   final BuildContext context;
   final AppState appState;
   
+  /// Phase 19: Drift detector for smart notifications
+  final OptimizedTimeFinder _driftDetector = OptimizedTimeFinder();
+  
+  /// Key for storing drift prompt dismissal preference
+  static const String _driftPromptDismissedKey = 'drift_prompt_dismissed_';
+  
+  /// Key for storing last drift prompt date
+  static const String _lastDriftPromptKey = 'last_drift_prompt_';
+  
   TodayScreenController({
     required this.context,
     required this.appState,
@@ -38,6 +53,72 @@ class TodayScreenController {
       showRewardDialog();
     } else if (appState.shouldShowRecoveryPrompt) {
       showRecoveryDialog();
+    }
+  }
+  
+  /// Phase 19: Check for drift and show suggestion dialog if appropriate
+  /// Called during screen initialization or data refresh
+  Future<void> checkForDriftSuggestion() async {
+    final habit = appState.currentHabit;
+    if (habit == null) return;
+    
+    // Check if user has dismissed drift prompts for this habit
+    final prefs = await SharedPreferences.getInstance();
+    final dismissedKey = '$_driftPromptDismissedKey${habit.id}';
+    if (prefs.getBool(dismissedKey) == true) {
+      debugPrint('⏰ Drift suggestion dismissed permanently for ${habit.name}');
+      return;
+    }
+    
+    // Check if we've shown a drift prompt recently (within 7 days)
+    final lastPromptKey = '$_lastDriftPromptKey${habit.id}';
+    final lastPromptTimestamp = prefs.getInt(lastPromptKey);
+    if (lastPromptTimestamp != null) {
+      final lastPrompt = DateTime.fromMillisecondsSinceEpoch(lastPromptTimestamp);
+      final daysSinceLastPrompt = DateTime.now().difference(lastPrompt).inDays;
+      if (daysSinceLastPrompt < 7) {
+        debugPrint('⏰ Too soon to show drift suggestion (${daysSinceLastPrompt} days ago)');
+        return;
+      }
+    }
+    
+    // Get completion history from habit
+    final completionHistory = habit.completionHistory ?? [];
+    if (completionHistory.isEmpty) {
+      debugPrint('⏰ No completion history for drift analysis');
+      return;
+    }
+    
+    // Run drift analysis
+    final analysis = _driftDetector.analyze(
+      completionHistory: completionHistory,
+      scheduledTime: habit.implementationTime,
+    );
+    
+    debugPrint('⏰ Drift analysis: ${analysis.toString()}');
+    
+    // Show dialog if drift is detected and should suggest
+    if (analysis.shouldSuggest && analysis.suggestedTime != null && _isContextMounted) {
+      // Record that we're showing a prompt
+      await prefs.setInt(lastPromptKey, DateTime.now().millisecondsSinceEpoch);
+      
+      await showTimeDriftSuggestionDialog(
+        context: context,
+        analysis: analysis,
+        habitName: habit.name,
+        onAcceptSuggestion: (newTime) async {
+          debugPrint('⏰ User accepted drift suggestion: $newTime');
+          await appState.updateReminderTime(newTime);
+          _showSnackBar('Reminder updated to $newTime');
+        },
+        onDismiss: () {
+          debugPrint('⏰ User dismissed drift suggestion');
+        },
+        onDontShowAgain: () async {
+          debugPrint('⏰ User chose to never show drift suggestion for ${habit.name}');
+          await prefs.setBool(dismissedKey, true);
+        },
+      );
     }
   }
   
@@ -158,6 +239,7 @@ class TodayScreenController {
   
   /// Handles the "Mark as Complete" button press
   /// Phase 13: Updated to handle Chain Reaction flow for stacked habits
+  /// Phase 18: Added visceral sound/haptic feedback for emotional payoff
   Future<void> handleCompleteHabit() async {
     debugPrint('🔘 Mark as Complete button pressed');
     
@@ -167,6 +249,19 @@ class TodayScreenController {
     
     if (result.wasNewCompletion && _isContextMounted) {
       debugPrint('✨ Triggering reward dialog');
+      
+      // Phase 18: Visceral feedback - "The Clunk" 🔊
+      // Make the emotional payoff visceral instead of boring boolean update
+      try {
+        final soundService = context.read<SoundService>();
+        await FeedbackPatterns.completion(
+          soundService,
+          hapticsEnabled: appState.hapticsEnabled,
+        );
+        debugPrint('🔊 Completion feedback triggered');
+      } catch (e) {
+        debugPrint('🔊 SoundService not available: $e');
+      }
       
       // Phase 13: Check for stacked habit (Chain Reaction)
       if (result.hasStackedHabit) {
@@ -230,6 +325,19 @@ class TodayScreenController {
       usedTinyVersion: true,
     );
     if (result.wasNewCompletion && _isContextMounted) {
+      // Phase 18: Recovery feedback - "The Rise" 🔊
+      // Triumphant sound for Never Miss Twice recovery
+      try {
+        final soundService = context.read<SoundService>();
+        await FeedbackPatterns.recovery(
+          soundService,
+          hapticsEnabled: appState.hapticsEnabled,
+        );
+        debugPrint('🔊 Recovery feedback triggered');
+      } catch (e) {
+        debugPrint('🔊 SoundService not available: $e');
+      }
+      
       // Phase 13: Check for stacked habit (Chain Reaction)
       if (result.hasStackedHabit) {
         _showStackPromptDialog(result);

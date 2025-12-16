@@ -5,6 +5,7 @@ import '../../models/onboarding_data.dart';
 import '../../models/chat_conversation.dart';
 import '../../models/chat_message.dart';
 import '../../../config/ai_model_config.dart';
+import '../../../config/niche_config.dart';
 import 'ai_response_parser.dart';
 import 'conversation_guardrails.dart';
 
@@ -72,6 +73,18 @@ class OnboardingOrchestrator extends ChangeNotifier {
   /// Extracted habit data (Phase 2)
   OnboardingData? _extractedData;
   OnboardingData? get extractedData => _extractedData;
+  
+  /// Detected user niche (Phase 19: Side Door Strategy)
+  UserNiche _userNiche = UserNiche.general;
+  UserNiche get userNiche => _userNiche;
+  
+  /// Whether user is a "streak refugee" (burned by Duolingo, etc.)
+  bool _isStreakRefugee = false;
+  bool get isStreakRefugee => _isStreakRefugee;
+  
+  /// Entry source for attribution
+  String? _entrySource;
+  String? get entrySource => _entrySource;
   
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;
@@ -199,6 +212,7 @@ class OnboardingOrchestrator extends ChangeNotifier {
   }
 
   /// Build the Magic Wand prompt for structured data extraction
+  /// Phase 17: Enhanced with THINKING PROTOCOL and NEGATIVE CONSTRAINTS
   String _buildMagicWandPrompt({
     required String habitName,
     required String identity,
@@ -208,38 +222,60 @@ class OnboardingOrchestrator extends ChangeNotifier {
         ? 'breaking a bad habit' 
         : 'building a positive habit';
 
+    // Phase 17: Check if the habit name violates guardrails
+    final guardrailResult = ConversationGuardrails.validateHabit(habitName);
+    final guardrailWarning = guardrailResult.needsCorrection
+        ? '''
+[WARNING: HABIT NEEDS ADJUSTMENT]
+The user's habit "$habitName" violates the 2-minute rule or is too vague.
+You MUST create a smaller/more specific tinyVersion. Do not accept habits that
+take more than 2 minutes.
+
+'''
+        : '';
+
     return '''
-You are an expert habit coach using James Clear's Atomic Habits methodology.
+You are The Architect, an expert habit coach using James Clear's Atomic Habits methodology.
+
+$guardrailWarning[THINKING PROTOCOL]
+Before generating the plan, think through:
+1. "Is '$habitName' specific enough? If not, make tinyVersion MORE specific."
+2. "Can the tinyVersion be done in 2 minutes? If not, make it SMALLER."
+3. "Does '$identity' describe WHO they want to become? If vague, strengthen it."
+4. "What time/location makes this habit OBVIOUS and EASY?"
+
+[NEGATIVE CONSTRAINTS - ENFORCE THESE]
+- tinyVersion MUST be completable in 2 minutes or less
+- DO NOT suggest "30 minutes", "a chapter", "full workout", etc.
+- Make it RIDICULOUSLY small: "one page", "one pushup", "2 deep breaths"
 
 The user wants help $habitTypeDescription. They provided:
 - **Habit**: $habitName
 - **Identity**: $identity
 ${isBreakHabit ? '- **Type**: Breaking a bad habit (needs substitution plan)' : '- **Type**: Building a positive habit'}
 
-Please suggest the following to help them succeed:
-
-1. **tinyVersion**: A 2-minute version of this habit (so small it's impossible to fail)
-2. **implementationTime**: A specific time of day that would work well (format: "HH:MM" or descriptive like "After breakfast")
-3. **implementationLocation**: A specific location that makes sense for this habit
-4. **environmentCue**: A visual cue to place in their environment to trigger the habit
-5. **temptationBundle**: Something enjoyable they could pair with this habit (optional)
-6. **preHabitRitual**: A quick 10-30 second ritual to get into the right mindset (optional)
+Generate a complete habit plan with:
+1. **tinyVersion**: MUST be doable in 2 minutes (negotiate DOWN from user's habit if needed)
+2. **implementationTime**: Specific time (format: "HH:MM" or trigger like "After breakfast")
+3. **implementationLocation**: Specific place
+4. **environmentCue**: Visual trigger in their environment
+5. **temptationBundle**: Optional pairing with something enjoyable
+6. **preHabitRitual**: Optional 30-second mindset ritual
 ${isBreakHabit ? '''
-7. **replacesHabit**: What bad habit this will replace
-8. **rootCause**: The underlying trigger or cause of the bad habit
-9. **substitutionPlan**: What to do instead when tempted''' : ''}
+7. **replacesHabit**: The bad habit being replaced
+8. **rootCause**: Why they do the bad habit
+9. **substitutionPlan**: Healthy alternative''' : ''}
 
-IMPORTANT: You MUST respond with a JSON block wrapped in [HABIT_DATA]...[/HABIT_DATA] markers.
-
-Example response format:
-Great! Based on your goal to become "$identity" by ${isBreakHabit ? 'stopping' : 'building'} "$habitName", here's your personalized habit plan:
+[RESPONSE FORMAT]
+Brief encouragement (2-3 sentences) + JSON block:
 
 [HABIT_DATA]
 {
   "name": "$habitName",
   "identity": "$identity",
   "isBreakHabit": $isBreakHabit,
-  "tinyVersion": "Your suggested 2-minute version",
+  "habitEmoji": "relevant emoji",
+  "tinyVersion": "2-MINUTE VERSION (smaller than user might expect!)",
   "implementationTime": "07:30",
   "implementationLocation": "At your desk",
   "environmentCue": "Place X on your Y",
@@ -247,11 +283,12 @@ Great! Based on your goal to become "$identity" by ${isBreakHabit ? 'stopping' :
   "preHabitRitual": "Take 3 deep breaths"${isBreakHabit ? ''',
   "replacesHabit": "The bad habit being replaced",
   "rootCause": "The underlying trigger",
-  "substitutionPlan": "What to do instead"''' : ''}
+  "substitutionPlan": "What to do instead"''' : ''},
+  "isComplete": true
 }
 [/HABIT_DATA]
 
-Now create a personalized plan for this user!
+CRITICAL: The tinyVersion must be so small it feels almost silly. That's the point.
 ''';
   }
 
@@ -326,8 +363,80 @@ Now create a personalized plan for this user!
     _extractedData = null;
     _error = null;
     _isLoading = false;
+    _userNiche = UserNiche.general;
+    _isStreakRefugee = false;
+    _entrySource = null;
     notifyListeners();
   }
+  
+  // ============================================================
+  // PHASE 19: Niche Detection & Side Door Strategy
+  // ============================================================
+  
+  /// Set niche from landing page URL (e.g., /devs, /writers)
+  void setNicheFromUrl(String? path) {
+    _userNiche = NicheDetectionService.detectFromUrl(path);
+    _entrySource = path;
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('OnboardingOrchestrator: Niche set from URL: $_userNiche (path: $path)');
+    }
+  }
+  
+  /// Set niche explicitly (for testing or manual override)
+  void setNiche(UserNiche niche, {String? source}) {
+    _userNiche = niche;
+    _entrySource = source;
+    notifyListeners();
+  }
+  
+  /// Detect niche from user input (called during conversation)
+  void detectNicheFromInput(String input) {
+    // Check for streak refugee patterns
+    if (NicheDetectionService.isStreakRefugee(input)) {
+      _isStreakRefugee = true;
+    }
+    
+    // Only detect if not already set from URL
+    if (_userNiche == UserNiche.general) {
+      final result = NicheDetectionService.detectNiche(input);
+      if (result.isConfident) {
+        _userNiche = result.detected;
+        if (kDebugMode) {
+          debugPrint('OnboardingOrchestrator: Niche detected from input: $_userNiche (confidence: ${result.confidence})');
+        }
+      }
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Get niche-specific welcome message
+  String getWelcomeMessage() {
+    return NichePromptAdapter.getWelcomeMessage(
+      _userNiche,
+      isStreakRefugee: _isStreakRefugee,
+    );
+  }
+  
+  /// Get niche-specific identity prompt
+  String getIdentityPrompt() {
+    return NichePromptAdapter.getIdentityPrompt(_userNiche);
+  }
+  
+  /// Get niche-specific habit prompt
+  String getHabitPrompt(String identity) {
+    return NichePromptAdapter.getHabitPrompt(_userNiche, identity);
+  }
+  
+  /// Get niche-specific tiny version prompt
+  String getTinyVersionPrompt(String habit) {
+    return NichePromptAdapter.getTinyVersionPrompt(_userNiche, habit);
+  }
+  
+  /// Get niche config for current user
+  NicheConfig get nicheConfig => NicheConfigs.getConfig(_userNiche);
 
   /// Get conversation summary for debugging
   String get conversationSummary {
@@ -406,7 +515,12 @@ Now create a personalized plan for this user!
       // Extract any habit data from the response
       final extractedData = AiResponseParser.extractHabitData(response.content);
       if (extractedData != null) {
-        _extractedData = extractedData;
+        // Inject niche data into extracted data
+        _extractedData = extractedData.copyWith(
+          userNiche: _userNiche,
+          entrySource: _entrySource,
+          isStreakRefugee: _isStreakRefugee,
+        );
       }
 
       // Get display text (strip JSON markers for UI)
@@ -434,10 +548,15 @@ Now create a personalized plan for this user!
   }
 
   /// Build the conversational prompt for ongoing chat
+  /// Phase 17: Enhanced with guardrail injection
+  /// Phase 19: Enhanced with niche context injection
   String _buildConversationalPrompt({
     required String userMessage,
     required String userName,
   }) {
+    // Phase 19: Detect niche from user input if not already set
+    detectNicheFromInput(userMessage);
+    
     // Build context from collected data
     final collectedInfo = <String>[];
     if (_extractedData != null) {
@@ -466,25 +585,70 @@ ${collectedInfo.join('\n')}
 '''
         : '';
 
-    return '''
-You are an expert Atomic Habits coach helping $userName create their first habit.
+    // Phase 17: Check for guardrail violations and inject guidance
+    final guardrailResult = ConversationGuardrails.validateHabit(userMessage);
+    final guardrailSection = guardrailResult.needsCorrection
+        ? '''
+[GUARDRAIL VIOLATION DETECTED]
+Issue: ${guardrailResult.type.name}
+Your response MUST address this: ${guardrailResult.guidance}
+Do NOT accept the habit as-is. Guide the user to fix the issue.
 
-$contextSection[USER MESSAGE]
+'''
+        : '';
+    
+    // Phase 19: Build niche context section
+    final nicheSection = _buildNicheContextSection();
+    
+    // Phase 19: Build streak refugee context if applicable
+    final refugeeSection = _isStreakRefugee
+        ? '''
+[STREAK REFUGEE DETECTED]
+This user has mentioned frustration with streak-based apps.
+Emphasize "Graceful Consistency" and "Never Miss Twice" philosophy.
+Reassure them that missing a day doesn't reset progress.
+Use the antidote: "${nicheConfig.streakAntidote}"
+
+'''
+        : '';
+
+    return '''
+You are The Architect, an expert Atomic Habits coach helping $userName create their first habit.
+
+$nicheSection$refugeeSection$guardrailSection$contextSection[USER MESSAGE]
 $userName says: "$userMessage"
 
+$guardrailSection$contextSection[USER MESSAGE]
+$userName says: "$userMessage"
+
+[THINKING PROTOCOL]
+Before responding, consider:
+1. Is this habit specific enough to act on?
+2. Could this be done in 2 minutes or less?
+3. Does it connect to an identity?
+4. What might cause it to fail?
+
+[NEGATIVE CONSTRAINTS]
+REJECT habits that are:
+- Over 2 minutes (negotiate down)
+- Vague ("exercise more" -> ask for specific action)
+- Outcome goals ("lose weight" -> ask for daily action)
+- Multiple habits (focus on ONE)
+
 [INSTRUCTIONS]
-1. Respond naturally as a coach - be warm but concise
-2. Guide them through the habit creation process step by step
-3. Use the Identity → Habit → 2-Minute Rule → Implementation Intention flow
-4. When you have enough information (identity, habit, time, location), include a [HABIT_DATA] JSON block
+1. If guardrail violation detected, address it first
+2. Respond naturally as a coach - be warm but concise (2-3 sentences)
+3. Ask ONE question at a time
+4. Use: Identity -> Habit -> 2-Minute Rule -> Implementation flow
+5. Use niche-specific examples and language when available
 
 [HABIT_DATA FORMAT]
-When ready to summarize the habit plan, include:
+When you have ALL: [identity, name, tinyVersion, time, location], output:
 [HABIT_DATA]
 {
   "identity": "I am someone who...",
   "name": "The habit name",
-  "tinyVersion": "2-minute version",
+  "tinyVersion": "2-minute version (MANDATORY - must be doable in 2 min)",
   "implementationTime": "HH:MM or descriptive",
   "implementationLocation": "Where",
   "environmentCue": "Optional cue",
@@ -494,7 +658,7 @@ When ready to summarize the habit plan, include:
 }
 [/HABIT_DATA]
 
-Only include [HABIT_DATA] when you have collected ALL required fields (identity, name, tinyVersion, time, location).
+Only include [HABIT_DATA] when ALL required fields are complete AND the habit passes all guardrails.
 ''';
   }
 
@@ -503,5 +667,30 @@ Only include [HABIT_DATA] when you have collected ALL required fields (identity,
     _isLoading = loading;
     onLoadingChanged?.call(loading);
     notifyListeners();
+  }
+  
+  /// Build niche context section for AI prompts
+  /// Phase 19: Side Door Strategy
+  String _buildNicheContextSection() {
+    if (_userNiche == UserNiche.general) return '';
+    
+    final config = nicheConfig;
+    final identityExamples = config.identityExamples.take(2).join(', ');
+    final habitExamples = config.habitExamples.take(3).join(', ');
+    final tinyExamples = config.tinyVersionExamples.take(2).join(', ');
+    
+    return '''
+[USER NICHE: ${config.displayName.toUpperCase()}]
+${config.emoji} This user identifies as a ${config.displayName.toLowerCase()}.
+Tagline: "${config.tagline}"
+
+When providing examples, use ${config.displayName.toLowerCase()}-specific language:
+- Identity examples: $identityExamples
+- Habit examples: $habitExamples
+- Tiny version examples: $tinyExamples
+
+Hook message: "${config.hookMessage}"
+
+''';
   }
 }

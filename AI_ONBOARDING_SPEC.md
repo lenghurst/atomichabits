@@ -1,9 +1,86 @@
 # AI_ONBOARDING_SPEC.md
 
-> **Status:** FINAL (v4.0.0)
-> **Last Updated:** December 2024
-> **Architecture:** Hybrid Tiered (Gemini 2.5 Flash / Claude 4.5 Sonnet / Manual)
+> **Status:** FINAL (v5.0.0 - "Brain Surgery")
+> **Last Updated:** December 2025
+> **Architecture:** Reasoning-First (DeepSeek-V3.2 Target / Gemini 2.5 Flash / Manual)
 > **Philosophy:** "Graceful Consistency > Fragile Streaks"
+
+---
+
+## Phase 17: "Brain Surgery" - Reasoning-First Architecture
+
+### The Breakthrough: DeepSeek-V3.2 "Thinking in Tool-Use"
+DeepSeek-V3.2 introduces a game-changing capability: the model can **REASON before ACTING**. 
+This means we can give it strong NEGATIVE CONSTRAINTS and it will "think" about why 
+something violates them before outputting.
+
+### Key Changes from v4.0.0
+1. **THINKING PROTOCOL**: Force model to reason internally before responding
+2. **NEGATIVE CONSTRAINTS**: Explicit "REJECT" rules for habit violations
+3. **GUARDRAIL INJECTION**: Client-side detection + prompt injection
+4. **IDENTITY-FIRST**: Stricter enforcement of identity grounding
+5. **2-MINUTE CEILING**: Hard limit on habit size (non-negotiable)
+
+### New Files
+- `lib/config/ai_prompts.dart` - Centralized prompt library
+- Enhanced `conversation_guardrails.dart` - Habit size/vagueness detection
+
+---
+
+## 0. Reasoning-First Prompt Design (NEW)
+
+### The Problem with Previous Prompts
+Standard LLM prompts rely on POSITIVE instructions ("do this"). But LLMs often 
+"hallucinate" past constraints because they don't REASON about whether their 
+output violates rules.
+
+### The Solution: THINKING PROTOCOL
+By embedding a "thinking protocol" in the prompt, we force the model to 
+consider constraints BEFORE outputting:
+
+```markdown
+## THINKING PROTOCOL (INTERNAL)
+Before EVERY response, you MUST think through:
+1. "Is this habit specific enough to act on?"
+2. "Could this be done in 2 minutes or less?"
+3. "Does this connect to an identity transformation?"
+4. "What might cause this habit to fail?"
+```
+
+### NEGATIVE CONSTRAINTS
+Instead of "suggest tiny habits", we explicitly say "REJECT habits over 2 minutes":
+
+```markdown
+## NEGATIVE CONSTRAINTS (NON-NEGOTIABLE)
+
+### ❌ REJECT: Habits Over 2 Minutes
+- "Exercise for 30 minutes" → REJECT → "What's the 2-minute version?"
+- "Read a chapter" → REJECT → "How about 'read one page'?"
+- "Meditate for 20 minutes" → REJECT → "Start with just 2 deep breaths."
+
+### ❌ REJECT: Vague Habits
+- "Exercise more" → REJECT → "What's ONE specific action?"
+- "Be healthier" → REJECT → "What will you DO?"
+
+### ❌ REJECT: Multiple Habits
+- "I want to read AND exercise" → REJECT → "Which ONE matters most?"
+```
+
+### Client-Side Guardrail Injection
+Even with reasoning prompts, we add client-side detection in `conversation_guardrails.dart`:
+
+```dart
+// If user says "I want to exercise for an hour"
+final guardrailResult = ConversationGuardrails.validateHabit(userMessage);
+if (guardrailResult.needsCorrection) {
+  // Inject into prompt:
+  // "[GUARDRAIL VIOLATION DETECTED]
+  //  Issue: oversized
+  //  Your response MUST address this: That's too big. What's the 2-minute version?"
+}
+```
+
+This dual-layer approach (prompt + client) ensures constraints are enforced.
 
 ---
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Phase 21.1: Universal Links for Deep Linking - "The Viral Engine" -->
+	<!-- This enables iOS Universal Links to open the app from atomichabits.app URLs -->
+	
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<!-- Production domain for Universal Links -->
+		<string>applinks:atomichabits.app</string>
+		<string>applinks:www.atomichabits.app</string>
+		
+		<!-- Webcredentials for password autofill integration -->
+		<string>webcredentials:atomichabits.app</string>
+	</array>
+	
+	<!-- Background modes for notifications and background refresh -->
+	<key>com.apple.developer.background-modes</key>
+	<array>
+		<string>background-fetch</string>
+		<string>remote-notification</string>
+	</array>
+</dict>
+</plist>

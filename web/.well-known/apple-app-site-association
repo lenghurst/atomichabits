@@ -1,0 +1,54 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "XXXXXXXXXX.com.atomichabits.hook",
+        "paths": [
+          "/c/*",
+          "/invite",
+          "/invite/*",
+          "/join/*",
+          "/contracts/*",
+          "/devs",
+          "/writers",
+          "/scholars",
+          "/languages",
+          "/makers",
+          "/dashboard",
+          "/today",
+          "/settings",
+          "/history",
+          "/analytics"
+        ],
+        "components": [
+          {
+            "/": "/c/*",
+            "comment": "Contract invite short URL: /c/ABCD1234"
+          },
+          {
+            "/": "/invite",
+            "?": {
+              "c": "*"
+            },
+            "comment": "Contract invite with query: /invite?c=ABCD1234"
+          },
+          {
+            "/": "/join/*",
+            "comment": "Contract join URL: /join/ABCD1234"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "XXXXXXXXXX.com.atomichabits.hook"
+    ]
+  },
+  "activitycontinuation": {
+    "apps": [
+      "XXXXXXXXXX.com.atomichabits.hook"
+    ]
+  }
+}
