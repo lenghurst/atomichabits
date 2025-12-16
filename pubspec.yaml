@@ -84,6 +84,9 @@ dependencies:
   url_launcher: ^6.3.1
   device_info_plus: ^11.2.0
   package_info_plus: ^8.1.2
+  
+  # Phase 24: Install Referrer (The Viral Engine - Standard Protocol)
+  play_install_referrer: ^0.5.0
 
 dev_dependencies:
   flutter_test:

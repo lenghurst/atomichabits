@@ -1,32 +1,38 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:play_install_referrer/play_install_referrer.dart';
 import '../../config/deep_link_config.dart';
 
 /// Deep Link Service
 /// 
 /// Phase 21.1: "The Viral Engine" - Deep Links Infrastructure
 /// Phase 24: "The Clipboard Bridge" - Deferred Deep Linking
+/// Phase 24.B: "The Standard Protocol" - Install Referrer API
 /// 
 /// Handles incoming deep links from:
 /// - iOS Universal Links (apple-app-site-association)
 /// - Android App Links (assetlinks.json)
 /// - Custom URL scheme (atomichabits://)
-/// - [NEW] System Clipboard (deferred deep link fallback)
+/// - System Clipboard (deferred deep link fallback)
+/// - [NEW] Google Play Install Referrer API (zero-friction viral loop)
 /// 
-/// Flow:
-/// 1. User clicks link: https://atomichabits.app/c/ABCD1234
-/// 2. OS opens app (if installed) or web fallback
-/// 3. DeepLinkService receives URI
-/// 4. Parses and navigates to appropriate screen
+/// Flow Priority (Highest to Lowest):
+/// 1. Direct Deep Link (app opened via link)
+/// 2. Install Referrer (Play Store passed invite_code)
+/// 3. Clipboard Bridge (user copied link before install)
 /// 
-/// Phase 24 "Clipboard Bridge" Flow:
-/// 1. User A shares invite link (clipboard auto-populated)
-/// 2. User B installs app, opens for first time
-/// 3. Standard deep link check (getInitialLink) - may fail
-/// 4. FALLBACK: Check clipboard for invite code pattern
-/// 5. If found, route to WitnessAcceptScreen ("Side Door")
+/// Phase 24.B "Install Referrer" Flow:
+/// 1. User A shares invite link with Play Store referrer
+/// 2. User B clicks link → Play Store opens
+/// 3. User B installs app
+/// 4. On first launch, we query Play Install Referrer API
+/// 5. API returns: "invite_code=ABCD1234"
+/// 6. Route directly to WitnessAcceptScreen
+/// 
+/// Time to Value: ~2 minutes → ~5 seconds
 class DeepLinkService extends ChangeNotifier {
   static const _channel = MethodChannel('app.channel.shared.data');
   static const _eventChannel = EventChannel('app.channel.shared.data/events');
@@ -53,18 +59,41 @@ class DeepLinkService extends ChangeNotifier {
   bool _inviteFromClipboard = false;
   bool get inviteFromClipboard => _inviteFromClipboard;
   
+  /// Whether an invite was detected from Install Referrer (Phase 24.B)
+  bool _inviteFromInstallReferrer = false;
+  bool get inviteFromInstallReferrer => _inviteFromInstallReferrer;
+  
+  /// Source of the invite detection (for analytics)
+  String? _inviteSource;
+  String? get inviteSource => _inviteSource;
+  
+  /// Whether deferred deep link check is in progress
+  bool _isCheckingDeferredLink = false;
+  bool get isCheckingDeferredLink => _isCheckingDeferredLink;
+  
   /// Initialize the service and start listening for links
   Future<void> initialize({GoRouter? router}) async {
     _router = router;
+    _isCheckingDeferredLink = true;
+    notifyListeners();
     
     // Get initial link (app opened via deep link)
     await _handleInitialLink();
     
+    // Phase 24.B: Install Referrer API (highest priority for deferred links)
+    // Only check if no direct deep link was received
+    if (_pendingDeepLink == null) {
+      await _checkInstallReferrer();
+    }
+    
     // Phase 24: Clipboard Bridge fallback
-    // If no pending deep link from standard flow, check clipboard
+    // Only check if no pending deep link from standard flow or install referrer
     if (_pendingDeepLink == null) {
       await _checkClipboardForInvite();
     }
+    
+    _isCheckingDeferredLink = false;
+    notifyListeners();
     
     // Listen for incoming links while app is running
     _startLinkListener();
@@ -96,6 +125,7 @@ class DeepLinkService extends ChangeNotifier {
           final data = DeepLinkConfig.parseUri(uri);
           if (data != null) {
             _pendingDeepLink = data;
+            _inviteSource = 'direct_link';
             notifyListeners();
           }
         }
@@ -109,6 +139,136 @@ class DeepLinkService extends ChangeNotifier {
         debugPrint('DeepLinkService: Error getting initial link: $e');
       }
     }
+  }
+  
+  // ============================================================
+  // Phase 24.B: "The Standard Protocol" - Install Referrer API
+  // ============================================================
+  
+  /// Check Google Play Install Referrer for invite code
+  /// 
+  /// Phase 24.B: "The Standard Protocol"
+  /// 
+  /// This is the industry-standard way to track app installs from links.
+  /// When a user installs via a Play Store link with a referrer parameter,
+  /// we can retrieve that referrer on first launch.
+  /// 
+  /// Link format: 
+  /// https://play.google.com/store/apps/details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  /// 
+  /// Cost: $0 (native Android API)
+  /// Reliability: High (Google Play Services)
+  /// Platform: Android only (iOS uses Universal Links)
+  Future<String?> _checkInstallReferrer() async {
+    // Only available on Android
+    if (!Platform.isAndroid) {
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: Install Referrer only available on Android');
+      }
+      return null;
+    }
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: Checking Install Referrer...');
+      }
+      
+      final ReferrerDetails referrerDetails = await PlayInstallReferrer.installReferrer;
+      
+      final String? referrer = referrerDetails.installReferrer;
+      
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: Install Referrer raw: $referrer');
+        debugPrint('DeepLinkService: Click timestamp: ${referrerDetails.referrerClickTimestampSeconds}');
+        debugPrint('DeepLinkService: Install timestamp: ${referrerDetails.installBeginTimestampSeconds}');
+      }
+      
+      if (referrer == null || referrer.isEmpty) {
+        if (kDebugMode) {
+          debugPrint('DeepLinkService: No install referrer found');
+        }
+        return null;
+      }
+      
+      // Parse the referrer string for invite_code
+      // Format: invite_code=ABCD1234 or invite_code%3DABCD1234 (URL encoded)
+      final inviteCode = _parseInviteCodeFromReferrer(referrer);
+      
+      if (inviteCode != null) {
+        if (kDebugMode) {
+          debugPrint('DeepLinkService: Found invite code from Install Referrer: $inviteCode');
+        }
+        
+        // Create a DeepLinkData for this invite
+        _pendingDeepLink = DeepLinkData(
+          type: DeepLinkType.contractInvite,
+          inviteCode: inviteCode,
+          originalUri: Uri.parse('atomichabits://c/$inviteCode'),
+        );
+        _inviteFromInstallReferrer = true;
+        _inviteSource = 'install_referrer';
+        notifyListeners();
+        
+        return inviteCode;
+      }
+      
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: No invite code in referrer string');
+      }
+      return null;
+      
+    } on PlatformException catch (e) {
+      // Expected on iOS or if Google Play Services unavailable
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: Install Referrer not available: $e');
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('DeepLinkService: Error checking Install Referrer: $e');
+      }
+      return null;
+    }
+  }
+  
+  /// Parse invite code from referrer string
+  /// 
+  /// Handles various formats:
+  /// - invite_code=ABCD1234
+  /// - invite_code%3DABCD1234 (URL encoded)
+  /// - utm_source=witness&invite_code=ABCD1234 (with other params)
+  String? _parseInviteCodeFromReferrer(String referrer) {
+    // First, URL decode the referrer
+    final decoded = Uri.decodeComponent(referrer);
+    
+    // Try to parse as query parameters
+    // The referrer might be just key=value pairs without a full URL
+    try {
+      // Add a dummy scheme to make it parseable
+      final uri = Uri.parse('https://dummy.com?$decoded');
+      final inviteCode = uri.queryParameters['invite_code'];
+      if (inviteCode != null && inviteCode.isNotEmpty) {
+        return inviteCode;
+      }
+    } catch (e) {
+      // Fall through to regex parsing
+    }
+    
+    // Regex fallback for various formats
+    final patterns = [
+      RegExp(r'invite_code[=:]([a-zA-Z0-9]{6,12})'),
+      RegExp(r'code[=:]([a-zA-Z0-9]{6,12})'),
+      RegExp(r'c[=:]([a-zA-Z0-9]{6,12})'),
+    ];
+    
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(decoded);
+      if (match != null && match.groupCount >= 1) {
+        return match.group(1);
+      }
+    }
+    
+    return null;
   }
   
   /// Start listening for incoming links
@@ -210,6 +370,8 @@ class DeepLinkService extends ChangeNotifier {
   void clearPendingDeepLink() {
     _pendingDeepLink = null;
     _inviteFromClipboard = false;
+    _inviteFromInstallReferrer = false;
+    _inviteSource = null;
     notifyListeners();
   }
   
@@ -280,9 +442,10 @@ class DeepLinkService extends ChangeNotifier {
           _pendingDeepLink = DeepLinkData(
             type: DeepLinkType.contractInvite,
             inviteCode: inviteCode,
-            rawUri: Uri.parse('atomichabits://c/$inviteCode'),
+            originalUri: Uri.parse('atomichabits://c/$inviteCode'),
           );
           _inviteFromClipboard = true;
+          _inviteSource = 'clipboard';
           notifyListeners();
           
           return inviteCode;
@@ -308,7 +471,7 @@ class DeepLinkService extends ChangeNotifier {
     }
   }
   
-  /// Check if there's a pending invite (from deep link or clipboard)
+  /// Check if there's a pending invite (from deep link, install referrer, or clipboard)
   /// 
   /// Use this in OnboardingOrchestrator to determine "Side Door" routing
   bool get hasPendingInvite => 
@@ -361,7 +524,7 @@ class DeepLinkService extends ChangeNotifier {
     required String builderName,
     required String habitName,
   }) {
-    final inviteUrl = DeepLinkConfig.buildContractInviteUrl(inviteCode);
+    final inviteUrl = DeepLinkConfig.getContractInviteUrl(inviteCode);
     return '''🤝 I need a witness!
 
 I'm committing to "$habitName" and I want you to hold me accountable.
@@ -382,6 +545,42 @@ Join my pact: $inviteUrl
       builderName: builderName,
       habitName: habitName,
     );
+  }
+  
+  // ============================================================
+  // Phase 24.B: Smart Link Generation (Install Referrer Compatible)
+  // ============================================================
+  
+  /// Generate a Play Store link with install referrer
+  /// 
+  /// This creates a link that:
+  /// 1. Opens Play Store to install the app
+  /// 2. Passes the invite_code through the Install Referrer API
+  /// 
+  /// Format: https://play.google.com/store/apps/details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  static String getPlayStoreReferrerLink(String inviteCode) {
+    final referrer = Uri.encodeComponent('invite_code=$inviteCode&utm_source=witness');
+    return 'https://play.google.com/store/apps/details?id=${DeepLinkConfig.androidPackage}&referrer=$referrer';
+  }
+  
+  /// Generate a market:// intent link for direct Play Store opening
+  /// 
+  /// Format: market://details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  static String getMarketIntentLink(String inviteCode) {
+    final referrer = Uri.encodeComponent('invite_code=$inviteCode&utm_source=witness');
+    return 'market://details?id=${DeepLinkConfig.androidPackage}&referrer=$referrer';
+  }
+  
+  /// Generate a smart share link that works across platforms
+  /// 
+  /// Returns the web URL which will:
+  /// - On Android: Redirect to Play Store with referrer
+  /// - On iOS: Redirect to App Store
+  /// - On Web: Show landing page with install buttons
+  static String getSmartShareLink(String inviteCode) {
+    // For now, return the standard invite URL
+    // The web landing page will handle platform detection
+    return DeepLinkConfig.getContractInviteUrl(inviteCode);
   }
 }
 

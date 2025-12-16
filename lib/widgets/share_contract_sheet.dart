@@ -1,14 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../config/deep_link_config.dart';
 import '../data/models/habit_contract.dart';
 import '../data/services/contract_service.dart';
+import '../data/services/deep_link_service.dart';
 
 /// Share Contract Bottom Sheet
 /// 
 /// Phase 21.1: "The Viral Engine" - Share Flow
 /// Phase 24: "The Clipboard Bridge" - Deferred Deep Linking
+/// Phase 24.B: "The Standard Protocol" - Install Referrer Smart Links
 /// 
 /// A beautiful, shareable modal for distributing contract invite links.
 /// Inspired by: Twitter share sheets, Spotify share flows
@@ -19,11 +22,18 @@ import '../data/services/contract_service.dart';
 /// - QR code display (for in-person sharing)
 /// - Preview of what recipient will see
 /// - Social proof messaging
+/// - [NEW] Smart Links with Play Store referrer for Android
 /// 
 /// Phase 24 Enhancement:
 /// ALWAYS copies to clipboard BEFORE opening share sheet.
 /// This ensures the "Clipboard Bridge" works even if standard deep links fail.
 /// User A shares -> Clipboard populated -> User B installs -> Clipboard detected
+/// 
+/// Phase 24.B Enhancement:
+/// Generates platform-aware "Smart Links":
+/// - Android: Play Store link with referrer parameter (invite_code passed through)
+/// - iOS: Universal Link (standard deep link)
+/// - Web: Landing page with platform detection
 class ShareContractSheet extends StatefulWidget {
   final HabitContract contract;
   final ContractService contractService;
@@ -85,8 +95,28 @@ class _ShareContractSheetState extends State<ShareContractSheet>
     super.dispose();
   }
 
+  /// Standard invite URL (Universal Link / App Link)
   String get _inviteUrl => widget.contract.inviteUrl ?? 
       DeepLinkConfig.getContractInviteUrl(widget.contract.inviteCode);
+  
+  /// Phase 24.B: Smart Link that works across platforms
+  /// - Android: Uses Play Store referrer for zero-friction invite detection
+  /// - iOS/Web: Uses standard Universal Link
+  String get _smartInviteUrl {
+    // For Android users sharing, include the Play Store referrer link
+    // This enables Install Referrer API to pass the invite code through installation
+    if (Platform.isAndroid) {
+      // Return the web URL which will redirect appropriately
+      // The web landing page will detect Android and redirect to Play Store with referrer
+      return DeepLinkConfig.getContractInviteUrl(widget.contract.inviteCode);
+    }
+    // For iOS/Web, use standard Universal Link
+    return _inviteUrl;
+  }
+  
+  /// Phase 24.B: Play Store link with referrer (for direct Android sharing)
+  String get _playStoreReferrerUrl => 
+      DeepLinkService.getPlayStoreReferrerLink(widget.contract.inviteCode);
 
   String get _shareText {
     final buffer = StringBuffer();
@@ -107,9 +137,17 @@ class _ShareContractSheetState extends State<ShareContractSheet>
     
     // Social proof + CTA
     buffer.writeln('Become my Witness:');
-    buffer.writeln(_inviteUrl);
+    buffer.writeln(_smartInviteUrl);
     buffer.writeln();
     buffer.write('#atomichabits');
+    
+    // Phase 24.B: Add Play Store link for Android recipients
+    // This ensures the Install Referrer works even if the web redirect fails
+    if (Platform.isAndroid) {
+      buffer.writeln();
+      buffer.writeln();
+      buffer.writeln('Android direct install: $_playStoreReferrerUrl');
+    }
     
     return buffer.toString();
   }

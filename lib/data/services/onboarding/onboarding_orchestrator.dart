@@ -94,7 +94,7 @@ class OnboardingOrchestrator extends ChangeNotifier {
   String? _entrySource;
   String? get entrySource => _entrySource;
   
-  /// Phase 24: Pending invite code (from deep link or clipboard)
+  /// Phase 24: Pending invite code (from deep link, install referrer, or clipboard)
   String? _pendingInviteCode;
   String? get pendingInviteCode => _pendingInviteCode;
   
@@ -104,6 +104,18 @@ class OnboardingOrchestrator extends ChangeNotifier {
   /// Phase 24: Whether the invite came from clipboard (vs direct deep link)
   bool _inviteFromClipboard = false;
   bool get inviteFromClipboard => _inviteFromClipboard;
+  
+  /// Phase 24.B: Whether the invite came from Install Referrer API
+  bool _inviteFromInstallReferrer = false;
+  bool get inviteFromInstallReferrer => _inviteFromInstallReferrer;
+  
+  /// Phase 24.B: Source of the invite (for analytics)
+  String? _inviteSource;
+  String? get inviteSource => _inviteSource;
+  
+  /// Phase 24.B: Whether deferred deep link check is in progress
+  bool _isCheckingDeferredLink = false;
+  bool get isCheckingDeferredLink => _isCheckingDeferredLink;
   
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;
@@ -394,6 +406,7 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   
   // ============================================================
   // PHASE 24: "Side Door" Routing
+  // PHASE 24.B: "The Standard Protocol" - Install Referrer Integration
   // ============================================================
   
   /// Set the deep link service reference
@@ -404,13 +417,53 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
     _checkForPendingInvite();
   }
   
-  /// Check for pending invite from deep link or clipboard
+  /// Check for pending invite from deep link, install referrer, or clipboard
   /// 
   /// Phase 24: This is the entry point for "Side Door" routing.
+  /// Phase 24.B: Now includes Install Referrer API for zero-friction viral loop.
+  /// 
+  /// Priority order:
+  /// 1. Direct deep link (app opened via link)
+  /// 2. Install Referrer (Play Store passed invite_code)
+  /// 3. Clipboard Bridge (user copied link before install)
+  /// 
   /// If an invite is pending, the UI should skip standard onboarding
   /// and route directly to WitnessAcceptScreen.
   Future<String?> checkForPendingInvite() async {
     return _checkForPendingInvite();
+  }
+  
+  /// Check for deferred deep links with loading state
+  /// 
+  /// Phase 24.B: This method handles the race condition where the
+  /// onboarding screen might render before the deferred link check completes.
+  /// 
+  /// Use this in initState() of onboarding screens to:
+  /// 1. Show a brief "Checking invites..." state (~500ms)
+  /// 2. Wait for DeepLinkService to complete its checks
+  /// 3. Then decide whether to show onboarding or Side Door
+  Future<String?> checkForDeferredDeepLink() async {
+    _isCheckingDeferredLink = true;
+    notifyListeners();
+    
+    try {
+      // Wait for DeepLinkService to complete its initialization
+      // This includes Install Referrer and Clipboard checks
+      if (_deepLinkService != null && _deepLinkService!.isCheckingDeferredLink) {
+        // Wait up to 2 seconds for the check to complete
+        int waitMs = 0;
+        while (_deepLinkService!.isCheckingDeferredLink && waitMs < 2000) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          waitMs += 100;
+        }
+      }
+      
+      // Now check for pending invite
+      return await _checkForPendingInvite();
+    } finally {
+      _isCheckingDeferredLink = false;
+      notifyListeners();
+    }
   }
   
   Future<String?> _checkForPendingInvite() async {
@@ -419,9 +472,14 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
       if (_deepLinkService!.hasPendingInvite) {
         _pendingInviteCode = _deepLinkService!.pendingInviteCode;
         _inviteFromClipboard = _deepLinkService!.inviteFromClipboard;
+        _inviteFromInstallReferrer = _deepLinkService!.inviteFromInstallReferrer;
+        _inviteSource = _deepLinkService!.inviteSource;
         
         if (kDebugMode) {
-          debugPrint('OnboardingOrchestrator: Found pending invite: $_pendingInviteCode (clipboard: $_inviteFromClipboard)');
+          debugPrint('OnboardingOrchestrator: Found pending invite: $_pendingInviteCode');
+          debugPrint('  Source: $_inviteSource');
+          debugPrint('  From clipboard: $_inviteFromClipboard');
+          debugPrint('  From install referrer: $_inviteFromInstallReferrer');
         }
         
         notifyListeners();
@@ -433,6 +491,7 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
       if (clipboardInvite != null) {
         _pendingInviteCode = clipboardInvite;
         _inviteFromClipboard = true;
+        _inviteSource = 'clipboard';
         
         if (kDebugMode) {
           debugPrint('OnboardingOrchestrator: Found invite in clipboard: $_pendingInviteCode');
@@ -463,6 +522,8 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   void clearPendingInvite() {
     _pendingInviteCode = null;
     _inviteFromClipboard = false;
+    _inviteFromInstallReferrer = false;
+    _inviteSource = null;
     
     // Also clear from deep link service
     _deepLinkService?.clearPendingDeepLink();
@@ -475,13 +536,15 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   }
   
   /// Set a pending invite explicitly (for testing or manual handling)
-  void setPendingInvite(String inviteCode, {bool fromClipboard = false}) {
+  void setPendingInvite(String inviteCode, {bool fromClipboard = false, bool fromInstallReferrer = false, String? source}) {
     _pendingInviteCode = inviteCode;
     _inviteFromClipboard = fromClipboard;
+    _inviteFromInstallReferrer = fromInstallReferrer;
+    _inviteSource = source ?? (fromClipboard ? 'clipboard' : (fromInstallReferrer ? 'install_referrer' : 'direct_link'));
     notifyListeners();
     
     if (kDebugMode) {
-      debugPrint('OnboardingOrchestrator: Set pending invite: $inviteCode (clipboard: $fromClipboard)');
+      debugPrint('OnboardingOrchestrator: Set pending invite: $inviteCode (source: $_inviteSource)');
     }
   }
   
