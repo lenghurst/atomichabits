@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../gemini_chat_service.dart';
+import '../ai/ai_service_manager.dart';
+import '../deep_link_service.dart';
 import '../../models/onboarding_data.dart';
 import '../../models/chat_conversation.dart';
 import '../../models/chat_message.dart';
@@ -50,8 +51,15 @@ class ConversationResult {
 /// 
 /// The "Brain" of both Phase 1 (Magic Wand) and Phase 2 (Conversational UI).
 /// Connects UI to AI services, handles tier selection, and manages fallbacks.
+/// 
+/// Phase 24: "Side Door" Routing
+/// If a pending invite is detected (from deep link or clipboard), this service
+/// signals to skip standard onboarding and route directly to WitnessAcceptScreen.
 class OnboardingOrchestrator extends ChangeNotifier {
-  final GeminiChatService _geminiService;
+  final AIServiceManager _aiServiceManager;
+  
+  /// Deep link service reference for Side Door routing (Phase 24)
+  DeepLinkService? _deepLinkService;
   
   /// Current conversation state
   ChatConversation? _conversation;
@@ -86,6 +94,17 @@ class OnboardingOrchestrator extends ChangeNotifier {
   String? _entrySource;
   String? get entrySource => _entrySource;
   
+  /// Phase 24: Pending invite code (from deep link or clipboard)
+  String? _pendingInviteCode;
+  String? get pendingInviteCode => _pendingInviteCode;
+  
+  /// Phase 24: Whether there's a pending invite requiring Side Door routing
+  bool get hasPendingInvite => _pendingInviteCode != null && _pendingInviteCode!.isNotEmpty;
+  
+  /// Phase 24: Whether the invite came from clipboard (vs direct deep link)
+  bool _inviteFromClipboard = false;
+  bool get inviteFromClipboard => _inviteFromClipboard;
+  
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;
   
@@ -96,10 +115,12 @@ class OnboardingOrchestrator extends ChangeNotifier {
   final void Function(String error)? onError;
 
   OnboardingOrchestrator({
-    required GeminiChatService geminiService,
+    required AIServiceManager aiServiceManager,
+    DeepLinkService? deepLinkService,
     this.onLoadingChanged,
     this.onError,
-  }) : _geminiService = geminiService;
+  }) : _aiServiceManager = aiServiceManager,
+       _deepLinkService = deepLinkService;
 
   /// Check if AI services are available
   bool get isAiAvailable => AIModelConfig.hasAnyAI;
@@ -149,8 +170,10 @@ class OnboardingOrchestrator extends ChangeNotifier {
         isBreakHabit: isBreakHabit,
       );
 
-      // Start a new onboarding conversation
-      _conversation = await _geminiService.startConversation(
+      // Phase 24: Start conversation with AIServiceManager
+      _conversation = await _aiServiceManager.startConversation(
+        isPremiumUser: false, // TODO: Get from user profile
+        isBreakHabit: isBreakHabit,
         type: ConversationType.onboarding,
       );
 
@@ -293,12 +316,12 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   }
 
   /// Send message with timeout and retry logic
+  /// Phase 24: Now uses AIServiceManager instead of direct GeminiChatService
   Future<ChatMessage?> _sendWithTimeout(String message) async {
     try {
-      final response = await _geminiService
+      final response = await _aiServiceManager
           .sendMessage(
             userMessage: message,
-            conversation: _conversation!,
           )
           .timeout(
             AIModelConfig.apiTimeout,
@@ -318,10 +341,9 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
       
       // One retry as per AIModelConfig.maxRetries
       try {
-        final retryResponse = await _geminiService
+        final retryResponse = await _aiServiceManager
             .sendMessage(
               userMessage: message,
-              conversation: _conversation!,
             )
             .timeout(AIModelConfig.apiTimeout);
         
@@ -366,7 +388,113 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
     _userNiche = UserNiche.general;
     _isStreakRefugee = false;
     _entrySource = null;
+    // Note: Don't reset pending invite - it's handled separately
     notifyListeners();
+  }
+  
+  // ============================================================
+  // PHASE 24: "Side Door" Routing
+  // ============================================================
+  
+  /// Set the deep link service reference
+  void setDeepLinkService(DeepLinkService service) {
+    _deepLinkService = service;
+    
+    // Check for pending invite immediately
+    _checkForPendingInvite();
+  }
+  
+  /// Check for pending invite from deep link or clipboard
+  /// 
+  /// Phase 24: This is the entry point for "Side Door" routing.
+  /// If an invite is pending, the UI should skip standard onboarding
+  /// and route directly to WitnessAcceptScreen.
+  Future<String?> checkForPendingInvite() async {
+    return _checkForPendingInvite();
+  }
+  
+  Future<String?> _checkForPendingInvite() async {
+    // First check deep link service
+    if (_deepLinkService != null) {
+      if (_deepLinkService!.hasPendingInvite) {
+        _pendingInviteCode = _deepLinkService!.pendingInviteCode;
+        _inviteFromClipboard = _deepLinkService!.inviteFromClipboard;
+        
+        if (kDebugMode) {
+          debugPrint('OnboardingOrchestrator: Found pending invite: $_pendingInviteCode (clipboard: $_inviteFromClipboard)');
+        }
+        
+        notifyListeners();
+        return _pendingInviteCode;
+      }
+      
+      // Try clipboard check as fallback
+      final clipboardInvite = await _deepLinkService!.checkClipboardForInvite();
+      if (clipboardInvite != null) {
+        _pendingInviteCode = clipboardInvite;
+        _inviteFromClipboard = true;
+        
+        if (kDebugMode) {
+          debugPrint('OnboardingOrchestrator: Found invite in clipboard: $_pendingInviteCode');
+        }
+        
+        notifyListeners();
+        return _pendingInviteCode;
+      }
+    }
+    
+    return null;
+  }
+  
+  /// Get the Side Door route (if applicable)
+  /// 
+  /// Returns the route path for Side Door navigation, or null if no invite pending.
+  /// Use this to determine initial navigation in the app.
+  String? getSideDoorRoute() {
+    if (!hasPendingInvite) return null;
+    
+    // Route to witness accept screen with invite code
+    return '/witness/accept/$_pendingInviteCode';
+  }
+  
+  /// Clear the pending invite after handling
+  /// 
+  /// Call this after the user has either accepted or declined the invite.
+  void clearPendingInvite() {
+    _pendingInviteCode = null;
+    _inviteFromClipboard = false;
+    
+    // Also clear from deep link service
+    _deepLinkService?.clearPendingDeepLink();
+    
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('OnboardingOrchestrator: Cleared pending invite');
+    }
+  }
+  
+  /// Set a pending invite explicitly (for testing or manual handling)
+  void setPendingInvite(String inviteCode, {bool fromClipboard = false}) {
+    _pendingInviteCode = inviteCode;
+    _inviteFromClipboard = fromClipboard;
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('OnboardingOrchestrator: Set pending invite: $inviteCode (clipboard: $fromClipboard)');
+    }
+  }
+  
+  /// Check if we should show the "Side Door" entry
+  /// 
+  /// Returns true if:
+  /// 1. There's a pending invite code
+  /// 2. The user hasn't already been through onboarding
+  /// 
+  /// This is used by the UI to decide whether to show standard onboarding
+  /// or route directly to the witness acceptance flow.
+  bool shouldUseSideDoor({bool isFirstLaunch = true}) {
+    return hasPendingInvite && isFirstLaunch;
   }
   
   // ============================================================
@@ -449,15 +577,18 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   // ============================================================
 
   /// Start a new onboarding conversation
-  Future<ChatConversation> startConversation() async {
-    _conversation = await _geminiService.startConversation(
+  /// Phase 24: Now uses AIServiceManager with tier selection
+  Future<ChatConversation?> startConversation({bool isBreakHabit = false}) async {
+    _conversation = await _aiServiceManager.startConversation(
+      isPremiumUser: false, // TODO: Get from user profile
+      isBreakHabit: isBreakHabit,
       type: ConversationType.onboarding,
     );
     _messageCount = 0;
     _extractedData = null;
     _error = null;
     notifyListeners();
-    return _conversation!;
+    return _conversation;
   }
 
   /// Send a conversational message and get a response
@@ -670,7 +801,7 @@ Only include [HABIT_DATA] when ALL required fields are complete AND the habit pa
   }
   
   /// Build niche context section for AI prompts
-  /// Phase 19: Side Door Strategy
+  /// Phase 19: Niche-based Side Door Strategy
   String _buildNicheContextSection() {
     if (_userNiche == UserNiche.general) return '';
     

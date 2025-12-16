@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v5.7.0 - Phase 22 The Witness Complete)
+> **Last Updated:** December 2025 (v5.7.0-RC1 - Phase 24 "The Red Carpet" Active)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -22,7 +22,98 @@
 
 ---
 
-## Current Sprint: Phase 22 (The Witness - ✅ Completed)
+## Current Sprint: Phase 24 "The Red Carpet" (🟡 In Progress)
+
+**Goal:** Zero-friction onboarding for Invited Witnesses. Maximize conversion of invited users.
+
+**Status:** 🟡 In Progress (December 2025)
+
+**Platform Focus:** Android First (Intent Handling)
+
+**Constraint:** Low operational cost (Minimize Edge Functions)
+
+**Philosophy:** "Revenue = f(Viral Coefficient)². Optimize virality BEFORE monetization."
+
+### Key Strategic Pivots (Dec 2025)
+
+#### 1. Deep Link Architecture: "The Standard Protocol"
+**PIVOTED** from "Clipboard Bridge" (sketchy) to **Install Referrer API** (industry standard).
+
+**New Architecture:**
+```
+1. Landing Page (atomichabits.app/join/xyz)
+2. → Fingerprints click + Redirects to Play Store with referrer=invite_code=xyz
+3. User installs app
+4. → App reads AndroidPlayInstallReferrer
+5. → Decodes invite_code
+6. → Hard Bypass to WitnessAcceptScreen (skip onboarding)
+```
+
+#### 2. AI Engine: "Brain Surgery 2.0"
+Refactored AI tier system for better reasoning and cost efficiency:
+
+| Tier | Provider | Persona | Use Case |
+|------|----------|---------|----------|
+| 1 (Default) | **DeepSeek-V3** | The Architect | Reasoning-heavy, structured output |
+| 2 (Premium) | **Claude 3.5 Sonnet** | The Coach | Empathetic, high EQ for bad habits |
+| 3 (Fallback) | Gemini 2.5 Flash | AI Assistant | Fast, reliable backup |
+| 4 (Manual) | None | Manual Entry | No AI available |
+
+**Why DeepSeek:**
+- Excellent at THINKING PROTOCOL and structured JSON output
+- Cost-effective (10-100x cheaper than Claude/GPT-4)
+- Higher temperature (1.0-1.3) for better reasoning
+- OpenAI-compatible API
+
+**Files Created:**
+- `lib/data/services/ai/deep_seek_service.dart` - Tier 1 implementation
+- `lib/data/services/ai/claude_service.dart` - Tier 2 implementation
+- `lib/data/services/ai/ai_service_manager.dart` - Unified tier management
+- `lib/data/services/ai/ai.dart` - Module exports
+
+**Files Modified:**
+- `lib/config/ai_model_config.dart` - Added DeepSeek, updated tier selection
+
+### Technical Tasks
+
+**AI Refactor (✅ Complete):**
+- [x] Create `DeepSeekService` (Tier 1 - The Architect)
+- [x] Create `ClaudeService` (Tier 2 - The Coach)
+- [x] Create `AIServiceManager` for unified tier management
+- [x] Update `AIModelConfig` with DeepSeek key and tier logic
+
+**Deep Link Infrastructure (The "Standard Protocol"):**
+- [ ] Add `android_play_install_referrer` package
+- [ ] Implement Install Referrer detection in `DeepLinkService`
+- [ ] Create landing page logic for referrer injection
+- [ ] Update `OnboardingOrchestrator` for Hard Bypass routing
+
+**UI/UX (Completed):**
+- [x] "Socially Binding Pact" UI (Wax Seal animation)
+- [x] Tap-and-hold to sign with haptic feedback
+- [ ] Guest Data Warning banner
+
+**See:** `SPRINT_24_SPEC.md` for full technical specification
+
+---
+
+## Previous Sprint: Phase 23 - Clean Slate (✅ Completed)
+
+**Status:** ✅ Complete (December 2025)
+
+**Goal:** Technical debt cleanup and foundation for growth optimizations
+
+**Completed:**
+- [x] **Branch Cleanup:** Merged `genspark_ai_developer` to `main` via PR #11
+- [x] **Documentation Sync:** Updated all context files to reflect v5.7.0 state
+- [x] **Release Tag:** Created `v5.7.0-RC1` tag and GitHub Release
+- [x] **Stale Branches:** Cleaned up old development branches
+
+**Key Milestone:** Repository synchronized - `main` branch now at v5.7.0 Release Candidate
+
+---
+
+## Previous Sprint: Phase 22 (The Witness - ✅ Completed)
 
 **Goal:** Transform the app from Single Player (Tool) to Multiplayer (Network) with real-time social accountability
 
@@ -933,34 +1024,6 @@
 
 ---
 
-## Next Sprint: Phase 23 - Clean Slate
-
-**Status:** 🟡 In Progress
-
-**Goal:** Technical debt cleanup and foundation for growth optimizations
-
-**Tasks:**
-- [ ] **Branch Cleanup:** Merge `genspark_ai_developer` to `main`, delete 18+ stale branches
-- [ ] **Documentation Sync:** Update all context files to reflect v5.7.0 state
-- [ ] **Integration Tests:** Add tests for Witness flow (offline handling, edge cases)
-- [ ] **Performance Audit:** Cold start optimization, Supabase initialization
-
-**Rationale:** "Cannot optimize 'Invited User Experience' (Sprint 24) until the foundation is stable."
-
----
-
-## Future Sprint: Phase 24 - The Red Carpet
-
-**Status:** 📋 Planned
-
-**Goal:** Maximize conversion of invited users via polished onboarding flow
-
-**Features:**
-- [ ] **Deferred Deep Links:** Link → Preview → Download → Auto-navigate to acceptance
-- [ ] **Contract Preview Cards:** Rich previews without app download
-- [ ] **Guest/Lite Witness Mode:** Accept invites without full onboarding
-- [ ] **Smart Onboarding for Invited Users:** Skip unnecessary steps
-
 ---
 
 ## Future Sprint: Phase 25 - The Cash Register
@@ -1747,12 +1810,12 @@ done | sort
 | Phase 16.3 Witness Dashboard | ✅ | ✅ | Complete! Integrated in Phase 22 |
 | Phase 22 The Witness | ✅ | ✅ | Complete! Social Accountability Loop |
 | Release Candidate Ready | ✅ | ✅ | v5.7.0 - Social Features Complete |
-| Phase 23 Clean Slate | 🟡 | ✅ | Current: Branch cleanup, testing |
-| Phase 24 The Red Carpet | 📋 | ✅ | Planned: Growth optimization |
+| Phase 23 Clean Slate | ✅ | ✅ | Complete! PR #11 merged, v5.7.0-RC1 tagged |
+| Phase 24 The Red Carpet | 🟡 | ✅ | Current: Viral Engine optimization |
 | Phase 25 The Cash Register | 📋 | ✅ | Planned: Monetization (post-viral) |
 
 ---
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2025 (v5.7.0 - Phase 22 The Witness Complete)*
+*Last synced to main: December 2025 (v5.7.0-RC1 - Phase 24 "The Red Carpet" Active)*

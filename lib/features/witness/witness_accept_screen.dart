@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/sound_service.dart';
 import '../../data/models/habit_contract.dart';
 
 /// Witness Accept Screen
 /// 
 /// Phase 22: "The Witness" - Social Accountability Loop
+/// Phase 24: "The Socially Binding Pact" - Enhanced UI
 /// 
 /// Shown when a user clicks a contract invite deep link:
 /// 1. Displays the contract details (habit, builder, duration)
-/// 2. Asks: "Do you accept to witness [Habit]?"
-/// 3. On accept: Creates the witness relationship in Supabase
-/// 4. Both parties now receive real-time notifications
+/// 2. Shows as an official "Socially Binding Pact" document
+/// 3. Requires tap-and-hold to "sign" the pact
+/// 4. Wax seal animation + haptic feedback on acceptance
+/// 5. Creates the witness relationship in Supabase
 /// 
-/// Route: /contracts/join/:inviteCode
+/// Route: /witness/accept/:inviteCode
+/// 
+/// Phase 24 Strategic Ruling:
+/// - Use "Socially Binding Pact" (NOT "Legally Binding") to avoid liability
+/// - Heavy visual weight: wax seal, signature gesture, official document layout
+/// - Heavy haptic feedback: builds commitment psychology
 class WitnessAcceptScreen extends StatefulWidget {
   final String inviteCode;
   
@@ -27,22 +36,52 @@ class WitnessAcceptScreen extends StatefulWidget {
   State<WitnessAcceptScreen> createState() => _WitnessAcceptScreenState();
 }
 
-class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
+class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> 
+    with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   bool _isAccepting = false;
+  bool _isSigning = false;
   HabitContract? _contract;
   String? _error;
   final TextEditingController _messageController = TextEditingController();
   
+  // Phase 24: Sign animation controller
+  late AnimationController _sealController;
+  late Animation<double> _sealScale;
+  late Animation<double> _sealOpacity;
+  
+  // Phase 24: Sign progress (0.0 to 1.0)
+  double _signProgress = 0.0;
+  static const _signDuration = Duration(milliseconds: 1500);
+  
+  // Track if seal animation has completed
+  bool _sealCompleted = false;
+  
   @override
   void initState() {
     super.initState();
+    
+    // Phase 24: Initialize seal animation
+    _sealController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _sealScale = Tween<double>(begin: 2.0, end: 1.0).animate(
+      CurvedAnimation(parent: _sealController, curve: Curves.elasticOut),
+    );
+    
+    _sealOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _sealController, curve: Curves.easeIn),
+    );
+    
     _loadContract();
   }
   
   @override
   void dispose() {
     _messageController.dispose();
+    _sealController.dispose();
     super.dispose();
   }
   
@@ -65,6 +104,87 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     });
   }
   
+  /// Phase 24: Handle sign button press
+  void _onSignStart() {
+    if (_isAccepting || _sealCompleted) return;
+    
+    setState(() => _isSigning = true);
+    
+    // Start progress animation
+    _animateSignProgress();
+    
+    // Haptic feedback for start
+    HapticFeedback.selectionClick();
+  }
+  
+  /// Phase 24: Handle sign button release
+  void _onSignEnd() {
+    if (!_isSigning) return;
+    
+    // If not complete, reset
+    if (_signProgress < 1.0) {
+      setState(() {
+        _isSigning = false;
+        _signProgress = 0.0;
+      });
+    }
+  }
+  
+  /// Phase 24: Animate the sign progress
+  Future<void> _animateSignProgress() async {
+    const tickDuration = Duration(milliseconds: 50);
+    final tickCount = _signDuration.inMilliseconds ~/ tickDuration.inMilliseconds;
+    
+    for (int i = 0; i < tickCount && _isSigning; i++) {
+      await Future.delayed(tickDuration);
+      
+      if (!_isSigning) break;
+      
+      setState(() {
+        _signProgress = (i + 1) / tickCount;
+      });
+      
+      // Tick haptics at 33%, 66%, and 100%
+      if (_signProgress >= 0.33 && _signProgress < 0.34) {
+        HapticFeedback.selectionClick();
+      } else if (_signProgress >= 0.66 && _signProgress < 0.67) {
+        HapticFeedback.selectionClick();
+      }
+    }
+    
+    // Complete!
+    if (_isSigning && _signProgress >= 1.0) {
+      _completeSigning();
+    }
+  }
+  
+  /// Phase 24: Complete the signing ceremony
+  Future<void> _completeSigning() async {
+    // Heavy impact for the "stamp"
+    HapticFeedback.heavyImpact();
+    
+    // Play seal sound
+    try {
+      final soundService = context.read<SoundService>();
+      await soundService.playSign();
+    } catch (_) {
+      // Sound service may not be available
+    }
+    
+    setState(() {
+      _isSigning = false;
+      _sealCompleted = true;
+    });
+    
+    // Animate seal dropping
+    _sealController.forward();
+    
+    // Wait for animation, then accept
+    await Future.delayed(const Duration(milliseconds: 800));
+    
+    _acceptContract();
+  }
+  
   Future<void> _acceptContract() async {
     if (_contract == null) return;
     
@@ -80,7 +200,10 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     if (_contract!.builderId == authService.userId) {
       setState(() {
         _error = 'You cannot be a witness for your own contract';
+        _sealCompleted = false;
+        _signProgress = 0.0;
       });
+      _sealController.reset();
       return;
     }
     
@@ -101,7 +224,10 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     } else {
       setState(() {
         _error = result.error ?? 'Failed to accept contract';
+        _sealCompleted = false;
+        _signProgress = 0.0;
       });
+      _sealController.reset();
     }
   }
   
@@ -111,12 +237,19 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Sign In Required'),
         content: const Text(
-          'To become an accountability witness, you need to create an account. '
+          'To seal this pact, you need to create an account. '
           'This lets us notify you when your partner completes their habit.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _sealCompleted = false;
+                _signProgress = 0.0;
+              });
+              _sealController.reset();
+            },
             child: const Text('Cancel'),
           ),
           FilledButton(
@@ -138,7 +271,7 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         icon: const Text('🤝', style: TextStyle(fontSize: 48)),
-        title: const Text('You\'re In!'),
+        title: const Text('Pact Sealed!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -153,17 +286,17 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
                 color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Column(
+              child: const Column(
                 children: [
-                  const Text(
-                    'What happens now:',
+                  Text(
+                    'Your Role:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '1. You\'ll get notified when they complete their habit\n'
-                    '2. Send high-fives to celebrate their wins\n'
-                    '3. Nudge them if they\'re about to miss',
+                  SizedBox(height: 8),
+                  Text(
+                    '• Get notified on their completions\n'
+                    '• Send high-fives to celebrate wins\n'
+                    '• Nudge them if they\'re drifting',
                     style: TextStyle(fontSize: 13),
                   ),
                 ],
@@ -175,9 +308,9 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pushReplacementNamed('/contracts');
+              Navigator.of(context).pushReplacementNamed('/witness');
             },
-            child: const Text('View Contract'),
+            child: const Text('View My Pacts'),
           ),
         ],
       ),
@@ -189,9 +322,12 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     final theme = Theme.of(context);
     
     return Scaffold(
+      backgroundColor: const Color(0xFFF5E6D3), // Old paper color
       appBar: AppBar(
-        title: const Text('Become a Witness'),
+        title: const Text('Socially Binding Pact'),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: _buildBody(theme),
     );
@@ -205,7 +341,7 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('Loading contract...'),
+            Text('Loading pact...'),
           ],
         ),
       );
@@ -218,10 +354,10 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('😕', style: TextStyle(fontSize: 64)),
+              const Text('📜', style: TextStyle(fontSize: 64)),
               const SizedBox(height: 16),
               Text(
-                'Oops!',
+                'Pact Not Found',
                 style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -244,216 +380,30 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     }
     
     if (_contract == null) {
-      return const Center(child: Text('No contract found'));
+      return const Center(child: Text('No pact found'));
     }
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
-          const Text(
-            '🤝',
-            style: TextStyle(fontSize: 64),
-            textAlign: TextAlign.center,
-          ),
+          // Phase 24: The "Official Document" Card
+          _buildPactDocument(theme),
+          
+          const SizedBox(height: 24),
+          
+          // Phase 24: Sign Area
+          _buildSignArea(theme),
+          
           const SizedBox(height: 16),
-          Text(
-            'You\'ve Been Invited',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Someone wants you to be their accountability partner',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Contract Details Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Contract title
-                  Row(
-                    children: [
-                      Text(
-                        _contract!.status.emoji,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _contract!.title,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const Divider(height: 32),
-                  
-                  // Commitment statement
-                  if (_contract!.commitmentStatement != null) ...[
-                    Text(
-                      'Commitment',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '"${_contract!.commitmentStatement}"',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  // Duration
-                  _buildDetailRow(
-                    theme,
-                    icon: Icons.calendar_today,
-                    label: 'Duration',
-                    value: '${_contract!.durationDays} days',
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Nudge frequency
-                  _buildDetailRow(
-                    theme,
-                    icon: Icons.notifications_active,
-                    label: 'Check-ins',
-                    value: _contract!.nudgeFrequency.displayName,
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Nudge style
-                  _buildDetailRow(
-                    theme,
-                    icon: Icons.chat_bubble_outline,
-                    label: 'Nudge Style',
-                    value: _contract!.nudgeStyle.displayName,
-                  ),
-                  
-                  // Builder message
-                  if (_contract!.builderMessage != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Message from Builder',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _contract!.builderMessage!,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // What being a witness means
-          Card(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'As a Witness, you will:',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWitnessRole(
-                    theme,
-                    emoji: '📱',
-                    text: 'Get notified when they complete their habit',
-                  ),
-                  const SizedBox(height: 8),
-                  _buildWitnessRole(
-                    theme,
-                    emoji: '🖐️',
-                    text: 'Send high-fives to celebrate their wins',
-                  ),
-                  const SizedBox(height: 8),
-                  _buildWitnessRole(
-                    theme,
-                    emoji: '💬',
-                    text: 'Optionally nudge them when they\'re drifting',
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Message input
-          TextField(
-            controller: _messageController,
-            decoration: const InputDecoration(
-              labelText: 'Message (optional)',
-              hintText: 'Send an encouraging message...',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 2,
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Accept button
-          FilledButton.icon(
-            onPressed: _isAccepting ? null : _acceptContract,
-            icon: _isAccepting 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.handshake),
-            label: Text(_isAccepting ? 'Accepting...' : 'Accept & Become Witness'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-          ),
-          
-          const SizedBox(height: 12),
           
           // Decline button
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Not Now'),
+            child: Text(
+              'Not Now',
+              style: TextStyle(color: Colors.brown.shade400),
+            ),
           ),
           
           const SizedBox(height: 32),
@@ -462,47 +412,455 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen> {
     );
   }
   
-  Widget _buildDetailRow(
-    ThemeData theme, {
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
+  /// Phase 24: Build the official pact document
+  Widget _buildPactDocument(ThemeData theme) {
+    return Stack(
       children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
+        // Document background
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFEF5), // Aged paper
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.brown.shade300, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.brown.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(4, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Header
+              Text(
+                '📜 SOCIALLY BINDING PACT 📜',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade800,
+                  letterSpacing: 2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 8),
+              
+              Text(
+                'An Agreement of Accountability',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.brown.shade600,
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Divider
+              Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.brown.shade400,
+                      Colors.brown.shade400,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Builder info
+              Text(
+                'THE BUILDER',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade600,
+                  letterSpacing: 3,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _contract!.builderDisplayName ?? 'Anonymous',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade800,
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Commitment
+              Text(
+                'hereby commits to',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.brown.shade600,
+                ),
+              ),
+              
+              const SizedBox(height: 8),
+              
+              // Habit box
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.brown.shade300),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      _contract!.habitEmoji ?? '🎯',
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _contract!.title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown.shade800,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (_contract!.commitmentStatement != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        '"${_contract!.commitmentStatement}"',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.brown.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Duration
+              Text(
+                'for a period of',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.brown.shade600,
+                ),
+              ),
+              Text(
+                '${_contract!.durationDays} DAYS',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade800,
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Divider
+              Container(
+                height: 1,
+                color: Colors.brown.shade300,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Witness role
+              Text(
+                'THE WITNESS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade600,
+                  letterSpacing: 3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '(That\'s You)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple.shade700,
+                ),
+              ),
+              
+              const SizedBox(height: 12),
+              
+              Text(
+                'agrees to bear witness and provide\naccountability through:',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.brown.shade600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Witness duties
+              _buildDutyItem('📱', 'Receiving completion notifications'),
+              const SizedBox(height: 8),
+              _buildDutyItem('🖐️', 'Sending high-fives of encouragement'),
+              const SizedBox(height: 8),
+              _buildDutyItem('💬', 'Providing nudges when needed'),
+              
+              const SizedBox(height: 24),
+              
+              // Optional message
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.brown.shade50,
+                  border: Border.all(color: Colors.brown.shade200),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: TextField(
+                  controller: _messageController,
+                  decoration: InputDecoration(
+                    hintText: 'Add a message (optional)',
+                    hintStyle: TextStyle(
+                      color: Colors.brown.shade400,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: TextStyle(color: Colors.brown.shade700),
+                  maxLines: 2,
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Disclaimer
+              Text(
+                'This is a socially binding agreement.\n'
+                'Not a legal contract. Built on trust and mutual respect.',
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.brown.shade400,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
-        const Spacer(),
+        
+        // Phase 24: Wax seal (appears after signing)
+        if (_sealCompleted)
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: AnimatedBuilder(
+              animation: _sealController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _sealScale.value,
+                  child: Opacity(
+                    opacity: _sealOpacity.value,
+                    child: _buildWaxSeal(),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+  
+  Widget _buildDutyItem(String emoji, String text) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 8),
         Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.brown.shade700,
           ),
         ),
       ],
     );
   }
   
-  Widget _buildWitnessRole(
-    ThemeData theme, {
-    required String emoji,
-    required String text,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  /// Phase 24: Build the wax seal widget
+  Widget _buildWaxSeal() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            Colors.red.shade700,
+            Colors.red.shade900,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('✓', style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            )),
+            Text(
+              'SEALED',
+              style: TextStyle(
+                color: Colors.red.shade100,
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Phase 24: Build the sign area with progress indicator
+  Widget _buildSignArea(ThemeData theme) {
+    final bool canSign = !_isAccepting && !_sealCompleted;
+    
+    return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: theme.textTheme.bodyMedium,
+        // Instructions
+        Text(
+          _sealCompleted 
+              ? 'Pact Sealed!' 
+              : _isSigning 
+                  ? 'Hold to seal...'
+                  : 'Press and hold to seal this pact',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: _sealCompleted 
+                ? Colors.green.shade700 
+                : Colors.brown.shade600,
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Sign button with progress
+        GestureDetector(
+          onTapDown: canSign ? (_) => _onSignStart() : null,
+          onTapUp: canSign ? (_) => _onSignEnd() : null,
+          onTapCancel: canSign ? _onSignEnd : null,
+          child: Container(
+            width: double.infinity,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _sealCompleted 
+                    ? Colors.green.shade400 
+                    : Colors.brown.shade400,
+                width: 2,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Stack(
+                children: [
+                  // Progress fill
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 50),
+                    width: MediaQuery.of(context).size.width * _signProgress,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _sealCompleted
+                            ? [Colors.green.shade400, Colors.green.shade600]
+                            : [Colors.red.shade400, Colors.red.shade600],
+                      ),
+                    ),
+                  ),
+                  
+                  // Label
+                  Center(
+                    child: _isAccepting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _sealCompleted 
+                                    ? Icons.check_circle 
+                                    : Icons.touch_app,
+                                color: _signProgress > 0.5 || _sealCompleted
+                                    ? Colors.white
+                                    : Colors.brown.shade700,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _sealCompleted 
+                                    ? 'Sealed!' 
+                                    : _isSigning 
+                                        ? '${(_signProgress * 100).toInt()}%'
+                                        : 'HOLD TO SEAL',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                  color: _signProgress > 0.5 || _sealCompleted
+                                      ? Colors.white
+                                      : Colors.brown.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 8),
+        
+        // Helper text
+        Text(
+          _sealCompleted 
+              ? 'Welcome to the pact!' 
+              : 'This commitment is built on trust',
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.brown.shade500,
           ),
         ),
       ],
