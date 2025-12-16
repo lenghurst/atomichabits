@@ -1,6 +1,6 @@
 # ROADMAP.md — Atomic Habits Hook App
 
-> **Last Updated:** December 2025 (v5.7.0 - Phase 22 The Witness Complete)
+> **Last Updated:** December 2025 (v5.7.0-RC1 - Phase 24 "The Red Carpet" Active)
 > **Philosophy:** Graceful Consistency > Fragile Streaks
 > **CRITICAL:** Keep this file in sync with `main`. Update after every sprint/session.
 
@@ -22,7 +22,60 @@
 
 ---
 
-## Current Sprint: Phase 22 (The Witness - ✅ Completed)
+## Current Sprint: Phase 24 "The Red Carpet" (🟡 In Progress)
+
+**Goal:** Zero-friction onboarding for Invited Witnesses. Maximize conversion of invited users.
+
+**Status:** 🟡 In Progress (December 2025)
+
+**Platform Focus:** Android First (Intent Handling)
+
+**Constraint:** Low operational cost (Minimize Edge Functions)
+
+**Philosophy:** "Revenue = f(Viral Coefficient)². Optimize virality BEFORE monetization."
+
+**Key Strategic Rulings:**
+1. **"Socially Binding Pact" (not "Legally Binding")** - Avoids lawsuit risk while keeping emotional weight
+2. **Client-Side Image Generation** - User A's phone generates preview, stored in Supabase. $0 compute cost.
+3. **Retrospective Logging** - Allow logging yesterday's habits with visual distinction (Silver vs Gold)
+
+**The "Clipboard Bridge" (Cost-Effective Deferred Deep Linking):**
+```
+1. User A shares link (clipboard auto-populated)
+2. User B installs app
+3. OnboardingOrchestrator checks clipboard for invite code
+4. Route to WitnessAcceptScreen ("Side Door")
+```
+
+**Technical Tasks:**
+- [ ] Implement `DeepLinkService.checkClipboardForInvite()`
+- [ ] Update `OnboardingOrchestrator` for "Side Door" routing
+- [ ] Design "Socially Binding Pact" UI (Wax Seal animation)
+- [ ] Implement Retrospective Logging
+- [ ] Add Guest Data Warning banner
+- [ ] Client-side contract preview image generation
+
+**See:** `SPRINT_24_SPEC.md` for full technical specification
+
+---
+
+## Previous Sprint: Phase 23 - Clean Slate (✅ Completed)
+
+**Status:** ✅ Complete (December 2025)
+
+**Goal:** Technical debt cleanup and foundation for growth optimizations
+
+**Completed:**
+- [x] **Branch Cleanup:** Merged `genspark_ai_developer` to `main` via PR #11
+- [x] **Documentation Sync:** Updated all context files to reflect v5.7.0 state
+- [x] **Release Tag:** Created `v5.7.0-RC1` tag and GitHub Release
+- [x] **Stale Branches:** Cleaned up old development branches
+
+**Key Milestone:** Repository synchronized - `main` branch now at v5.7.0 Release Candidate
+
+---
+
+## Previous Sprint: Phase 22 (The Witness - ✅ Completed)
 
 **Goal:** Transform the app from Single Player (Tool) to Multiplayer (Network) with real-time social accountability
 
@@ -933,34 +986,6 @@
 
 ---
 
-## Next Sprint: Phase 23 - Clean Slate
-
-**Status:** 🟡 In Progress
-
-**Goal:** Technical debt cleanup and foundation for growth optimizations
-
-**Tasks:**
-- [ ] **Branch Cleanup:** Merge `genspark_ai_developer` to `main`, delete 18+ stale branches
-- [ ] **Documentation Sync:** Update all context files to reflect v5.7.0 state
-- [ ] **Integration Tests:** Add tests for Witness flow (offline handling, edge cases)
-- [ ] **Performance Audit:** Cold start optimization, Supabase initialization
-
-**Rationale:** "Cannot optimize 'Invited User Experience' (Sprint 24) until the foundation is stable."
-
----
-
-## Future Sprint: Phase 24 - The Red Carpet
-
-**Status:** 📋 Planned
-
-**Goal:** Maximize conversion of invited users via polished onboarding flow
-
-**Features:**
-- [ ] **Deferred Deep Links:** Link → Preview → Download → Auto-navigate to acceptance
-- [ ] **Contract Preview Cards:** Rich previews without app download
-- [ ] **Guest/Lite Witness Mode:** Accept invites without full onboarding
-- [ ] **Smart Onboarding for Invited Users:** Skip unnecessary steps
-
 ---
 
 ## Future Sprint: Phase 25 - The Cash Register
@@ -1747,12 +1772,12 @@ done | sort
 | Phase 16.3 Witness Dashboard | ✅ | ✅ | Complete! Integrated in Phase 22 |
 | Phase 22 The Witness | ✅ | ✅ | Complete! Social Accountability Loop |
 | Release Candidate Ready | ✅ | ✅ | v5.7.0 - Social Features Complete |
-| Phase 23 Clean Slate | 🟡 | ✅ | Current: Branch cleanup, testing |
-| Phase 24 The Red Carpet | 📋 | ✅ | Planned: Growth optimization |
+| Phase 23 Clean Slate | ✅ | ✅ | Complete! PR #11 merged, v5.7.0-RC1 tagged |
+| Phase 24 The Red Carpet | 🟡 | ✅ | Current: Viral Engine optimization |
 | Phase 25 The Cash Register | 📋 | ✅ | Planned: Monetization (post-viral) |
 
 ---
 
 *"You do not rise to the level of your goals. You fall to the level of your systems."* — James Clear
 
-*Last synced to main: December 2025 (v5.7.0 - Phase 22 The Witness Complete)*
+*Last synced to main: December 2025 (v5.7.0-RC1 - Phase 24 "The Red Carpet" Active)*
