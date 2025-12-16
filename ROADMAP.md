@@ -82,11 +82,13 @@ Refactored AI tier system for better reasoning and cost efficiency:
 - [x] Create `AIServiceManager` for unified tier management
 - [x] Update `AIModelConfig` with DeepSeek key and tier logic
 
-**Deep Link Infrastructure (The "Standard Protocol"):**
-- [ ] Add `android_play_install_referrer` package
-- [ ] Implement Install Referrer detection in `DeepLinkService`
-- [ ] Create landing page logic for referrer injection
-- [ ] Update `OnboardingOrchestrator` for Hard Bypass routing
+**Deep Link Infrastructure (The "Standard Protocol") - ✅ Complete:**
+- [x] Add `play_install_referrer` package (v0.5.0)
+- [x] Implement Install Referrer detection in `DeepLinkService`
+- [x] Add `checkForDeferredDeepLink()` with loading state handling
+- [x] Update `OnboardingOrchestrator` for Hard Bypass routing
+- [x] Add Smart Link generation in `ShareContractSheet`
+- [ ] Create landing page logic for referrer injection (web deployment pending)
 
 **UI/UX (Completed):**
 - [x] "Socially Binding Pact" UI (Wax Seal animation)
