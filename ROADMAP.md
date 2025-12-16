@@ -34,26 +34,64 @@
 
 **Philosophy:** "Revenue = f(Viral Coefficient)². Optimize virality BEFORE monetization."
 
-**Key Strategic Rulings:**
-1. **"Socially Binding Pact" (not "Legally Binding")** - Avoids lawsuit risk while keeping emotional weight
-2. **Client-Side Image Generation** - User A's phone generates preview, stored in Supabase. $0 compute cost.
-3. **Retrospective Logging** - Allow logging yesterday's habits with visual distinction (Silver vs Gold)
+### Key Strategic Pivots (Dec 2025)
 
-**The "Clipboard Bridge" (Cost-Effective Deferred Deep Linking):**
+#### 1. Deep Link Architecture: "The Standard Protocol"
+**PIVOTED** from "Clipboard Bridge" (sketchy) to **Install Referrer API** (industry standard).
+
+**New Architecture:**
 ```
-1. User A shares link (clipboard auto-populated)
-2. User B installs app
-3. OnboardingOrchestrator checks clipboard for invite code
-4. Route to WitnessAcceptScreen ("Side Door")
+1. Landing Page (atomichabits.app/join/xyz)
+2. → Fingerprints click + Redirects to Play Store with referrer=invite_code=xyz
+3. User installs app
+4. → App reads AndroidPlayInstallReferrer
+5. → Decodes invite_code
+6. → Hard Bypass to WitnessAcceptScreen (skip onboarding)
 ```
 
-**Technical Tasks:**
-- [ ] Implement `DeepLinkService.checkClipboardForInvite()`
-- [ ] Update `OnboardingOrchestrator` for "Side Door" routing
-- [ ] Design "Socially Binding Pact" UI (Wax Seal animation)
-- [ ] Implement Retrospective Logging
-- [ ] Add Guest Data Warning banner
-- [ ] Client-side contract preview image generation
+#### 2. AI Engine: "Brain Surgery 2.0"
+Refactored AI tier system for better reasoning and cost efficiency:
+
+| Tier | Provider | Persona | Use Case |
+|------|----------|---------|----------|
+| 1 (Default) | **DeepSeek-V3** | The Architect | Reasoning-heavy, structured output |
+| 2 (Premium) | **Claude 3.5 Sonnet** | The Coach | Empathetic, high EQ for bad habits |
+| 3 (Fallback) | Gemini 2.5 Flash | AI Assistant | Fast, reliable backup |
+| 4 (Manual) | None | Manual Entry | No AI available |
+
+**Why DeepSeek:**
+- Excellent at THINKING PROTOCOL and structured JSON output
+- Cost-effective (10-100x cheaper than Claude/GPT-4)
+- Higher temperature (1.0-1.3) for better reasoning
+- OpenAI-compatible API
+
+**Files Created:**
+- `lib/data/services/ai/deep_seek_service.dart` - Tier 1 implementation
+- `lib/data/services/ai/claude_service.dart` - Tier 2 implementation
+- `lib/data/services/ai/ai_service_manager.dart` - Unified tier management
+- `lib/data/services/ai/ai.dart` - Module exports
+
+**Files Modified:**
+- `lib/config/ai_model_config.dart` - Added DeepSeek, updated tier selection
+
+### Technical Tasks
+
+**AI Refactor (✅ Complete):**
+- [x] Create `DeepSeekService` (Tier 1 - The Architect)
+- [x] Create `ClaudeService` (Tier 2 - The Coach)
+- [x] Create `AIServiceManager` for unified tier management
+- [x] Update `AIModelConfig` with DeepSeek key and tier logic
+
+**Deep Link Infrastructure (The "Standard Protocol"):**
+- [ ] Add `android_play_install_referrer` package
+- [ ] Implement Install Referrer detection in `DeepLinkService`
+- [ ] Create landing page logic for referrer injection
+- [ ] Update `OnboardingOrchestrator` for Hard Bypass routing
+
+**UI/UX (Completed):**
+- [x] "Socially Binding Pact" UI (Wax Seal animation)
+- [x] Tap-and-hold to sign with haptic feedback
+- [ ] Guest Data Warning banner
 
 **See:** `SPRINT_24_SPEC.md` for full technical specification
 
