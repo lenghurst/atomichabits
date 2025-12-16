@@ -7,7 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/app_state.dart';
-import 'data/services/gemini_chat_service.dart';
+import 'data/services/ai/ai_service_manager.dart';
 import 'data/services/weekly_review_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'data/services/home_widget_service.dart';
@@ -75,13 +75,8 @@ void main() async {
     }
   }
   
-  // Initialize AI services
-  final geminiService = GeminiChatService(
-    apiKey: AIModelConfig.geminiApiKey.isNotEmpty 
-        ? AIModelConfig.geminiApiKey 
-        : null,
-  );
-  await geminiService.init();
+  // Phase 24: Initialize AI Service Manager (The Brain Transplant)
+  final aiServiceManager = AIServiceManager();
   
   // Phase 15: Initialize Auth service
   final authService = AuthService(supabaseClient: supabaseClient);
@@ -119,7 +114,7 @@ void main() async {
   await witnessService.initialize();
   
   runApp(MyApp(
-    geminiService: geminiService,
+    aiServiceManager: aiServiceManager,
     authService: authService,
     syncService: syncService,
     contractService: contractService,
@@ -130,7 +125,7 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  final GeminiChatService geminiService;
+  final AIServiceManager aiServiceManager;
   final AuthService authService;
   final SyncService syncService;
   final ContractService contractService;
@@ -140,7 +135,7 @@ class MyApp extends StatefulWidget {
   
   const MyApp({
     super.key, 
-    required this.geminiService,
+    required this.aiServiceManager,
     required this.authService,
     required this.syncService,
     required this.contractService,
@@ -175,8 +170,8 @@ class _MyAppState extends State<MyApp> {
             return appState;
           },
         ),
-        // Gemini Chat Service (AI backend)
-        Provider<GeminiChatService>.value(value: widget.geminiService),
+        // Phase 24: AI Service Manager (The Brain)
+        ChangeNotifierProvider<AIServiceManager>.value(value: widget.aiServiceManager),
         // Phase 15: Auth Service (Identity Foundation)
         ChangeNotifierProvider<AuthService>.value(value: widget.authService),
         // Phase 15: Sync Service (Cloud Backup)
@@ -189,18 +184,18 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<DeepLinkService>.value(value: widget.deepLinkService),
         // Phase 22: Witness Service (The Accountability Loop)
         ChangeNotifierProvider<WitnessService>.value(value: widget.witnessService),
-        // Weekly Review Service (Phase 7)
-        ProxyProvider<GeminiChatService, WeeklyReviewService>(
-          update: (context, geminiService, previous) =>
-              previous ?? WeeklyReviewService(geminiService),
+        // Weekly Review Service (Phase 7 → Phase 24: Now uses AIServiceManager)
+        ProxyProvider<AIServiceManager, WeeklyReviewService>(
+          update: (context, aiServiceManager, previous) =>
+              previous ?? WeeklyReviewService(aiServiceManager),
         ),
-        // Onboarding Orchestrator (AI orchestration) - ChangeNotifier for Phase 2
-        ChangeNotifierProxyProvider<GeminiChatService, OnboardingOrchestrator>(
+        // Onboarding Orchestrator (Phase 2 → Phase 24: Now uses AIServiceManager)
+        ChangeNotifierProxyProvider<AIServiceManager, OnboardingOrchestrator>(
           create: (context) => OnboardingOrchestrator(
-            geminiService: context.read<GeminiChatService>(),
+            aiServiceManager: context.read<AIServiceManager>(),
           ),
-          update: (context, geminiService, previous) {
-            return previous ?? OnboardingOrchestrator(geminiService: geminiService);
+          update: (context, aiServiceManager, previous) {
+            return previous ?? OnboardingOrchestrator(aiServiceManager: aiServiceManager);
           },
         ),
       ],

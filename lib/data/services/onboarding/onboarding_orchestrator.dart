@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../gemini_chat_service.dart';
+import '../ai/ai_service_manager.dart';
 import '../deep_link_service.dart';
 import '../../models/onboarding_data.dart';
 import '../../models/chat_conversation.dart';
@@ -56,7 +56,7 @@ class ConversationResult {
 /// If a pending invite is detected (from deep link or clipboard), this service
 /// signals to skip standard onboarding and route directly to WitnessAcceptScreen.
 class OnboardingOrchestrator extends ChangeNotifier {
-  final GeminiChatService _geminiService;
+  final AIServiceManager _aiServiceManager;
   
   /// Deep link service reference for Side Door routing (Phase 24)
   DeepLinkService? _deepLinkService;
@@ -115,11 +115,11 @@ class OnboardingOrchestrator extends ChangeNotifier {
   final void Function(String error)? onError;
 
   OnboardingOrchestrator({
-    required GeminiChatService geminiService,
+    required AIServiceManager aiServiceManager,
     DeepLinkService? deepLinkService,
     this.onLoadingChanged,
     this.onError,
-  }) : _geminiService = geminiService,
+  }) : _aiServiceManager = aiServiceManager,
        _deepLinkService = deepLinkService;
 
   /// Check if AI services are available
@@ -170,8 +170,10 @@ class OnboardingOrchestrator extends ChangeNotifier {
         isBreakHabit: isBreakHabit,
       );
 
-      // Start a new onboarding conversation
-      _conversation = await _geminiService.startConversation(
+      // Phase 24: Start conversation with AIServiceManager
+      _conversation = await _aiServiceManager.startConversation(
+        isPremiumUser: false, // TODO: Get from user profile
+        isBreakHabit: isBreakHabit,
         type: ConversationType.onboarding,
       );
 
@@ -314,12 +316,12 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   }
 
   /// Send message with timeout and retry logic
+  /// Phase 24: Now uses AIServiceManager instead of direct GeminiChatService
   Future<ChatMessage?> _sendWithTimeout(String message) async {
     try {
-      final response = await _geminiService
+      final response = await _aiServiceManager
           .sendMessage(
             userMessage: message,
-            conversation: _conversation!,
           )
           .timeout(
             AIModelConfig.apiTimeout,
@@ -339,10 +341,9 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
       
       // One retry as per AIModelConfig.maxRetries
       try {
-        final retryResponse = await _geminiService
+        final retryResponse = await _aiServiceManager
             .sendMessage(
               userMessage: message,
-              conversation: _conversation!,
             )
             .timeout(AIModelConfig.apiTimeout);
         
@@ -576,15 +577,18 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   // ============================================================
 
   /// Start a new onboarding conversation
-  Future<ChatConversation> startConversation() async {
-    _conversation = await _geminiService.startConversation(
+  /// Phase 24: Now uses AIServiceManager with tier selection
+  Future<ChatConversation?> startConversation({bool isBreakHabit = false}) async {
+    _conversation = await _aiServiceManager.startConversation(
+      isPremiumUser: false, // TODO: Get from user profile
+      isBreakHabit: isBreakHabit,
       type: ConversationType.onboarding,
     );
     _messageCount = 0;
     _extractedData = null;
     _error = null;
     notifyListeners();
-    return _conversation!;
+    return _conversation;
   }
 
   /// Send a conversational message and get a response

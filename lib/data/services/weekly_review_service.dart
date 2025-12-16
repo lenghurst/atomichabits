@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/habit.dart';
 import '../models/consistency_metrics.dart';
 import '../models/habit_pattern.dart'; // Phase 14: Pattern Detection
-import 'gemini_chat_service.dart';
+import 'ai/ai_service_manager.dart';
 import 'pattern_detection_service.dart'; // Phase 14
 import 'smart_nudge/optimized_time_finder.dart'; // Phase 19
 import 'smart_nudge/drift_analysis.dart' as drift; // Phase 19
@@ -103,11 +103,11 @@ enum DayStatus { completed, missed, pending }
 /// 4. Falls back to local heuristics if AI is unavailable
 /// 5. Returns structured results for UI consumption
 class WeeklyReviewService {
-  final GeminiChatService _geminiService;
+  final AIServiceManager _aiServiceManager;
   final PatternDetectionService _patternService = PatternDetectionService(); // Phase 14
   final OptimizedTimeFinder _driftDetector = OptimizedTimeFinder(); // Phase 19
 
-  WeeklyReviewService(this._geminiService);
+  WeeklyReviewService(this._aiServiceManager);
 
   /// Generate a weekly review for a habit
   /// 
@@ -134,8 +134,12 @@ class WeeklyReviewService {
       }
     }
     
-    // Try AI generation first
-    final aiResponse = await _geminiService.generateWeeklyAnalysis(prompt);
+    // Phase 24: Try AI generation with AIServiceManager
+    final aiResponse = await _aiServiceManager.singleTurn(
+      prompt: prompt,
+      isPremiumUser: false, // TODO: Get from user profile
+      isBreakHabit: habit.isBreakHabit,
+    );
     
     if (aiResponse != null && aiResponse.isNotEmpty) {
       return WeeklyReviewResult(
