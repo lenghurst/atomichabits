@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- String resources for Atomic Habits Hook App -->
+<!-- String resources for The Pact App -->
 <resources>
-    <string name="app_name">Atomic Habits</string>
+    <string name="app_name">Pact</string>
     
     <!-- Phase 9: Home Screen Widget Strings -->
-    <string name="widget_name">Habit Widget</string>
+    <string name="widget_name">Pact Widget</string>
     <string name="widget_description">Track and complete your habit with one tap</string>
 </resources>

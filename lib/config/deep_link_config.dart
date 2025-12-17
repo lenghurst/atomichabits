@@ -3,13 +3,13 @@
 /// Phase 21.1: Deep Links Infrastructure - "The Viral Engine"
 /// 
 /// Handles Universal Links (iOS) and App Links (Android) for:
-/// - Contract invites: atomichabits.app/invite?c=CODE
-/// - Contract preview: atomichabits.app/c/CODE
-/// - Niche landing pages: atomichabits.app/devs, /writers, etc.
+/// - Contract invites: thepact.co/invite?c=CODE
+/// - Contract preview: thepact.co/c/CODE
+/// - Niche landing pages: thepact.co/devs, /writers, etc.
 /// 
 /// Architecture:
-/// - Production: https://atomichabits.app/...
-/// - Custom scheme fallback: atomichabits://...
+/// - Production: https://thepact.co/...
+/// - Custom scheme fallback: thepact://...
 /// - Web fallback: Opens app store if app not installed
 library;
 
@@ -20,10 +20,10 @@ class DeepLinkConfig {
   // ============================================================
   
   /// Production domain for Universal Links / App Links
-  static const String productionDomain = 'atomichabits.app';
+  static const String productionDomain = 'thepact.co';
   
   /// Custom URL scheme for fallback deep links
-  static const String customScheme = 'atomichabits';
+  static const String customScheme = 'thepact';
   
   /// Apple App ID (Team ID + Bundle ID)
   /// Required for apple-app-site-association

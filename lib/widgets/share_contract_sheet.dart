@@ -122,12 +122,8 @@ class _ShareContractSheetState extends State<ShareContractSheet>
   String get _shareText {
     final buffer = StringBuffer();
     
-    // Opening hook
-    buffer.writeln('I just committed to a ${widget.contract.durationDays}-day challenge.');
-    buffer.writeln();
-    
-    // The ask
-    buffer.writeln('Looking for someone to hold me accountable.');
+    // Opening hook - The Pact branding
+    buffer.writeln('I need a witness.');
     buffer.writeln();
     
     // The habit
@@ -136,11 +132,11 @@ class _ShareContractSheetState extends State<ShareContractSheet>
       buffer.writeln();
     }
     
-    // Social proof + CTA
-    buffer.writeln('Become my Witness:');
+    // CTA - The Pact branding
+    buffer.writeln('Sign The Pact with me:');
     buffer.writeln(_smartInviteUrl);
     buffer.writeln();
-    buffer.write('#atomichabits');
+    buffer.write('#ThePact');
     
     // Phase 24.B: Add Play Store link for Android recipients
     // This ensures the Install Referrer works even if the web redirect fails
