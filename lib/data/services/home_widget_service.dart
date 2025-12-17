@@ -31,7 +31,7 @@ class HomeWidgetService {
   static const String iosWidgetName = 'HabitWidget';
   
   // App Group ID for iOS (must match Xcode configuration)
-  static const String appGroupId = 'group.com.atomichabits.hook.widget';
+  static const String appGroupId = 'group.co.thepact.app.widget';
   
   // Shared data keys (used by both Flutter and native code)
   static const String keyHabitId = 'habit_id';
@@ -49,7 +49,7 @@ class HomeWidgetService {
   static const String keyStreakLabel = 'streak_label';
   
   // Callback URI scheme
-  static const String uriScheme = 'atomichabits';
+  static const String uriScheme = 'thepact';
   static const String completeHabitAction = 'complete_habit';
   
   /// Initialize the home widget service
@@ -157,7 +157,7 @@ class HomeWidgetService {
       await HomeWidget.updateWidget(
         name: androidWidgetName,
         androidName: androidWidgetName,
-        qualifiedAndroidName: 'com.example.atomic_habits_hook_app.$androidWidgetName',
+        qualifiedAndroidName: 'co.thepact.app.$androidWidgetName',
       );
       
       // Update iOS widget
@@ -219,7 +219,7 @@ class HomeWidgetService {
       final result = await HomeWidget.requestPinWidget(
         name: androidWidgetName,
         androidName: androidWidgetName,
-        qualifiedAndroidName: 'com.example.atomic_habits_hook_app.$androidWidgetName',
+        qualifiedAndroidName: 'co.thepact.app.$androidWidgetName',
       );
       return result ?? false;
     } catch (e) {

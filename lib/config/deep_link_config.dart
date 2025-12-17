@@ -28,10 +28,10 @@ class DeepLinkConfig {
   /// Apple App ID (Team ID + Bundle ID)
   /// Required for apple-app-site-association
   /// Format: TEAMID.bundleId
-  static const String appleAppId = 'XXXXXXXXXX.com.atomichabits.hook';
+  static const String appleAppId = 'XXXXXXXXXX.co.thepact.app';
   
   /// Android package name for assetlinks.json
-  static const String androidPackage = 'com.atomichabits.hook';
+  static const String androidPackage = 'co.thepact.app';
   
   /// SHA256 fingerprint for Android App Links verification
   /// Generate with: keytool -list -v -keystore your-keystore.jks

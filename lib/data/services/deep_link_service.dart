@@ -154,7 +154,7 @@ class DeepLinkService extends ChangeNotifier {
   /// we can retrieve that referrer on first launch.
   /// 
   /// Link format: 
-  /// https://play.google.com/store/apps/details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  /// https://play.google.com/store/apps/details?id=co.thepact.app&referrer=invite_code%3DABCD1234
   /// 
   /// Cost: $0 (native Android API)
   /// Reliability: High (Google Play Services)
@@ -557,7 +557,7 @@ Join my pact: $inviteUrl
   /// 1. Opens Play Store to install the app
   /// 2. Passes the invite_code through the Install Referrer API
   /// 
-  /// Format: https://play.google.com/store/apps/details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  /// Format: https://play.google.com/store/apps/details?id=co.thepact.app&referrer=invite_code%3DABCD1234
   static String getPlayStoreReferrerLink(String inviteCode) {
     final referrer = Uri.encodeComponent('invite_code=$inviteCode&utm_source=witness');
     return 'https://play.google.com/store/apps/details?id=${DeepLinkConfig.androidPackage}&referrer=$referrer';
@@ -565,7 +565,7 @@ Join my pact: $inviteUrl
   
   /// Generate a market:// intent link for direct Play Store opening
   /// 
-  /// Format: market://details?id=com.atomichabits.hook&referrer=invite_code%3DABCD1234
+  /// Format: market://details?id=co.thepact.app&referrer=invite_code%3DABCD1234
   static String getMarketIntentLink(String inviteCode) {
     final referrer = Uri.encodeComponent('invite_code=$inviteCode&utm_source=witness');
     return 'market://details?id=${DeepLinkConfig.androidPackage}&referrer=$referrer';
