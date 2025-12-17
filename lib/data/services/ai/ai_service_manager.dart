@@ -304,7 +304,7 @@ class AIServiceManager extends ChangeNotifier {
           break;
           
         case AiProvider.gemini:
-          response = await _geminiService!.generateWeeklyAnalysis(prompt);
+          response = await _geminiService!.generateWeeklyAnalysis(prompt) ?? 'Analysis unavailable.';
           break;
           
         case AiProvider.manual:

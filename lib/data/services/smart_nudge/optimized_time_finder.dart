@@ -200,7 +200,7 @@ class OptimizedTimeFinder {
       final avg = _calculateMean(entry.value);
       averageByDay[entry.key] = TimeOfDay(
         hour: avg ~/ 60,
-        minute: avg % 60,
+        minute: avg.toInt() % 60,
       );
       
       // Check if this day has significant drift
@@ -235,7 +235,7 @@ class OptimizedTimeFinder {
         hasWeekendVariance = true;
         weekendSuggested = TimeOfDay(
           hour: weekendAvg ~/ 60,
-          minute: weekendAvg % 60,
+          minute: weekendAvg.toInt() % 60,
         );
       }
     }
