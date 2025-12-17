@@ -101,6 +101,12 @@ Refactored AI tier system for better reasoning and cost efficiency:
 - [x] AIServiceManager tier selection tests
 - [x] JSON parsing verification (Recovery Plan format)
 
+**Web Anchor (Completed):**
+- [x] InviteRedirector.tsx component (React landing page)
+- [x] /join/:inviteCode route added
+- [x] ShareContractSheet updated to use Web Anchor URLs
+- [x] DeepLinkConfig.getWebAnchorUrl() method added
+
 **See:** `SPRINT_24_SPEC.md` for full technical specification
 
 ---
