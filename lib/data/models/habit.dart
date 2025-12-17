@@ -186,6 +186,10 @@ class Habit {
   /// Simple recovery plan (for Never Miss Twice)
   /// e.g., "If I slip, take one deep breath and try again"
   final String? recoveryPlan;
+  
+  /// Scheduled time for this habit (ISO format or time string)
+  /// Used for cloud sync and notifications
+  final String? scheduledTime;
 
   Habit({
     required this.id,
@@ -246,6 +250,7 @@ class Habit {
     this.habitEmoji,
     this.motivation,
     this.recoveryPlan,
+    this.scheduledTime,
   });
 
   /// Creates a copy of this habit with some fields updated
@@ -299,6 +304,7 @@ class Habit {
     String? habitEmoji,
     String? motivation,
     String? recoveryPlan,
+    String? scheduledTime,
   }) {
     return Habit(
       id: id,
@@ -352,6 +358,7 @@ class Habit {
       habitEmoji: habitEmoji ?? this.habitEmoji,
       motivation: motivation ?? this.motivation,
       recoveryPlan: recoveryPlan ?? this.recoveryPlan,
+      scheduledTime: scheduledTime ?? this.scheduledTime,
     );
   }
   

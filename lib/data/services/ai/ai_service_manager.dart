@@ -304,9 +304,7 @@ class AIServiceManager extends ChangeNotifier {
           break;
           
         case AiProvider.gemini:
-          response = await _geminiService!.generateWeeklyAnalysis(
-            prompt: prompt,
-          );
+          response = await _geminiService!.generateWeeklyAnalysis(prompt);
           break;
           
         case AiProvider.manual:

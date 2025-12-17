@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../config/supabase_config.dart';
 
@@ -23,7 +23,7 @@ class AuthService extends ChangeNotifier {
   User? _currentUser;
   AuthState _authState = AuthState.initializing;
   String? _errorMessage;
-  StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription<dynamic>? _authSubscription;
   
   AuthService({SupabaseClient? supabaseClient}) 
       : _supabase = supabaseClient;

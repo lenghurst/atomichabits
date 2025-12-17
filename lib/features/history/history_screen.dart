@@ -165,7 +165,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: CalendarMonthView(
                       month: _selectedMonth,
                       completionDates: habit.completionHistory,
-                      recoveryDates: habit.recoveryHistory,
+                      recoveryDates: habit.recoveryHistory.map((e) => e.date).toList(),
                       showNavigation: true,
                       onPreviousMonth: _goToPreviousMonth,
                       onNextMonth: _canGoNext ? _goToNextMonth : null,

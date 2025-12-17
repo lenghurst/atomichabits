@@ -1558,4 +1558,58 @@ class AppState extends ChangeNotifier {
   Future<void> refreshHomeWidget() async {
     await _updateHomeWidget();
   }
+  
+  // ========== Habit Stacking Methods ==========
+  
+  /// Get habits ordered by their stack relationships
+  /// Returns habits with their anchor habits first, then stacked habits
+  List<Habit> get habitsWithStacks {
+    final List<Habit> result = [];
+    final Set<String> added = {};
+    
+    // First, add habits without anchors (root habits)
+    for (final habit in _habits) {
+      if (habit.anchorHabitId == null && habit.anchorEvent == null) {
+        result.add(habit);
+        added.add(habit.id);
+      }
+    }
+    
+    // Then add habits with anchors, maintaining stack order
+    for (final habit in _habits) {
+      if (!added.contains(habit.id)) {
+        result.add(habit);
+        added.add(habit.id);
+      }
+    }
+    
+    return result;
+  }
+  
+  /// Get the depth of a habit in its stack chain
+  /// Returns 0 for root habits, 1 for first-level stacked, etc.
+  int getStackDepth(String habitId) {
+    int depth = 0;
+    String? currentId = habitId;
+    final Set<String> visited = {};
+    
+    while (currentId != null && !visited.contains(currentId)) {
+      visited.add(currentId);
+      final habit = _habits.firstWhere(
+        (h) => h.id == currentId,
+        orElse: () => _habits.first,
+      );
+      
+      if (habit.id != currentId) break;
+      
+      if (habit.anchorHabitId != null) {
+        depth++;
+        currentId = habit.anchorHabitId;
+      } else {
+        break;
+      }
+    }
+    
+    return depth;
+  }
 }

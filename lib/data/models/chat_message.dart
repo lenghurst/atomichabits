@@ -17,6 +17,7 @@ enum MessageRole {
 /// Represents the current state of a message
 enum MessageStatus {
   sending,
+  sent,
   streaming,
   complete,
   error;
@@ -43,13 +44,14 @@ class ChatMessage {
 
   ChatMessage({
     required this.id,
-    required this.role,
+    MessageRole? role,
     required this.content,
     required this.timestamp,
     this.status = MessageStatus.complete,
     this.isVoiceInput = false,
     this.errorMessage,
-  });
+    bool? isUser,
+  }) : role = role ?? (isUser == true ? MessageRole.user : MessageRole.assistant);
 
   /// Create a new user message
   factory ChatMessage.user({

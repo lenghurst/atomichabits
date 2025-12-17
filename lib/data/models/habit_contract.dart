@@ -69,6 +69,10 @@ class HabitContract {
   final String? builderMessage;
   final String? witnessMessage;
   
+  // Display fields (for witness accept screen)
+  final String? builderDisplayName;
+  final String? habitEmoji;
+  
   // Phase 21.3: Nudge Effectiveness Tracking
   // These fields enable building a "Behavior Model" by tracking
   // how nudges influence completion behavior
@@ -107,6 +111,8 @@ class HabitContract {
     this.completedAt,
     this.builderMessage,
     this.witnessMessage,
+    this.builderDisplayName,
+    this.habitEmoji,
     // Phase 21.3: Nudge Effectiveness Tracking
     this.lastNudgeSentAt,
     this.lastNudgeResponseAt,
@@ -234,6 +240,8 @@ class HabitContract {
     DateTime? completedAt,
     String? builderMessage,
     String? witnessMessage,
+    String? builderDisplayName,
+    String? habitEmoji,
     DateTime? lastNudgeSentAt,
     DateTime? lastNudgeResponseAt,
     int? nudgesReceivedCount,
@@ -269,6 +277,8 @@ class HabitContract {
       completedAt: completedAt ?? this.completedAt,
       builderMessage: builderMessage ?? this.builderMessage,
       witnessMessage: witnessMessage ?? this.witnessMessage,
+      builderDisplayName: builderDisplayName ?? this.builderDisplayName,
+      habitEmoji: habitEmoji ?? this.habitEmoji,
       lastNudgeSentAt: lastNudgeSentAt ?? this.lastNudgeSentAt,
       lastNudgeResponseAt: lastNudgeResponseAt ?? this.lastNudgeResponseAt,
       nudgesReceivedCount: nudgesReceivedCount ?? this.nudgesReceivedCount,

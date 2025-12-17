@@ -216,12 +216,12 @@ class HomeWidgetService {
   /// Returns true if the request was successful
   Future<bool> requestPinWidget() async {
     try {
-      final result = await HomeWidget.requestPinWidget(
+      await HomeWidget.requestPinWidget(
         name: androidWidgetName,
         androidName: androidWidgetName,
         qualifiedAndroidName: 'co.thepact.app.$androidWidgetName',
       );
-      return result ?? false;
+      return true; // Request was made successfully
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error requesting pin widget: $e');

@@ -57,6 +57,12 @@ class CompletionResult {
   /// Whether there's a stacked habit to prompt next
   bool get hasStackedHabit => nextStackedHabitId != null;
   
+  /// Alias for hasStackedHabit - whether to trigger the stack prompt
+  bool get shouldTriggerStack => hasStackedHabit;
+  
+  /// Alias for nextStackedHabitId - the next habit in the chain
+  String? get nextHabitInChain => nextStackedHabitId;
+  
   /// Get the chain reaction message for the stacked habit
   String get chainReactionMessage {
     if (!hasStackedHabit) return '';

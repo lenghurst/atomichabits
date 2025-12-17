@@ -38,18 +38,23 @@ class ChatConversation {
 
   /// Extracted data from onboarding conversations
   OnboardingData? onboardingData;
+  
+  /// System prompt for AI context
+  String? systemPrompt;
 
   ChatConversation({
     required this.id,
     required this.type,
     required this.createdAt,
-    required this.lastUpdatedAt,
+    DateTime? lastUpdatedAt,
     List<ChatMessage>? messages,
     this.habitId,
     this.summary,
     this.habitCreated = false,
     this.onboardingData,
-  }) : messages = messages ?? [];
+    this.systemPrompt,
+  }) : messages = messages ?? [],
+       lastUpdatedAt = lastUpdatedAt ?? createdAt;
 
   /// Create a new onboarding conversation
   factory ChatConversation.onboarding() {

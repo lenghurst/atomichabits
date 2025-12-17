@@ -781,7 +781,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         
         // Phase 13: Habit Stacking fields
         anchorHabitId: _anchorHabitId,
-        stackPosition: _anchorHabitId != null ? _stackPosition : null,
+        stackPosition: _anchorHabitId != null ? _stackPosition : 'after',
         anchorEvent: _anchorHabitId != null && _stackPosition == 'after' ? 'completion' : null,
       );
 

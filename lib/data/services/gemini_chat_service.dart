@@ -695,13 +695,15 @@ class GeminiChatService {
     }
 
     return Habit(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: data.habitName!,
       identity: data.identity!,
       implementationTime: data.implementationTime!,
       implementationLocation: data.implementationLocation!,
-      tinyVersion: data.tinyVersion,
+      tinyVersion: data.tinyVersion ?? 'Start small',
       temptationBundle: data.temptationBundle,
       preHabitRitual: data.preRitual,
+      createdAt: DateTime.now(),
     );
   }
 }
