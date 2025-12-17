@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/witness_service.dart';
+import '../../data/services/auth_service.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/models/witness_event.dart';
+import '../../widgets/guest_data_warning_banner.dart';
 import 'high_five_sheet.dart';
 
 /// Witness Dashboard
@@ -55,12 +57,25 @@ class _WitnessDashboardState extends State<WitnessDashboard>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _MyWitnessesTab(),
-          _IWitnessTab(),
-          _ActivityTab(),
+          // Phase 24: Guest Data Warning Banner
+          // Shows for anonymous users with active pacts
+          GuestDataWarningBanner(
+            onSignUp: () => Navigator.of(context).pushNamed('/settings/account'),
+          ),
+          
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _MyWitnessesTab(),
+                _IWitnessTab(),
+                _ActivityTab(),
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

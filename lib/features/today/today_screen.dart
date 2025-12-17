@@ -6,6 +6,7 @@ import '../../data/models/habit.dart';
 import '../../data/models/user_profile.dart';
 import '../../widgets/graceful_consistency_card.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
+import '../../widgets/guest_data_warning_banner.dart';
 import 'widgets/identity_card.dart';
 import 'widgets/habit_card.dart';
 import 'widgets/completion_button.dart';
@@ -279,6 +280,12 @@ class _HabitView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Phase 24: Guest Data Warning Banner
+          // Shows for anonymous users with active pacts
+          GuestDataWarningBanner(
+            onSignUp: () => context.push('/settings/account'),
+          ),
+          
           // Identity reminder
           if (profile != null) ...[
             IdentityCard(
