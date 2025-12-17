@@ -99,19 +99,20 @@ class _ShareContractSheetState extends State<ShareContractSheet>
   String get _inviteUrl => widget.contract.inviteUrl ?? 
       DeepLinkConfig.getContractInviteUrl(widget.contract.inviteCode);
   
-  /// Phase 24.B: Smart Link that works across platforms
-  /// - Android: Uses Play Store referrer for zero-friction invite detection
-  /// - iOS/Web: Uses standard Universal Link
+  /// Phase 24.E: Smart Link that works across ALL platforms
+  /// 
+  /// The "Web Anchor" (Trojan Horse) Strategy:
+  /// - All platforms share the same URL: https://atomichabits.app/join/CODE
+  /// - The React landing page detects OS and:
+  ///   - Android: Redirects to Play Store with referrer (Install Referrer API)
+  ///   - iOS: Redirects to App Store (when available)
+  ///   - Desktop: Shows landing page with invite banner + email capture
+  /// 
+  /// This converts "failed redirects" (desktop) into email signups!
   String get _smartInviteUrl {
-    // For Android users sharing, include the Play Store referrer link
-    // This enables Install Referrer API to pass the invite code through installation
-    if (Platform.isAndroid) {
-      // Return the web URL which will redirect appropriately
-      // The web landing page will detect Android and redirect to Play Store with referrer
-      return DeepLinkConfig.getContractInviteUrl(widget.contract.inviteCode);
-    }
-    // For iOS/Web, use standard Universal Link
-    return _inviteUrl;
+    // Phase 24.E: Use the Web Anchor URL for all platforms
+    // The React landing page handles OS detection and appropriate redirects
+    return DeepLinkConfig.getWebAnchorUrl(widget.contract.inviteCode);
   }
   
   /// Phase 24.B: Play Store link with referrer (for direct Android sharing)

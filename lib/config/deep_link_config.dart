@@ -76,6 +76,17 @@ class DeepLinkConfig {
     return 'https://$productionDomain$invitePathShort/$inviteCode';
   }
   
+  /// Phase 24.E: Generate Web Anchor URL (The Trojan Horse)
+  /// 
+  /// This URL hits the React landing page which:
+  /// - Mobile: Detects OS and redirects to App Store with referrer
+  /// - Desktop: Shows landing page with invite banner + email capture
+  /// 
+  /// Returns: https://atomichabits.app/join/ABCD1234
+  static String getWebAnchorUrl(String inviteCode) {
+    return 'https://$productionDomain$joinPath/$inviteCode';
+  }
+  
   /// Generate contract invite URL with query param (fallback)
   /// 
   /// Returns: https://atomichabits.app/invite?c=ABCD1234
