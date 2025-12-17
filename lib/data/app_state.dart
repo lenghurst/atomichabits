@@ -13,6 +13,14 @@ import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
 
+/// Enum for haptic feedback types
+enum HapticFeedbackType {
+  light,
+  medium,
+  heavy,
+  selection,
+}
+
 /// Central state management for the app
 /// Uses Provider for simple, beginner-friendly state management
 /// Now includes Hive persistence for data that survives app restarts

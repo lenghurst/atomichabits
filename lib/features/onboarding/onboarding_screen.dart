@@ -706,7 +706,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'After completing \"${existingHabits.firstWhere((h) => h.id == _anchorHabitId).name}\", you\\'ll be prompted to do this habit.',
+                    "After completing '${existingHabits.firstWhere((h) => h.id == _anchorHabitId).name}', you'll be prompted to do this habit.",
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.green.shade700,

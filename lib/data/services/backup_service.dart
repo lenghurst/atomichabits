@@ -32,10 +32,6 @@ class BackupService {
   // Required keys for validation
   static const List<String> _requiredKeys = ['version', 'exportedAt', 'habits', 'userProfile'];
   
-  /// Result of a backup operation
-  factory BackupResult.success({String? filePath, String? message}) = BackupSuccess;
-  factory BackupResult.failure(String error) = BackupFailure;
-  
   /// Generate a complete backup of all app data
   /// Returns a BackupResult indicating success or failure
   Future<BackupResult> exportBackup() async {

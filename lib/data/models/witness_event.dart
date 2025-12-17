@@ -261,8 +261,8 @@ class WitnessReaction {
     required this.sentAt,
   });
   
-  /// Pre-defined high-five reactions
-  static const List<WitnessReaction> quickReactions = [
+  /// Pre-defined high-five reactions (templates - sentAt is placeholder)
+  static final List<WitnessReaction> quickReactions = [
     WitnessReaction(emoji: '🖐️', message: 'High five!', sentAt: DateTime(2024)),
     WitnessReaction(emoji: '🔥', message: 'On fire!', sentAt: DateTime(2024)),
     WitnessReaction(emoji: '💪', message: 'Keep it up!', sentAt: DateTime(2024)),

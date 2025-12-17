@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../ai/ai_service_manager.dart';
 import '../deep_link_service.dart';
 import '../../models/onboarding_data.dart';
-import '../../models/chat_conversation.dart';
+import '../../models/chat_conversation.dart' hide OnboardingData;
 import '../../models/chat_message.dart';
 import '../../../config/ai_model_config.dart';
 import '../../../config/niche_config.dart';
