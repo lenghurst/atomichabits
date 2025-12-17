@@ -95,6 +95,12 @@ Refactored AI tier system for better reasoning and cost efficiency:
 - [x] Tap-and-hold to sign with haptic feedback
 - [x] Guest Data Warning banner (GuestDataWarningBanner widget)
 
+**Testing (Completed):**
+- [x] DeepSeekService unit tests with mocks
+- [x] ClaudeService Dependency Injection refactor
+- [x] AIServiceManager tier selection tests
+- [x] JSON parsing verification (Recovery Plan format)
+
 **See:** `SPRINT_24_SPEC.md` for full technical specification
 
 ---
