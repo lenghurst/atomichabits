@@ -93,7 +93,7 @@ Refactored AI tier system for better reasoning and cost efficiency:
 **UI/UX (Completed):**
 - [x] "Socially Binding Pact" UI (Wax Seal animation)
 - [x] Tap-and-hold to sign with haptic feedback
-- [ ] Guest Data Warning banner
+- [x] Guest Data Warning banner (GuestDataWarningBanner widget)
 
 **See:** `SPRINT_24_SPEC.md` for full technical specification
 
