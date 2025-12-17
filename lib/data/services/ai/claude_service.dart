@@ -21,6 +21,10 @@ import '../../models/chat_conversation.dart';
 /// - Higher cost, use strategically
 /// 
 /// API: https://api.anthropic.com
+/// 
+/// Phase 24.D: Refactored for Dependency Injection (Testability)
+/// - Accepts optional http.Client for mock testing
+/// - Allows "Offline Simulation" without live API keys
 class ClaudeService extends ChangeNotifier {
   static const String _baseUrl = 'https://api.anthropic.com/v1/messages';
   static const String _defaultModel = 'claude-sonnet-4-20250514';
@@ -30,6 +34,9 @@ class ClaudeService extends ChangeNotifier {
   final String model;
   final double temperature;
   final Duration timeout;
+  
+  /// HTTP client for API requests (injectable for testing)
+  final http.Client _client;
   
   /// Current active conversation
   ChatConversation? _activeConversation;
@@ -42,12 +49,17 @@ class ClaudeService extends ChangeNotifier {
   String? _lastError;
   String? get lastError => _lastError;
   
+  /// Phase 24.D: Constructor with optional client for Dependency Injection
+  /// 
+  /// Usage in production: ClaudeService(apiKey: 'xxx')
+  /// Usage in tests: ClaudeService(apiKey: 'test', client: mockClient)
   ClaudeService({
     required this.apiKey,
     this.model = _defaultModel,
     this.temperature = 0.9, // Slightly higher for more creative/empathetic responses
     this.timeout = const Duration(seconds: 45), // Claude can be slower
-  });
+    http.Client? client,
+  }) : _client = client ?? http.Client();
   
   /// Check if the service is configured
   bool get isConfigured => apiKey.isNotEmpty;
@@ -197,13 +209,15 @@ class ClaudeService extends ChangeNotifier {
   }
   
   /// Make the actual API request
+  /// 
+  /// Phase 24.D: Uses injected _client for testability
   Future<String> _makeApiRequest(Map<String, dynamic> requestBody) async {
     if (kDebugMode) {
       debugPrint('ClaudeService: Sending request to Claude');
     }
     
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse(_baseUrl),
         headers: {
           'Content-Type': 'application/json',

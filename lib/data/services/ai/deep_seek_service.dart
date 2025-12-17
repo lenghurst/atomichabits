@@ -21,6 +21,10 @@ import '../../models/chat_conversation.dart';
 /// - Excels at step-by-step thinking protocols
 /// 
 /// API: https://api.deepseek.com (OpenAI-compatible)
+/// 
+/// Phase 24.D: Refactored for Dependency Injection (Testability)
+/// - Accepts optional http.Client for mock testing
+/// - Allows "Offline Simulation" without live API keys
 class DeepSeekService extends ChangeNotifier {
   static const String _baseUrl = 'https://api.deepseek.com/chat/completions';
   static const String _defaultModel = 'deepseek-chat'; // V3
@@ -29,6 +33,9 @@ class DeepSeekService extends ChangeNotifier {
   final String model;
   final double temperature;
   final Duration timeout;
+  
+  /// HTTP client for API requests (injectable for testing)
+  final http.Client _client;
   
   /// Current active conversation
   ChatConversation? _activeConversation;
@@ -41,12 +48,17 @@ class DeepSeekService extends ChangeNotifier {
   String? _lastError;
   String? get lastError => _lastError;
   
+  /// Phase 24.D: Constructor with optional client for Dependency Injection
+  /// 
+  /// Usage in production: DeepSeekService(apiKey: 'xxx')
+  /// Usage in tests: DeepSeekService(apiKey: 'test', client: mockClient)
   DeepSeekService({
     required this.apiKey,
     this.model = _defaultModel,
     this.temperature = 1.0, // DeepSeek recommends higher temp for reasoning
     this.timeout = const Duration(seconds: 30),
-  });
+    http.Client? client,
+  }) : _client = client ?? http.Client();
   
   /// Check if the service is configured
   bool get isConfigured => apiKey.isNotEmpty;
@@ -202,13 +214,15 @@ class DeepSeekService extends ChangeNotifier {
   }
   
   /// Make the actual API request
+  /// 
+  /// Phase 24.D: Uses injected _client for testability
   Future<String> _makeApiRequest(List<Map<String, dynamic>> messages) async {
     if (kDebugMode) {
       debugPrint('DeepSeekService: Sending request with ${messages.length} messages');
     }
     
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse(_baseUrl),
         headers: {
           'Content-Type': 'application/json',
