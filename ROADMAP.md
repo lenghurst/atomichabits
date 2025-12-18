@@ -185,6 +185,11 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 - [ ] **Short Links:** Verify `thepact.co` links render correctly in iMessage/WhatsApp
 - [ ] **DNS Configuration:** Point `thepact.co` to Netlify (A record + CNAME)
 
+### Priority 4: Brand Polish (New)
+- [x] **App Icon Update:** Replaced source asset with new logo.
+- [ ] **Icon Generation:** Run `flutter pub run flutter_launcher_icons` to generate platform assets.
+- [ ] **Splash Screen:** Verify splash screen matches new branding.
+
 ### Known Risks
 
 - [ ] **App Store Review:** Rejection risk if "social contract" is misinterpreted as gambling
@@ -246,9 +251,10 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 **Concept:** "To change your life, change your language."
 
-- [ ] **Database:** Create `lexicon` table in Supabase (User ID, Word, Definition, Etymology).
-- [ ] **AI Enrichment:** Gemini 3 analyzes words for specific personas (e.g., "What does 'Amor Fati' mean to a Stoic?").
-- [ ] **Word Pacts:** Micro-habits to use a specific word 3 times a day.
+- [x] **Database:** Create `lexicon` table in Supabase (User ID, Word, Definition, Etymology).
+- [x] **Data Model:** `LexiconEntry` Dart model.
+- [x] **Service:** `LexiconService` and `LexiconEnricher` (AI).
+- [x] **UI:** `LexiconScreen` and `AddWordDialog`.
 - [ ] **Wallet Integration:** Display "Word of the Day" on the back of the Identity Card.
 
 ---
@@ -268,82 +274,3 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 ### Phase 28: The AI Coach Evolution
 - **Context Awareness:** AI analyzes "Time Drift" (Phase 19) to suggest schedule changes
 - **Agentic Planning:** AI restructures complex habit systems
-- **Personalized Nudges:** AI generates custom recovery messages based on user history
-
----
-
-## Sprint History
-
-### Phase 24: "The Red Carpet" (Dec 1-17, 2025)
-**Commits:** `00ff445` (AI Refactor), `eaa48e5` (Install Referrer), `2f4da74` (Rebrand), `93d419b` (App ID Fix), `c4b0a34` (Landing Page)
-
-**Key Achievements:**
-- Rebranded to "The Pact"
-- Deployed React landing page to Netlify
-- Implemented Install Referrer API for Android
-- Refactored AI system (DeepSeek + Claude)
-- Created unit test suite for AI services
-
-**Technical Debt:**
-- Fixed App ID mismatch (com.example.* → co.thepact.app)
-- Aligned all package identifiers across platforms
-
-### Phase 23: "The Witness" (Nov 2025)
-**Commits:** `125f45c`, `a29468b`, `23296e2`
-
-**Key Achievements:**
-- Implemented social accountability loop
-- Real-time witness notifications
-- High-five emoji reactions
-- Pre-failure "shame nudge" system
-
-### Phase 22: "The Social Graph" (Oct 2025)
-**Key Achievements:**
-- Supabase Realtime integration
-- Witness dashboard
-- Contract sharing UI
-
----
-
-## Technical Debt Tracker
-
-### High Priority
-- [ ] **iOS Bundle ID:** Update to `co.thepact.app` (currently `com.atomichabits.hook`)
-- [ ] **Apple App ID:** Update `appleAppId` in `deep_link_config.dart` with real Team ID
-- [ ] **SHA256 Fingerprint:** Generate and update `androidSha256` for App Links
-
-### Medium Priority
-- [ ] **Widget Package Name:** Update `qualifiedAndroidName` in `home_widget_service.dart`
-- [ ] **App Group ID:** Update iOS widget app group to `group.co.thepact.app.widget`
-
-### Low Priority
-- [ ] **Landing Page Analytics:** Add Supabase analytics to track invite clicks
-- [ ] **Error Tracking:** Integrate Sentry or similar for crash reporting
-
----
-
-## Architecture Constraints
-
-### Critical Rules (DO NOT VIOLATE)
-
-1. **Deep Link Domain:** MUST be `thepact.co`. Do not use `atomichabits.app`.
-2. **Package Name:** Android is `co.thepact.app`. iOS is `co.thepact.app`.
-3. **Deployment:** Web updates are auto-deployed via Netlify on `main` push. Mobile updates require manual build.
-4. **AI Tier Selection:** Bad habits MUST use Claude (Tier 2). Standard habits use DeepSeek (Tier 1).
-5. **Install Referrer Priority:** Install Referrer API > Clipboard Bridge > Manual Entry.
-
-### Performance Targets
-
-- **App Launch:** < 2 seconds on mid-range Android
-- **Habit Completion:** < 500ms from tap to confirmation
-- **Witness Notification:** < 5 seconds from completion to notification
-- **Landing Page Load:** < 1 second on 3G connection
-
----
-
-## Contact & Support
-
-- **GitHub:** [lenghurst/atomichabits](https://github.com/lenghurst/atomichabits)
-- **Domain:** [thepact.co](https://thepact.co)
-- **Backend:** Supabase (hosted)
-- **Web Hosting:** Netlify (auto-deploy)

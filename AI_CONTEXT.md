@@ -188,6 +188,7 @@ atomichabits/
 | Add AI model | `lib/data/services/ai/ai_service_manager.dart` | `selectProvider()` |
 | Update landing page | `landing_page/src/components/InviteRedirector.tsx` | OS detection logic |
 | Change package ID | `android/app/build.gradle.kts` | `applicationId` |
+| **Update App Icon** | `assets/branding/app_icon.png` | Run `flutter pub run flutter_launcher_icons` |
 
 ---
 
@@ -235,7 +236,7 @@ static AiTier selectTier({
 - `lib/data/services/ai/deep_seek_service.dart` - Tier 1 (Text only)
 - `lib/data/services/ai/claude_service.dart` - Tier 2 (Deprecated in Phase 25)
 - `lib/data/services/ai/ai_service_manager.dart` - Unified tier management
-- `test/services/ai/deep_seek_service_test.dart` - Unit tests with HTTP mocks
+- `test/services/ai/deep_seek_service_test.dart` - Unit tests with mocks
 - `test/services/ai/ai_service_manager_test.dart` - Tier selection tests
 
 **Phase 25 (New):**

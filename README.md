@@ -17,8 +17,8 @@ Built on **Flutter** (Mobile) and **React** (Web Anchor).
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase |
 
-> **Last Updated:** December 17, 2025 (Commit: c4b0a34)  
-> **Last Verified:** Phase 24 Complete, Phase 25 Active
+> **Last Updated:** December 18, 2025 (Commit: TBD)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet + Lexicon)
 
 ---
 
@@ -39,13 +39,7 @@ atomichabits/
 ├── android/              # Native Android (Package: co.thepact.app)
 ├── ios/                  # Native iOS (Bundle: co.thepact.app)
 ├── lib/                  # === FLUTTER MOBILE APP ===
-│   ├── config/deep_link_config.dart  # URL schemes (thepact://)
-│   ├── data/services/ai/             # DeepSeek & Claude integration
-│   └── features/witness/             # Social Contract Logic
 ├── landing_page/         # === REACT WEB ANCHOR (The Trojan Horse) ===
-│   ├── src/components/InviteRedirector.tsx  # Smart Deep Link Handler
-│   ├── netlify.toml                         # Deployment Config
-│   └── .env                                 # VITE_APP_NAME="The Pact"
 └── ...
 ```
 
@@ -90,7 +84,7 @@ We use a **Hybrid Viral Architecture** to ensure invite links work everywhere.
 | **Web** | React + Vite + Tailwind | The Landing Page / Redirector |
 | **Backend** | Supabase | Auth, Database, Realtime |
 | **AI (Tier 1)** | DeepSeek-V3 | Reasoning & Logic |
-| **AI (Tier 2)** | Claude 3.5 Sonnet | Coaching & Empathy |
+| **AI (Tier 2)** | Gemini 3 Flash | Native Voice/Vision |
 | **Hosting** | Netlify | Web Deployment |
 
 ---
@@ -114,11 +108,32 @@ npm run dev
 
 ---
 
+## 🎨 Customization & Branding
+
+### Updating the App Icon
+
+We use `flutter_launcher_icons` to automate icon generation.
+
+1. **Replace Source Image:**
+   Overwrite `assets/branding/app_icon.png` with your new 1024x1024 icon.
+
+2. **Run Generation Script:**
+   ```bash
+   flutter pub run flutter_launcher_icons
+   ```
+
+3. **Verify:**
+   Check `android/app/src/main/res/mipmap-*` and `ios/Runner/Assets.xcassets/AppIcon.appiconset`.
+
+See **[APP_ICON_UPDATE_GUIDE.md](./APP_ICON_UPDATE_GUIDE.md)** for full details.
+
+---
+
 ## 📖 Documentation
 
 - **[AI_CONTEXT.md](./AI_CONTEXT.md)** - Full feature matrix, architecture deep-dive
 - **[ROADMAP.md](./ROADMAP.md)** - Sprint history, current priorities, technical debt
-- **[SPRINT_24_E_SPEC.md](./SPRINT_24_E_SPEC.md)** - Phase 24 "Trojan Horse" implementation
+- **[APP_ICON_UPDATE_GUIDE.md](./APP_ICON_UPDATE_GUIDE.md)** - Branding update instructions
 
 ---
 
