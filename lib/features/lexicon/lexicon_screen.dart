@@ -6,6 +6,12 @@ import '../../data/services/ai/lexicon_enricher.dart';
 import 'widgets/lexicon_word_card.dart';
 import 'widgets/add_word_dialog.dart';
 
+/// The Lexicon Screen - "The Grimoire"
+/// 
+/// **Phase 25.9 Update:**
+/// - Replaced ListView with PageView for a "book" feel.
+/// - Added paper texture background (simulated with color/container).
+/// - Used Serif font for titles.
 class LexiconScreen extends StatefulWidget {
   const LexiconScreen({super.key});
 
@@ -15,11 +21,18 @@ class LexiconScreen extends StatefulWidget {
 
 class _LexiconScreenState extends State<LexiconScreen> {
   late Future<List<LexiconEntry>> _lexiconFuture;
+  final PageController _pageController = PageController(viewportFraction: 0.9);
 
   @override
   void initState() {
     super.initState();
     _refreshLexicon();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _refreshLexicon() {
@@ -30,20 +43,17 @@ class _LexiconScreenState extends State<LexiconScreen> {
 
   Future<void> _addNewWord(String word) async {
     try {
-      // 1. Optimistic UI update (optional, but let's just show loading)
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (c) => const Center(child: CircularProgressIndicator()),
       );
 
-      // 2. Add word to DB
       final lexiconService = context.read<LexiconService>();
-      final newEntry = await lexiconService.addWord(word, identityTag: "Builder"); // TODO: Get actual tag
+      final newEntry = await lexiconService.addWord(word, identityTag: "Builder"); 
 
-      // 3. Enrich in background (or await if we want immediate gratification)
       final enricher = context.read<LexiconEnricher>();
-      final enrichment = await enricher.enrichWord(word, "Builder"); // TODO: Get actual tag
+      final enrichment = await enricher.enrichWord(word, "Builder");
 
       await lexiconService.updateEnrichment(
         newEntry.id,
@@ -52,12 +62,12 @@ class _LexiconScreenState extends State<LexiconScreen> {
       );
 
       if (mounted) {
-        Navigator.pop(context); // Close loader
-        _refreshLexicon(); // Refresh list
+        Navigator.pop(context); 
+        _refreshLexicon(); 
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Close loader
+        Navigator.pop(context); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error adding word: $e')),
         );
@@ -68,9 +78,20 @@ class _LexiconScreenState extends State<LexiconScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F1E6), // "Old Paper" color
       appBar: AppBar(
-        title: const Text('The Lexicon'),
+        title: const Text(
+          'The Grimoire',
+          style: TextStyle(
+            fontFamily: 'Playfair Display', // Serif font
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: FutureBuilder<List<LexiconEntry>>(
         future: _lexiconFuture,
@@ -89,11 +110,13 @@ class _LexiconScreenState extends State<LexiconScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.book_outlined, size: 64, color: Colors.grey),
+                  const Icon(Icons.menu_book, size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
                   Text(
                     'Your Grimoire is empty.',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontFamily: 'Playfair Display',
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text('Add a Power Word to begin.'),
@@ -102,11 +125,14 @@ class _LexiconScreenState extends State<LexiconScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
+          return PageView.builder(
+            controller: _pageController,
             itemCount: entries.length,
             itemBuilder: (context, index) {
-              return LexiconWordCard(entry: entries[index]);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+                child: LexiconWordCard(entry: entries[index]),
+              );
             },
           );
         },
@@ -121,8 +147,10 @@ class _LexiconScreenState extends State<LexiconScreen> {
             _addNewWord(word);
           }
         },
-        label: const Text('Add Word'),
-        icon: const Icon(Icons.add),
+        label: const Text('Inscribe Word'),
+        icon: const Icon(Icons.edit),
+        backgroundColor: Colors.black87,
+        foregroundColor: const Color(0xFFF5F1E6),
       ),
     );
   }

@@ -89,7 +89,8 @@ atomichabits/
 │   │   ├── ai/                             # [NEW] Multi-Model AI Architecture
 │   │   │   ├── deep_seek_service.dart      # Tier 1: Reasoning (The Architect)
 │   │   │   ├── claude_service.dart         # Tier 2: Coaching (The Coach)
-│   │   │   └── ai_service_manager.dart     # Tier Selector
+│   │   │   ├── ai_service_manager.dart     # Tier Selector
+│   │   │   └── lexicon_enricher.dart       # [NEW] The Grimoire AI
 │   │   ├── experimentation_service.dart    # [NEW] The Lab (A/B/X Testing)
 │   │   ├── deep_link_service.dart          # Install Referrer implementation
 │   │   ├── witness_service.dart            # Real-time Pact events

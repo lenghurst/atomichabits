@@ -206,10 +206,14 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 **Goal:** A/B/X Testing Framework for "Storyteller" optimization.
 
 - [ ] **ExperimentationService:** Deterministic user bucketing (`lib/data/services/experimentation_service.dart`)
+  - Logic: `hash(userId + experimentId) % variantCount`
+  - Storage: Cache in `SharedPreferences`
 - [ ] **Experiment 1: The Hook:** Test "Friend" vs "Sergeant" vs "Visionary" openers
+  - Target: `ConversationalOnboardingScreen`
+  - Metric: `pact_signed` conversion rate
 - [ ] **Experiment 2: The Whisper:** Test notification timing (15min vs 4hr vs Random)
-- [ ] **Experiment 3: The Manifesto:** Test reward format (Visual vs Audio vs Haptic)
-- [ ] **Analytics:** Log `experiment_exposure` events to Supabase/PostHog
+  - Target: `NotificationService`
+- [ ] **Analytics:** Log `experiment_buckets` (e.g., `{hook: 'B', whisper: 'A'}`) to Supabase/PostHog
 
 ---
 
@@ -219,15 +223,16 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 ### Day 0: The First 24 Hours
 - [ ] **Manifesto Generation:** AI generates shareable "Identity Manifesto" image after onboarding
-- [ ] **The Whisper:** Notification 4 hours before habit due time ("I haven't forgotten.")
-- [ ] **The Golden Minute:** Haptic "Wax Seal" ceremony on completion
-- [ ] **Day 1 Debrief:** Morning report focusing on "Identity Evidence" not just streaks
+  - Tech: `widgets_to_image`
+  - Design: High-contrast typography (black/white)
+- [ ] **The Golden Minute:** Upgrade haptics to "Heavy Seal" pattern
+  - Target: `CompletionButton`
+  - Pattern: Heavy -> Heavy -> Long Vibrate
 
 ### Day 1-7: The Retention Loop
-- [ ] **Day 2 (Ghost Protocol):** "Concerned Friend" nudge if no open by noon
-- [ ] **Day 3 (Compassion Trap):** "Micro-Step Fallback" negotiation if struggling
-- [ ] **Day 5 (Pattern Recognition):** AI points out user behavior patterns ("You respond well to...")
-- [ ] **Day 7 (Weekly Review):** Unlock "The Seed Box" (Feature voting/Planting new habits)
+- [ ] **Ghost Protocol (Day 2):** Background worker checks `lastOpenTime`
+  - Logic: If > 36h, fire "I'm still here. Are you?" notification
+  - Target: `RecoveryEngine` / `WorkManager`
 
 ---
 
@@ -239,9 +244,11 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 - [ ] **Google Console:** Register as Wallet Issuer, create Generic Class template.
 - [ ] **Supabase Edge Function:** `create-wallet-pass` (Signs JWT with Service Account).
+  - Path: `supabase/functions/create-wallet-pass/index.ts`
+  - Dependencies: `googleapis`, `jsonwebtoken`
 - [ ] **Flutter Integration:** `add_to_google_wallet` package implementation.
+  - File: `lib/features/settings/identity_card_screen.dart`
 - [ ] **Dynamic Updates:** Logic to update pass style (Gold for 7-day streak, Cracked for missed).
-- [ ] **Geofencing:** Embed location data for lock screen notifications at the gym.
 
 ---
 
@@ -251,11 +258,13 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 **Concept:** "To change your life, change your language."
 
-- [x] **Database:** Create `lexicon` table in Supabase (User ID, Word, Definition, Etymology).
-- [x] **Data Model:** `LexiconEntry` Dart model.
+- [x] **Database:** Create `lexicon` table in Supabase.
+  - [ ] Update schema: Add `personal_meaning` column.
 - [x] **Service:** `LexiconService` and `LexiconEnricher` (AI).
-- [x] **UI:** `LexiconScreen` and `AddWordDialog`.
-- [ ] **Wallet Integration:** Display "Word of the Day" on the back of the Identity Card.
+  - [ ] Update Prompt: "Stoic and Poetic" tone.
+- [ ] **UI:** `LexiconScreen` Polish.
+  - Style: "Grimoire" (Serif font, paper texture, page turns).
+  - Not a list, but a book.
 
 ---
 

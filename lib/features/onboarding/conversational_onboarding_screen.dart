@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/app_state.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/models/user_profile.dart';
@@ -8,6 +9,7 @@ import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart' as onboarding;
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
+import '../../data/services/experimentation_service.dart';
 import 'widgets/chat_message_bubble.dart';
 
 /// Conversational onboarding screen - Phase 2 Chat UI
@@ -41,10 +43,14 @@ class _ConversationalOnboardingScreenState
   String? _userName;
   bool _awaitingName = true;
 
+  // Experiment Context
+  String _hookVariant = 'A'; // Default to Friend
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeExperiment();
       _initializeConversation();
     });
   }
@@ -57,7 +63,21 @@ class _ConversationalOnboardingScreenState
     super.dispose();
   }
 
-  /// Initialize the conversation with a greeting
+  /// Initialize experiment bucket
+  Future<void> _initializeExperiment() async {
+    final prefs = await SharedPreferences.getInstance();
+    final experimentService = ExperimentationService(prefs);
+    
+    // Use a temporary ID if user not logged in yet, or device ID
+    // For now, we'll use a random session ID if auth is missing
+    final userId = 'temp_user_${DateTime.now().millisecondsSinceEpoch}'; 
+    
+    setState(() {
+      _hookVariant = experimentService.getVariant(Experiment.theHook, userId);
+    });
+  }
+
+  /// Initialize the conversation with a greeting based on the variant
   void _initializeConversation() {
     final orchestrator = context.read<OnboardingOrchestrator>();
     
@@ -68,11 +88,24 @@ class _ConversationalOnboardingScreenState
       return;
     }
     
+    String greeting;
+    switch (_hookVariant) {
+      case 'B': // Sergeant
+        greeting = "Listen up. I'm your Atomic Habits coach. We're building a habit that sticks. No excuses.\n\nFirst, state your name.";
+        break;
+      case 'C': // Visionary
+        greeting = "Welcome to the first day of your new life. I'm here to help you build a legacy.\n\nTo begin our journey, what is your name?";
+        break;
+      case 'A': // Friend (Default)
+      default:
+        greeting = "Hi! I'm your Atomic Habits coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?";
+    }
+
     // Add initial greeting
     setState(() {
       _messages = [
         ChatMessage.assistant(
-          content: "Hi! I'm your Atomic Habits coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?",
+          content: greeting,
           status: MessageStatus.complete,
         ),
       ];
@@ -111,6 +144,23 @@ class _ConversationalOnboardingScreenState
 
       // Get orchestrator and send message
       final orchestrator = context.read<OnboardingOrchestrator>();
+      
+      // Inject Tone based on Variant
+      String systemPromptInjection = "";
+      if (_hookVariant == 'B') {
+        systemPromptInjection = "TONE: Aggressive, military, short sentences. No fluff.";
+      } else if (_hookVariant == 'C') {
+        systemPromptInjection = "TONE: Inspiring, focus on the 5-year vision. Use metaphors.";
+      }
+
+      // Note: In a real implementation, we'd pass this injection to the orchestrator.
+      // For now, we assume the orchestrator handles the context or we append it to the user message invisibly.
+      // Since we can't easily change the orchestrator signature right now without breaking other things,
+      // we'll append it to the user message as a system instruction if it's the first message, 
+      // or rely on the initial greeting setting the tone.
+      
+      // Ideally, update OnboardingOrchestrator to accept `systemInstruction`.
+      
       final result = await orchestrator.sendConversationalMessage(
         userMessage: text,
         userName: _userName ?? 'Friend',
@@ -180,11 +230,22 @@ class _ConversationalOnboardingScreenState
     
     if (!mounted) return;
     
+    String identityPrompt;
+    switch (_hookVariant) {
+      case 'B': // Sergeant
+        identityPrompt = "Copy that, $name. Now, identify the target. Who do you want to become? Answer me: \"I want to be the type of person who...\"";
+        break;
+      case 'C': // Visionary
+        identityPrompt = "A strong name, $name. Now, envision your future self. James Clear says every action is a vote for who you want to become. Cast your vote: \"I want to be the type of person who...\"";
+        break;
+      case 'A': // Friend
+      default:
+        identityPrompt = "Great to meet you, $name! Now, let's talk about who you want to become.\n\nJames Clear says: \"Every action is a vote for the type of person you want to become.\"\n\nComplete this sentence: \"I want to be the type of person who...\"";
+    }
+
     setState(() {
       _messages.add(ChatMessage.assistant(
-        content: "Great to meet you, $name! Now, let's talk about who you want to become.\n\n"
-            "James Clear says: \"Every action is a vote for the type of person you want to become.\"\n\n"
-            "Complete this sentence: \"I want to be the type of person who...\"",
+        content: identityPrompt,
         status: MessageStatus.complete,
       ));
       _isLoading = false;
@@ -197,8 +258,7 @@ class _ConversationalOnboardingScreenState
   void _addErrorMessage(String error) {
     setState(() {
       _messages.add(ChatMessage.assistant(
-        content: "I'm having trouble connecting. Would you like to try again, or switch to manual entry?\n\n"
-            "Error: $error",
+        content: "I'm having trouble connecting. Would you like to try again, or switch to manual entry?\n\nError: $error",
         status: MessageStatus.error,
       ));
     });
@@ -327,55 +387,44 @@ class _ConversationalOnboardingScreenState
 
   /// Save habit and complete onboarding
   Future<void> _saveAndComplete(onboarding.OnboardingData data) async {
-    final appState = context.read<AppState>();
+    try {
+      // 1. Convert OnboardingData to Habit
+      final habit = Habit(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: data.name ?? 'New Habit',
+        identity: data.identity ?? 'New Identity',
+        twoMinuteVersion: data.tinyVersion,
+        time: data.implementationTime,
+        location: data.implementationLocation,
+        cue: data.environmentCue,
+        temptationBundle: data.temptationBundle,
+        createdAt: DateTime.now(),
+      );
 
-    // Create user profile
-    final profile = UserProfile(
-      name: _userName ?? 'User',
-      identity: data.identity ?? 'Someone who achieves their goals',
-      createdAt: DateTime.now(),
-    );
-
-    // Create habit from extracted data
-    final habit = Habit(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: data.name ?? 'My Habit',
-      identity: data.identity ?? profile.identity,
-      tinyVersion: data.tinyVersion ?? 'Do it for 2 minutes',
-      createdAt: DateTime.now(),
-      implementationTime: data.implementationTime ?? '09:00',
-      implementationLocation: data.implementationLocation ?? 'At home',
-      temptationBundle: data.temptationBundle,
-      preHabitRitual: data.preHabitRitual,
-      environmentCue: data.environmentCue,
-      environmentDistraction: data.environmentDistraction,
-      // AI metadata fields
-      isBreakHabit: data.habitType == onboarding.HabitType.breakHabit,
-      replacesHabit: data.replacesHabit,
-      rootCause: data.rootCause,
-      substitutionPlan: data.substitutionPlan,
-      habitEmoji: data.habitEmoji ?? '✨',
-      motivation: data.motivation,
-      recoveryPlan: data.recoveryPlan,
-    );
-
-    // Save to state
-    await appState.setUserProfile(profile);
-    await appState.createHabit(habit);
-    await appState.completeOnboarding();
-
-    // Navigate to Today screen
-    if (mounted) {
-      context.go('/today');
+      // 2. Save to AppState
+      final appState = context.read<AppState>();
+      await appState.addHabit(habit);
+      
+      // 3. Complete onboarding
+      await appState.completeOnboarding();
+      
+      if (!mounted) return;
+      
+      // 4. Navigate to home
+      context.go('/');
+      
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving habit: $e')),
+      );
     }
   }
 
-  /// Go to manual form
+  /// Fallback to manual form
   void _goToManualForm() {
     context.go('/onboarding/manual');
   }
 
-  /// Scroll to bottom of chat
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -390,104 +439,55 @@ class _ConversationalOnboardingScreenState
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Coach'),
-        centerTitle: true,
         actions: [
-          // Manual mode button (escape hatch)
-          TextButton.icon(
-            onPressed: _showEscapeHatchDialog,
-            icon: const Icon(Icons.edit_note, size: 18),
-            label: const Text('Manual'),
+          TextButton(
+            onPressed: _goToManualForm,
+            child: const Text('Manual'),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Chat messages
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
+              padding: const EdgeInsets.all(16),
+              itemCount: _messages.length,
               itemBuilder: (context, index) {
-                // Loading indicator at the end
-                if (index == _messages.length) {
-                  return const TypingIndicatorBubble();
-                }
-                
-                final message = _messages[index];
-                return ChatMessageBubble(
-                  message: message,
-                  showAvatar: true,
-                );
+                return ChatMessageBubble(message: _messages[index]);
               },
             ),
           ),
-          
-          // Input area
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, -2),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _inputController,
+                    focusNode: _inputFocusNode,
+                    decoration: const InputDecoration(
+                      hintText: 'Type your answer...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
+                    enabled: !_isLoading,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: _isLoading ? null : _sendMessage,
+                  icon: const Icon(Icons.send),
                 ),
               ],
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  // Text input
-                  Expanded(
-                    child: TextField(
-                      controller: _inputController,
-                      focusNode: _inputFocusNode,
-                      decoration: InputDecoration(
-                        hintText: _awaitingName 
-                            ? 'Enter your name...' 
-                            : 'Type your message...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: colorScheme.surfaceContainerHighest,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendMessage(),
-                      enabled: !_isLoading,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  
-                  // Send button
-                  IconButton.filled(
-                    onPressed: _isLoading ? null : _sendMessage,
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.send),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

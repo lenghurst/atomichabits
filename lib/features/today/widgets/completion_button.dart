@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// CompletionButton - Shows either "Mark as Complete" or completion status
 /// 
@@ -9,6 +10,9 @@ import 'package:flutter/material.dart';
 /// - Action text: "I Stayed Strong" instead of "Mark as Complete"
 /// - Completed text: "Avoided today!" instead of "Completed for today!"
 /// - Purple color scheme instead of green
+/// 
+/// **Phase 25.7: The Golden Minute**
+/// - Implements "Heavy Seal" haptic pattern on press.
 class CompletionButton extends StatelessWidget {
   final bool isCompleted;
   final VoidCallback onComplete;
@@ -36,6 +40,17 @@ class _CompleteButton extends StatelessWidget {
   
   const _CompleteButton({required this.onComplete, required this.isBreakHabit});
 
+  Future<void> _handlePress() async {
+    // The "Heavy Seal" Pattern
+    await HapticFeedback.heavyImpact();
+    await Future.delayed(const Duration(milliseconds: 100));
+    await HapticFeedback.heavyImpact();
+    await Future.delayed(const Duration(milliseconds: 300));
+    await HapticFeedback.vibrate(); // Long vibration for the "Seal" melting
+    
+    onComplete();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Phase 12: Different text and color for break habits
@@ -47,7 +62,7 @@ class _CompleteButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: onComplete,
+        onPressed: _handlePress,
         icon: Icon(buttonIcon, size: 24),
         style: ElevatedButton.styleFrom(
           backgroundColor: buttonColor,
