@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
 > **Last Updated:** December 18, 2025 (Commit: TBD)  
-> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet + Lexicon)  
 > **Identity:** The Pact (formerly Atomic Habits Hook)  
 > **Domain:** thepact.co
 
@@ -92,7 +92,8 @@ atomichabits/
 │   │   │   └── ai_service_manager.dart     # Tier Selector
 │   │   ├── experimentation_service.dart    # [NEW] The Lab (A/B/X Testing)
 │   │   ├── deep_link_service.dart          # Install Referrer implementation
-│   │   └── witness_service.dart            # Real-time Pact events
+│   │   ├── witness_service.dart            # Real-time Pact events
+│   │   └── lexicon_service.dart            # [NEW] The Lexicon (Word Repository)
 │   └── features/
 │       └── witness/
 │           ├── witness_dashboard.dart       # Social feed
@@ -298,3 +299,19 @@ We are running A/B/X tests on critical conversion points.
 ### Key Files
 - `supabase/functions/create-wallet-pass/index.ts` - JWT Signer
 - `lib/data/services/wallet_service.dart` - Frontend integration
+
+---
+
+## The Lexicon (Phase 25.9)
+
+**Concept:** A "Social Grimoire" of identity-forming words.
+
+### Architecture
+1.  **Database:** `lexicon` table in Supabase.
+    *   `id`, `user_id`, `word`, `definition`, `etymology`, `identity_tag`, `mastery_level`.
+2.  **AI Enrichment:** `LexiconEnricher` (Gemini 3).
+    *   Input: "Amor Fati"
+    *   Output: Definition, Etymology, Usage Challenge.
+3.  **Frontend:** `LexiconScreen` (Flutter).
+    *   List of collected words.
+    *   "Word of the Day" card.

@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** December 18, 2025 (Commit: TBD)  
-> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet + Lexicon)  
 > **Current Focus:** LAUNCH (New Year's Eve)  
 > **Status:** 🟢 RELEASE CANDIDATE READY
 
@@ -237,6 +237,19 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 - [ ] **Flutter Integration:** `add_to_google_wallet` package implementation.
 - [ ] **Dynamic Updates:** Logic to update pass style (Gold for 7-day streak, Cracked for missed).
 - [ ] **Geofencing:** Embed location data for lock screen notifications at the gym.
+
+---
+
+## 📖 Phase 25.9: The Lexicon (Word Repository)
+
+**Goal:** A "Social Grimoire" of identity-forming words.
+
+**Concept:** "To change your life, change your language."
+
+- [ ] **Database:** Create `lexicon` table in Supabase (User ID, Word, Definition, Etymology).
+- [ ] **AI Enrichment:** Gemini 3 analyzes words for specific personas (e.g., "What does 'Amor Fati' mean to a Stoic?").
+- [ ] **Word Pacts:** Micro-habits to use a specific word 3 times a day.
+- [ ] **Wallet Integration:** Display "Word of the Day" on the back of the Identity Card.
 
 ---
 
