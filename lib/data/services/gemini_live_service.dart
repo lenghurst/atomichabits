@@ -9,20 +9,23 @@ import '../../config/ai_model_config.dart';
 
 /// Gemini Live API Service for Real-Time Voice Interaction
 /// 
-/// Phase 25.3: "The Voice Engine" - Raw WebSocket Implementation
+/// Phase 25.9: "The Resilient Voice" - Circuit Breaker & Reconnection Logic
 /// 
 /// Architecture:
 /// 1. Client requests ephemeral token from Supabase Edge Function
 /// 2. Client connects to Gemini Live API via WebSocket
 /// 3. Bidirectional audio streaming (PCM 16-bit)
+/// 4. Circuit Breaker pattern for graceful degradation to text mode
+/// 
+/// SME Recommendations Implemented (Uncle Bob & James Bach):
+/// - Exponential backoff reconnection with jitter
+/// - Circuit Breaker: 3 failures in 10 seconds triggers fallback
+/// - Automatic degradation to GeminiChatService (text mode)
+/// - Network state monitoring for proactive reconnection
 /// 
 /// Audio Specifications:
 /// - Input: 16kHz, 16-bit PCM, mono
 /// - Output: 24kHz, 16-bit PCM, mono
-/// 
-/// Marketing vs Technical:
-/// - UI displays: "Gemini 3 Flash Voice"
-/// - API calls: "gemini-2.5-flash-native-audio-preview-12-2025"
 class GeminiLiveService {
   // === CONFIGURATION ===
   
@@ -35,6 +38,23 @@ class GeminiLiveService {
   /// Supabase Edge Function for ephemeral token
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
   
+  // === CIRCUIT BREAKER CONFIGURATION ===
+  
+  /// Maximum failures before circuit opens
+  static const int _maxFailures = 3;
+  
+  /// Time window for failure counting (seconds)
+  static const int _failureWindowSeconds = 10;
+  
+  /// Cooldown period when circuit is open (seconds)
+  static const int _circuitCooldownSeconds = 30;
+  
+  /// Maximum reconnection attempts before giving up
+  static const int _maxReconnectAttempts = 5;
+  
+  /// Base delay for exponential backoff (milliseconds)
+  static const int _baseReconnectDelayMs = 1000;
+  
   // === STATE ===
   
   WebSocketChannel? _channel;
@@ -46,6 +66,30 @@ class GeminiLiveService {
   
   /// Current session ID for resumption
   String? _sessionId;
+  
+  /// Stored system instruction for reconnection
+  String? _lastSystemInstruction;
+  bool _lastEnableTranscription = true;
+  
+  // === CIRCUIT BREAKER STATE ===
+  
+  /// Failure timestamps for circuit breaker
+  final List<DateTime> _failureTimestamps = [];
+  
+  /// Circuit breaker state
+  CircuitBreakerState _circuitState = CircuitBreakerState.closed;
+  
+  /// When the circuit was opened (for cooldown calculation)
+  DateTime? _circuitOpenedAt;
+  
+  /// Current reconnection attempt count
+  int _reconnectAttempts = 0;
+  
+  /// Timer for reconnection attempts
+  Timer? _reconnectTimer;
+  
+  /// Flag to indicate if we've fallen back to text mode
+  bool _hasFallenBackToText = false;
   
   // === CALLBACKS ===
   
@@ -67,6 +111,17 @@ class GeminiLiveService {
   /// Called when turn is complete (model finished responding)
   final void Function()? onTurnComplete;
   
+  /// Called when service falls back to text mode (Circuit Breaker triggered)
+  /// UI should switch to text input when this fires
+  final void Function()? onFallbackToTextMode;
+  
+  /// Called when voice mode is restored after fallback
+  final void Function()? onVoiceModeRestored;
+  
+  /// Called when VAD detects voice activity (for immediate UI feedback)
+  /// This fires BEFORE the interrupt signal is sent to provide instant feedback
+  final void Function(bool isActive)? onVoiceActivityDetected;
+  
   GeminiLiveService({
     this.onAudioReceived,
     this.onTranscription,
@@ -74,6 +129,9 @@ class GeminiLiveService {
     this.onConnectionStateChanged,
     this.onError,
     this.onTurnComplete,
+    this.onFallbackToTextMode,
+    this.onVoiceModeRestored,
+    this.onVoiceActivityDetected,
   });
   
   // === PUBLIC API ===
@@ -84,6 +142,12 @@ class GeminiLiveService {
   /// Check if actively listening to audio
   bool get isListening => _isListening;
   
+  /// Check if circuit breaker has triggered fallback to text mode
+  bool get isInTextFallbackMode => _hasFallenBackToText;
+  
+  /// Get current circuit breaker state
+  CircuitBreakerState get circuitState => _circuitState;
+  
   /// Connect to Gemini Live API
   /// 
   /// [systemInstruction] - Optional system prompt for the session
@@ -92,6 +156,19 @@ class GeminiLiveService {
     String? systemInstruction,
     bool enableTranscription = true,
   }) async {
+    // Store for reconnection
+    _lastSystemInstruction = systemInstruction;
+    _lastEnableTranscription = enableTranscription;
+    
+    // Check circuit breaker state
+    if (!_canAttemptConnection()) {
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Circuit breaker OPEN - falling back to text mode');
+      }
+      _triggerTextFallback();
+      return false;
+    }
+    
     if (_isConnected) {
       debugPrint('GeminiLiveService: Already connected');
       return true;
@@ -103,6 +180,7 @@ class GeminiLiveService {
       // Step 1: Get ephemeral token from Supabase Edge Function
       final token = await _getEphemeralToken();
       if (token == null) {
+        _recordFailure();
         _notifyError('Failed to obtain ephemeral token');
         _notifyConnectionState(LiveConnectionState.disconnected);
         return false;
@@ -114,17 +192,17 @@ class GeminiLiveService {
       // Step 3: Connect to WebSocket
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
       
-      // Step 4: Set up message listener
+      // Step 4: Set up message listener with error handling
       _subscription = _channel!.stream.listen(
         _handleMessage,
         onError: (error) {
           debugPrint('GeminiLiveService: WebSocket error: $error');
-          _notifyError('Connection error: $error');
-          _disconnect();
+          _recordFailure();
+          _handleDisconnection(wasError: true);
         },
         onDone: () {
           debugPrint('GeminiLiveService: WebSocket closed');
-          _disconnect();
+          _handleDisconnection(wasError: false);
         },
       );
       
@@ -135,7 +213,14 @@ class GeminiLiveService {
       );
       
       _isConnected = true;
+      _reconnectAttempts = 0; // Reset on successful connection
       _notifyConnectionState(LiveConnectionState.connected);
+      
+      // If we were in fallback mode, restore voice mode
+      if (_hasFallenBackToText) {
+        _hasFallenBackToText = false;
+        onVoiceModeRestored?.call();
+      }
       
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connected to ${AIModelConfig.tier2Model}');
@@ -146,14 +231,20 @@ class GeminiLiveService {
       
     } catch (e) {
       debugPrint('GeminiLiveService: Connection failed: $e');
+      _recordFailure();
       _notifyError('Connection failed: $e');
       _notifyConnectionState(LiveConnectionState.disconnected);
+      
+      // Attempt reconnection if circuit is still closed
+      _scheduleReconnect();
+      
       return false;
     }
   }
   
   /// Disconnect from Live API
   Future<void> disconnect() async {
+    _cancelReconnect();
     await _disconnect();
   }
   
@@ -161,6 +252,11 @@ class GeminiLiveService {
   /// 
   /// [audioData] - Raw PCM audio bytes (16-bit, 16kHz, mono)
   void sendAudio(Uint8List audioData) {
+    if (_hasFallenBackToText) {
+      debugPrint('GeminiLiveService: In text fallback mode - audio disabled');
+      return;
+    }
+    
     if (!_isConnected || _channel == null) {
       debugPrint('GeminiLiveService: Cannot send audio - not connected');
       return;
@@ -180,7 +276,12 @@ class GeminiLiveService {
       }
     });
     
-    _channel!.sink.add(message);
+    try {
+      _channel!.sink.add(message);
+    } catch (e) {
+      debugPrint('GeminiLiveService: Failed to send audio: $e');
+      _recordFailure();
+    }
   }
   
   /// Send text message to the model
@@ -202,7 +303,12 @@ class GeminiLiveService {
       }
     });
     
-    _channel!.sink.add(message);
+    try {
+      _channel!.sink.add(message);
+    } catch (e) {
+      debugPrint('GeminiLiveService: Failed to send text: $e');
+      _recordFailure();
+    }
   }
   
   /// Interrupt the model's current response
@@ -219,10 +325,28 @@ class GeminiLiveService {
       }
     });
     
-    _channel!.sink.add(message);
+    try {
+      _channel!.sink.add(message);
+      
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Sent interrupt signal');
+      }
+    } catch (e) {
+      debugPrint('GeminiLiveService: Failed to send interrupt: $e');
+    }
+  }
+  
+  /// Notify that voice activity was detected (for immediate UI feedback)
+  /// 
+  /// Call this from the audio recorder when VAD detects speech.
+  /// This provides instant visual feedback BEFORE the interrupt is processed.
+  /// (Don Norman's recommendation: "The user needs to know they were heard NOW")
+  void notifyVoiceActivityDetected(bool isActive) {
+    onVoiceActivityDetected?.call(isActive);
     
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Sent interrupt signal');
+    // If voice detected while model is speaking, send interrupt
+    if (isActive && _isConnected) {
+      interrupt();
     }
   }
   
@@ -240,6 +364,188 @@ class GeminiLiveService {
     if (kDebugMode) {
       debugPrint('GeminiLiveService: Stopped listening');
     }
+  }
+  
+  /// Manually reset the circuit breaker (for testing or admin override)
+  void resetCircuitBreaker() {
+    _circuitState = CircuitBreakerState.closed;
+    _failureTimestamps.clear();
+    _circuitOpenedAt = null;
+    _reconnectAttempts = 0;
+    _hasFallenBackToText = false;
+    
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Circuit breaker manually reset');
+    }
+  }
+  
+  /// Attempt to restore voice mode after fallback
+  Future<bool> attemptVoiceModeRestore() async {
+    if (!_hasFallenBackToText) return true;
+    
+    // Check if cooldown has passed
+    if (_circuitOpenedAt != null) {
+      final elapsed = DateTime.now().difference(_circuitOpenedAt!).inSeconds;
+      if (elapsed < _circuitCooldownSeconds) {
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: Cooldown not complete (${_circuitCooldownSeconds - elapsed}s remaining)');
+        }
+        return false;
+      }
+    }
+    
+    // Move to half-open state and attempt connection
+    _circuitState = CircuitBreakerState.halfOpen;
+    
+    final success = await connect(
+      systemInstruction: _lastSystemInstruction,
+      enableTranscription: _lastEnableTranscription,
+    );
+    
+    if (success) {
+      _circuitState = CircuitBreakerState.closed;
+    } else {
+      _circuitState = CircuitBreakerState.open;
+      _circuitOpenedAt = DateTime.now();
+    }
+    
+    return success;
+  }
+  
+  // === CIRCUIT BREAKER LOGIC ===
+  
+  /// Check if we can attempt a connection (circuit breaker logic)
+  bool _canAttemptConnection() {
+    // Clean old failures outside the window
+    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
+    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
+    
+    switch (_circuitState) {
+      case CircuitBreakerState.closed:
+        return true;
+        
+      case CircuitBreakerState.open:
+        // Check if cooldown has passed
+        if (_circuitOpenedAt != null) {
+          final elapsed = DateTime.now().difference(_circuitOpenedAt!).inSeconds;
+          if (elapsed >= _circuitCooldownSeconds) {
+            _circuitState = CircuitBreakerState.halfOpen;
+            return true;
+          }
+        }
+        return false;
+        
+      case CircuitBreakerState.halfOpen:
+        return true;
+    }
+  }
+  
+  /// Record a failure for circuit breaker
+  void _recordFailure() {
+    _failureTimestamps.add(DateTime.now());
+    
+    // Clean old failures
+    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
+    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
+    
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Failure recorded (${_failureTimestamps.length}/$_maxFailures in window)');
+    }
+    
+    // Check if circuit should open
+    if (_failureTimestamps.length >= _maxFailures) {
+      _openCircuit();
+    }
+  }
+  
+  /// Open the circuit breaker
+  void _openCircuit() {
+    _circuitState = CircuitBreakerState.open;
+    _circuitOpenedAt = DateTime.now();
+    
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Circuit breaker OPENED - too many failures');
+    }
+    
+    _triggerTextFallback();
+  }
+  
+  /// Trigger fallback to text mode
+  void _triggerTextFallback() {
+    if (!_hasFallenBackToText) {
+      _hasFallenBackToText = true;
+      onFallbackToTextMode?.call();
+      
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Falling back to text mode');
+      }
+    }
+  }
+  
+  // === RECONNECTION LOGIC ===
+  
+  /// Handle disconnection with potential reconnection
+  void _handleDisconnection({required bool wasError}) {
+    _isConnected = false;
+    _isListening = false;
+    
+    _subscription?.cancel();
+    _subscription = null;
+    
+    _channel?.sink.close();
+    _channel = null;
+    
+    if (wasError) {
+      _notifyError('Connection lost');
+      _scheduleReconnect();
+    }
+    
+    _notifyConnectionState(LiveConnectionState.disconnected);
+  }
+  
+  /// Schedule a reconnection attempt with exponential backoff
+  void _scheduleReconnect() {
+    if (!_canAttemptConnection()) {
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Cannot reconnect - circuit breaker open');
+      }
+      return;
+    }
+    
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Max reconnect attempts reached');
+      }
+      _recordFailure(); // This may trigger circuit breaker
+      return;
+    }
+    
+    _reconnectAttempts++;
+    
+    // Exponential backoff with jitter
+    final baseDelay = _baseReconnectDelayMs * (1 << (_reconnectAttempts - 1));
+    final jitter = (baseDelay * 0.2 * (DateTime.now().millisecond / 1000)).round();
+    final delay = Duration(milliseconds: baseDelay + jitter);
+    
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Scheduling reconnect attempt $_reconnectAttempts in ${delay.inMilliseconds}ms');
+    }
+    
+    _notifyConnectionState(LiveConnectionState.reconnecting);
+    
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(delay, () async {
+      await connect(
+        systemInstruction: _lastSystemInstruction,
+        enableTranscription: _lastEnableTranscription,
+      );
+    });
+  }
+  
+  /// Cancel any pending reconnection
+  void _cancelReconnect() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
   }
   
   // === PRIVATE METHODS ===
@@ -417,8 +723,9 @@ class GeminiLiveService {
       // Handle errors
       if (data.containsKey('error')) {
         final error = data['error'] as Map<String, dynamic>;
-        final message = error['message'] as String? ?? 'Unknown error';
-        _notifyError(message);
+        final errorMessage = error['message'] as String? ?? 'Unknown error';
+        _notifyError(errorMessage);
+        _recordFailure();
       }
       
     } catch (e) {
@@ -459,6 +766,7 @@ class GeminiLiveService {
   
   /// Dispose resources
   void dispose() {
+    _cancelReconnect();
     _disconnect();
   }
 }
@@ -469,6 +777,18 @@ enum LiveConnectionState {
   connecting,
   connected,
   reconnecting,
+}
+
+/// Circuit breaker states
+enum CircuitBreakerState {
+  /// Circuit is closed - connections allowed
+  closed,
+  
+  /// Circuit is open - connections blocked, fallback to text mode
+  open,
+  
+  /// Circuit is half-open - testing if service has recovered
+  halfOpen,
 }
 
 /// Extension for LiveConnectionState display
@@ -488,5 +808,19 @@ extension LiveConnectionStateExtension on LiveConnectionState {
   
   bool get isActive {
     return this == LiveConnectionState.connected;
+  }
+}
+
+/// Extension for CircuitBreakerState display
+extension CircuitBreakerStateExtension on CircuitBreakerState {
+  String get displayName {
+    switch (this) {
+      case CircuitBreakerState.closed:
+        return 'Healthy';
+      case CircuitBreakerState.open:
+        return 'Degraded (Text Mode)';
+      case CircuitBreakerState.halfOpen:
+        return 'Recovering';
+    }
   }
 }

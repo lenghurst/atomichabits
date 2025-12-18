@@ -2,11 +2,16 @@
 /// 
 /// Phase 14.5: "The Iron Architect" - Stricter Behavioral Engineering
 /// Phase 17: "Brain Surgery" - Reasoning-First Prompt Architecture
+/// Phase 25.9: "Variable Rewards" - Persona Randomisation (Nir Eyal)
 /// 
-/// Optimized for DeepSeek-V3.2's "Thinking in Tool-Use" capability.
-/// The key insight: V3.2 can REASON before acting, which means we can
-/// give it strong negative constraints and it will "think" about why
-/// something violates them before outputting.
+/// SME Recommendation (Nir Eyal - Hooked):
+/// "If Gemini-2.5-Flash responds with the same 'Great job!' every time I complete
+/// a habit, I will tune it out in 3 days. The 'Split Brain' reasoning needs to
+/// inject unpredictability."
+/// 
+/// Solution: Implement persona randomisation for voice interactions.
+/// The AI's tone varies between sessions (Stoic, Drill Sergeant, Empathetic, etc.)
+/// to create Variable Rewards in the Hook Model.
 /// 
 /// Design Principles:
 /// 1. REASON → ACT: Force the model to think before outputting
@@ -15,9 +20,275 @@
 /// 4. 2-MINUTE MAXIMUM: Hard ceiling on habit size (non-negotiable)
 /// 5. STRUCTURED OUTPUT: [HABIT_DATA] markers for reliable parsing
 /// 6. NEVER MISS TWICE: Embed recovery planning upfront
+/// 7. VARIABLE REWARDS: Randomise persona for unpredictable engagement
 /// 
 /// Collaboration: Elon Musk (physics-based systems) + James Clear (Atomic Habits)
 library;
+
+import 'dart:math';
+
+// ============================================================
+// VARIABLE REWARD PERSONAS (Nir Eyal's Hook Model)
+// ============================================================
+
+/// AI Coach Personas for Variable Reward System
+/// 
+/// These personas create unpredictability in the AI's responses,
+/// which is a key component of the "Variable Reward" in Nir Eyal's
+/// Hook Model. Users don't know which "coach" they'll get, which
+/// keeps them engaged.
+enum CoachPersona {
+  /// The Stoic - Marcus Aurelius inspired
+  /// Calm, philosophical, focuses on what you can control
+  stoic,
+  
+  /// The Drill Sergeant - Tough love, no excuses
+  /// Direct, challenging, holds you accountable
+  drillSergeant,
+  
+  /// The Empathetic Friend - Warm and understanding
+  /// Supportive, validating, celebrates small wins
+  empathetic,
+  
+  /// The Scientist - Data-driven, analytical
+  /// Curious, pattern-focused, asks probing questions
+  scientist,
+  
+  /// The Philosopher - Deep, reflective
+  /// Asks "why" questions, connects habits to meaning
+  philosopher,
+  
+  /// The Cheerleader - High energy, enthusiastic
+  /// Celebratory, motivating, focuses on momentum
+  cheerleader,
+}
+
+/// Extension for persona metadata
+extension CoachPersonaExtension on CoachPersona {
+  /// Human-readable name
+  String get displayName {
+    switch (this) {
+      case CoachPersona.stoic:
+        return 'The Stoic';
+      case CoachPersona.drillSergeant:
+        return 'The Sergeant';
+      case CoachPersona.empathetic:
+        return 'The Friend';
+      case CoachPersona.scientist:
+        return 'The Scientist';
+      case CoachPersona.philosopher:
+        return 'The Philosopher';
+      case CoachPersona.cheerleader:
+        return 'The Cheerleader';
+    }
+  }
+  
+  /// Emoji representation
+  String get emoji {
+    switch (this) {
+      case CoachPersona.stoic:
+        return '🏛️';
+      case CoachPersona.drillSergeant:
+        return '🎖️';
+      case CoachPersona.empathetic:
+        return '💙';
+      case CoachPersona.scientist:
+        return '🔬';
+      case CoachPersona.philosopher:
+        return '🦉';
+      case CoachPersona.cheerleader:
+        return '🎉';
+    }
+  }
+  
+  /// Voice name for Gemini Live API
+  String get voiceName {
+    switch (this) {
+      case CoachPersona.stoic:
+        return 'Kore';      // Calm, measured
+      case CoachPersona.drillSergeant:
+        return 'Charon';    // Deep, authoritative
+      case CoachPersona.empathetic:
+        return 'Aoede';     // Warm, friendly
+      case CoachPersona.scientist:
+        return 'Puck';      // Clear, precise
+      case CoachPersona.philosopher:
+        return 'Kore';      // Thoughtful
+      case CoachPersona.cheerleader:
+        return 'Aoede';     // Energetic
+    }
+  }
+  
+  /// Persona-specific system prompt modifier
+  String get promptModifier {
+    switch (this) {
+      case CoachPersona.stoic:
+        return '''
+## PERSONA: THE STOIC (Marcus Aurelius)
+- Speak with calm wisdom and measured words
+- Focus on what the user CAN control, not what they can't
+- Use phrases like: "The obstacle is the way", "This is within your power"
+- Acknowledge difficulty without dwelling on it
+- Remind them that consistency is a choice they make each day
+- Keep responses brief and impactful (Stoic brevity)
+''';
+      case CoachPersona.drillSergeant:
+        return '''
+## PERSONA: THE DRILL SERGEANT
+- Be direct and no-nonsense - cut through excuses
+- Use phrases like: "No excuses", "You committed to this", "Show up anyway"
+- Challenge them when they make excuses
+- Celebrate action, not intention
+- Keep it short and punchy
+- But always end with belief in their capability
+''';
+      case CoachPersona.empathetic:
+        return '''
+## PERSONA: THE EMPATHETIC FRIEND
+- Be warm, understanding, and supportive
+- Validate their feelings before offering advice
+- Use phrases like: "I hear you", "That's completely understandable", "You're doing great"
+- Celebrate even the smallest wins enthusiastically
+- Ask how they're feeling, not just what they did
+- Make them feel seen and supported
+''';
+      case CoachPersona.scientist:
+        return '''
+## PERSONA: THE SCIENTIST
+- Be curious and data-driven
+- Ask probing questions about patterns: "What time did this happen?", "What was different today?"
+- Use phrases like: "Interesting pattern", "Let's test a hypothesis", "The data suggests"
+- Focus on systems and experiments, not willpower
+- Treat setbacks as data points, not failures
+- Suggest small experiments to optimise their system
+''';
+      case CoachPersona.philosopher:
+        return '''
+## PERSONA: THE PHILOSOPHER
+- Ask deep "why" questions
+- Connect habits to meaning and purpose
+- Use phrases like: "What does this habit mean to you?", "Who are you becoming?"
+- Reference the identity they're building
+- Be reflective and thought-provoking
+- Help them see the bigger picture
+''';
+      case CoachPersona.cheerleader:
+        return '''
+## PERSONA: THE CHEERLEADER
+- Be high-energy and enthusiastic!
+- Celebrate EVERYTHING - even showing up is a win
+- Use phrases like: "Yes!", "That's amazing!", "You're on fire!"
+- Focus on momentum and streaks
+- Make them feel like a champion
+- Use exclamation points liberally (but not annoyingly)
+''';
+    }
+  }
+}
+
+/// Persona Selector for Variable Rewards
+/// 
+/// Implements weighted random selection with history tracking
+/// to ensure variety and prevent repetition.
+class PersonaSelector {
+  static final Random _random = Random();
+  static CoachPersona? _lastPersona;
+  static final List<CoachPersona> _recentPersonas = [];
+  static const int _historySize = 3;
+  
+  /// Select a random persona, avoiding recent repetition
+  /// 
+  /// Uses weighted selection to:
+  /// 1. Never repeat the immediately previous persona
+  /// 2. Reduce probability of recently used personas
+  /// 3. Slightly favour certain personas based on context
+  static CoachPersona selectRandom({
+    bool? userHadGoodDay,
+    bool? userMissedHabit,
+    int? currentStreak,
+  }) {
+    // Build weighted list excluding recent personas
+    final candidates = <CoachPersona>[];
+    
+    for (final persona in CoachPersona.values) {
+      // Never immediately repeat
+      if (persona == _lastPersona) continue;
+      
+      // Base weight
+      int weight = 10;
+      
+      // Reduce weight for recently used
+      if (_recentPersonas.contains(persona)) {
+        weight = 3;
+      }
+      
+      // Context-based weighting
+      if (userMissedHabit == true) {
+        // After a miss, favour empathetic or stoic
+        if (persona == CoachPersona.empathetic || persona == CoachPersona.stoic) {
+          weight += 5;
+        }
+        // Avoid drill sergeant after a miss (too harsh)
+        if (persona == CoachPersona.drillSergeant) {
+          weight = 2;
+        }
+      }
+      
+      if (userHadGoodDay == true) {
+        // After success, favour cheerleader or scientist
+        if (persona == CoachPersona.cheerleader || persona == CoachPersona.scientist) {
+          weight += 5;
+        }
+      }
+      
+      if (currentStreak != null && currentStreak > 7) {
+        // Long streak - favour philosopher for reflection
+        if (persona == CoachPersona.philosopher) {
+          weight += 3;
+        }
+      }
+      
+      // Add weighted entries
+      for (int i = 0; i < weight; i++) {
+        candidates.add(persona);
+      }
+    }
+    
+    // Select random from weighted list
+    final selected = candidates[_random.nextInt(candidates.length)];
+    
+    // Update history
+    _lastPersona = selected;
+    _recentPersonas.add(selected);
+    if (_recentPersonas.length > _historySize) {
+      _recentPersonas.removeAt(0);
+    }
+    
+    return selected;
+  }
+  
+  /// Get a specific persona by name (for testing or user preference)
+  static CoachPersona? getByName(String name) {
+    final lower = name.toLowerCase();
+    for (final persona in CoachPersona.values) {
+      if (persona.name.toLowerCase() == lower ||
+          persona.displayName.toLowerCase() == lower) {
+        return persona;
+      }
+    }
+    return null;
+  }
+  
+  /// Reset the history (for testing)
+  static void resetHistory() {
+    _lastPersona = null;
+    _recentPersonas.clear();
+  }
+}
+
+// ============================================================
+// SYSTEM PROMPTS
+// ============================================================
 
 /// System prompts for the AI Habit Coach
 /// 
@@ -326,6 +597,65 @@ CRITICAL: The tinyVersion MUST be completable in 2 minutes or less.
 </SYSTEM>
 ''';
 
+  /// Voice session prompt with persona injection
+  /// 
+  /// Phase 25.9: Variable Rewards - Persona is injected at runtime
+  static String voiceSession({
+    required CoachPersona persona,
+    String? userName,
+    String? habitName,
+    int? currentStreak,
+    bool? completedToday,
+  }) {
+    final personaModifier = persona.promptModifier;
+    final context = StringBuffer();
+    
+    if (userName != null) {
+      context.writeln('User name: $userName');
+    }
+    if (habitName != null) {
+      context.writeln('Current habit: $habitName');
+    }
+    if (currentStreak != null) {
+      context.writeln('Current streak: $currentStreak days');
+    }
+    if (completedToday != null) {
+      context.writeln('Completed today: ${completedToday ? "Yes" : "No"}');
+    }
+    
+    return '''
+<SYSTEM>
+You are a voice-based habit coach for The Pact app.
+
+$personaModifier
+
+## CONTEXT
+$context
+
+## VOICE INTERACTION GUIDELINES
+- Keep responses SHORT (under 30 words for voice)
+- Speak naturally, as if in conversation
+- Use the user's name occasionally
+- Reference their specific habit and streak
+- Ask ONE question at a time
+- Pause for their response
+
+## CORE PRINCIPLES
+- Identity-first language ("You're becoming a reader")
+- Never shame for misses
+- Celebrate small wins
+- Focus on systems, not motivation
+- Apply the 2-Minute Rule
+
+## RESPONSE STYLE
+- Conversational, not robotic
+- Vary your energy based on context
+- Use your persona's characteristic phrases
+- End with engagement (question or encouragement)
+</SYSTEM>
+''';
+  }
+
   /// Get prompt for conversation type
   static String getPrompt(ConversationType type) {
     switch (type) {
@@ -342,6 +672,31 @@ CRITICAL: The tinyVersion MUST be completable in 2 minutes or less.
       case ConversationType.magicWand:
         return magicWand;
     }
+  }
+  
+  /// Get voice session prompt with random persona
+  /// 
+  /// Phase 25.9: Variable Rewards implementation
+  static String getVoicePrompt({
+    String? userName,
+    String? habitName,
+    int? currentStreak,
+    bool? completedToday,
+    bool? userMissedHabit,
+  }) {
+    final persona = PersonaSelector.selectRandom(
+      userHadGoodDay: completedToday,
+      userMissedHabit: userMissedHabit,
+      currentStreak: currentStreak,
+    );
+    
+    return voiceSession(
+      persona: persona,
+      userName: userName,
+      habitName: habitName,
+      currentStreak: currentStreak,
+      completedToday: completedToday,
+    );
   }
 }
 

@@ -1,10 +1,16 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Phase 25.3: The Lab 2.0 - A/B Testing with Analytics Tracking
+/// Phase 25.9: The Lab 2.0 - A/B Testing with Dependency Injection
+/// 
+/// SME Recommendation (Uncle Bob - Clean Architecture):
+/// "The ExperimentationService is tightly coupled to SharedPreferences.
+/// You cannot unit test your A/B buckets without mocking the entire device storage."
+/// 
+/// Solution: Introduce StorageProvider and AnalyticsProvider interfaces
+/// for proper dependency injection and testability.
 /// 
 /// Experiments:
 /// - theHook: Onboarding opener variant (A/B/C)
@@ -61,15 +67,277 @@ extension ExperimentExtension on Experiment {
   }
 }
 
+// ============================================================
+// DEPENDENCY INJECTION INTERFACES (Uncle Bob's Clean Architecture)
+// ============================================================
+
+/// Abstract interface for key-value storage
+/// 
+/// This allows unit tests to inject a mock storage provider
+/// instead of requiring SharedPreferences or device storage.
+abstract class StorageProvider {
+  /// Check if a key exists
+  bool containsKey(String key);
+  
+  /// Get a string value
+  String? getString(String key);
+  
+  /// Set a string value
+  Future<bool> setString(String key, String value);
+  
+  /// Get a boolean value
+  bool? getBool(String key);
+  
+  /// Set a boolean value
+  Future<bool> setBool(String key, bool value);
+  
+  /// Remove a key
+  Future<bool> remove(String key);
+}
+
+/// Abstract interface for analytics logging
+/// 
+/// This allows unit tests to inject a mock analytics provider
+/// and also enables swapping between Supabase, PostHog, Amplitude, etc.
+abstract class AnalyticsProvider {
+  /// Log an experiment assignment
+  Future<void> logAssignment({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required bool isNewAssignment,
+    String? appVersion,
+  });
+  
+  /// Log an experiment event (exposure, conversion, etc.)
+  Future<void> logEvent({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required String eventType,
+    String? conversionType,
+    Map<String, dynamic>? metadata,
+  });
+}
+
+// ============================================================
+// PRODUCTION IMPLEMENTATIONS
+// ============================================================
+
+/// Production implementation using SharedPreferences
+/// 
+/// Import: `import 'package:shared_preferences/shared_preferences.dart';`
+class SharedPreferencesStorageProvider implements StorageProvider {
+  final dynamic _prefs; // SharedPreferences
+  
+  SharedPreferencesStorageProvider(this._prefs);
+  
+  @override
+  bool containsKey(String key) => _prefs.containsKey(key);
+  
+  @override
+  String? getString(String key) => _prefs.getString(key);
+  
+  @override
+  Future<bool> setString(String key, String value) => _prefs.setString(key, value);
+  
+  @override
+  bool? getBool(String key) => _prefs.getBool(key);
+  
+  @override
+  Future<bool> setBool(String key, bool value) => _prefs.setBool(key, value);
+  
+  @override
+  Future<bool> remove(String key) => _prefs.remove(key);
+}
+
+/// Production implementation using Supabase
+class SupabaseAnalyticsProvider implements AnalyticsProvider {
+  final SupabaseClient _client;
+  
+  SupabaseAnalyticsProvider(this._client);
+  
+  /// Factory constructor using the default Supabase instance
+  factory SupabaseAnalyticsProvider.instance() {
+    return SupabaseAnalyticsProvider(Supabase.instance.client);
+  }
+  
+  @override
+  Future<void> logAssignment({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required bool isNewAssignment,
+    String? appVersion,
+  }) async {
+    final now = DateTime.now().toUtc();
+    
+    await _client.from('experiment_assignments').upsert({
+      'user_id': userId,
+      'experiment_name': experimentName,
+      'variant': variant,
+      'assigned_at': now.toIso8601String(),
+      'is_new_assignment': isNewAssignment,
+      'app_version': appVersion ?? '5.7.0',
+    }, onConflict: 'user_id,experiment_name');
+  }
+  
+  @override
+  Future<void> logEvent({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required String eventType,
+    String? conversionType,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final now = DateTime.now().toUtc();
+    
+    await _client.from('experiment_events').insert({
+      'user_id': userId,
+      'experiment_name': experimentName,
+      'variant': variant,
+      'event_type': eventType,
+      if (conversionType != null) 'conversion_type': conversionType,
+      if (metadata != null) 'metadata': jsonEncode(metadata),
+      'created_at': now.toIso8601String(),
+    });
+  }
+}
+
+// ============================================================
+// TEST IMPLEMENTATIONS (for unit testing)
+// ============================================================
+
+/// In-memory storage provider for unit tests
+class InMemoryStorageProvider implements StorageProvider {
+  final Map<String, dynamic> _storage = {};
+  
+  @override
+  bool containsKey(String key) => _storage.containsKey(key);
+  
+  @override
+  String? getString(String key) => _storage[key] as String?;
+  
+  @override
+  Future<bool> setString(String key, String value) async {
+    _storage[key] = value;
+    return true;
+  }
+  
+  @override
+  bool? getBool(String key) => _storage[key] as bool?;
+  
+  @override
+  Future<bool> setBool(String key, bool value) async {
+    _storage[key] = value;
+    return true;
+  }
+  
+  @override
+  Future<bool> remove(String key) async {
+    _storage.remove(key);
+    return true;
+  }
+  
+  /// Clear all storage (useful between tests)
+  void clear() => _storage.clear();
+  
+  /// Get all stored data (for test assertions)
+  Map<String, dynamic> get allData => Map.unmodifiable(_storage);
+}
+
+/// No-op analytics provider for unit tests
+class NoOpAnalyticsProvider implements AnalyticsProvider {
+  final List<Map<String, dynamic>> assignments = [];
+  final List<Map<String, dynamic>> events = [];
+  
+  @override
+  Future<void> logAssignment({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required bool isNewAssignment,
+    String? appVersion,
+  }) async {
+    assignments.add({
+      'userId': userId,
+      'experimentName': experimentName,
+      'variant': variant,
+      'isNewAssignment': isNewAssignment,
+      'appVersion': appVersion,
+    });
+  }
+  
+  @override
+  Future<void> logEvent({
+    required String userId,
+    required String experimentName,
+    required String variant,
+    required String eventType,
+    String? conversionType,
+    Map<String, dynamic>? metadata,
+  }) async {
+    events.add({
+      'userId': userId,
+      'experimentName': experimentName,
+      'variant': variant,
+      'eventType': eventType,
+      'conversionType': conversionType,
+      'metadata': metadata,
+    });
+  }
+  
+  /// Clear all logged data (useful between tests)
+  void clear() {
+    assignments.clear();
+    events.clear();
+  }
+}
+
+// ============================================================
+// EXPERIMENTATION SERVICE
+// ============================================================
+
 class ExperimentationService {
   static const String _storageKeyPrefix = 'exp_bucket_';
   static const String _assignmentLoggedPrefix = 'exp_logged_';
-  final SharedPreferences _prefs;
   
-  /// Flag to enable/disable analytics logging (for testing)
+  final StorageProvider _storage;
+  final AnalyticsProvider? _analytics;
+  
+  /// Flag to enable/disable analytics logging
   bool analyticsEnabled = true;
+  
+  /// App version for analytics (injected for testability)
+  String appVersion = '5.7.0';
 
-  ExperimentationService(this._prefs);
+  /// Production constructor using SharedPreferences and Supabase
+  /// 
+  /// Usage:
+  /// ```dart
+  /// final prefs = await SharedPreferences.getInstance();
+  /// final service = ExperimentationService.production(prefs);
+  /// ```
+  factory ExperimentationService.production(dynamic sharedPreferences) {
+    return ExperimentationService(
+      storage: SharedPreferencesStorageProvider(sharedPreferences),
+      analytics: SupabaseAnalyticsProvider.instance(),
+    );
+  }
+  
+  /// Test constructor with injectable dependencies
+  /// 
+  /// Usage:
+  /// ```dart
+  /// final storage = InMemoryStorageProvider();
+  /// final analytics = NoOpAnalyticsProvider();
+  /// final service = ExperimentationService(storage: storage, analytics: analytics);
+  /// ```
+  ExperimentationService({
+    required StorageProvider storage,
+    AnalyticsProvider? analytics,
+  }) : _storage = storage, _analytics = analytics;
 
   /// Returns the assigned variant for a given experiment (A, B, C, etc.)
   /// Uses deterministic hashing: hash(userId + experimentId) % variantCount
@@ -81,8 +349,8 @@ class ExperimentationService {
     final effectiveVariantCount = variantCount ?? experiment.variantCount;
 
     // 1. Check local cache first (Sticky Bucketing)
-    if (_prefs.containsKey(storageKey)) {
-      final variant = _prefs.getString(storageKey)!;
+    if (_storage.containsKey(storageKey)) {
+      final variant = _storage.getString(storageKey)!;
       
       // Log assignment if not already logged
       _logAssignmentIfNeeded(experiment, userId, variant);
@@ -102,7 +370,7 @@ class ExperimentationService {
     final variantLabel = String.fromCharCode(65 + bucketIndex); // 65 is 'A'
 
     // 3. Persist assignment
-    _prefs.setString(storageKey, variantLabel);
+    _storage.setString(storageKey, variantLabel);
     
     // 4. Log to analytics
     _logAssignmentIfNeeded(experiment, userId, variantLabel, isNewAssignment: true);
@@ -127,20 +395,18 @@ class ExperimentationService {
   /// Log all experiment assignments to analytics
   /// Call this after user authentication to ensure all buckets are tracked
   Future<void> logAllAssignments(String userId) async {
-    if (!analyticsEnabled) return;
+    if (!analyticsEnabled || _analytics == null) return;
     
     final context = getExperimentContext(userId);
     
     try {
-      final supabase = Supabase.instance.client;
-      
-      // Log each experiment assignment
       for (final entry in context.entries) {
-        await _logToSupabase(
-          supabase,
+        await _analytics!.logAssignment(
           userId: userId,
           experimentName: entry.key,
           variant: entry.value,
+          isNewAssignment: false,
+          appVersion: appVersion,
         );
       }
       
@@ -162,64 +428,40 @@ class ExperimentationService {
     String variant, {
     bool isNewAssignment = false,
   }) async {
-    if (!analyticsEnabled) return;
+    if (!analyticsEnabled || _analytics == null) return;
     
     final loggedKey = '$_assignmentLoggedPrefix${experiment.analyticsName}';
     
     // Check if already logged
-    if (_prefs.containsKey(loggedKey) && !isNewAssignment) {
+    if (_storage.containsKey(loggedKey) && !isNewAssignment) {
       return;
     }
     
     try {
-      final supabase = Supabase.instance.client;
-      
-      await _logToSupabase(
-        supabase,
+      await _analytics!.logAssignment(
         userId: userId,
         experimentName: experiment.analyticsName,
         variant: variant,
         isNewAssignment: isNewAssignment,
+        appVersion: appVersion,
+      );
+      
+      // Also log as an event for time-series analysis
+      await _analytics!.logEvent(
+        userId: userId,
+        experimentName: experiment.analyticsName,
+        variant: variant,
+        eventType: isNewAssignment ? 'assignment' : 'exposure',
       );
       
       // Mark as logged
-      _prefs.setBool(loggedKey, true);
+      _storage.setBool(loggedKey, true);
       
     } catch (e) {
       if (kDebugMode) {
         debugPrint('ExperimentationService: Failed to log assignment: $e');
       }
     }
-  }
-  
-  /// Log assignment to Supabase
-  Future<void> _logToSupabase(
-    SupabaseClient supabase, {
-    required String userId,
-    required String experimentName,
-    required String variant,
-    bool isNewAssignment = false,
-  }) async {
-    final now = DateTime.now().toUtc();
-    
-    // Insert or update the assignment record
-    await supabase.from('experiment_assignments').upsert({
-      'user_id': userId,
-      'experiment_name': experimentName,
-      'variant': variant,
-      'assigned_at': now.toIso8601String(),
-      'is_new_assignment': isNewAssignment,
-      'app_version': '5.7.0', // TODO: Get from package_info_plus
-    }, onConflict: 'user_id,experiment_name');
-    
-    // Also log as an event for time-series analysis
-    await supabase.from('experiment_events').insert({
-      'user_id': userId,
-      'experiment_name': experimentName,
-      'variant': variant,
-      'event_type': isNewAssignment ? 'assignment' : 'exposure',
-      'created_at': now.toIso8601String(),
-    });
   }
   
   /// Log a conversion event for an experiment
@@ -232,22 +474,19 @@ class ExperimentationService {
     String conversionType, {
     Map<String, dynamic>? metadata,
   }) async {
-    if (!analyticsEnabled) return;
+    if (!analyticsEnabled || _analytics == null) return;
     
     try {
-      final supabase = Supabase.instance.client;
       final variant = getVariant(experiment, userId);
-      final now = DateTime.now().toUtc();
       
-      await supabase.from('experiment_events').insert({
-        'user_id': userId,
-        'experiment_name': experiment.analyticsName,
-        'variant': variant,
-        'event_type': 'conversion',
-        'conversion_type': conversionType,
-        'metadata': metadata != null ? jsonEncode(metadata) : null,
-        'created_at': now.toIso8601String(),
-      });
+      await _analytics!.logEvent(
+        userId: userId,
+        experimentName: experiment.analyticsName,
+        variant: variant,
+        eventType: 'conversion',
+        conversionType: conversionType,
+        metadata: metadata,
+      );
       
       if (kDebugMode) {
         debugPrint('ExperimentationService: Logged conversion "$conversionType" for ${experiment.name} variant $variant');
@@ -264,8 +503,8 @@ class ExperimentationService {
     for (var exp in Experiment.values) {
       final storageKey = '$_storageKeyPrefix${exp.analyticsName}';
       final loggedKey = '$_assignmentLoggedPrefix${exp.analyticsName}';
-      await _prefs.remove(storageKey);
-      await _prefs.remove(loggedKey);
+      await _storage.remove(storageKey);
+      await _storage.remove(loggedKey);
     }
     
     if (kDebugMode) {
@@ -282,7 +521,7 @@ class ExperimentationService {
     }
     
     final storageKey = '$_storageKeyPrefix${experiment.analyticsName}';
-    _prefs.setString(storageKey, variant);
+    _storage.setString(storageKey, variant);
     
     debugPrint('ExperimentationService: Forced ${experiment.name} to variant $variant');
   }
