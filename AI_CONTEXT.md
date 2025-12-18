@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
-> **Last Updated:** December 17, 2025 (Commit: c4b0a34)  
-> **Last Verified:** Phase 24 Complete, Phase 25 Active  
+> **Last Updated:** December 18, 2025 (Commit: TBD)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot)  
 > **Identity:** The Pact (formerly Atomic Habits Hook)  
 > **Domain:** thepact.co
 
@@ -57,7 +57,8 @@ When stale branches accumulate (> 10 unmerged):
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **AI (Tier 1)** | DeepSeek-V3 | Latest |
-| **AI (Tier 2)** | Claude 3.5 Sonnet | Latest |
+| **AI (Tier 2)** | Gemini 3 Flash | Latest |
+| **AI (Tier 3)** | Gemini 3 Pro | Latest |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
@@ -183,35 +184,57 @@ atomichabits/
 
 ---
 
-## AI Service Architecture (Phase 24)
+## AI Service Architecture (Phase 25: Gemini Pivot)
+
+### The Strategic Shift
+
+**Phase 24 (Previous):** Text-only AI with DeepSeek + Claude  
+**Phase 25 (Current):** Multimodal AI with Gemini 3 native voice/vision
 
 ### Tier System
 
-| Tier | Provider | Persona | Use Case | Cost |
-|------|----------|---------|----------|------|
-| 1 (Default) | **DeepSeek-V3** | The Architect | Reasoning-heavy, structured output | 10-100x cheaper |
-| 2 (Premium) | **Claude 3.5 Sonnet** | The Coach | Empathetic, high EQ for bad habits | Premium |
-| 3 (Fallback) | Gemini 2.5 Flash | AI Assistant | Fast, reliable backup | Standard |
-| 4 (Manual) | None | Manual Entry | No AI available | Free |
+| Tier | Provider | Persona | Capabilities | Use Case |
+|------|----------|---------|--------------|----------|
+| 1 (Free) | **DeepSeek-V3** | The Mirror | Text only | Basic logging, cost-effective reasoning |
+| 2 (Paid) | **Gemini 3 Flash** | The Agent | Native Audio/Vision | Real-time voice coach, visual accountability |
+| 3 (Pro) | **Gemini 3 Pro** | The Architect | Deep Reasoning | Complex habit systems, long-term planning |
+| 4 (Manual) | None | Manual Entry | None | No AI available |
 
 ### Selection Logic
 
 ```dart
-// lib/data/services/ai/ai_service_manager.dart
-AiProvider selectProvider({required Habit habit, required UserProfile profile}) {
-  if (habit.isBreakHabit) return AiProvider.claude;  // Bad habits need empathy
-  if (profile.isPremium) return AiProvider.claude;   // Premium users get best
-  return AiProvider.deepSeek;                        // Default: cost-effective reasoning
+// lib/config/ai_model_config.dart
+static AiTier selectTier({
+  required bool isPremiumUser,
+  required bool isProUser,
+}) {
+  if (isProUser && hasGeminiKey) return AiTier.tier3;      // Pro → Gemini 3 Pro
+  if (isPremiumUser && hasGeminiKey) return AiTier.tier2;  // Paid → Gemini 3 Flash
+  if (hasDeepSeekKey) return AiTier.tier1;                 // Free → DeepSeek
+  return AiTier.tier4;                                     // Fallback → Manual
 }
 ```
 
+### Why Gemini 3?
+
+1. **Native Multimodal:** No separate STT/TTS needed (ElevenLabs eliminated)
+2. **Real-time Latency:** <500ms via WebSocket streaming
+3. **Cost-Effective:** ~$0.50/1M tokens (cheaper than Claude + voice synthesis)
+4. **Future-Proof:** Google's flagship model with long-term support
+
 ### Files
 
-- `lib/data/services/ai/deep_seek_service.dart` - Tier 1 implementation
-- `lib/data/services/ai/claude_service.dart` - Tier 2 implementation
+**Phase 24 (Existing):**
+- `lib/data/services/ai/deep_seek_service.dart` - Tier 1 (Text only)
+- `lib/data/services/ai/claude_service.dart` - Tier 2 (Deprecated in Phase 25)
 - `lib/data/services/ai/ai_service_manager.dart` - Unified tier management
 - `test/services/ai/deep_seek_service_test.dart` - Unit tests with HTTP mocks
 - `test/services/ai/ai_service_manager_test.dart` - Tier selection tests
+
+**Phase 25 (New):**
+- `lib/config/ai_model_config.dart` - Updated with Gemini 3 tiers
+- `lib/data/services/ai/gemini_live_service.dart` - WebSocket voice/vision service (TODO)
+- `GEMINI_3_ONBOARDING_SPEC.md` - Full specification for voice-first onboarding
 
 ---
 

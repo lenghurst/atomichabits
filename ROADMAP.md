@@ -109,13 +109,61 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 ---
 
-## 🚀 Current Sprint: Phase 25 "The Launch" (Operation NYE)
+## 🚀 Current Sprint: Phase 25 "The Gemini Pivot"
 
-**Goal:** Stability, App Store Approval, and Day 1 Retention.
+**Goal:** Transform onboarding from text-based to voice-first with Gemini 3 multimodal capabilities.
 
-**Status:** 🟡 In Progress (December 17-31, 2025)
+**Status:** 🟡 In Progress (December 18-31, 2025)
 
 **Target:** New Year's Eve (December 31, 2025)
+
+### The Strategic Pivot
+
+**Previous Architecture (Phase 24):**
+- Tier 1: DeepSeek-V3 (Text only)
+- Tier 2: Claude 3.5 Sonnet (Text only)
+- Tier 3: Gemini 2.5 Flash (Fallback)
+
+**New Architecture (Phase 25):**
+- Tier 1: DeepSeek-V3 "The Mirror" (Text only - Free)
+- Tier 2: Gemini 3 Flash "The Agent" (Native Voice/Vision - Paid)
+- Tier 3: Gemini 3 Pro "The Architect" (Deep Reasoning - Pro)
+
+**Why Gemini 3?**
+- **Native Multimodal:** Audio/Video input & output without separate STT/TTS
+- **Real-time Latency:** <500ms response time (WebSocket streaming)
+- **Cost-Effective:** ~$0.50/1M tokens (cheaper than Claude + ElevenLabs)
+- **Future-Proof:** Google's flagship model with long-term support
+
+### Phase 25.1: The Context-Aware Storyteller
+
+**Concept:** Pre-flight MCQ screening → Personalized voice conversation
+
+- [ ] **Screening UI:** 3-question MCQ (Mission, Enemy, Vibe)
+  - Q1: "What brings you to The Pact?" (Builder/Breaker/Restorer)
+  - Q2: "What usually stops you?" (Forget/Lazy/Busy/Perfectionist)
+  - Q3: "How should I hold you accountable?" (Friend/Sage/Sergeant)
+- [ ] **Context Injection:** Pass MCQ answers to AI system prompt
+- [ ] **Dynamic Opener:** AI references user's specific "Enemy" in first message
+
+**Files Created:**
+- `GEMINI_3_ONBOARDING_SPEC.md` - Full specification
+- `lib/config/ai_model_config.dart` - Updated with Gemini 3 tiers
+
+### Phase 25.2: Native Voice Bridge (Tier 2+)
+
+- [ ] **GeminiLiveService:** WebSocket connection to Gemini 3 Multimodal Live API
+- [ ] **Audio Pipeline:** Mic → Gemini → Speaker (native streaming)
+- [ ] **Voice Activity Detection:** Silence detection for turn-taking
+- [ ] **Persona Mapping:** Map "Drill Sergeant" → short sentences, "Friend" → empathetic tone
+
+### Phase 25.3: Visual Accountability (Vision)
+
+- [ ] **Camera Integration:** "Show me your habit" prompt
+- [ ] **Gemini Vision:** Send image bytes to verify habit completion
+- [ ] **Example:** User claims "I went to the gym" → AI: "Show me your gym shoes"
+
+### Phase 25.4: Store Submission (Parallel Track)
 
 ### Priority 1: Store Submission
 
@@ -150,20 +198,20 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 
 ## Future Roadmap (Q1 2026)
 
-### Phase 26: The AI Coach
-- **Context Awareness:** AI analyzes "Time Drift" (Phase 19) to suggest schedule changes
-- **Voice Mode:** Real-time conversation with the AI Witness
-- **Personalized Nudges:** AI generates custom recovery messages based on user history
-
-### Phase 27: Monetization
+### Phase 26: The Monetization Engine
 - **"Skin in the Game":** Users stake money on their pacts
-- **Pro Tier:** Unlimited active pacts, Advanced AI coaching, Priority support
-- **Freemium Model:** 1 free pact, $4.99/month for unlimited
+- **Pro Tier:** Unlimited active pacts, Gemini 3 Pro access, Priority support
+- **Freemium Model:** 1 free pact (DeepSeek), $4.99/month for unlimited (Gemini 3 Flash)
 
-### Phase 28: Community Features
+### Phase 27: The Growth Loop
 - **Public Pacts:** Share your journey publicly for extra accountability
 - **Leaderboards:** Compete with friends on consistency scores
 - **Pact Templates:** Pre-built pacts for common goals (fitness, reading, meditation)
+
+### Phase 28: The AI Coach Evolution
+- **Context Awareness:** AI analyzes "Time Drift" (Phase 19) to suggest schedule changes
+- **Agentic Planning:** AI restructures complex habit systems
+- **Personalized Nudges:** AI generates custom recovery messages based on user history
 
 ---
 
