@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
 > **Last Updated:** December 18, 2025 (Commit: TBD)  
-> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab)  
 > **Identity:** The Pact (formerly Atomic Habits Hook)  
 > **Domain:** thepact.co
 
@@ -89,6 +89,7 @@ atomichabits/
 │   │   │   ├── deep_seek_service.dart      # Tier 1: Reasoning (The Architect)
 │   │   │   ├── claude_service.dart         # Tier 2: Coaching (The Coach)
 │   │   │   └── ai_service_manager.dart     # Tier Selector
+│   │   ├── experimentation_service.dart    # [NEW] The Lab (A/B/X Testing)
 │   │   ├── deep_link_service.dart          # Install Referrer implementation
 │   │   └── witness_service.dart            # Real-time Pact events
 │   └── features/
@@ -232,93 +233,43 @@ static AiTier selectTier({
 - `test/services/ai/ai_service_manager_test.dart` - Tier selection tests
 
 **Phase 25 (New):**
-- `lib/config/ai_model_config.dart` - Updated with Gemini 3 tiers
-- `lib/data/services/ai/gemini_live_service.dart` - WebSocket voice/vision service (TODO)
-- `GEMINI_3_ONBOARDING_SPEC.md` - Full specification for voice-first onboarding
+- `lib/data/services/ai/gemini_live_service.dart` - WebSocket voice bridge
+- `lib/data/services/experimentation_service.dart` - A/B/X testing framework
+- `lib/data/services/manifesto_generator.dart` - Identity Manifesto image generation
 
 ---
 
-## Deep Link Architecture (Phase 24)
+## The Lab (Phase 25.6)
 
-### Flow
+We are running A/B/X tests on critical conversion points.
 
-```
-User A shares → https://thepact.co/join/XYZ
-                        ↓
-User B clicks → InviteRedirector.tsx detects OS
-                        ↓
-Android → market://details?id=co.thepact.app&referrer=invite_code%3DXYZ
-iOS → https://apps.apple.com/app/id...
-Desktop → Landing page with invite banner
-                        ↓
-User B installs → App reads PlayInstallReferrer
-                        ↓
-Auto-accept invite → Hard Bypass to WitnessAcceptScreen
-```
+### Experiment 1: The Hook (Onboarding Opener)
+- **Variant A (Control):** "The Friend" (Compassionate)
+- **Variant B:** "The Sergeant" (Tough Love)
+- **Variant C:** "The Visionary" (Future Self)
 
-### Files
+### Experiment 2: The Whisper (Notification Timing)
+- **Variant A (Control):** 15 min before
+- **Variant B:** 4 hours before (Anticipation)
+- **Variant C:** Random interval (Nudge)
 
-- `landing_page/src/components/InviteRedirector.tsx` - Web redirector
-- `lib/data/services/deep_link_service.dart` - Install Referrer API
-- `lib/config/deep_link_config.dart` - Domain and scheme configuration
-- `lib/widgets/share_contract_sheet.dart` - Smart link generation
+### Experiment 3: The Manifesto (Reward Format)
+- **Variant A:** Visual (Image)
+- **Variant B:** Audio (Voice Note)
+- **Variant C:** Haptic (Vibration Pattern)
 
 ---
 
-## Testing Infrastructure (Phase 24)
+## Hook & Hold Strategy (Phase 25.7)
 
-### Unit Tests
+**Day 0 (First 24h):**
+- **Minute 0-10:** "Manifesto Generation" (Identity Anchor)
+- **Hour 4:** "The Whisper" (Anticipation Nudge)
+- **Hour Due:** "The Golden Minute" (Wax Seal Ceremony)
+- **Hour 24:** "Day 1 Debrief" (Identity Evidence)
 
-```bash
-flutter test
-```
-
-### Key Test Files
-
-- `test/services/ai/deep_seek_service_test.dart` - API parsing, errors, edge cases
-- `test/services/ai/ai_service_manager_test.dart` - Tier selection, fallback, metadata
-
-### Test Coverage
-
-- ✅ DeepSeek API parsing (JSON, UTF-8, errors)
-- ✅ Claude service dependency injection
-- ✅ Tier selection logic (bad habits, premium users, fallback)
-- ✅ HTTP mocking for offline testing
-
----
-
-## Known Issues & Technical Debt
-
-### High Priority
-
-- [ ] **iOS Bundle ID:** Update to `co.thepact.app` (currently `com.atomichabits.hook`)
-- [ ] **Apple App ID:** Update `appleAppId` in `deep_link_config.dart` with real Team ID
-- [ ] **SHA256 Fingerprint:** Generate and update `androidSha256` for App Links
-
-### Medium Priority
-
-- [ ] **Widget Package Name:** Update `qualifiedAndroidName` in `home_widget_service.dart`
-- [ ] **App Group ID:** Update iOS widget app group to `group.co.thepact.app.widget`
-
-### Low Priority
-
-- [ ] **Landing Page Analytics:** Add Supabase analytics to track invite clicks
-- [ ] **Error Tracking:** Integrate Sentry or similar for crash reporting
-
----
-
-## Performance Targets
-
-- **App Launch:** < 2 seconds on mid-range Android
-- **Habit Completion:** < 500ms from tap to confirmation
-- **Witness Notification:** < 5 seconds from completion to notification
-- **Landing Page Load:** < 1 second on 3G connection
-
----
-
-## Contact & Support
-
-- **GitHub:** [lenghurst/atomichabits](https://github.com/lenghurst/atomichabits)
-- **Domain:** [thepact.co](https://thepact.co)
-- **Backend:** Supabase (hosted)
-- **Web Hosting:** Netlify (auto-deploy)
+**Day 1-7 (Retention):**
+- **Day 2:** "Ghost Protocol" (Concerned Friend Nudge)
+- **Day 3:** "Micro-Step Fallback" (Negotiation)
+- **Day 5:** "Pattern Recognition" (Insight Unlock)
+- **Day 7:** "Weekly Review" (The Seed Box)
