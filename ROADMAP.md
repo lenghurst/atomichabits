@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** December 18, 2025 (Commit: TBD)  
-> **Last Verified:** Phase 24 Complete, Phase 25 Active  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet)  
 > **Current Focus:** LAUNCH (New Year's Eve)  
 > **Status:** 🟢 RELEASE CANDIDATE READY
 
@@ -223,6 +223,20 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
 - [ ] **Day 3 (Compassion Trap):** "Micro-Step Fallback" negotiation if struggling
 - [ ] **Day 5 (Pattern Recognition):** AI points out user behavior patterns ("You respond well to...")
 - [ ] **Day 7 (Weekly Review):** Unlock "The Seed Box" (Feature voting/Planting new habits)
+
+---
+
+## 💳 Phase 25.8: The Pact Identity Card (Google Wallet)
+
+**Goal:** Create a tangible digital artifact that lives in the user's Google Wallet.
+
+**Concept:** "The Pocket Totem" - A dynamic pass that updates with streaks.
+
+- [ ] **Google Console:** Register as Wallet Issuer, create Generic Class template.
+- [ ] **Supabase Edge Function:** `create-wallet-pass` (Signs JWT with Service Account).
+- [ ] **Flutter Integration:** `add_to_google_wallet` package implementation.
+- [ ] **Dynamic Updates:** Logic to update pass style (Gold for 7-day streak, Cracked for missed).
+- [ ] **Geofencing:** Embed location data for lock screen notifications at the gym.
 
 ---
 

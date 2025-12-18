@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — AI Agent Knowledge Checkpoint
 
 > **Last Updated:** December 18, 2025 (Commit: TBD)  
-> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab)  
+> **Last Verified:** Phase 25 In Progress (Gemini 3 Pivot + The Lab + Wallet)  
 > **Identity:** The Pact (formerly Atomic Habits Hook)  
 > **Domain:** thepact.co
 
@@ -59,6 +59,7 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 1)** | DeepSeek-V3 | Latest |
 | **AI (Tier 2)** | Gemini 3 Flash | Latest |
 | **AI (Tier 3)** | Gemini 3 Pro | Latest |
+| **Wallet** | Google Wallet API | GenericPass |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
@@ -96,6 +97,10 @@ atomichabits/
 │       └── witness/
 │           ├── witness_dashboard.dart       # Social feed
 │           └── witness_accept_screen.dart   # Wax Seal UI
+├── supabase/
+│   └── functions/
+│       └── create-wallet-pass/             # [NEW] Google Wallet JWT Signer
+│           └── index.ts                    # Deno Edge Function
 ├── test/
 │   └── services/ai/
 │       ├── deep_seek_service_test.dart      # Unit tests with mocks
@@ -273,3 +278,23 @@ We are running A/B/X tests on critical conversion points.
 - **Day 3:** "Micro-Step Fallback" (Negotiation)
 - **Day 5:** "Pattern Recognition" (Insight Unlock)
 - **Day 7:** "Weekly Review" (The Seed Box)
+
+---
+
+## Google Wallet Integration (Phase 25.8)
+
+**Concept:** "The Pocket Totem" - A dynamic Identity Card in Google Wallet.
+
+### Architecture
+1. **Flutter:** User taps "Add to Wallet".
+2. **Supabase Edge Function:** `create-wallet-pass`
+   - Receives user ID + Habit Data.
+   - Generates `GenericPass` JSON object.
+   - Signs JWT using Google Service Account (RSA-SHA256).
+   - Returns signed JWT string.
+3. **Flutter:** Consumes JWT via `add_to_google_wallet` package.
+4. **Google Wallet:** Displays pass and handles updates.
+
+### Key Files
+- `supabase/functions/create-wallet-pass/index.ts` - JWT Signer
+- `lib/data/services/wallet_service.dart` - Frontend integration
