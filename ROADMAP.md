@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** December 17, 2025 (Commit: c4b0a34)  
+> **Last Updated:** December 18, 2025 (Commit: TBD)  
 > **Last Verified:** Phase 24 Complete, Phase 25 Active  
 > **Current Focus:** LAUNCH (New Year's Eve)  
 > **Status:** 🟢 RELEASE CANDIDATE READY
@@ -193,6 +193,36 @@ Auto-accept invite → Hard Bypass to WitnessAcceptScreen
   - **Mitigation:** Configure DNS 48h before launch
 - [ ] **Install Referrer Reliability:** Some Android OEMs strip referrer params
   - **Mitigation:** Clipboard Bridge fallback already implemented
+
+---
+
+## 🧪 Phase 25.6: The Lab (Experimentation)
+
+**Goal:** A/B/X Testing Framework for "Storyteller" optimization.
+
+- [ ] **ExperimentationService:** Deterministic user bucketing (`lib/data/services/experimentation_service.dart`)
+- [ ] **Experiment 1: The Hook:** Test "Friend" vs "Sergeant" vs "Visionary" openers
+- [ ] **Experiment 2: The Whisper:** Test notification timing (15min vs 4hr vs Random)
+- [ ] **Experiment 3: The Manifesto:** Test reward format (Visual vs Audio vs Haptic)
+- [ ] **Analytics:** Log `experiment_exposure` events to Supabase/PostHog
+
+---
+
+## 🕰️ Phase 25.7: Hook & Hold (Day 0-7 Strategy)
+
+**Goal:** The "First Week" Retention Loop.
+
+### Day 0: The First 24 Hours
+- [ ] **Manifesto Generation:** AI generates shareable "Identity Manifesto" image after onboarding
+- [ ] **The Whisper:** Notification 4 hours before habit due time ("I haven't forgotten.")
+- [ ] **The Golden Minute:** Haptic "Wax Seal" ceremony on completion
+- [ ] **Day 1 Debrief:** Morning report focusing on "Identity Evidence" not just streaks
+
+### Day 1-7: The Retention Loop
+- [ ] **Day 2 (Ghost Protocol):** "Concerned Friend" nudge if no open by noon
+- [ ] **Day 3 (Compassion Trap):** "Micro-Step Fallback" negotiation if struggling
+- [ ] **Day 5 (Pattern Recognition):** AI points out user behavior patterns ("You respond well to...")
+- [ ] **Day 7 (Weekly Review):** Unlock "The Seed Box" (Feature voting/Planting new habits)
 
 ---
 
