@@ -90,6 +90,9 @@ dependencies:
   
   # Gemini AI for chat and suggestions
   google_generative_ai: ^0.4.6
+  
+  # Phase 25.3: WebSocket for Gemini Live API (Voice)
+  web_socket_channel: ^3.0.1
 
 dev_dependencies:
   flutter_test:

@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/chat_message.dart';
 import '../models/chat_conversation.dart';
 import '../models/habit.dart';
+import '../../config/ai_model_config.dart';
 
 /// System prompts for different conversation contexts
 /// 
@@ -228,7 +229,16 @@ If not, that's likely the problem. Make it smaller first.
   }
 }
 
-/// Service for conversational AI using Gemini 2.5 Flash
+/// Service for conversational AI using Gemini (Text Chat)
+/// 
+/// Phase 25.3: "The Reality Alignment"
+/// - This service handles TEXT-BASED chat via REST API
+/// - Uses AIModelConfig.tier2TextModel (gemini-2.5-flash)
+/// - For VOICE interactions, use GeminiLiveService (WebSocket/Live API)
+/// 
+/// Marketing vs Technical:
+/// - UI displays: "Gemini 3 Flash"
+/// - API calls: "gemini-2.5-flash"
 class GeminiChatService {
   // TODO: Replace with your actual API key (use environment variables in production)
   // For development, you can get a free API key at https://makersuite.google.com/app/apikey
@@ -261,18 +271,22 @@ class GeminiChatService {
       return;
     }
 
+    // Phase 25.3: Use AIModelConfig for model selection
+    // Text chat uses tier2TextModel (REST API compatible)
+    // Voice interactions use tier2Model (Live API - separate service)
     _model = GenerativeModel(
-      model: 'gemini-2.5-flash-preview-05-20',
+      model: AIModelConfig.tier2TextModel,
       apiKey: apiKey,
       generationConfig: GenerationConfig(
-        temperature: 0.7,
+        temperature: AIModelConfig.tier2Temperature,
         topP: 0.9,
         maxOutputTokens: 1024,
       ),
     );
 
     if (kDebugMode) {
-      debugPrint('GeminiChatService initialized with Gemini 2.5 Flash');
+      debugPrint('GeminiChatService initialised with ${AIModelConfig.tier2TextModel}');
+      debugPrint('Marketing: "Gemini 3 Flash" | Technical: "${AIModelConfig.tier2TextModel}"');
     }
   }
 

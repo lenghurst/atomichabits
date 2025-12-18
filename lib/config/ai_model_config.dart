@@ -1,11 +1,16 @@
 /// Configuration for AI model integration
 /// 
-/// Phase 25: "The Gemini Pivot" - Multimodal Native Architecture
+/// Phase 25.3: "The Reality Alignment" - Verified December 2025 Endpoints
 /// 
 /// Tier Architecture:
 /// - Tier 1 (Free): DeepSeek-V3 "The Mirror" - Text-only, high reasoning, low cost
-/// - Tier 2 (Paid): Gemini 3 Flash "The Agent" - Native Audio/Vision, real-time voice
-/// - Tier 3 (Premium): Gemini 3 Pro "The Architect" - Deep reasoning + Long Context
+/// - Tier 2 (Paid): Gemini 2.5 Flash Native Audio "The Agent" - Real-time voice
+/// - Tier 3 (Premium): Gemini 2.5 Pro "The Architect" - Deep reasoning + Long Context
+/// 
+/// IMPORTANT: Marketing vs Technical Reality
+/// - Marketing: "Gemini 3 Flash" / "Gemini 3 Pro" (December 2025 branding)
+/// - Technical: "gemini-2.5-flash-native-audio-preview-12-2025" / "gemini-2.5-pro"
+/// - The "3.0" endpoints do NOT exist. Always use the 2.5 series for API calls.
 /// 
 /// API keys are injected via environment variables at build time:
 /// ```bash
@@ -30,7 +35,7 @@ class AIModelConfig {
   /// Check if any AI is available
   static bool get hasAnyAI => hasDeepSeekKey || hasGeminiKey;
 
-  // === MODEL VERSIONS (DECEMBER 2025 STANDARDS) ===
+  // === MODEL VERSIONS (DECEMBER 2025 - VERIFIED ENDPOINTS) ===
   
   /// Tier 1: DeepSeek-V3 "The Mirror"
   /// - Text Input / Text Output
@@ -39,18 +44,42 @@ class AIModelConfig {
   static const String tier1Model = 'deepseek-chat'; 
   static const double tier1Temperature = 1.0;
   
-  /// Tier 2: Gemini 3 Flash "The Agent"
-  /// - Native Audio/Video Input & Output
+  /// Tier 2: Gemini 2.5 Flash Native Audio "The Agent"
+  /// - Marketing Name: "Gemini 3 Flash"
+  /// - Technical Endpoint: gemini-2.5-flash-native-audio-preview-12-2025
+  /// - Native Audio/Video Input & Output (Live API)
   /// - Latency: <500ms (Real-time capable)
   /// - Role: Voice Coach, Visual Accountability
-  static const String tier2Model = 'gemini-3.0-flash-exp';
+  /// - Protocol: WebSocket bidirectional streaming (NOT REST)
+  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025';
   static const double tier2Temperature = 0.7;
   
-  /// Tier 3: Gemini 3 Pro "The Architect"
+  /// Tier 2 Text-Only Fallback (for non-voice interactions)
+  /// - Used when Live API is not required (text chat)
+  /// - Standard REST API compatible
+  static const String tier2TextModel = 'gemini-2.5-flash';
+  
+  /// Tier 3: Gemini 2.5 Pro "The Architect"
+  /// - Marketing Name: "Gemini 3 Pro"
+  /// - Technical Endpoint: gemini-2.5-pro
   /// - Deep Reasoning + Agentic Planning
   /// - Role: Complex schedule restructuring, long-term pattern analysis
-  static const String tier3Model = 'gemini-3.0-pro-exp';
+  static const String tier3Model = 'gemini-2.5-pro';
   static const double tier3Temperature = 0.9;
+  
+  // === LIVE API CONFIGURATION ===
+  
+  /// Live API version required for native audio streaming
+  static const String liveApiVersion = 'v1alpha';
+  
+  /// Audio input format: 16-bit PCM, 16kHz, mono
+  static const String audioInputMimeType = 'audio/pcm;rate=16000';
+  
+  /// Audio output sample rate: 24kHz
+  static const int audioOutputSampleRate = 24000;
+  
+  /// Audio input sample rate: 16kHz
+  static const int audioInputSampleRate = 16000;
   
   // === GUARDRAILS ===
   
@@ -71,7 +100,7 @@ class AIModelConfig {
   
   // === CAPABILITIES ===
   
-  /// Does this tier support Native Audio Streaming?
+  /// Does this tier support Native Audio Streaming (Live API)?
   static bool supportsNativeVoice(AiTier tier) {
     return tier == AiTier.tier2 || tier == AiTier.tier3;
   }
@@ -80,14 +109,19 @@ class AIModelConfig {
   static bool supportsVision(AiTier tier) {
     return tier == AiTier.tier2 || tier == AiTier.tier3;
   }
+  
+  /// Does this tier require WebSocket (Live API) vs REST?
+  static bool requiresLiveApi(AiTier tier) {
+    return tier == AiTier.tier2; // Only Tier 2 uses Live API for voice
+  }
 
   // === TIER SELECTION ===
   
   /// Determine which tier to use based on user subscription
   /// 
   /// Selection Logic:
-  /// 1. Pro user → Gemini 3 Pro (The Architect)
-  /// 2. Premium user → Gemini 3 Flash (The Agent)
+  /// 1. Pro user → Gemini 2.5 Pro (The Architect)
+  /// 2. Premium user → Gemini 2.5 Flash Native Audio (The Agent)
   /// 3. Free user → DeepSeek-V3 (The Mirror)
   /// 4. Fallback → Upgrade free user to Gemini if DeepSeek down
   /// 5. No AI → Manual mode
@@ -118,6 +152,23 @@ class AIModelConfig {
     return AiTier.tier4;
   }
   
+  /// Get the model string for a tier
+  /// 
+  /// [useTextFallback] - If true, returns text-only model for Tier 2
+  /// (used when Live API is not needed, e.g., text chat)
+  static String getModelForTier(AiTier tier, {bool useTextFallback = false}) {
+    switch (tier) {
+      case AiTier.tier1:
+        return tier1Model;
+      case AiTier.tier2:
+        return useTextFallback ? tier2TextModel : tier2Model;
+      case AiTier.tier3:
+        return tier3Model;
+      case AiTier.tier4:
+        return ''; // Manual mode, no model
+    }
+  }
+  
   /// Get the display name for a tier
   static String getTierDisplayName(AiTier tier) {
     switch (tier) {
@@ -145,13 +196,28 @@ class AIModelConfig {
         return '✏️';
     }
   }
+  
+  /// Get the marketing name for UI display
+  /// (Users see "Gemini 3", code calls "Gemini 2.5")
+  static String getMarketingName(AiTier tier) {
+    switch (tier) {
+      case AiTier.tier1:
+        return 'DeepSeek-V3';
+      case AiTier.tier2:
+        return 'Gemini 3 Flash'; // Marketing name
+      case AiTier.tier3:
+        return 'Gemini 3 Pro'; // Marketing name
+      case AiTier.tier4:
+        return 'Manual';
+    }
+  }
 }
 
 /// Available AI tiers
 enum AiTier {
   tier1, // DeepSeek-V3 - The Mirror
-  tier2, // Gemini 3 Flash - The Agent
-  tier3, // Gemini 3 Pro - The Architect
+  tier2, // Gemini 2.5 Flash Native Audio - The Agent
+  tier3, // Gemini 2.5 Pro - The Architect
   tier4, // Manual Input - The Safety Net
 }
 
@@ -173,7 +239,7 @@ extension AiTierExtension on AiTier {
   String get description {
     switch (this) {
       case AiTier.tier1:
-        return 'Text-based habit design with behavioral engineering';
+        return 'Text-based habit design with behavioural engineering';
       case AiTier.tier2:
         return 'Voice-first coaching with real-time accountability';
       case AiTier.tier3:
@@ -196,7 +262,9 @@ extension AiTierExtension on AiTier {
     }
   }
   
-  String get providerName {
+  /// Marketing name for UI display
+  /// (Users see "Gemini 3", code calls "Gemini 2.5")
+  String get marketingName {
     switch (this) {
       case AiTier.tier1:
         return 'DeepSeek-V3';
@@ -205,11 +273,25 @@ extension AiTierExtension on AiTier {
       case AiTier.tier3:
         return 'Gemini 3 Pro';
       case AiTier.tier4:
+        return 'Manual';
+    }
+  }
+  
+  /// Technical provider name (actual API endpoint)
+  String get providerName {
+    switch (this) {
+      case AiTier.tier1:
+        return 'DeepSeek-V3';
+      case AiTier.tier2:
+        return 'Gemini 2.5 Flash Native Audio';
+      case AiTier.tier3:
+        return 'Gemini 2.5 Pro';
+      case AiTier.tier4:
         return 'None';
     }
   }
   
-  /// Does this tier support native voice input/output?
+  /// Does this tier support native voice input/output (Live API)?
   bool get supportsNativeVoice {
     return this == AiTier.tier2 || this == AiTier.tier3;
   }
@@ -217,5 +299,10 @@ extension AiTierExtension on AiTier {
   /// Does this tier support visual input (camera)?
   bool get supportsVision {
     return this == AiTier.tier2 || this == AiTier.tier3;
+  }
+  
+  /// Does this tier require WebSocket (Live API) vs REST?
+  bool get requiresLiveApi {
+    return this == AiTier.tier2;
   }
 }
