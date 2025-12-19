@@ -381,7 +381,27 @@ class DeepLinkService extends ChangeNotifier {
   // ============================================================
   
   /// Regex patterns for detecting invite codes in clipboard text
+  /// 
+  /// Phase 25.9: Updated to include thepact.co domain patterns
+  /// Sean Ellis: "Ensure the InviteRedirector handles deferred deep linking properly."
   static final List<RegExp> _invitePatterns = [
+    // === PRODUCTION DOMAIN (thepact.co) ===
+    // https://thepact.co/join/CODE
+    RegExp(r'thepact\.co/join/([a-zA-Z0-9]{6,12})'),
+    // https://thepact.co/c/CODE
+    RegExp(r'thepact\.co/c/([a-zA-Z0-9]{6,12})'),
+    // https://thepact.co/invite?c=CODE
+    RegExp(r'thepact\.co/invite\?c=([a-zA-Z0-9]{6,12})'),
+    
+    // === CUSTOM SCHEME (thepact://) ===
+    // thepact://invite?c=CODE
+    RegExp(r'thepact://invite\?c=([a-zA-Z0-9]{6,12})'),
+    // thepact://c/CODE
+    RegExp(r'thepact://c/([a-zA-Z0-9]{6,12})'),
+    // thepact://join/CODE
+    RegExp(r'thepact://join/([a-zA-Z0-9]{6,12})'),
+    
+    // === LEGACY DOMAIN (atomichabits.app) - for backwards compatibility ===
     // https://atomichabits.app/join/CODE
     RegExp(r'atomichabits\.app/join/([a-zA-Z0-9]{6,12})'),
     // https://atomichabits.app/c/CODE

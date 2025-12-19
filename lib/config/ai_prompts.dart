@@ -1,4 +1,6 @@
-/// AI Prompts Configuration
+import 'dart:math';
+
+/// AI Prompts Configuration for The Pact
 /// 
 /// Phase 14.5: "The Iron Architect" - Stricter Behavioral Engineering
 /// Phase 17: "Brain Surgery" - Reasoning-First Prompt Architecture
@@ -188,6 +190,14 @@ extension CoachPersonaExtension on CoachPersona {
 
 /// Persona Selector for Variable Rewards
 /// 
+/// Phase 25.9: Tuned based on ConsistencyService state (Nir Eyal's recommendation)
+/// 
+/// SME Critique: "Ensure the selection logic isn't purely random. If I just broke
+/// a 100-day streak, I need 'Empathetic'. If I'm lazy, I need 'Drill Sergeant'."
+/// 
+/// Action: Tune the PersonaSelector weights based on the ConsistencyService state.
+/// High Streak Break = High Empathy probability.
+/// 
 /// Implements weighted random selection with history tracking
 /// to ensure variety and prevent repetition.
 class PersonaSelector {
@@ -201,11 +211,26 @@ class PersonaSelector {
   /// Uses weighted selection to:
   /// 1. Never repeat the immediately previous persona
   /// 2. Reduce probability of recently used personas
-  /// 3. Slightly favour certain personas based on context
+  /// 3. Contextually favour personas based on ConsistencyService state
+  /// 
+  /// Parameters from ConsistencyService:
+  /// - [userHadGoodDay]: Did the user complete their habit today?
+  /// - [userMissedHabit]: Did the user miss their habit yesterday?
+  /// - [currentStreak]: Current completion streak (days)
+  /// - [longestStreak]: User's longest ever streak (for context)
+  /// - [streakJustBroken]: Was a significant streak just broken?
+  /// - [missStreak]: Current consecutive miss count
+  /// - [gracefulScore]: The user's graceful consistency score (0-100)
+  /// - [isInRecovery]: Is the user in "Never Miss Twice" recovery mode?
   static CoachPersona selectRandom({
     bool? userHadGoodDay,
     bool? userMissedHabit,
     int? currentStreak,
+    int? longestStreak,
+    bool? streakJustBroken,
+    int? missStreak,
+    double? gracefulScore,
+    bool? isInRecovery,
   }) {
     // Build weighted list excluding recent personas
     final candidates = <CoachPersona>[];
@@ -222,36 +247,115 @@ class PersonaSelector {
         weight = 3;
       }
       
-      // Context-based weighting
-      if (userMissedHabit == true) {
-        // After a miss, favour empathetic or stoic
-        if (persona == CoachPersona.empathetic || persona == CoachPersona.stoic) {
-          weight += 5;
-        }
-        // Avoid drill sergeant after a miss (too harsh)
-        if (persona == CoachPersona.drillSergeant) {
-          weight = 2;
+      // === STREAK BREAK SCENARIO (High Empathy) ===
+      // Nir Eyal: "If I just broke a 100-day streak, I need 'Empathetic'."
+      if (streakJustBroken == true) {
+        // Calculate empathy boost based on how significant the broken streak was
+        final brokenStreakLength = longestStreak ?? 0;
+        
+        if (brokenStreakLength >= 30) {
+          // Major streak break (30+ days) - HEAVILY favour empathetic
+          if (persona == CoachPersona.empathetic) {
+            weight += 25; // Dominant probability
+          } else if (persona == CoachPersona.stoic) {
+            weight += 10; // Secondary option
+          } else if (persona == CoachPersona.drillSergeant) {
+            weight = 0; // NEVER drill sergeant after major streak break
+          } else if (persona == CoachPersona.cheerleader) {
+            weight = 1; // Minimal - feels tone-deaf
+          }
+        } else if (brokenStreakLength >= 7) {
+          // Moderate streak break (7-29 days)
+          if (persona == CoachPersona.empathetic) {
+            weight += 15;
+          } else if (persona == CoachPersona.stoic) {
+            weight += 8;
+          } else if (persona == CoachPersona.drillSergeant) {
+            weight = 1; // Very low
+          }
         }
       }
       
-      if (userHadGoodDay == true) {
-        // After success, favour cheerleader or scientist
-        if (persona == CoachPersona.cheerleader || persona == CoachPersona.scientist) {
-          weight += 5;
+      // === RECOVERY MODE (Never Miss Twice) ===
+      if (isInRecovery == true) {
+        // User is trying to recover - be supportive but focused
+        if (persona == CoachPersona.empathetic) {
+          weight += 8;
+        } else if (persona == CoachPersona.scientist) {
+          weight += 5; // Help them analyse what went wrong
+        } else if (persona == CoachPersona.drillSergeant) {
+          weight = 3; // Low but not zero - some users respond to tough love
         }
       }
       
-      if (currentStreak != null && currentStreak > 7) {
-        // Long streak - favour philosopher for reflection
-        if (persona == CoachPersona.philosopher) {
-          weight += 3;
+      // === MISS STREAK ESCALATION ===
+      if (missStreak != null && missStreak > 0) {
+        if (missStreak == 1) {
+          // First miss - gentle encouragement
+          if (persona == CoachPersona.empathetic) weight += 5;
+          if (persona == CoachPersona.stoic) weight += 3;
+          if (persona == CoachPersona.drillSergeant) weight = 2;
+        } else if (missStreak == 2) {
+          // Second miss - more urgent, but still supportive
+          if (persona == CoachPersona.scientist) weight += 5; // "Let's figure out why"
+          if (persona == CoachPersona.empathetic) weight += 3;
+          if (persona == CoachPersona.drillSergeant) weight = 3;
+        } else if (missStreak >= 3) {
+          // Extended miss - need intervention
+          if (persona == CoachPersona.philosopher) weight += 5; // "Why is this important?"
+          if (persona == CoachPersona.empathetic) weight += 3;
+          // Drill sergeant can be appropriate here for some users
+          if (persona == CoachPersona.drillSergeant) weight += 2;
         }
       }
+      
+      // === SUCCESS SCENARIO ===
+      if (userHadGoodDay == true && userMissedHabit != true) {
+        // User completed today - celebrate!
+        if (persona == CoachPersona.cheerleader) weight += 8;
+        if (persona == CoachPersona.scientist) weight += 3; // "What worked?"
+      }
+      
+      // === LONG STREAK REFLECTION ===
+      if (currentStreak != null) {
+        if (currentStreak >= 30) {
+          // Major milestone - philosophical reflection
+          if (persona == CoachPersona.philosopher) weight += 8;
+          if (persona == CoachPersona.cheerleader) weight += 3;
+        } else if (currentStreak >= 7) {
+          // Building momentum
+          if (persona == CoachPersona.philosopher) weight += 3;
+          if (persona == CoachPersona.scientist) weight += 3;
+        }
+      }
+      
+      // === LOW GRACEFUL SCORE (Struggling User) ===
+      if (gracefulScore != null && gracefulScore < 40) {
+        // User is struggling - prioritise support and analysis
+        if (persona == CoachPersona.empathetic) weight += 5;
+        if (persona == CoachPersona.scientist) weight += 5;
+        if (persona == CoachPersona.drillSergeant) weight = max(1, weight - 5);
+      }
+      
+      // === HIGH GRACEFUL SCORE (Thriving User) ===
+      if (gracefulScore != null && gracefulScore >= 80) {
+        // User is thriving - can handle more variety
+        if (persona == CoachPersona.philosopher) weight += 3;
+        if (persona == CoachPersona.drillSergeant) weight += 2; // Challenge them
+      }
+      
+      // Ensure weight is at least 0
+      weight = max(0, weight);
       
       // Add weighted entries
       for (int i = 0; i < weight; i++) {
         candidates.add(persona);
       }
+    }
+    
+    // Fallback if all weights are 0 (shouldn't happen)
+    if (candidates.isEmpty) {
+      candidates.addAll(CoachPersona.values.where((p) => p != _lastPersona));
     }
     
     // Select random from weighted list

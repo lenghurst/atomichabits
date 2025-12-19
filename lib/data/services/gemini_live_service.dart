@@ -71,6 +71,19 @@ class GeminiLiveService {
   String? _lastSystemInstruction;
   bool _lastEnableTranscription = true;
   
+  // === TRANSCRIPT BUFFER (Phase 25.9 - Failover Context Preservation) ===
+  
+  /// Buffer of input transcriptions (user speech) for failover context
+  /// Head of Engineering: "If I'm halfway through explaining my habit, and the
+  /// line drops, the Text Bot needs to know what I just said."
+  final List<String> _inputTranscriptBuffer = [];
+  
+  /// Buffer of output transcriptions (AI speech) for failover context
+  final List<String> _outputTranscriptBuffer = [];
+  
+  /// Maximum number of transcript entries to buffer
+  static const int _maxTranscriptBufferSize = 20;
+  
   // === CIRCUIT BREAKER STATE ===
   
   /// Failure timestamps for circuit breaker
@@ -478,8 +491,70 @@ class GeminiLiveService {
       
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Falling back to text mode');
+        debugPrint('GeminiLiveService: Transcript buffer preserved (${_inputTranscriptBuffer.length} user, ${_outputTranscriptBuffer.length} AI)');
       }
     }
+  }
+  
+  /// Add text to transcript buffer with size limit
+  void _addToTranscriptBuffer(List<String> buffer, String text) {
+    buffer.add(text);
+    while (buffer.length > _maxTranscriptBufferSize) {
+      buffer.removeAt(0);
+    }
+  }
+  
+  /// Get the conversation context for failover to text mode
+  /// 
+  /// Returns a formatted string containing the recent conversation history
+  /// that can be passed to GeminiChatService.sendMessageStream() to maintain
+  /// context during the voice-to-text failover.
+  /// 
+  /// Head of Engineering Action Item: "Verify sendMessageStream receives the
+  /// transcript buffer from the failed socket session."
+  String getFailoverContext() {
+    if (_inputTranscriptBuffer.isEmpty && _outputTranscriptBuffer.isEmpty) {
+      return '';
+    }
+    
+    final buffer = StringBuffer();
+    buffer.writeln('--- Conversation Context (Voice Session) ---');
+    
+    // Interleave the transcripts in chronological order
+    // This is a simplified approach; in production, you'd want timestamps
+    final maxLen = _inputTranscriptBuffer.length > _outputTranscriptBuffer.length
+        ? _inputTranscriptBuffer.length
+        : _outputTranscriptBuffer.length;
+    
+    for (int i = 0; i < maxLen; i++) {
+      if (i < _inputTranscriptBuffer.length) {
+        buffer.writeln('User: ${_inputTranscriptBuffer[i]}');
+      }
+      if (i < _outputTranscriptBuffer.length) {
+        buffer.writeln('Coach: ${_outputTranscriptBuffer[i]}');
+      }
+    }
+    
+    buffer.writeln('--- End Context ---');
+    return buffer.toString();
+  }
+  
+  /// Get the last user message for quick context
+  String? getLastUserMessage() {
+    if (_inputTranscriptBuffer.isEmpty) return null;
+    return _inputTranscriptBuffer.last;
+  }
+  
+  /// Get the last AI message for quick context
+  String? getLastAiMessage() {
+    if (_outputTranscriptBuffer.isEmpty) return null;
+    return _outputTranscriptBuffer.last;
+  }
+  
+  /// Clear transcript buffers (call after successful text mode handover)
+  void clearTranscriptBuffers() {
+    _inputTranscriptBuffer.clear();
+    _outputTranscriptBuffer.clear();
   }
   
   // === RECONNECTION LOGIC ===
@@ -683,6 +758,8 @@ class GeminiLiveService {
           final transcription = serverContent['outputTranscription'] as Map<String, dynamic>;
           final text = transcription['text'] as String?;
           if (text != null && text.isNotEmpty) {
+            // Buffer for failover context preservation
+            _addToTranscriptBuffer(_outputTranscriptBuffer, text);
             onTranscription?.call(text, false);
           }
         }
@@ -692,6 +769,8 @@ class GeminiLiveService {
           final transcription = serverContent['inputTranscription'] as Map<String, dynamic>;
           final text = transcription['text'] as String?;
           if (text != null && text.isNotEmpty) {
+            // Buffer for failover context preservation
+            _addToTranscriptBuffer(_inputTranscriptBuffer, text);
             onTranscription?.call(text, true);
           }
         }
