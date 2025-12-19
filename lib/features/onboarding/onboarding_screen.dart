@@ -8,6 +8,7 @@ import '../../data/models/onboarding_data.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../widgets/suggestion_dialog.dart';
 import 'widgets/magic_wand_button.dart';
+import '../../data/ai_suggestion_service.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
@@ -214,9 +215,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   // Helper: Show suggestion dialog for temptation bundle (async with loading state)
+  // FIXED Phase 27.4: No longer creates ghost habits - calls AiSuggestionService directly
   Future<void> _showTemptationBundleSuggestions() async {
-    final appState = Provider.of<AppState>(context, listen: false);
-    
     // Show loading dialog immediately
     showDialog(
       context: context,
@@ -239,36 +239,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
-      // Create temporary habit to get suggestions
-      final tempHabit = Habit(
-        id: 'temp',
-        name: _habitNameController.text.trim().isEmpty 
-            ? 'your habit' 
-            : _habitNameController.text.trim(),
+      // FIXED: Call AiSuggestionService directly without saving to database
+      final aiService = AiSuggestionService();
+      final suggestions = await aiService.getTemptationBundleSuggestions(
         identity: _identityController.text.trim().isEmpty 
             ? 'achieves their goals' 
             : _identityController.text.trim(),
+        habitName: _habitNameController.text.trim().isEmpty 
+            ? 'your habit' 
+            : _habitNameController.text.trim(),
         tinyVersion: _tinyVersionController.text.trim().isEmpty 
             ? 'start small' 
             : _tinyVersionController.text.trim(),
-        createdAt: DateTime.now(),
         implementationTime: _formatTime(_selectedTime),
         implementationLocation: _locationController.text.trim().isEmpty 
             ? 'at home' 
             : _locationController.text.trim(),
+        existingTemptationBundle: _temptationBundleController.text.trim(),
+        existingPreRitual: _preHabitRitualController.text.trim(),
+        existingEnvironmentCue: _environmentCueController.text.trim(),
+        existingEnvironmentDistraction: _environmentDistractionController.text.trim(),
       );
-      
-      // Save current habit temporarily to get suggestions
-      final originalHabit = appState.currentHabit;
-      await appState.createHabit(tempHabit);
-      
-      // Fetch suggestions (async - remote LLM with local fallback)
-      final suggestions = await appState.getTemptationBundleSuggestionsForCurrentHabit();
-      
-      // Restore original habit
-      if (originalHabit != null) {
-        await appState.createHabit(originalHabit);
-      }
       
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
@@ -305,9 +296,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
   
   // Helper: Show suggestion dialog for pre-habit ritual (async with loading state)
+  // FIXED Phase 27.4: No longer creates ghost habits - calls AiSuggestionService directly
   Future<void> _showPreHabitRitualSuggestions() async {
-    final appState = Provider.of<AppState>(context, listen: false);
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -329,23 +319,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
-      final tempHabit = Habit(
-        id: 'temp',
-        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-        createdAt: DateTime.now(),
+      // FIXED: Call AiSuggestionService directly without saving to database
+      final aiService = AiSuggestionService();
+      final suggestions = await aiService.getPreHabitRitualSuggestions(
+        identity: _identityController.text.trim().isEmpty 
+            ? 'achieves their goals' 
+            : _identityController.text.trim(),
+        habitName: _habitNameController.text.trim().isEmpty 
+            ? 'your habit' 
+            : _habitNameController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty 
+            ? 'start small' 
+            : _tinyVersionController.text.trim(),
         implementationTime: _formatTime(_selectedTime),
-        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+        implementationLocation: _locationController.text.trim().isEmpty 
+            ? 'at home' 
+            : _locationController.text.trim(),
+        existingTemptationBundle: _temptationBundleController.text.trim(),
+        existingPreRitual: _preHabitRitualController.text.trim(),
+        existingEnvironmentCue: _environmentCueController.text.trim(),
+        existingEnvironmentDistraction: _environmentDistractionController.text.trim(),
       );
-      
-      final originalHabit = appState.currentHabit;
-      await appState.createHabit(tempHabit);
-      final suggestions = await appState.getPreHabitRitualSuggestionsForCurrentHabit();
-      
-      if (originalHabit != null) {
-        await appState.createHabit(originalHabit);
-      }
       
       if (mounted) Navigator.of(context).pop();
       
@@ -375,9 +369,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
   
   // Helper: Show suggestion dialog for environment cue (async with loading state)
+  // FIXED Phase 27.4: No longer creates ghost habits - calls AiSuggestionService directly
   Future<void> _showEnvironmentCueSuggestions() async {
-    final appState = Provider.of<AppState>(context, listen: false);
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -399,23 +392,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
-      final tempHabit = Habit(
-        id: 'temp',
-        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-        createdAt: DateTime.now(),
+      // FIXED: Call AiSuggestionService directly without saving to database
+      final aiService = AiSuggestionService();
+      final suggestions = await aiService.getEnvironmentCueSuggestions(
+        identity: _identityController.text.trim().isEmpty 
+            ? 'achieves their goals' 
+            : _identityController.text.trim(),
+        habitName: _habitNameController.text.trim().isEmpty 
+            ? 'your habit' 
+            : _habitNameController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty 
+            ? 'start small' 
+            : _tinyVersionController.text.trim(),
         implementationTime: _formatTime(_selectedTime),
-        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+        implementationLocation: _locationController.text.trim().isEmpty 
+            ? 'at home' 
+            : _locationController.text.trim(),
+        existingTemptationBundle: _temptationBundleController.text.trim(),
+        existingPreRitual: _preHabitRitualController.text.trim(),
+        existingEnvironmentCue: _environmentCueController.text.trim(),
+        existingEnvironmentDistraction: _environmentDistractionController.text.trim(),
       );
-      
-      final originalHabit = appState.currentHabit;
-      await appState.createHabit(tempHabit);
-      final suggestions = await appState.getEnvironmentCueSuggestionsForCurrentHabit();
-      
-      if (originalHabit != null) {
-        await appState.createHabit(originalHabit);
-      }
       
       if (mounted) Navigator.of(context).pop();
       
@@ -445,9 +442,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
   
   // Helper: Show suggestion dialog for environment distraction (async with loading state)
+  // FIXED Phase 27.4: No longer creates ghost habits - calls AiSuggestionService directly
   Future<void> _showEnvironmentDistractionSuggestions() async {
-    final appState = Provider.of<AppState>(context, listen: false);
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -469,23 +465,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
     
     try {
-      final tempHabit = Habit(
-        id: 'temp',
-        name: _habitNameController.text.trim().isEmpty ? 'your habit' : _habitNameController.text.trim(),
-        identity: _identityController.text.trim().isEmpty ? 'achieves their goals' : _identityController.text.trim(),
-        tinyVersion: _tinyVersionController.text.trim().isEmpty ? 'start small' : _tinyVersionController.text.trim(),
-        createdAt: DateTime.now(),
+      // FIXED: Call AiSuggestionService directly without saving to database
+      final aiService = AiSuggestionService();
+      final suggestions = await aiService.getEnvironmentDistractionSuggestions(
+        identity: _identityController.text.trim().isEmpty 
+            ? 'achieves their goals' 
+            : _identityController.text.trim(),
+        habitName: _habitNameController.text.trim().isEmpty 
+            ? 'your habit' 
+            : _habitNameController.text.trim(),
+        tinyVersion: _tinyVersionController.text.trim().isEmpty 
+            ? 'start small' 
+            : _tinyVersionController.text.trim(),
         implementationTime: _formatTime(_selectedTime),
-        implementationLocation: _locationController.text.trim().isEmpty ? 'at home' : _locationController.text.trim(),
+        implementationLocation: _locationController.text.trim().isEmpty 
+            ? 'at home' 
+            : _locationController.text.trim(),
+        existingTemptationBundle: _temptationBundleController.text.trim(),
+        existingPreRitual: _preHabitRitualController.text.trim(),
+        existingEnvironmentCue: _environmentCueController.text.trim(),
+        existingEnvironmentDistraction: _environmentDistractionController.text.trim(),
       );
-      
-      final originalHabit = appState.currentHabit;
-      await appState.createHabit(tempHabit);
-      final suggestions = await appState.getEnvironmentDistractionSuggestionsForCurrentHabit();
-      
-      if (originalHabit != null) {
-        await appState.createHabit(originalHabit);
-      }
       
       if (mounted) Navigator.of(context).pop();
       

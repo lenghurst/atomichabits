@@ -1,18 +1,17 @@
-# CREDITS.md — Atomic Habits Hook App
+# CREDITS.md — The Pact
 
-> **"Graceful Consistency > Fragile Streaks"**
+> **"Your word is your bond."**
 
 ---
 
 ## The Founding Team
 
 ### Creator & Lead Developer
-- **@lenghurst** — Vision, Architecture, Everything
+- **Crony** — Vision, Architecture, Everything
 
 ### AI Co-Architects
-- **Claude (Anthropic)** — Code Architecture, Vibecoding Philosophy
-- **Gemini (Google)** — AI Onboarding, Weekly Review, Magic Wand
-- **DeepSeek-V3.2** — Reasoning-First Prompt Optimization
+- **Gemini (Google)** — Voice AI, Weekly Review, The Architect
+- **DeepSeek-V3** — Reasoning Engine, Text Analysis
 
 ---
 
@@ -56,17 +55,17 @@ Format: - **@handle** — "The roast" → What we fixed
 
 ---
 
-## 🎨 Design Inspiration
+## 🎨 Design Philosophy
 
-### Frameworks
-- **James Clear** — Atomic Habits (Identity-based habits, 2-minute rule)
-- **Nir Eyal** — Hooked (Trigger → Action → Variable Reward → Investment)
-- **B.J. Fogg** — Tiny Habits (B = MAP, Ability > Motivation)
+### Core Principles
+- **Social Accountability** — Witness-based commitment systems
+- **Identity-Based Change** — Become who you want to be
+- **Graceful Consistency** — Progress over perfection
 
-### Philosophy
+### The Pact Philosophy
 - **"Never Miss Twice"** — Missing once is an accident; missing twice is a new habit
-- **"Graceful Consistency"** — Progress > Perfection
-- **"Identity First"** — You don't build habits; you become someone who has them
+- **"Your Word is Your Bond"** — Make promises. Keep them.
+- **"Witnesses Matter"** — Accountability through connection
 
 ---
 
@@ -86,7 +85,7 @@ This app stands on the shoulders of giants:
 
 ### AI & Intelligence
 - **Google Generative AI** — Gemini integration
-- **FL Chart** — Analytics visualizations
+- **FL Chart** — Analytics visualisations
 
 ### UX Polish
 - **Audioplayers** — Sound feedback
@@ -103,12 +102,12 @@ This app stands on the shoulders of giants:
 
 ## 📜 License
 
-This project is proprietary software. 
+This project is proprietary software owned by Crony.
 
 However, we believe in giving back:
 - Bug reports earn credits (above)
 - Feature suggestions are welcome
-- The philosophy is open: "Graceful Consistency > Fragile Streaks"
+- The philosophy is open: "Your word is your bond"
 
 ---
 
@@ -129,10 +128,11 @@ However, we believe in giving back:
 
 ---
 
-*"You do not rise to the level of your goals. You fall to the level of your systems."*
-— James Clear
+*"Make promises. Keep them. Become who you want to be."*
 
 ---
 
-**Version:** 5.3.0 (Phase 20: Destroyer Defense)
+**Version:** 5.7.0 (Phase 27)
 **Last Updated:** December 2025
+**Developer:** Crony
+**Contact:** support@thepact.co

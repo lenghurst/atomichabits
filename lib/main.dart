@@ -387,7 +387,7 @@ class _MyAppState extends State<MyApp> {
 
           // Phase 6: Dynamic theming based on AppState settings
           return MaterialApp.router(
-            title: 'Atomic Habits Hook App',
+            title: 'The Pact',
             debugShowCheckedModeBanner: false,
             themeMode: appState.themeMode,
             theme: ThemeData(

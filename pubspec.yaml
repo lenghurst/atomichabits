@@ -1,5 +1,5 @@
 name: atomic_habits_hook_app
-description: "A habit-tracking app based on Atomic Habits and the Hook Model"
+description: "The Pact - A social contract for your habits. Make promises. Keep them. Become who you want to be."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

@@ -21,7 +21,7 @@ class FeedbackService {
   
   /// Email for bug reports and roasts
   /// Primary feedback channel - direct, personal, no account needed
-  static const String feedbackEmail = 'feedback@atomichabits.app';
+  static const String feedbackEmail = 'support@thepact.co';
   
   /// Discord invite link
   /// NOTE: Intentionally null - email is the preferred feedback channel
@@ -86,7 +86,7 @@ class FeedbackService {
     String? userHandle,
   }) {
     return '''
-🐛 BUG REPORT — Atomic Habits Hook App
+🐛 BUG REPORT — The Pact
 
 **App Version:** $appVersion
 **Device:** ${_deviceInfo ?? 'Unknown'}
@@ -128,7 +128,7 @@ ${actualBehavior ?? '[What actually happened?]'}
     String? userHandle,
   }) {
     return '''
-🔥 ROAST THE DEVELOPER — Atomic Habits Hook App
+🔥 ROAST THE DEVELOPER — The Pact
 
 **App Version:** $appVersion
 **Device:** ${_deviceInfo ?? 'Unknown'}
@@ -165,7 +165,7 @@ ${suggestion ?? '[If you were the developer, what would you do differently?]'}
     String? description,
     String? userHandle,
   }) async {
-    final subject = Uri.encodeComponent('🐛 Bug Report: Atomic Habits v$appVersion');
+    final subject = Uri.encodeComponent('🐛 Bug Report: The Pact v$appVersion');
     final body = Uri.encodeComponent(generateBugReportTemplate(
       description: description,
       userHandle: userHandle,
@@ -192,7 +192,7 @@ ${suggestion ?? '[If you were the developer, what would you do differently?]'}
     String? roast,
     String? userHandle,
   }) async {
-    final subject = Uri.encodeComponent('🔥 Roast: Atomic Habits v$appVersion');
+    final subject = Uri.encodeComponent('🔥 Roast: The Pact v$appVersion');
     final body = Uri.encodeComponent(generateRoastTemplate(
       roast: roast,
       userHandle: userHandle,
@@ -330,7 +330,7 @@ class AlphaShieldConfig {
   
   /// Disclaimer for alpha/beta users
   static const String disclaimer = '''
-This is an early access build of Atomic Habits Hook App.
+This is an early access build of The Pact.
 
 What to expect:
 ✅ Core habit tracking works

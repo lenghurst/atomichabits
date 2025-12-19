@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- String resources for The Pact App -->
 <resources>
-    <string name="app_name">Pact</string>
+    <string name="app_name">The Pact</string>
     
     <!-- Phase 9: Home Screen Widget Strings -->
-    <string name="widget_name">Pact Widget</string>
+    <string name="widget_name">The Pact</string>
     <string name="widget_description">Track and complete your habit with one tap</string>
 </resources>
