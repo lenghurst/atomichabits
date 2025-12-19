@@ -217,21 +217,30 @@ class AIModelConfig {
   /// Determine which tier to use based on user subscription and kill switches
   /// 
   /// Phase 25.9: Now implements automatic failover based on kill switches
+  /// Phase 27.3: Added isBreakHabit parameter for deeper reasoning
   /// 
   /// Selection Logic:
   /// 1. If global kill switch → Manual mode
-  /// 2. Pro user + Gemini available → Gemini 2.5 Pro
-  /// 3. Premium user + Gemini available → Gemini 2.5 Flash
-  /// 4. Free user + DeepSeek available → DeepSeek-V3
-  /// 5. Failover: If primary provider killed, fall back to next available
-  /// 6. No AI → Manual mode
+  /// 2. Break habit + Premium → Tier 3 (deeper psychology needed)
+  /// 3. Pro user + Gemini available → Gemini 2.5 Pro
+  /// 4. Premium user + Gemini available → Gemini 2.5 Flash
+  /// 5. Free user + DeepSeek available → DeepSeek-V3
+  /// 6. Failover: If primary provider killed, fall back to next available
+  /// 7. No AI → Manual mode
   static AiTier selectTier({
     required bool isPremiumUser,
-    required bool isProUser,
+    bool isProUser = false,
+    bool isBreakHabit = false,
   }) {
     // Global kill switch - force manual mode
     if (_globalKillSwitch) {
       return AiTier.tier4;
+    }
+    
+    // Breaking bad habits requires deeper reasoning (Tier 3)
+    // Premium users get Gemini Pro for break habits
+    if (isBreakHabit && isPremiumUser && hasGeminiKey && !_geminiKillSwitch) {
+      return AiTier.tier3;
     }
     
     // Tier 3: The Architect (Pro)

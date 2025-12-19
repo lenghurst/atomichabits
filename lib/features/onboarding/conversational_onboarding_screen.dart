@@ -66,7 +66,7 @@ class _ConversationalOnboardingScreenState
   /// Initialize experiment bucket
   Future<void> _initializeExperiment() async {
     final prefs = await SharedPreferences.getInstance();
-    final experimentService = ExperimentationService(prefs);
+    final experimentService = ExperimentationService.production(prefs);
     
     // Use a temporary ID if user not logged in yet, or device ID
     // For now, we'll use a random session ID if auth is missing
@@ -389,21 +389,23 @@ class _ConversationalOnboardingScreenState
   Future<void> _saveAndComplete(onboarding.OnboardingData data) async {
     try {
       // 1. Convert OnboardingData to Habit
+      // Phase 27.3: Fixed field names (tinyVersion, implementationTime, implementationLocation)
       final habit = Habit(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: data.name ?? 'New Habit',
         identity: data.identity ?? 'New Identity',
-        twoMinuteVersion: data.tinyVersion,
-        time: data.implementationTime,
-        location: data.implementationLocation,
-        cue: data.environmentCue,
+        tinyVersion: data.tinyVersion ?? 'Start small',
+        implementationTime: data.implementationTime ?? '09:00',
+        implementationLocation: data.implementationLocation ?? 'At home',
+        environmentCue: data.environmentCue,
         temptationBundle: data.temptationBundle,
         createdAt: DateTime.now(),
       );
 
       // 2. Save to AppState
+      // Phase 27.3: Fixed method name (addHabit -> createHabit)
       final appState = context.read<AppState>();
-      await appState.addHabit(habit);
+      await appState.createHabit(habit);
       
       // 3. Complete onboarding
       await appState.completeOnboarding();

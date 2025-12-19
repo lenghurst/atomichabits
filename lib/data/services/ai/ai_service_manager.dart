@@ -4,28 +4,27 @@ import '../../models/chat_message.dart';
 import '../../models/chat_conversation.dart';
 import '../gemini_chat_service.dart';
 import 'deep_seek_service.dart';
-import 'claude_service.dart';
 
 /// AI Service Manager
 /// 
-/// Phase 24: "Brain Surgery 2.0" - Unified AI Tier Management
+/// Phase 25.9: "Split Brain" Architecture - Unified AI Tier Management
+/// Phase 27.3: Claude Lobotomy - Removed Anthropic dependency
 /// 
-/// Architecture:
-/// - Tier 1 (Default): DeepSeek-V3 "The Architect" - Reasoning-heavy, cost-effective
-/// - Tier 2 (Premium): Claude 3.5 Sonnet "The Coach" - Empathetic, high EQ
-/// - Tier 3 (Fallback): Gemini 2.5 Flash - Fast, reliable backup
-/// - Tier 4 (Manual): No AI - User fills form manually
+/// Architecture (Board Approved):
+/// - Tier 1 (Free): DeepSeek-V3 "The Architect" - Reasoning-heavy, cost-effective
+/// - Tier 2 (Premium): Gemini 2.5 Flash - Fast, multimodal, voice-capable
+/// - Tier 3 (Pro): Gemini 2.5 Pro - Deep reasoning for complex habits
 /// 
 /// Tier Selection Logic:
-/// 1. Bad Habit breaking → Claude (deeper psychology needed)
-/// 2. Premium user → Claude (premium experience)
-/// 3. Standard user → DeepSeek (cost-effective reasoning)
-/// 4. DeepSeek fails → Gemini (fallback)
-/// 5. All fail → Manual mode
+/// 1. Break Habit + Premium → Tier 3 (Gemini Pro - deeper psychology)
+/// 2. Break Habit + Free → Tier 1 (DeepSeek - still capable)
+/// 3. Premium user → Tier 2 (Gemini Flash - premium experience)
+/// 4. Standard user → Tier 1 (DeepSeek - cost-effective reasoning)
+/// 5. DeepSeek fails → Tier 2 (Gemini Flash fallback)
+/// 6. All fail → Manual mode
 class AIServiceManager extends ChangeNotifier {
   // Service instances
   DeepSeekService? _deepSeekService;
-  ClaudeService? _claudeService;
   GeminiChatService? _geminiService;
   
   // Current active service
@@ -50,35 +49,24 @@ class AIServiceManager extends ChangeNotifier {
   }
   
   void _initializeServices() {
-    // Initialize DeepSeek if key available
+    // Initialize DeepSeek if key available (Tier 1)
     if (AIModelConfig.hasDeepSeekKey) {
       _deepSeekService = DeepSeekService(
         apiKey: AIModelConfig.deepSeekApiKey,
         temperature: AIModelConfig.tier1Temperature,
       );
       if (kDebugMode) {
-        debugPrint('AIServiceManager: DeepSeek service initialized');
+        debugPrint('AIServiceManager: DeepSeek service initialised (Tier 1)');
       }
     }
     
-    // Initialize Claude if key available
-    if (AIModelConfig.hasClaudeKey) {
-      _claudeService = ClaudeService(
-        apiKey: AIModelConfig.claudeApiKey,
-        temperature: AIModelConfig.tier2Temperature,
-      );
-      if (kDebugMode) {
-        debugPrint('AIServiceManager: Claude service initialized');
-      }
-    }
-    
-    // Initialize Gemini if key available (fallback)
+    // Initialize Gemini if key available (Tier 2 & 3)
     if (AIModelConfig.hasGeminiKey) {
       _geminiService = GeminiChatService(
         apiKey: AIModelConfig.geminiApiKey,
       );
       if (kDebugMode) {
-        debugPrint('AIServiceManager: Gemini service initialized (fallback)');
+        debugPrint('AIServiceManager: Gemini service initialised (Tier 2/3)');
       }
     }
   }
@@ -86,30 +74,39 @@ class AIServiceManager extends ChangeNotifier {
   /// Check if any AI service is available
   bool get hasAnyAI => 
       _deepSeekService != null || 
-      _claudeService != null || 
       _geminiService != null;
   
   /// Select the appropriate AI provider based on context
+  /// 
+  /// Phase 27.3: Aligned with Board-approved "Split Brain" architecture
+  /// - No Claude. Route Pro requirements to Gemini Pro (Tier 3).
   AiProvider selectProvider({
     required bool isPremiumUser,
     required bool isBreakHabit,
   }) {
-    // Bad habits always use Claude (deeper psychology needed)
-    if (isBreakHabit && _claudeService != null) {
-      return AiProvider.claude;
+    // Break habits need deeper reasoning
+    if (isBreakHabit) {
+      // Premium users get Gemini Pro (Tier 3) for break habits
+      if (isPremiumUser && _geminiService != null) {
+        return AiProvider.geminiPro; // Tier 3
+      }
+      // Free users still get DeepSeek for break habits (capable reasoning)
+      if (_deepSeekService != null) {
+        return AiProvider.deepSeek; // Tier 1
+      }
     }
     
-    // Premium users get Claude
-    if (isPremiumUser && _claudeService != null) {
-      return AiProvider.claude;
+    // Premium users get Gemini Flash (Tier 2)
+    if (isPremiumUser && _geminiService != null) {
+      return AiProvider.gemini; // Tier 2
     }
     
-    // Default to DeepSeek (The Architect)
+    // Default to DeepSeek (Tier 1 - The Architect)
     if (_deepSeekService != null) {
       return AiProvider.deepSeek;
     }
     
-    // Fallback to Gemini
+    // Fallback to Gemini Flash (Tier 2)
     if (_geminiService != null) {
       return AiProvider.gemini;
     }
@@ -143,14 +140,8 @@ class AIServiceManager extends ChangeNotifier {
           );
           break;
           
-        case AiProvider.claude:
-          _activeConversation = await _claudeService!.startConversation(
-            type: type,
-            systemPrompt: systemPrompt,
-          );
-          break;
-          
         case AiProvider.gemini:
+        case AiProvider.geminiPro:
           _activeConversation = await _geminiService!.startConversation(
             type: type,
           );
@@ -197,15 +188,8 @@ class AIServiceManager extends ChangeNotifier {
           );
           break;
           
-        case AiProvider.claude:
-          response = await _claudeService!.sendMessage(
-            userMessage: userMessage,
-            conversation: _activeConversation!,
-            systemPromptOverride: systemPromptOverride,
-          );
-          break;
-          
         case AiProvider.gemini:
+        case AiProvider.geminiPro:
           response = await _geminiService!.sendMessage(
             userMessage: userMessage,
             conversation: _activeConversation!,
@@ -296,14 +280,8 @@ class AIServiceManager extends ChangeNotifier {
           );
           break;
           
-        case AiProvider.claude:
-          response = await _claudeService!.singleTurn(
-            prompt: prompt,
-            systemPrompt: systemPrompt,
-          );
-          break;
-          
         case AiProvider.gemini:
+        case AiProvider.geminiPro:
           response = await _geminiService!.generateWeeklyAnalysis(prompt) ?? 'Analysis unavailable.';
           break;
           
@@ -339,10 +317,10 @@ class AIServiceManager extends ChangeNotifier {
     switch (_activeProvider) {
       case AiProvider.deepSeek:
         return 'The Architect';
-      case AiProvider.claude:
-        return 'The Coach';
       case AiProvider.gemini:
-        return 'AI Assistant';
+        return 'Gemini Flash';
+      case AiProvider.geminiPro:
+        return 'Gemini Pro';
       case AiProvider.manual:
       case null:
         return 'Manual Entry';
@@ -352,11 +330,11 @@ class AIServiceManager extends ChangeNotifier {
   String get providerDescription {
     switch (_activeProvider) {
       case AiProvider.deepSeek:
-        return 'Structured habit design with behavioral engineering';
-      case AiProvider.claude:
-        return 'Empathetic coaching for breaking bad habits';
+        return 'Structured habit design with behavioural engineering';
       case AiProvider.gemini:
         return 'Fast, efficient habit creation';
+      case AiProvider.geminiPro:
+        return 'Deep reasoning for breaking bad habits';
       case AiProvider.manual:
       case null:
         return 'Fill in the form yourself';
@@ -365,11 +343,16 @@ class AIServiceManager extends ChangeNotifier {
 }
 
 /// Available AI providers
+/// 
+/// Phase 27.3: Removed Claude. Split Brain architecture:
+/// - Tier 1: DeepSeek (free)
+/// - Tier 2: Gemini Flash (premium)
+/// - Tier 3: Gemini Pro (pro/break habits)
 enum AiProvider {
-  deepSeek,  // Tier 1: The Architect
-  claude,    // Tier 2: The Coach
-  gemini,    // Tier 3: Fallback
-  manual,    // Tier 4: No AI
+  deepSeek,   // Tier 1: The Architect (DeepSeek-V3)
+  gemini,     // Tier 2: Gemini Flash (Premium)
+  geminiPro,  // Tier 3: Gemini Pro (Deep Reasoning)
+  manual,     // Tier 4: No AI
 }
 
 /// Extension for provider display
@@ -378,10 +361,10 @@ extension AiProviderExtension on AiProvider {
     switch (this) {
       case AiProvider.deepSeek:
         return 'The Architect';
-      case AiProvider.claude:
-        return 'The Coach';
       case AiProvider.gemini:
-        return 'AI Assistant';
+        return 'Gemini Flash';
+      case AiProvider.geminiPro:
+        return 'Gemini Pro';
       case AiProvider.manual:
         return 'Manual Entry';
     }
@@ -391,10 +374,10 @@ extension AiProviderExtension on AiProvider {
     switch (this) {
       case AiProvider.deepSeek:
         return '🏗️';
-      case AiProvider.claude:
-        return '🧠';
       case AiProvider.gemini:
         return '✨';
+      case AiProvider.geminiPro:
+        return '🧠';
       case AiProvider.manual:
         return '✏️';
     }
