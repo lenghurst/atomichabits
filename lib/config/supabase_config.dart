@@ -2,18 +2,25 @@
 /// 
 /// Phase 15: Identity Foundation
 /// Phase 16.2 + 16.4: Habit Contracts & Deep Links
+/// Phase 27.1: OPSEC Protocol - Secure Runtime Key Injection
 /// 
 /// Configuration for Supabase backend integration.
-/// IMPORTANT: Replace these with your actual Supabase project credentials.
+/// 
+/// SECURITY PROTOCOL:
+/// - All secrets are injected at runtime via --dart-define-from-file
+/// - NO hardcoded API keys or URLs in source code
+/// - Local development: secrets.json (git-ignored)
+/// - CI/CD: GitHub Secrets or Codemagic environment variables
+/// 
+/// To configure locally:
+/// 1. Create `secrets.json` in the project root
+/// 2. Add to .gitignore
+/// 3. Configure .vscode/launch.json with --dart-define-from-file=secrets.json
 /// 
 /// To get these values:
 /// 1. Go to https://supabase.com and create a project
 /// 2. Navigate to Project Settings > API
-/// 3. Copy the URL and anon key
-/// 
-/// For production:
-/// - Use environment variables or a secure secrets manager
-/// - Never commit actual API keys to version control
+/// 3. Copy the URL and anon key to secrets.json
 class SupabaseConfig {
   /// Supabase project URL
   /// Format: https://[project-id].supabase.co
@@ -31,6 +38,9 @@ class SupabaseConfig {
   
   /// Check if Supabase is configured
   static bool get isConfigured => url.isNotEmpty && anonKey.isNotEmpty;
+  
+  /// Alias for isConfigured (used in failsafe checks)
+  static bool get isValid => isConfigured;
   
   /// Deep link redirect URL for OAuth
   /// Used for Google Sign-In and other OAuth providers
