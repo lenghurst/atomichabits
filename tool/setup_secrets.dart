@@ -37,9 +37,9 @@ void main() {
   
   secrets['SUPABASE_ANON_KEY'] = _prompt(
     '2. Enter SUPABASE_ANON_KEY',
-    hint: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    validator: (v) => v.startsWith('eyJ'),
-    errorMsg: 'Anon key should be a JWT starting with "eyJ"',
+    hint: 'sb_publishable_... (new format) or eyJhbGci... (legacy JWT)',
+    validator: (v) => v.startsWith('sb_publishable_') || v.startsWith('eyJ'),
+    errorMsg: 'Anon key should start with "sb_publishable_" or "eyJ"',
   );
 
   // AI Configuration
