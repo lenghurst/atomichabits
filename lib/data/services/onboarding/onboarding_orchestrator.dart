@@ -117,6 +117,16 @@ class OnboardingOrchestrator extends ChangeNotifier {
   bool _isCheckingDeferredLink = false;
   bool get isCheckingDeferredLink => _isCheckingDeferredLink;
   
+  /// Phase 27.5: Premium user flag (set from AppSettings.devModePremium)
+  bool _isPremiumUser = false;
+  bool get isPremiumUser => _isPremiumUser;
+  
+  /// Phase 27.5: Set premium user flag (called from UI with AppSettings)
+  void setPremiumUser(bool value) {
+    _isPremiumUser = value;
+    notifyListeners();
+  }
+  
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;
   
@@ -184,7 +194,7 @@ class OnboardingOrchestrator extends ChangeNotifier {
 
       // Phase 24: Start conversation with AIServiceManager
       _conversation = await _aiServiceManager.startConversation(
-        isPremiumUser: false, // TODO: Get from user profile
+        isPremiumUser: _isPremiumUser, // Phase 27.5: Now uses devModePremium from settings
         isBreakHabit: isBreakHabit,
         type: ConversationType.onboarding,
       );
@@ -643,7 +653,7 @@ CRITICAL: The tinyVersion must be so small it feels almost silly. That's the poi
   /// Phase 24: Now uses AIServiceManager with tier selection
   Future<ChatConversation?> startConversation({bool isBreakHabit = false}) async {
     _conversation = await _aiServiceManager.startConversation(
-      isPremiumUser: false, // TODO: Get from user profile
+      isPremiumUser: _isPremiumUser, // Phase 27.5: Now uses devModePremium from settings
       isBreakHabit: isBreakHabit,
       type: ConversationType.onboarding,
     );

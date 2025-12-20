@@ -25,6 +25,10 @@ class AppSettings {
   
   /// Whether to show motivational quotes
   final bool showQuotes;
+  
+  /// Developer mode: Simulates premium user for tier testing
+  /// Phase 27.5: Added for testing Tier 2/3 without subscription
+  final bool devModePremium;
 
   const AppSettings({
     this.themeMode = ThemeMode.system,
@@ -33,6 +37,7 @@ class AppSettings {
     this.defaultNotificationTime = '08:00',
     this.notificationsEnabled = true,
     this.showQuotes = true,
+    this.devModePremium = false,
   });
 
   /// Create a copy with modified values
@@ -43,6 +48,7 @@ class AppSettings {
     String? defaultNotificationTime,
     bool? notificationsEnabled,
     bool? showQuotes,
+    bool? devModePremium,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -51,6 +57,7 @@ class AppSettings {
       defaultNotificationTime: defaultNotificationTime ?? this.defaultNotificationTime,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       showQuotes: showQuotes ?? this.showQuotes,
+      devModePremium: devModePremium ?? this.devModePremium,
     );
   }
 
@@ -63,6 +70,7 @@ class AppSettings {
       'defaultNotificationTime': defaultNotificationTime,
       'notificationsEnabled': notificationsEnabled,
       'showQuotes': showQuotes,
+      'devModePremium': devModePremium,
     };
   }
 
@@ -75,6 +83,7 @@ class AppSettings {
       defaultNotificationTime: json['defaultNotificationTime'] as String? ?? '08:00',
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
       showQuotes: json['showQuotes'] as bool? ?? true,
+      devModePremium: json['devModePremium'] as bool? ?? false,
     );
   }
 
@@ -95,7 +104,7 @@ class AppSettings {
   @override
   String toString() {
     return 'AppSettings(theme: $themeMode, sound: $soundEnabled, haptics: $hapticsEnabled, '
-        'notifications: $notificationsEnabled @ $defaultNotificationTime, quotes: $showQuotes)';
+        'notifications: $notificationsEnabled @ $defaultNotificationTime, quotes: $showQuotes, devPremium: $devModePremium)';
   }
 
   @override
@@ -107,7 +116,8 @@ class AppSettings {
         other.hapticsEnabled == hapticsEnabled &&
         other.defaultNotificationTime == defaultNotificationTime &&
         other.notificationsEnabled == notificationsEnabled &&
-        other.showQuotes == showQuotes;
+        other.showQuotes == showQuotes &&
+        other.devModePremium == devModePremium;
   }
 
   @override
@@ -119,6 +129,7 @@ class AppSettings {
       defaultNotificationTime,
       notificationsEnabled,
       showQuotes,
+      devModePremium,
     );
   }
 }

@@ -269,6 +269,41 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+                
+                // ========== Developer Section (Phase 27.5) ==========
+                _buildSectionTitle(context, 'Developer'),
+                Card(
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        secondary: const Icon(Icons.science),
+                        title: const Text('Simulate Premium'),
+                        subtitle: Text(
+                          settings.devModePremium 
+                            ? 'Using Tier 2 (Gemini Flash)' 
+                            : 'Using Tier 1 (DeepSeek)',
+                        ),
+                        value: settings.devModePremium,
+                        onChanged: (value) {
+                          appState.updateSettings(
+                            settings.copyWith(devModePremium: value),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.psychology),
+                        title: const Text('AI Status'),
+                        subtitle: Text(
+                          settings.devModePremium
+                            ? '🎙️ Voice-capable (Gemini)'
+                            : '🪞 Text-only (DeepSeek)',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 32),
                 
                 // App branding footer
