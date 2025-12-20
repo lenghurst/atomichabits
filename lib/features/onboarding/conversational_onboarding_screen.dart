@@ -11,6 +11,7 @@ import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
 import '../../data/services/experimentation_service.dart';
 import 'widgets/chat_message_bubble.dart';
+import '../dev/dev_tools_overlay.dart';
 
 /// Conversational onboarding screen - Phase 2 Chat UI
 /// 
@@ -443,8 +444,15 @@ class _ConversationalOnboardingScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Coach'),
+        title: DevToolsGestureDetector(
+          child: const Text('AI Coach'),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.go('/settings'),
+          ),
           TextButton(
             onPressed: _goToManualForm,
             child: const Text('Manual'),

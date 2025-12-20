@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:typed_data';
 import '../../data/app_state.dart';
 import '../../data/services/gemini_live_service.dart' show GeminiLiveService, LiveConnectionState;
 import '../../data/models/habit.dart';
+import '../dev/dev_tools_overlay.dart';
 
 /// Voice-First Onboarding Screen - MVP
 /// 
@@ -182,8 +184,15 @@ Be warm, encouraging, and conversational.''';
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Voice Coach'),
+        title: DevToolsGestureDetector(
+          child: const Text('Voice Coach'),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.go('/settings'),
+          ),
           TextButton(
             onPressed: () => context.go('/onboarding/manual'),
             child: const Text('Manual'),

@@ -9,6 +9,7 @@ import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../widgets/suggestion_dialog.dart';
 import 'widgets/magic_wand_button.dart';
 import '../../data/ai_suggestion_service.dart';
+import '../dev/dev_tools_overlay.dart';
 
 /// Onboarding screen - collects user identity and first habit
 /// Based on Atomic Habits: Identity-based habits + Implementation intentions
@@ -801,8 +802,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Welcome to The Pact'),
+        title: DevToolsGestureDetector(
+          child: const Text('Welcome to The Pact'),
+        ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.go('/settings'),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
