@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:typed_data';
 import '../../data/app_state.dart';
-import '../../data/services/gemini_live_service.dart';
+import '../../data/services/gemini_live_service.dart' show GeminiLiveService, LiveConnectionState;
 import '../../data/models/habit.dart';
 
 /// Voice-First Onboarding Screen - MVP
@@ -70,6 +70,10 @@ class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen> {
             case LiveConnectionState.disconnected:
               _voiceState = VoiceState.error;
               _errorMessage = 'Connection lost';
+              break;
+            case LiveConnectionState.reconnecting:
+              _voiceState = VoiceState.connecting;
+              _addSystemMessage('Reconnecting...');
               break;
           }
         });
@@ -418,9 +422,3 @@ enum VoiceState {
   error,
 }
 
-/// Connection states from GeminiLiveService
-enum LiveConnectionState {
-  connecting,
-  connected,
-  disconnected,
-}
