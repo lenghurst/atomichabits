@@ -91,14 +91,14 @@ class _ConversationalOnboardingScreenState
     String greeting;
     switch (_hookVariant) {
       case 'B': // Sergeant
-        greeting = "Listen up. I'm your Atomic Habits coach. We're building a habit that sticks. No excuses.\n\nFirst, state your name.";
+        greeting = "Listen up. I'm your Pact coach. We're building a habit that sticks. No excuses.\n\nFirst, state your name.";
         break;
       case 'C': // Visionary
         greeting = "Welcome to the first day of your new life. I'm here to help you build a legacy.\n\nTo begin our journey, what is your name?";
         break;
       case 'A': // Friend (Default)
       default:
-        greeting = "Hi! I'm your Atomic Habits coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?";
+        greeting = "Hi! I'm your Pact coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?";
     }
 
     // Add initial greeting

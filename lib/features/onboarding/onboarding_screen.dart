@@ -801,7 +801,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Welcome to Atomic Habits'),
+        title: const Text('Welcome to The Pact'),
         centerTitle: true,
       ),
       body: SafeArea(

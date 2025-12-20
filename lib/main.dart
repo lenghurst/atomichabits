@@ -18,6 +18,7 @@ import 'config/supabase_config.dart';
 import 'core/error_boundary.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
+import 'features/onboarding/voice_onboarding_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -245,9 +246,26 @@ class _MyAppState extends State<MyApp> {
             initialLocation: appState.hasCompletedOnboarding ? '/dashboard' : '/',
             routes: [
               // Default onboarding: Conversational UI (Phase 2)
+              // Phase 27.5: Routes to voice interface if Premium (Tier 2)
               GoRoute(
                 path: '/',
-                builder: (context, state) => const ConversationalOnboardingScreen(),
+                builder: (context, state) {
+                  final appState = context.read<AppState>();
+                  final isPremium = appState.settings.devModePremium;
+                  
+                  // Premium users get voice interface (Tier 2)
+                  if (isPremium) {
+                    return const VoiceOnboardingScreen();
+                  }
+                  
+                  // Free users get text chat (Tier 1)
+                  return const ConversationalOnboardingScreen();
+                },
+              ),
+              // Voice onboarding: Gemini Live API (Phase 27.5)
+              GoRoute(
+                path: '/onboarding/voice',
+                builder: (context, state) => const VoiceOnboardingScreen(),
               ),
               // Manual onboarding: Form UI (Tier 3 fallback)
               GoRoute(
