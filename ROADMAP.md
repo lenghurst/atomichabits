@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.10)  
-> **Last Verified:** Phase 27.10 Complete (Geo-Blocking Fix)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.11)  
+> **Last Verified:** Phase 27.11 Complete (Build Fix)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 READY - WebSocket Fixed, Audio Recording Next
+> **Status:** 🟢 READY - Build Fixed, Audio Recording Next
 
 ---
 
@@ -82,6 +82,15 @@
   - OAuth tokens: `Authorization: Bearer` header
 - [x] Deprecated `_buildWebSocketUrl()` method (auth now in headers)
 - [x] Updated `ai_model_config.dart` with new model and documentation
+
+### Completed (Phase 27.11)
+
+#### Build Fix (CRITICAL - ✅ RESOLVED)
+- [x] **ROOT CAUSE IDENTIFIED:** `WebSocketChannel.connect()` doesn't support `headers` parameter in Flutter
+- [x] Reverted to URL parameter authentication (`?key=` and `?access_token=`)
+- [x] Removed invalid `headers` argument from `WebSocketChannel.connect()`
+- [x] Preserved all Phase 27.9 and 27.10 fixes (handshake, global model, v1alpha)
+- [x] Build now compiles successfully
 - [ ] **NEXT:** Rebuild APK and test voice connection from UK
 
 ### In Progress (Phase 27.8)
@@ -303,7 +312,8 @@ Swapped Gemini for **DeepSeek-V3** (Reasoning) and **Claude 3.5** (Coaching).
 | 27.8 | 1 | 1 | 0 | 1 | ~50 |
 | 27.9 | 1 | 4 | 0 | 1 | ~200 |
 | 27.10 | 1 | 2 | 0 | 2 | ~80 |
-| **Total** | **7** | **24** | **4** | **20** | **~1930** |
+| 27.11 | 1 | 1 | 0 | 1 | ~50 |
+| **Total** | **8** | **25** | **4** | **21** | **~1980** |
 
 ### Code Quality
 

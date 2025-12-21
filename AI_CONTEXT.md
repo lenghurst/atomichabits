@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.10)  
-> **Last Verified:** Phase 27.10 Complete (Geo-Blocking Fix + Header Auth)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.11)  
+> **Last Verified:** Phase 27.11 Complete (Build Fix - Reverted to URL Auth)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -369,12 +369,13 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ### High Priority (BLOCKING NYE LAUNCH)
 
-1. **WebSocket Connection Fixed** (Phase 27.10 - ✅ COMPLETE)
+1. **WebSocket Connection Fixed** (Phase 27.11 - ✅ COMPLETE)
    - **Root Cause #1:** Auth parameter mismatch - API keys need `key=` not `access_token=` (Phase 27.9)
    - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` is US region-locked (Phase 27.10)
+   - **Root Cause #3:** Build error - `WebSocketChannel.connect()` doesn't support `headers` parameter (Phase 27.11)
    - **Fix Applied:**
      - Switched model from `gemini-2.5-flash-native-audio-preview-12-2025` to `gemini-2.0-flash-exp` (globally available)
-     - Changed auth from URL parameters to HTTP headers (`x-goog-api-key` for API keys, `Authorization: Bearer` for OAuth)
+     - Reverted to URL parameter auth (`?key=` for API keys, `?access_token=` for OAuth tokens)
      - Switched from `v1beta` to `v1alpha` API version
      - Added proper SetupComplete handshake handling
      - Enhanced logging for WebSocket close codes and all messages
@@ -431,6 +432,7 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 | **27.8** | **Audio Recording** | 🚧 In Progress | Microphone permissions + audio streaming |
 | **27.9** | **WebSocket Auth Fix** | ✅ Complete | Auth parameter fix (`key=` vs `access_token=`), v1alpha API, SetupComplete handling |
 | **27.10** | **Geo-Blocking Fix** | ✅ Complete | Switched to `gemini-2.0-flash-exp` (globally available), header-based auth |
+| **27.11** | **Build Fix** | ✅ Complete | Reverted to URL parameter auth (Flutter compatibility) |
 
 ---
 
