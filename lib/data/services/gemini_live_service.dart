@@ -201,15 +201,24 @@ class GeminiLiveService {
         return false;
       }
       
-      // Step 2: Build WebSocket URL with correct auth parameter
-      final wsUrl = _buildWebSocketUrl(token);
+      // Step 2: Build WebSocket URL (no auth parameters)
+      final wsUrl = _wsEndpoint;
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
-        debugPrint('GeminiLiveService: Using ${_isUsingApiKey ? "API Key (key=)" : "OAuth Token (access_token=)"}');
+        debugPrint('GeminiLiveService: Using ${_isUsingApiKey ? "API Key (header: x-goog-api-key)" : "OAuth Token (header: Authorization)"}');
       }
       
-      // Step 3: Connect to WebSocket
-      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+      // Step 3: Connect to WebSocket with header-based auth
+      // FIX: Use headers instead of URL parameters for better compatibility
+      _channel = WebSocketChannel.connect(
+        Uri.parse(wsUrl),
+        headers: {
+          // Standard Google API Key Header (for raw API keys)
+          if (_isUsingApiKey) 'x-goog-api-key': token,
+          // OAuth Bearer Token Header (for ephemeral tokens)
+          if (!_isUsingApiKey) 'Authorization': 'Bearer $token',
+        },
+      );
       
       // Step 4: Set up message listener with error handling
       _subscription = _channel!.stream.listen(
@@ -686,18 +695,19 @@ class GeminiLiveService {
   
   /// Build WebSocket URL with correct auth parameter
   /// 
-  /// FIX: Use `key=` for raw API keys, `access_token=` for OAuth tokens
-  /// This is the critical fix - the Gemini API rejects API keys sent as access_token
+  /// DEPRECATED: Phase 27.10 switched to header-based auth for better compatibility
+  /// This method is kept for reference but is no longer used.
+  /// 
+  /// Previous approach used URL parameters:
+  /// - API keys: ?key=
+  /// - OAuth tokens: ?access_token=
+  /// 
+  /// New approach (Phase 27.10) uses HTTP headers:
+  /// - API keys: x-goog-api-key header
+  /// - OAuth tokens: Authorization: Bearer header
   String _buildWebSocketUrl(String token) {
-    if (_isUsingApiKey) {
-      // FIX: Raw API keys must use 'key' parameter, not 'access_token'
-      debugPrint('GeminiLiveService: Using API Key auth (key= parameter)');
-      return '$_wsEndpoint?key=$token';
-    }
-    
-    // OAuth tokens use 'access_token' parameter
-    debugPrint('GeminiLiveService: Using OAuth token auth (access_token= parameter)');
-    return '$_wsEndpoint?access_token=$token';
+    // This method is deprecated - auth is now done via headers
+    return _wsEndpoint;
   }
   
   /// Send initial setup message to configure the session

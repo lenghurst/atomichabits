@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.9)  
-> **Last Verified:** Phase 27.9 Complete (WebSocket Auth Parameter Fix)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.10)  
+> **Last Verified:** Phase 27.10 Complete (Geo-Blocking Fix + Header Auth)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -369,12 +369,14 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ### High Priority (BLOCKING NYE LAUNCH)
 
-1. **WebSocket Connection Fixed** (Phase 27.9 - ✅ COMPLETE)
-   - **Root Cause:** Auth parameter mismatch - API keys need `key=` not `access_token=`
-   - **Fix Applied:** `_buildWebSocketUrl()` now uses `key=` for API keys, `access_token=` for OAuth tokens
-   - **Additional Fixes:**
-     - Switched from `v1beta` to `v1alpha` API version (required for raw key auth)
-     - Added proper SetupComplete handshake handling (wait for server confirmation)
+1. **WebSocket Connection Fixed** (Phase 27.10 - ✅ COMPLETE)
+   - **Root Cause #1:** Auth parameter mismatch - API keys need `key=` not `access_token=` (Phase 27.9)
+   - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` is US region-locked (Phase 27.10)
+   - **Fix Applied:**
+     - Switched model from `gemini-2.5-flash-native-audio-preview-12-2025` to `gemini-2.0-flash-exp` (globally available)
+     - Changed auth from URL parameters to HTTP headers (`x-goog-api-key` for API keys, `Authorization: Bearer` for OAuth)
+     - Switched from `v1beta` to `v1alpha` API version
+     - Added proper SetupComplete handshake handling
      - Enhanced logging for WebSocket close codes and all messages
    - **NEXT STEP:** Rebuild APK and test voice connection
 
@@ -428,6 +430,7 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 | **27.7** | **Dev Mode Bypass** | ✅ Complete | Voice works without auth in debug builds |
 | **27.8** | **Audio Recording** | 🚧 In Progress | Microphone permissions + audio streaming |
 | **27.9** | **WebSocket Auth Fix** | ✅ Complete | Auth parameter fix (`key=` vs `access_token=`), v1alpha API, SetupComplete handling |
+| **27.10** | **Geo-Blocking Fix** | ✅ Complete | Switched to `gemini-2.0-flash-exp` (globally available), header-based auth |
 
 ---
 
@@ -439,8 +442,9 @@ See **[ROADMAP.md](./ROADMAP.md)** for detailed priorities.
 1. ✅ Voice interface UI (Phase 27.5)
 2. ✅ Dev mode bypass (Phase 27.7)
 3. ✅ WebSocket connection fix (Phase 27.9)
-4. 🚧 Audio recording implementation (Phase 27.8)
-5. 🚧 Google OAuth setup (Phase 27.7)
+4. ✅ Geo-blocking fix (Phase 27.10)
+5. 🚧 Audio recording implementation (Phase 27.8)
+6. 🚧 Google OAuth setup (Phase 27.7)
 
 **Short-term (Q1 2026):**
 - Polish voice UX (waveform, transcription)

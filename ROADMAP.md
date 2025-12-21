@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.9)  
-> **Last Verified:** Phase 27.9 Complete (WebSocket Auth Fix)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.10)  
+> **Last Verified:** Phase 27.10 Complete (Geo-Blocking Fix)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟡 UNBLOCKED - Ready for Audio Recording Implementation
+> **Status:** 🟢 READY - WebSocket Fixed, Audio Recording Next
 
 ---
 
@@ -71,7 +71,18 @@
 - [x] Switched from `v1beta` to `v1alpha` API version (required for raw key auth)
 - [x] Added proper SetupComplete handshake handling (wait for server confirmation)
 - [x] Enhanced logging for WebSocket close codes and all messages
-- [ ] **NEXT:** Rebuild APK and test voice connection
+
+### Completed (Phase 27.10)
+
+#### Geo-Blocking Fix (CRITICAL - ✅ RESOLVED)
+- [x] **ROOT CAUSE IDENTIFIED:** `gemini-2.5-flash-native-audio-preview-12-2025` is US region-locked
+- [x] Switched model to `gemini-2.0-flash-exp` (globally available for developers)
+- [x] Changed auth from URL parameters to HTTP headers for better compatibility
+  - API keys: `x-goog-api-key` header
+  - OAuth tokens: `Authorization: Bearer` header
+- [x] Deprecated `_buildWebSocketUrl()` method (auth now in headers)
+- [x] Updated `ai_model_config.dart` with new model and documentation
+- [ ] **NEXT:** Rebuild APK and test voice connection from UK
 
 ### In Progress (Phase 27.8)
 
@@ -291,7 +302,8 @@ Swapped Gemini for **DeepSeek-V3** (Reasoning) and **Claude 3.5** (Coaching).
 | 27.7 | 1 | 3 | 1 | 2 | ~150 |
 | 27.8 | 1 | 1 | 0 | 1 | ~50 |
 | 27.9 | 1 | 4 | 0 | 1 | ~200 |
-| **Total** | **6** | **22** | **4** | **18** | **~1850** |
+| 27.10 | 1 | 2 | 0 | 2 | ~80 |
+| **Total** | **7** | **24** | **4** | **20** | **~1930** |
 
 ### Code Quality
 
