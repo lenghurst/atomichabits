@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.12)  
-> **Last Verified:** Phase 27.12 Complete (Black Box Debug Edition)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.13)  
+> **Last Verified:** Phase 27.13 Complete (Stable GA Model)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -369,17 +369,17 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ### High Priority (BLOCKING NYE LAUNCH)
 
-1. **WebSocket Connection Debugging** (Phase 27.12 - 🔍 IN PROGRESS)
+1. **WebSocket Connection Fixed** (Phase 27.13 - ✅ COMPLETE)
    - **Root Cause #1:** Auth parameter mismatch - API keys need `key=` not `access_token=` (Phase 27.9 ✅)
    - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` is US region-locked (Phase 27.10 ✅)
    - **Root Cause #3:** Build error - `WebSocketChannel.connect()` doesn't support `headers` parameter (Phase 27.11 ✅)
-   - **Root Cause #4:** Unknown runtime failure - need detailed error info (Phase 27.12 🔍)
-   - **Phase 27.12 "Black Box" Debug Features:**
-     - Added phase tracking: IDLE → FETCHING_TOKEN → BUILDING_URL → CONNECTING_SOCKET → SENDING_HANDSHAKE → WAITING_FOR_SERVER_READY → CONNECTED_STABLE
+   - **Root Cause #4:** Deprecated `-exp` endpoint - `gemini-2.0-flash-exp` is unstable/deprecated (Phase 27.13 ✅)
+   - **Final Fix:** Switched from `gemini-2.0-flash-exp` to `gemini-2.0-flash` (stable GA endpoint)
+   - **Phase 27.12 "Black Box" Debug Features:** (retained for future debugging)
+     - Phase tracking: IDLE → FETCHING_TOKEN → BUILDING_URL → CONNECTING_SOCKET → SENDING_HANDSHAKE → WAITING_FOR_SERVER_READY → CONNECTED_STABLE
      - Detailed error messages include: timestamp, phase, close code, close reason, model name, auth method
      - UI shows debug dialog on error with monospace "screenshot-ready" format
-     - Error dialog allows copying/screenshotting for debugging
-   - **NEXT STEP:** Rebuild APK, reproduce error, screenshot the debug dialog
+   - **NEXT STEP:** Rebuild APK and test voice connection
 
 2. **Audio Recording Not Implemented** (Phase 27.8)
    - Voice interface shows UI but doesn't capture audio yet
