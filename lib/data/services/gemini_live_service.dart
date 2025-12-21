@@ -626,6 +626,9 @@ class GeminiLiveService {
   // === PRIVATE METHODS ===
   
   /// Get ephemeral token from Supabase Edge Function
+  /// 
+  /// DEV MODE: If user is not authenticated and we're in debug mode,
+  /// use the Gemini API key directly (less secure but works for testing)
   Future<String?> _getEphemeralToken() async {
     // Check if we have a valid cached token
     if (_ephemeralToken != null && 
@@ -639,12 +642,21 @@ class GeminiLiveService {
       
       // Check if user is authenticated
       final session = supabase.auth.currentSession;
+      
+      // DEV MODE BYPASS: Use API key directly if not authenticated in debug mode
       if (session == null) {
+        if (kDebugMode && AIModelConfig.hasGeminiKey) {
+          debugPrint('GeminiLiveService: DEV MODE - Using Gemini API key directly (no auth)');
+          // Return the API key directly - works for testing but less secure
+          _ephemeralToken = AIModelConfig.geminiApiKey;
+          _tokenExpiry = DateTime.now().add(const Duration(hours: 24)); // Fake expiry
+          return _ephemeralToken;
+        }
         debugPrint('GeminiLiveService: User not authenticated');
         return null;
       }
       
-      // Call Edge Function
+      // Call Edge Function (production flow)
       final response = await supabase.functions.invoke(
         _tokenEndpoint,
         body: {'lockToConfig': true},
@@ -652,6 +664,13 @@ class GeminiLiveService {
       
       if (response.status != 200) {
         debugPrint('GeminiLiveService: Token request failed: ${response.status}');
+        // DEV MODE FALLBACK: If Edge Function fails, try API key directly
+        if (kDebugMode && AIModelConfig.hasGeminiKey) {
+          debugPrint('GeminiLiveService: DEV MODE FALLBACK - Using Gemini API key directly');
+          _ephemeralToken = AIModelConfig.geminiApiKey;
+          _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+          return _ephemeralToken;
+        }
         return null;
       }
       
@@ -667,6 +686,13 @@ class GeminiLiveService {
       
     } catch (e) {
       debugPrint('GeminiLiveService: Failed to get ephemeral token: $e');
+      // DEV MODE FALLBACK: If anything fails, try API key directly
+      if (kDebugMode && AIModelConfig.hasGeminiKey) {
+        debugPrint('GeminiLiveService: DEV MODE FALLBACK - Using Gemini API key directly after error');
+        _ephemeralToken = AIModelConfig.geminiApiKey;
+        _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+        return _ephemeralToken;
+      }
       return null;
     }
   }

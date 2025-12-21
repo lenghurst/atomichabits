@@ -959,7 +959,7 @@ class SettingsScreen extends StatelessWidget {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: \${result.error}')),
+          SnackBar(content: Text('Error: ${result.error}')),
         );
       }
     }
@@ -1014,7 +1014,7 @@ class SettingsScreen extends StatelessWidget {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: \${result.error}')),
+                    SnackBar(content: Text('Error: ${result.error}')),
                   );
                 }
               }
@@ -1096,7 +1096,7 @@ class SettingsScreen extends StatelessWidget {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: \${result.error}')),
+                    SnackBar(content: Text('Error: ${result.error}')),
                   );
                 }
               }
