@@ -24,7 +24,10 @@ const GEMINI_API_VERSION = 'v1alpha'
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com'
 
 // Model configuration (December 2025 verified endpoints)
-const LIVE_API_MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025'
+// Phase 27.15: CRITICAL - Must match Flutter app's AIModelConfig.tier2Model
+// OLD (Preview - US-only): 'gemini-2.5-flash-native-audio-preview-12-2025'
+// NEW (GA - Global): 'gemini-live-2.5-flash-native-audio'
+const LIVE_API_MODEL = 'gemini-live-2.5-flash-native-audio'
 
 interface EphemeralTokenRequest {
   // Optional: Lock token to specific configuration

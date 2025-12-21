@@ -213,7 +213,7 @@ Endpoint: v1alpha''';
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
-          'responseModalities': ['AUDIO'],
+          'responseModalities': ['AUDIO'], // camelCase per official docs
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
