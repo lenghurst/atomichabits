@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** December 21, 2025 (Commit: 0b04f58)  
-> **Last Verified:** Phase 27.7 Complete (Voice First Pivot)  
+> **Last Updated:** December 21, 2025 (Commit: af9db32)  
+> **Last Verified:** Phase 27.8 In Progress (WebSocket Endpoint Fix)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -367,19 +367,28 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ## Known Issues & Technical Debt
 
-### High Priority
+### High Priority (BLOCKING NYE LAUNCH)
 
-1. **Audio Recording Not Implemented** (Phase 27.8)
+1. **WebSocket Connection Still Failing** (Phase 27.8 - IN PROGRESS)
+   - Fixed endpoint from REST to WebSocket (commit af9db32)
+   - Connection still drops immediately after establishing
+   - Need to debug: token format, API version, or setup message
+   - **NEXT STEP:** Test with rebuilt APK, check server-side logs
+
+2. **Audio Recording Not Implemented** (Phase 27.8)
    - Voice interface shows UI but doesn't capture audio yet
    - Need to implement microphone permissions + audio streaming
+   - **BLOCKED BY:** WebSocket connection must work first
 
-2. **Google Sign-In Configuration** (Phase 27.7)
-   - OAuth setup guide provided but not configured
-   - Voice interface works in dev mode without auth
+3. **Google Sign-In Configuration** (Phase 27.7)
+   - OAuth setup guide provided (`docs/GOOGLE_OAUTH_SETUP.md`)
+   - Not configured yet - voice works in dev mode without auth
+   - **REQUIRED FOR:** Production voice interface
 
-3. **Manual Onboarding UX** (Phase 27.5)
+4. **Manual Onboarding UX** (Phase 27.5)
    - Form is long and overwhelming
    - Consider multi-step wizard or collapsing optional fields
+   - **PRIORITY:** Low (voice is the primary path)
 
 ### Medium Priority
 

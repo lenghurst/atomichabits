@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** December 21, 2025 (Commit: 0b04f58)  
-> **Last Verified:** Phase 27.7 Complete (Voice First Pivot)  
+> **Last Updated:** December 21, 2025 (Commit: af9db32)  
+> **Last Verified:** Phase 27.8 In Progress (WebSocket Debugging)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟡 VOICE INTERFACE BETA
+> **Status:** 🔴 BLOCKED - Voice Connection Failing
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Goal:** Transform onboarding from text-based to voice-first conversational AI coaching
 
-**Status:** 🟡 In Progress (Phase 27.8 - Audio Recording)
+**Status:** 🔴 BLOCKED (Phase 27.8 - WebSocket Connection Failing)
 
 **Target:** NYE 2025 Launch
 
@@ -64,7 +64,14 @@
 
 ### In Progress (Phase 27.8)
 
-#### Audio Recording Implementation
+#### WebSocket Connection Debugging (CRITICAL - BLOCKING LAUNCH)
+- [x] Fixed WebSocket endpoint from REST to BidiGenerateContent (commit af9db32)
+- [x] Changed token parameter from `key=` to `access_token=`
+- [ ] **NEXT:** Test with rebuilt APK to verify fix works
+- [ ] **IF STILL FAILING:** Debug token format, check Gemini API logs
+- [ ] **IF STILL FAILING:** Try alternative authentication method
+
+#### Audio Recording Implementation (BLOCKED BY WEBSOCKET)
 - [ ] Add microphone permissions (Android + iOS)
 - [ ] Implement audio capture (16kHz, 16-bit PCM, mono)
 - [ ] Stream audio to Gemini Live API via WebSocket

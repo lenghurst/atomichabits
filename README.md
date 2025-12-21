@@ -18,8 +18,8 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟡 Beta | Gemini Live API |
 
-> **Last Updated:** December 21, 2025 (Commit: 0b04f58)  
-> **Current Phase:** Phase 27.7 - Voice First Pivot Complete
+> **Last Updated:** December 21, 2025 (Commit: af9db32)  
+> **Current Phase:** Phase 27.8 - WebSocket Endpoint Fix (In Testing)
 
 ---
 
