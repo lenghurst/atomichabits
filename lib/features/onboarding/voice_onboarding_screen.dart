@@ -86,6 +86,8 @@ class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen> {
           _errorMessage = error;
           _addSystemMessage('⚠️ Error: $error');
         });
+        // Show detailed error dialog for debugging (Phase 27.12)
+        _showDetailedErrorDialog(error);
       },
       onFallbackToTextMode: () {
         _showFallbackDialog();
@@ -139,6 +141,67 @@ Be warm, encouraging, and conversational.''';
       // TODO: Implement start recording
       setState(() => _voiceState = VoiceState.listening);
     }
+  }
+  
+  /// Show detailed error dialog for debugging (Phase 27.12)
+  /// This displays the "Black Box" error data so screenshots capture the root cause
+  void _showDetailedErrorDialog(String error) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.bug_report, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Debug Info'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Screenshot this for debugging:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  error,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    color: Colors.greenAccent,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Dismiss'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showFallbackDialog();
+            },
+            child: const Text('Try Alternatives'),
+          ),
+        ],
+      ),
+    );
   }
   
   /// Show fallback dialog when voice fails
