@@ -29,11 +29,8 @@ import '../../config/ai_model_config.dart';
 class GeminiLiveService {
   // === CONFIGURATION ===
   
-  /// Gemini Live API WebSocket base URL
-  static const String _baseWsUrl = 'wss://generativelanguage.googleapis.com';
-  
-  /// API version for Live API (requires v1alpha for ephemeral tokens)
-  static const String _apiVersion = 'v1alpha';
+  /// Gemini Live API WebSocket endpoint
+  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
   
   /// Supabase Edge Function for ephemeral token
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
@@ -699,8 +696,8 @@ class GeminiLiveService {
   
   /// Build WebSocket URL with ephemeral token
   String _buildWebSocketUrl(String token) {
-    // The ephemeral token is used as the API key in the URL
-    return '$_baseWsUrl/$_apiVersion/models/${AIModelConfig.tier2Model}:streamGenerateContent?key=$token';
+    // The ephemeral token is passed as access_token query parameter
+    return '$_wsEndpoint?access_token=$token';
   }
   
   /// Send initial setup message to configure the session
