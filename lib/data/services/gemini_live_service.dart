@@ -9,19 +9,20 @@ import '../../config/ai_model_config.dart';
 
 /// Gemini Live API Service for Real-Time Voice Interaction
 /// 
-/// Phase 25.9: "The Resilient Voice" - Circuit Breaker & Reconnection Logic
+/// Phase 27.9: "The Handshake Fix" - Protocol Compliance & Auth Parameter Fix
+/// 
+/// Key Fixes in This Version:
+/// 1. Auth Parameter: Use `key=` for API keys, `access_token=` for OAuth tokens
+/// 2. API Version: Switched from v1beta to v1alpha (required for raw key auth)
+/// 3. Protocol Compliance: Wait for SetupComplete before marking connected
+/// 4. Enhanced Logging: Visibility into WebSocket close codes and all messages
 /// 
 /// Architecture:
 /// 1. Client requests ephemeral token from Supabase Edge Function
 /// 2. Client connects to Gemini Live API via WebSocket
-/// 3. Bidirectional audio streaming (PCM 16-bit)
-/// 4. Circuit Breaker pattern for graceful degradation to text mode
-/// 
-/// SME Recommendations Implemented (Uncle Bob & James Bach):
-/// - Exponential backoff reconnection with jitter
-/// - Circuit Breaker: 3 failures in 10 seconds triggers fallback
-/// - Automatic degradation to GeminiChatService (text mode)
-/// - Network state monitoring for proactive reconnection
+/// 3. Client sends "Setup" message
+/// 4. Client WAITS for "SetupComplete" (Critical Fix)
+/// 5. Bidirectional audio streaming begins
 /// 
 /// Audio Specifications:
 /// - Input: 16kHz, 16-bit PCM, mono
@@ -30,7 +31,8 @@ class GeminiLiveService {
   // === CONFIGURATION ===
   
   /// Gemini Live API WebSocket endpoint
-  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
+  /// FIX: Switched to v1alpha as required for ephemeral tokens/raw key auth
+  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
   
   /// Supabase Edge Function for ephemeral token
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
@@ -58,8 +60,15 @@ class GeminiLiveService {
   StreamSubscription? _subscription;
   bool _isConnected = false;
   bool _isListening = false;
+  bool _setupComplete = false; // FIX: Track setup state
   String? _ephemeralToken;
   DateTime? _tokenExpiry;
+  
+  /// Completer to wait for the server's handshake response
+  Completer<void>? _setupCompleter;
+  
+  /// Flag to indicate if using raw API key (vs OAuth token)
+  bool _isUsingApiKey = false;
   
   /// Current session ID for resumption
   String? _sessionId;
@@ -71,8 +80,6 @@ class GeminiLiveService {
   // === TRANSCRIPT BUFFER (Phase 25.9 - Failover Context Preservation) ===
   
   /// Buffer of input transcriptions (user speech) for failover context
-  /// Head of Engineering: "If I'm halfway through explaining my habit, and the
-  /// line drops, the Text Bot needs to know what I just said."
   final List<String> _inputTranscriptBuffer = [];
   
   /// Buffer of output transcriptions (AI speech) for failover context
@@ -122,14 +129,12 @@ class GeminiLiveService {
   final void Function()? onTurnComplete;
   
   /// Called when service falls back to text mode (Circuit Breaker triggered)
-  /// UI should switch to text input when this fires
   final void Function()? onFallbackToTextMode;
   
   /// Called when voice mode is restored after fallback
   final void Function()? onVoiceModeRestored;
   
   /// Called when VAD detects voice activity (for immediate UI feedback)
-  /// This fires BEFORE the interrupt signal is sent to provide instant feedback
   final void Function(bool isActive)? onVoiceActivityDetected;
   
   GeminiLiveService({
@@ -196,8 +201,12 @@ class GeminiLiveService {
         return false;
       }
       
-      // Step 2: Build WebSocket URL
+      // Step 2: Build WebSocket URL with correct auth parameter
       final wsUrl = _buildWebSocketUrl(token);
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Connecting to WebSocket...');
+        debugPrint('GeminiLiveService: Using ${_isUsingApiKey ? "API Key (key=)" : "OAuth Token (access_token=)"}');
+      }
       
       // Step 3: Connect to WebSocket
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
@@ -211,7 +220,10 @@ class GeminiLiveService {
           _handleDisconnection(wasError: true);
         },
         onDone: () {
-          debugPrint('GeminiLiveService: WebSocket closed');
+          // FIX: Enhanced logging for close codes
+          final closeCode = _channel?.closeCode;
+          final closeReason = _channel?.closeReason;
+          debugPrint('GeminiLiveService: WebSocket closed. Code: $closeCode, Reason: $closeReason');
           _handleDisconnection(wasError: false);
         },
       );
@@ -221,6 +233,17 @@ class GeminiLiveService {
         systemInstruction: systemInstruction,
         enableTranscription: enableTranscription,
       );
+      
+      // FIX: Wait for server handshake (SetupComplete)
+      try {
+        await _waitForSetupComplete();
+      } catch (e) {
+        debugPrint('GeminiLiveService: Handshake failed: $e');
+        _recordFailure();
+        _channel?.sink.close();
+        _handleDisconnection(wasError: true);
+        return false;
+      }
       
       _isConnected = true;
       _reconnectAttempts = 0; // Reset on successful connection
@@ -233,7 +256,7 @@ class GeminiLiveService {
       }
       
       if (kDebugMode) {
-        debugPrint('GeminiLiveService: Connected to ${AIModelConfig.tier2Model}');
+        debugPrint('GeminiLiveService: Connected to ${AIModelConfig.tier2Model} (v1alpha)');
         debugPrint('Marketing: "Gemini 3 Flash Voice" | Technical: "${AIModelConfig.tier2Model}"');
       }
       
@@ -322,13 +345,9 @@ class GeminiLiveService {
   }
   
   /// Interrupt the model's current response
-  /// 
-  /// Call this when the user starts speaking while the model is responding.
-  /// This implements "push-to-interrupt" for natural conversation flow.
   void interrupt() {
     if (!_isConnected || _channel == null) return;
     
-    // Send empty realtime input to signal interruption
     final message = jsonEncode({
       'realtimeInput': {
         'mediaChunks': []
@@ -337,76 +356,54 @@ class GeminiLiveService {
     
     try {
       _channel!.sink.add(message);
-      
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Sent interrupt signal');
-      }
+      if (kDebugMode) debugPrint('GeminiLiveService: Sent interrupt signal');
     } catch (e) {
       debugPrint('GeminiLiveService: Failed to send interrupt: $e');
     }
   }
   
-  /// Notify that voice activity was detected (for immediate UI feedback)
-  /// 
-  /// Call this from the audio recorder when VAD detects speech.
-  /// This provides instant visual feedback BEFORE the interrupt is processed.
-  /// (Don Norman's recommendation: "The user needs to know they were heard NOW")
+  /// Notify that voice activity was detected (for VAD integration)
   void notifyVoiceActivityDetected(bool isActive) {
     onVoiceActivityDetected?.call(isActive);
-    
-    // If voice detected while model is speaking, send interrupt
     if (isActive && _isConnected) {
       interrupt();
     }
   }
   
-  /// Start listening mode (begin VAD)
+  /// Start listening mode
   void startListening() {
     _isListening = true;
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Started listening');
-    }
+    if (kDebugMode) debugPrint('GeminiLiveService: Started listening');
   }
   
-  /// Stop listening mode (end VAD)
+  /// Stop listening mode
   void stopListening() {
     _isListening = false;
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Stopped listening');
-    }
+    if (kDebugMode) debugPrint('GeminiLiveService: Stopped listening');
   }
   
-  /// Manually reset the circuit breaker (for testing or admin override)
+  /// Manually reset the circuit breaker
   void resetCircuitBreaker() {
     _circuitState = CircuitBreakerState.closed;
     _failureTimestamps.clear();
     _circuitOpenedAt = null;
     _reconnectAttempts = 0;
     _hasFallenBackToText = false;
-    
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Circuit breaker manually reset');
-    }
+    if (kDebugMode) debugPrint('GeminiLiveService: Circuit breaker manually reset');
   }
   
   /// Attempt to restore voice mode after fallback
   Future<bool> attemptVoiceModeRestore() async {
     if (!_hasFallenBackToText) return true;
     
-    // Check if cooldown has passed
     if (_circuitOpenedAt != null) {
       final elapsed = DateTime.now().difference(_circuitOpenedAt!).inSeconds;
       if (elapsed < _circuitCooldownSeconds) {
-        if (kDebugMode) {
-          debugPrint('GeminiLiveService: Cooldown not complete (${_circuitCooldownSeconds - elapsed}s remaining)');
-        }
         return false;
       }
     }
     
-    // Move to half-open state and attempt connection
     _circuitState = CircuitBreakerState.halfOpen;
-    
     final success = await connect(
       systemInstruction: _lastSystemInstruction,
       enableTranscription: _lastEnableTranscription,
@@ -422,93 +419,7 @@ class GeminiLiveService {
     return success;
   }
   
-  // === CIRCUIT BREAKER LOGIC ===
-  
-  /// Check if we can attempt a connection (circuit breaker logic)
-  bool _canAttemptConnection() {
-    // Clean old failures outside the window
-    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
-    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
-    
-    switch (_circuitState) {
-      case CircuitBreakerState.closed:
-        return true;
-        
-      case CircuitBreakerState.open:
-        // Check if cooldown has passed
-        if (_circuitOpenedAt != null) {
-          final elapsed = DateTime.now().difference(_circuitOpenedAt!).inSeconds;
-          if (elapsed >= _circuitCooldownSeconds) {
-            _circuitState = CircuitBreakerState.halfOpen;
-            return true;
-          }
-        }
-        return false;
-        
-      case CircuitBreakerState.halfOpen:
-        return true;
-    }
-  }
-  
-  /// Record a failure for circuit breaker
-  void _recordFailure() {
-    _failureTimestamps.add(DateTime.now());
-    
-    // Clean old failures
-    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
-    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
-    
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Failure recorded (${_failureTimestamps.length}/$_maxFailures in window)');
-    }
-    
-    // Check if circuit should open
-    if (_failureTimestamps.length >= _maxFailures) {
-      _openCircuit();
-    }
-  }
-  
-  /// Open the circuit breaker
-  void _openCircuit() {
-    _circuitState = CircuitBreakerState.open;
-    _circuitOpenedAt = DateTime.now();
-    
-    if (kDebugMode) {
-      debugPrint('GeminiLiveService: Circuit breaker OPENED - too many failures');
-    }
-    
-    _triggerTextFallback();
-  }
-  
-  /// Trigger fallback to text mode
-  void _triggerTextFallback() {
-    if (!_hasFallenBackToText) {
-      _hasFallenBackToText = true;
-      onFallbackToTextMode?.call();
-      
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Falling back to text mode');
-        debugPrint('GeminiLiveService: Transcript buffer preserved (${_inputTranscriptBuffer.length} user, ${_outputTranscriptBuffer.length} AI)');
-      }
-    }
-  }
-  
-  /// Add text to transcript buffer with size limit
-  void _addToTranscriptBuffer(List<String> buffer, String text) {
-    buffer.add(text);
-    while (buffer.length > _maxTranscriptBufferSize) {
-      buffer.removeAt(0);
-    }
-  }
-  
-  /// Get the conversation context for failover to text mode
-  /// 
-  /// Returns a formatted string containing the recent conversation history
-  /// that can be passed to GeminiChatService.sendMessageStream() to maintain
-  /// context during the voice-to-text failover.
-  /// 
-  /// Head of Engineering Action Item: "Verify sendMessageStream receives the
-  /// transcript buffer from the failed socket session."
+  /// Get conversation context for failover to text mode
   String getFailoverContext() {
     if (_inputTranscriptBuffer.isEmpty && _outputTranscriptBuffer.isEmpty) {
       return '';
@@ -517,8 +428,6 @@ class GeminiLiveService {
     final buffer = StringBuffer();
     buffer.writeln('--- Conversation Context (Voice Session) ---');
     
-    // Interleave the transcripts in chronological order
-    // This is a simplified approach; in production, you'd want timestamps
     final maxLen = _inputTranscriptBuffer.length > _outputTranscriptBuffer.length
         ? _inputTranscriptBuffer.length
         : _outputTranscriptBuffer.length;
@@ -536,34 +445,119 @@ class GeminiLiveService {
     return buffer.toString();
   }
   
-  /// Get the last user message for quick context
+  /// Get the last user message from transcript buffer
   String? getLastUserMessage() {
-    if (_inputTranscriptBuffer.isEmpty) return null;
-    return _inputTranscriptBuffer.last;
+    return _inputTranscriptBuffer.isEmpty ? null : _inputTranscriptBuffer.last;
   }
   
-  /// Get the last AI message for quick context
+  /// Get the last AI message from transcript buffer
   String? getLastAiMessage() {
-    if (_outputTranscriptBuffer.isEmpty) return null;
-    return _outputTranscriptBuffer.last;
+    return _outputTranscriptBuffer.isEmpty ? null : _outputTranscriptBuffer.last;
   }
   
-  /// Clear transcript buffers (call after successful text mode handover)
+  /// Clear transcript buffers
   void clearTranscriptBuffers() {
     _inputTranscriptBuffer.clear();
     _outputTranscriptBuffer.clear();
   }
   
-  // === RECONNECTION LOGIC ===
+  // === PRIVATE METHODS ===
   
-  /// Handle disconnection with potential reconnection
+  /// Wait for setup complete message from server (Handshake)
+  Future<void> _waitForSetupComplete() async {
+    _setupCompleter = Completer<void>();
+    
+    // Timeout after 10 seconds
+    final timeout = Timer(const Duration(seconds: 10), () {
+      if (_setupCompleter != null && !_setupCompleter!.isCompleted) {
+        _setupCompleter!.completeError('Setup timeout - server did not respond within 10 seconds');
+      }
+    });
+    
+    try {
+      await _setupCompleter!.future;
+      timeout.cancel();
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Handshake successful - SetupComplete received');
+      }
+    } catch (e) {
+      timeout.cancel();
+      rethrow;
+    } finally {
+      _setupCompleter = null;
+    }
+  }
+  
+  /// Check if connection attempt is allowed by circuit breaker
+  bool _canAttemptConnection() {
+    // Clean up old failure timestamps
+    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
+    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
+    
+    switch (_circuitState) {
+      case CircuitBreakerState.closed:
+        return true;
+      case CircuitBreakerState.open:
+        if (_circuitOpenedAt != null) {
+          final elapsed = DateTime.now().difference(_circuitOpenedAt!).inSeconds;
+          if (elapsed >= _circuitCooldownSeconds) {
+            _circuitState = CircuitBreakerState.halfOpen;
+            return true;
+          }
+        }
+        return false;
+      case CircuitBreakerState.halfOpen:
+        return true;
+    }
+  }
+  
+  /// Record a failure for circuit breaker
+  void _recordFailure() {
+    _failureTimestamps.add(DateTime.now());
+    
+    // Clean up old timestamps
+    final cutoff = DateTime.now().subtract(Duration(seconds: _failureWindowSeconds));
+    _failureTimestamps.removeWhere((t) => t.isBefore(cutoff));
+    
+    if (_failureTimestamps.length >= _maxFailures) {
+      _openCircuit();
+    }
+  }
+  
+  /// Open the circuit breaker
+  void _openCircuit() {
+    _circuitState = CircuitBreakerState.open;
+    _circuitOpenedAt = DateTime.now();
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Circuit breaker OPENED - too many failures');
+    }
+    _triggerTextFallback();
+  }
+  
+  /// Trigger fallback to text mode
+  void _triggerTextFallback() {
+    if (!_hasFallenBackToText) {
+      _hasFallenBackToText = true;
+      onFallbackToTextMode?.call();
+    }
+  }
+  
+  /// Add text to transcript buffer with size limit
+  void _addToTranscriptBuffer(List<String> buffer, String text) {
+    buffer.add(text);
+    while (buffer.length > _maxTranscriptBufferSize) {
+      buffer.removeAt(0);
+    }
+  }
+  
+  /// Handle disconnection
   void _handleDisconnection({required bool wasError}) {
     _isConnected = false;
     _isListening = false;
+    _setupComplete = false; // Reset handshake state
     
     _subscription?.cancel();
     _subscription = null;
-    
     _channel?.sink.close();
     _channel = null;
     
@@ -577,18 +571,13 @@ class GeminiLiveService {
   
   /// Schedule a reconnection attempt with exponential backoff
   void _scheduleReconnect() {
-    if (!_canAttemptConnection()) {
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Cannot reconnect - circuit breaker open');
-      }
-      return;
-    }
+    if (!_canAttemptConnection()) return;
     
     if (_reconnectAttempts >= _maxReconnectAttempts) {
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Max reconnect attempts reached');
       }
-      _recordFailure(); // This may trigger circuit breaker
+      _recordFailure();
       return;
     }
     
@@ -620,8 +609,6 @@ class GeminiLiveService {
     _reconnectTimer = null;
   }
   
-  // === PRIVATE METHODS ===
-  
   /// Get ephemeral token from Supabase Edge Function
   /// 
   /// DEV MODE: If user is not authenticated and we're in debug mode,
@@ -644,9 +631,9 @@ class GeminiLiveService {
       if (session == null) {
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
           debugPrint('GeminiLiveService: DEV MODE - Using Gemini API key directly (no auth)');
-          // Return the API key directly - works for testing but less secure
           _ephemeralToken = AIModelConfig.geminiApiKey;
           _tokenExpiry = DateTime.now().add(const Duration(hours: 24)); // Fake expiry
+          _isUsingApiKey = true; // FIX: Track that we're using API key
           return _ephemeralToken;
         }
         debugPrint('GeminiLiveService: User not authenticated');
@@ -666,6 +653,7 @@ class GeminiLiveService {
           debugPrint('GeminiLiveService: DEV MODE FALLBACK - Using Gemini API key directly');
           _ephemeralToken = AIModelConfig.geminiApiKey;
           _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+          _isUsingApiKey = true; // FIX: Track that we're using API key
           return _ephemeralToken;
         }
         return null;
@@ -674,6 +662,7 @@ class GeminiLiveService {
       final data = response.data as Map<String, dynamic>;
       _ephemeralToken = data['token'] as String?;
       _tokenExpiry = DateTime.parse(data['expiresAt'] as String);
+      _isUsingApiKey = false; // Using OAuth token from Edge Function
       
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Obtained ephemeral token, expires: $_tokenExpiry');
@@ -688,15 +677,26 @@ class GeminiLiveService {
         debugPrint('GeminiLiveService: DEV MODE FALLBACK - Using Gemini API key directly after error');
         _ephemeralToken = AIModelConfig.geminiApiKey;
         _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+        _isUsingApiKey = true; // FIX: Track that we're using API key
         return _ephemeralToken;
       }
       return null;
     }
   }
   
-  /// Build WebSocket URL with ephemeral token
+  /// Build WebSocket URL with correct auth parameter
+  /// 
+  /// FIX: Use `key=` for raw API keys, `access_token=` for OAuth tokens
+  /// This is the critical fix - the Gemini API rejects API keys sent as access_token
   String _buildWebSocketUrl(String token) {
-    // The ephemeral token is passed as access_token query parameter
+    if (_isUsingApiKey) {
+      // FIX: Raw API keys must use 'key' parameter, not 'access_token'
+      debugPrint('GeminiLiveService: Using API Key auth (key= parameter)');
+      return '$_wsEndpoint?key=$token';
+    }
+    
+    // OAuth tokens use 'access_token' parameter
+    debugPrint('GeminiLiveService: Using OAuth token auth (access_token= parameter)');
     return '$_wsEndpoint?access_token=$token';
   }
   
@@ -731,18 +731,31 @@ class GeminiLiveService {
       }
     };
     
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Sending setup message for model: models/${AIModelConfig.tier2Model}');
+    }
+    
     _channel!.sink.add(jsonEncode(setupConfig));
   }
   
   /// Handle incoming WebSocket messages
   void _handleMessage(dynamic message) {
     try {
+      // FIX: Log all incoming messages for debugging
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService RX: $message');
+      }
+      
       final data = jsonDecode(message as String) as Map<String, dynamic>;
       
-      // Handle setup complete
+      // FIX: Handle setup complete - complete the handshake
       if (data.containsKey('setupComplete')) {
         if (kDebugMode) {
-          debugPrint('GeminiLiveService: Setup complete');
+          debugPrint('GeminiLiveService: SetupComplete received from server');
+        }
+        _setupComplete = true;
+        if (_setupCompleter != null && !_setupCompleter!.isCompleted) {
+          _setupCompleter!.complete();
         }
         return;
       }
@@ -808,12 +821,12 @@ class GeminiLiveService {
         if (serverContent['interrupted'] == true) {
           onModelSpeakingChanged?.call(false);
           if (kDebugMode) {
-            debugPrint('GeminiLiveService: Model interrupted');
+            debugPrint('GeminiLiveService: Model interrupted by user');
           }
         }
       }
       
-      // Handle session resumption token
+      // Handle session resumption update
       if (data.containsKey('sessionResumptionUpdate')) {
         final update = data['sessionResumptionUpdate'] as Map<String, dynamic>;
         _sessionId = update['newHandle'] as String?;
@@ -822,23 +835,44 @@ class GeminiLiveService {
         }
       }
       
-      // Handle errors
+      // Handle tool calls (for future function calling support)
+      if (data.containsKey('toolCall')) {
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: Tool call received (not yet implemented)');
+        }
+        // TODO: Implement tool call handling
+      }
+      
+      // Handle tool call cancellation
+      if (data.containsKey('toolCallCancellation')) {
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: Tool call cancelled');
+        }
+      }
+      
+      // Handle errors from server
       if (data.containsKey('error')) {
         final error = data['error'] as Map<String, dynamic>;
         final errorMessage = error['message'] as String? ?? 'Unknown error';
+        final errorCode = error['code'] as int?;
+        debugPrint('GeminiLiveService: Server error - Code: $errorCode, Message: $errorMessage');
         _notifyError(errorMessage);
         _recordFailure();
       }
       
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('GeminiLiveService: Failed to parse message: $e');
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Stack trace: $stackTrace');
+      }
     }
   }
   
-  /// Disconnect and clean up
+  /// Disconnect from the WebSocket
   Future<void> _disconnect() async {
     _isConnected = false;
     _isListening = false;
+    _setupComplete = false;
     
     await _subscription?.cancel();
     _subscription = null;
@@ -847,18 +881,17 @@ class GeminiLiveService {
     _channel = null;
     
     _notifyConnectionState(LiveConnectionState.disconnected);
-    
     if (kDebugMode) {
       debugPrint('GeminiLiveService: Disconnected');
     }
   }
   
-  /// Notify connection state change
+  /// Notify listeners of connection state change
   void _notifyConnectionState(LiveConnectionState state) {
     onConnectionStateChanged?.call(state);
   }
   
-  /// Notify error
+  /// Notify listeners of an error
   void _notifyError(String error) {
     onError?.call(error);
     if (kDebugMode) {
@@ -866,14 +899,14 @@ class GeminiLiveService {
     }
   }
   
-  /// Dispose resources
+  /// Dispose of resources
   void dispose() {
     _cancelReconnect();
     _disconnect();
   }
 }
 
-/// Connection states for the Live API
+/// Connection state for the Live API
 enum LiveConnectionState {
   disconnected,
   connecting,
@@ -881,15 +914,10 @@ enum LiveConnectionState {
   reconnecting,
 }
 
-/// Circuit breaker states
+/// Circuit breaker state for resilience
 enum CircuitBreakerState {
-  /// Circuit is closed - connections allowed
   closed,
-  
-  /// Circuit is open - connections blocked, fallback to text mode
   open,
-  
-  /// Circuit is half-open - testing if service has recovered
   halfOpen,
 }
 
@@ -908,9 +936,7 @@ extension LiveConnectionStateExtension on LiveConnectionState {
     }
   }
   
-  bool get isActive {
-    return this == LiveConnectionState.connected;
-  }
+  bool get isActive => this == LiveConnectionState.connected;
 }
 
 /// Extension for CircuitBreakerState display

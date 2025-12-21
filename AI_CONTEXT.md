@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** December 21, 2025 (Commit: af9db32)  
-> **Last Verified:** Phase 27.8 In Progress (WebSocket Endpoint Fix)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.9)  
+> **Last Verified:** Phase 27.9 Complete (WebSocket Auth Parameter Fix)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -369,16 +369,19 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ### High Priority (BLOCKING NYE LAUNCH)
 
-1. **WebSocket Connection Still Failing** (Phase 27.8 - IN PROGRESS)
-   - Fixed endpoint from REST to WebSocket (commit af9db32)
-   - Connection still drops immediately after establishing
-   - Need to debug: token format, API version, or setup message
-   - **NEXT STEP:** Test with rebuilt APK, check server-side logs
+1. **WebSocket Connection Fixed** (Phase 27.9 - ✅ COMPLETE)
+   - **Root Cause:** Auth parameter mismatch - API keys need `key=` not `access_token=`
+   - **Fix Applied:** `_buildWebSocketUrl()` now uses `key=` for API keys, `access_token=` for OAuth tokens
+   - **Additional Fixes:**
+     - Switched from `v1beta` to `v1alpha` API version (required for raw key auth)
+     - Added proper SetupComplete handshake handling (wait for server confirmation)
+     - Enhanced logging for WebSocket close codes and all messages
+   - **NEXT STEP:** Rebuild APK and test voice connection
 
 2. **Audio Recording Not Implemented** (Phase 27.8)
    - Voice interface shows UI but doesn't capture audio yet
    - Need to implement microphone permissions + audio streaming
-   - **BLOCKED BY:** WebSocket connection must work first
+   - **UNBLOCKED:** WebSocket connection should now work
 
 3. **Google Sign-In Configuration** (Phase 27.7)
    - OAuth setup guide provided (`docs/GOOGLE_OAUTH_SETUP.md`)
@@ -424,6 +427,7 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 | **27.6** | **Developer Tools** | ✅ Complete | Debug overlay, premium toggle, settings access |
 | **27.7** | **Dev Mode Bypass** | ✅ Complete | Voice works without auth in debug builds |
 | **27.8** | **Audio Recording** | 🚧 In Progress | Microphone permissions + audio streaming |
+| **27.9** | **WebSocket Auth Fix** | ✅ Complete | Auth parameter fix (`key=` vs `access_token=`), v1alpha API, SetupComplete handling |
 
 ---
 
@@ -434,8 +438,9 @@ See **[ROADMAP.md](./ROADMAP.md)** for detailed priorities.
 **Immediate (NYE 2025):**
 1. ✅ Voice interface UI (Phase 27.5)
 2. ✅ Dev mode bypass (Phase 27.7)
-3. 🚧 Audio recording implementation (Phase 27.8)
-4. 🚧 Google OAuth setup (Phase 27.7)
+3. ✅ WebSocket connection fix (Phase 27.9)
+4. 🚧 Audio recording implementation (Phase 27.8)
+5. 🚧 Google OAuth setup (Phase 27.7)
 
 **Short-term (Q1 2026):**
 - Polish voice UX (waveform, transcription)

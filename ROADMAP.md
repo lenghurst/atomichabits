@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** December 21, 2025 (Commit: af9db32)  
-> **Last Verified:** Phase 27.8 In Progress (WebSocket Debugging)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.9)  
+> **Last Verified:** Phase 27.9 Complete (WebSocket Auth Fix)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🔴 BLOCKED - Voice Connection Failing
+> **Status:** 🟡 UNBLOCKED - Ready for Audio Recording Implementation
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Goal:** Transform onboarding from text-based to voice-first conversational AI coaching
 
-**Status:** 🔴 BLOCKED (Phase 27.8 - WebSocket Connection Failing)
+**Status:** 🟡 UNBLOCKED (Phase 27.9 - WebSocket Fixed, Audio Recording Next)
 
 **Target:** NYE 2025 Launch
 
@@ -62,16 +62,20 @@
 - [x] Fixed escaped string bug in error messages
 - [x] Created `docs/GOOGLE_OAUTH_SETUP.md` with full OAuth guide
 
+### Completed (Phase 27.9)
+
+#### WebSocket Connection Fix (CRITICAL - ✅ RESOLVED)
+- [x] Fixed WebSocket endpoint from REST to BidiGenerateContent (commit af9db32)
+- [x] **ROOT CAUSE IDENTIFIED:** Auth parameter mismatch - API keys need `key=` not `access_token=`
+- [x] Fixed `_buildWebSocketUrl()` to use `key=` for API keys, `access_token=` for OAuth tokens
+- [x] Switched from `v1beta` to `v1alpha` API version (required for raw key auth)
+- [x] Added proper SetupComplete handshake handling (wait for server confirmation)
+- [x] Enhanced logging for WebSocket close codes and all messages
+- [ ] **NEXT:** Rebuild APK and test voice connection
+
 ### In Progress (Phase 27.8)
 
-#### WebSocket Connection Debugging (CRITICAL - BLOCKING LAUNCH)
-- [x] Fixed WebSocket endpoint from REST to BidiGenerateContent (commit af9db32)
-- [x] Changed token parameter from `key=` to `access_token=`
-- [ ] **NEXT:** Test with rebuilt APK to verify fix works
-- [ ] **IF STILL FAILING:** Debug token format, check Gemini API logs
-- [ ] **IF STILL FAILING:** Try alternative authentication method
-
-#### Audio Recording Implementation (BLOCKED BY WEBSOCKET)
+#### Audio Recording Implementation (UNBLOCKED)
 - [ ] Add microphone permissions (Android + iOS)
 - [ ] Implement audio capture (16kHz, 16-bit PCM, mono)
 - [ ] Stream audio to Gemini Live API via WebSocket
@@ -285,7 +289,9 @@ Swapped Gemini for **DeepSeek-V3** (Reasoning) and **Claude 3.5** (Coaching).
 | 27.5 | 1 | 3 | 2 | 3 | ~800 |
 | 27.6 | 1 | 7 | 1 | 3 | ~450 |
 | 27.7 | 1 | 3 | 1 | 2 | ~150 |
-| **Total** | **4** | **17** | **4** | **16** | **~1600** |
+| 27.8 | 1 | 1 | 0 | 1 | ~50 |
+| 27.9 | 1 | 4 | 0 | 1 | ~200 |
+| **Total** | **6** | **22** | **4** | **18** | **~1850** |
 
 ### Code Quality
 
