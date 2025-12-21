@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.13)  
-> **Last Verified:** Phase 27.13 Complete (Stable GA Model)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.14)  
+> **Last Verified:** Phase 27.14 Complete (Gemini 2.5 Live GA)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Build Fixed, Audio Recording Next
 

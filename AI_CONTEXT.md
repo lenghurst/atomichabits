@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.13)  
-> **Last Verified:** Phase 27.13 Complete (Stable GA Model)  
+> **Last Updated:** 21 December 2025 (Commit: Phase 27.14)  
+> **Last Verified:** Phase 27.14 Complete (Gemini 2.5 Live GA)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -369,12 +369,13 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ### High Priority (BLOCKING NYE LAUNCH)
 
-1. **WebSocket Connection Fixed** (Phase 27.13 - ✅ COMPLETE)
+1. **WebSocket Connection Fixed** (Phase 27.14 - ✅ COMPLETE)
    - **Root Cause #1:** Auth parameter mismatch - API keys need `key=` not `access_token=` (Phase 27.9 ✅)
-   - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` is US region-locked (Phase 27.10 ✅)
+   - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` preview is US region-locked (Phase 27.10 ✅)
    - **Root Cause #3:** Build error - `WebSocketChannel.connect()` doesn't support `headers` parameter (Phase 27.11 ✅)
-   - **Root Cause #4:** Deprecated `-exp` endpoint - `gemini-2.0-flash-exp` is unstable/deprecated (Phase 27.13 ✅)
-   - **Final Fix:** Switched from `gemini-2.0-flash-exp` to `gemini-2.0-flash` (stable GA endpoint)
+   - **Root Cause #4:** Deprecated `-exp` endpoint - experimental endpoints are unstable (Phase 27.13 ✅)
+   - **Root Cause #5:** Gemini 2.0 Live SHUTDOWN - All 2.0 Live endpoints were shut down Dec 9, 2025! (Phase 27.14 ✅)
+   - **Final Fix:** Switched to `gemini-live-2.5-flash-native-audio` (Live GA released Dec 12, 2025)
    - **Phase 27.12 "Black Box" Debug Features:** (retained for future debugging)
      - Phase tracking: IDLE → FETCHING_TOKEN → BUILDING_URL → CONNECTING_SOCKET → SENDING_HANDSHAKE → WAITING_FOR_SERVER_READY → CONNECTED_STABLE
      - Detailed error messages include: timestamp, phase, close code, close reason, model name, auth method
