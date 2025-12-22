@@ -69,7 +69,7 @@ class AIModelConfig {
   /// - Protocol: WebSocket bidirectional streaming (NOT REST)
   /// - CRITICAL: Gemini 2.0 Live endpoints were SHUT DOWN on Dec 9, 2025!
   /// - NOTE: This is the stable GA Live endpoint, available globally (UK included)
-  static const String tier2Model = 'gemini-live-2.5-flash-native-audio'; // Live GA (Dec 12, 2025)
+  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025'; // Live API (Dec 2025)
   static const double tier2Temperature = 0.7;
   
   /// Tier 2 Text-Only Fallback (for non-voice interactions)
