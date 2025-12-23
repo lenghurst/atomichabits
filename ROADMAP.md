@@ -207,13 +207,25 @@
    - Hard to debug production issues
    - **Solution:** Add Sentry or Supabase logging
 
+7. **AppState "God Object" Refactoring** (Phase 27.18 - Deferred to Phase 4/5)
+   - `lib/data/app_state.dart` is over 1000 lines
+   - Currently handles: User Profile, Habit CRUD, Settings, Notifications, Widgets, AI suggestions, Recovery logic, Haptics
+   - **Risk:** Hard to maintain and test
+   - **Solution:** Split into dedicated services:
+     - `AiRepository` - AI suggestion fetching
+     - `SettingsController` - Settings management
+     - `NotificationService` - Notification scheduling
+     - `HabitRepository` - Habit CRUD operations
+   - **Note:** Chief Architect recommends deferring until onboarding flow is stable
+   - **Added:** 23 December 2025 (Phase 27.18)
+
 ### Low Priority
 
-7. **Landing Page SEO** (Phase 24)
+8. **Landing Page SEO** (Phase 24)
    - No meta tags or OpenGraph
    - **Solution:** Add SEO metadata
 
-8. **Unit Test Coverage** (Phase 24)
+9. **Unit Test Coverage** (Phase 24)
    - Only AI services have tests
    - **Solution:** Add tests for voice service
 

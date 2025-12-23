@@ -127,6 +127,50 @@ class OnboardingOrchestrator extends ChangeNotifier {
     notifyListeners();
   }
   
+  /// Phase 27.18: Hook Variant for A/B testing tone
+  /// A = Friend (default), B = Drill Sergeant, C = Visionary
+  String _hookVariant = 'A';
+  String get hookVariant => _hookVariant;
+  
+  /// Phase 27.18: Set hook variant (called from UI after experiment assignment)
+  void setHookVariant(String variant) {
+    _hookVariant = variant;
+    if (kDebugMode) {
+      debugPrint('OnboardingOrchestrator: Hook variant set to $_hookVariant');
+    }
+    notifyListeners();
+  }
+  
+  /// Phase 27.18: Get tone instruction based on hook variant
+  /// This encapsulates prompt engineering logic that was previously in the UI
+  String _getHookVariantToneInstruction() {
+    switch (_hookVariant) {
+      case 'B':
+        return '''
+[TONE OVERRIDE: DRILL SERGEANT]
+You are now in Drill Sergeant mode.
+- Use aggressive, military-style language
+- Short, punchy sentences. No fluff.
+- Challenge the user. Push them harder.
+- Example: "That's weak. Give me something you'll actually do. NOW."
+
+''';
+      case 'C':
+        return '''
+[TONE OVERRIDE: VISIONARY]
+You are now in Visionary mode.
+- Focus on the 5-year vision and long-term transformation
+- Use inspiring metaphors and paint vivid pictures
+- Connect small habits to epic life changes
+- Example: "Imagine yourself 5 years from now... this tiny habit is the first brick in that castle."
+
+''';
+      default:
+        // Variant A: Friend (default tone, no override needed)
+        return '';
+    }
+  }
+  
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;
   
@@ -816,10 +860,13 @@ Use the antidote: "${nicheConfig.streakAntidote}"
 '''
         : '';
 
+    // Phase 27.18: Get tone override based on hook variant
+    final toneSection = _getHookVariantToneInstruction();
+    
     return '''
 You are The Architect, an expert Atomic Habits coach helping $userName create their first habit.
 
-$nicheSection$refugeeSection$guardrailSection$contextSection[USER MESSAGE]
+$toneSection$nicheSection$refugeeSection$guardrailSection$contextSection[USER MESSAGE]
 $userName says: "$userMessage"
 
 $guardrailSection$contextSection[USER MESSAGE]

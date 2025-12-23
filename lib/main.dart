@@ -248,22 +248,17 @@ class _MyAppState extends State<MyApp> {
           final router = GoRouter(
             initialLocation: appState.hasCompletedOnboarding ? '/dashboard' : '/',
             routes: [
-              // Default onboarding: Conversational UI (Phase 2)
-              // Phase 27.5: Routes to voice interface if Premium (Tier 2)
+              // Default onboarding: Identity First Flow (Phase 27.17)
+              // All new users start with identity declaration + OAuth
+              // Developer Mode users can access Voice/Chat from within the flow
               GoRoute(
                 path: '/',
-                builder: (context, state) {
-                  final appState = context.read<AppState>();
-                  final isPremium = appState.settings.developerMode;
-                  
-                  // Premium users get voice interface (Tier 2)
-                  if (isPremium) {
-                    return const VoiceOnboardingScreen();
-                  }
-                  
-                  // Free users get text chat (Tier 1)
-                  return const ConversationalOnboardingScreen();
-                },
+                builder: (context, state) => const IdentityAccessGateScreen(),
+              ),
+              // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
+              GoRoute(
+                path: '/onboarding/chat',
+                builder: (context, state) => const ConversationalOnboardingScreen(),
               ),
               // Voice onboarding: Gemini Live API (Phase 27.5)
               GoRoute(

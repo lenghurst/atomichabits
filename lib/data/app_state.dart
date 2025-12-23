@@ -279,10 +279,12 @@ class AppState extends ChangeNotifier {
   
   /// Determines if recovery prompt should be shown (for external checks)
   /// Implements user's suggested `bool shouldShowNeverMissTwicePrompt()`
+  /// Phase 27.18: Uses local variable capture for null safety
   bool shouldShowNeverMissTwicePrompt() {
-    if (currentHabit == null) return false;
-    if (currentHabit!.isPaused) return false;
-    if (currentHabit!.isCompletedToday) return false;
+    final habit = currentHabit;
+    if (habit == null) return false;
+    if (habit.isPaused) return false;
+    if (habit.isCompletedToday) return false;
     return consecutiveMissedDays >= 1;
   }
   

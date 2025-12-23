@@ -146,21 +146,9 @@ class _ConversationalOnboardingScreenState
       // Get orchestrator and send message
       final orchestrator = context.read<OnboardingOrchestrator>();
       
-      // Inject Tone based on Variant
-      String systemPromptInjection = "";
-      if (_hookVariant == 'B') {
-        systemPromptInjection = "TONE: Aggressive, military, short sentences. No fluff.";
-      } else if (_hookVariant == 'C') {
-        systemPromptInjection = "TONE: Inspiring, focus on the 5-year vision. Use metaphors.";
-      }
-
-      // Note: In a real implementation, we'd pass this injection to the orchestrator.
-      // For now, we assume the orchestrator handles the context or we append it to the user message invisibly.
-      // Since we can't easily change the orchestrator signature right now without breaking other things,
-      // we'll append it to the user message as a system instruction if it's the first message, 
-      // or rely on the initial greeting setting the tone.
-      
-      // Ideally, update OnboardingOrchestrator to accept `systemInstruction`.
+      // Phase 27.18: Hook variant tone is now handled by the orchestrator
+      // The UI just passes the variant ID, orchestrator handles prompt engineering
+      orchestrator.setHookVariant(_hookVariant);
       
       final result = await orchestrator.sendConversationalMessage(
         userMessage: text,
