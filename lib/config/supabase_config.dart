@@ -55,6 +55,23 @@ class SupabaseConfig {
   /// CRITICAL: Must match PRODUCT_BUNDLE_IDENTIFIER in iOS project
   static const String iosBundleId = 'co.thepact.app';
   
+  /// Google OAuth Web Client ID
+  /// CRITICAL: This is the WEB CLIENT ID from Google Cloud Console, NOT the Android Client ID
+  /// Required for Supabase OAuth flow - the server needs this to verify ID tokens
+  /// 
+  /// To get this value:
+  /// 1. Go to Google Cloud Console > APIs & Services > Credentials
+  /// 2. Find or create an OAuth 2.0 Client ID of type "Web application"
+  /// 3. Copy the Client ID (ends with .apps.googleusercontent.com)
+  /// 4. Add to secrets.json as GOOGLE_WEB_CLIENT_ID
+  static const String webClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '', // Set via --dart-define=GOOGLE_WEB_CLIENT_ID=your_web_client_id
+  );
+  
+  /// Check if Google Sign-In is properly configured
+  static bool get isGoogleConfigured => webClientId.isNotEmpty;
+  
   // Phase 16.4: Deep Links Configuration
   
   /// Production domain for deep links

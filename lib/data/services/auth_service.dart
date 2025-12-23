@@ -237,9 +237,25 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       
       // Get Google credentials
+      // CRITICAL: Must pass Web Client ID for Supabase OAuth flow
+      // Without this, the native Android side won't request an OIDC ID Token
+      // which Supabase needs to verify the user
       final googleSignIn = GoogleSignIn(
+        clientId: SupabaseConfig.webClientId.isNotEmpty 
+            ? SupabaseConfig.webClientId 
+            : null,
+        serverClientId: SupabaseConfig.webClientId.isNotEmpty 
+            ? SupabaseConfig.webClientId 
+            : null,
         scopes: ['email', 'profile'],
       );
+      
+      // Log configuration for debugging
+      if (kDebugMode) {
+        debugPrint('GoogleSignIn Config:');
+        debugPrint('  - webClientId configured: ${SupabaseConfig.webClientId.isNotEmpty}');
+        debugPrint('  - androidPackageName: ${SupabaseConfig.androidPackageName}');
+      }
       
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
