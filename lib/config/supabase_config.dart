@@ -47,10 +47,13 @@ class SupabaseConfig {
   static const String authRedirectUrl = 'io.supabase.atomichabits://login-callback/';
   
   /// Android package name for Google Sign-In
-  static const String androidPackageName = 'com.example.atomic_habits_hook_app';
+  /// CRITICAL: Must match applicationId in android/app/build.gradle.kts
+  /// and the package name registered in Google Cloud Console
+  static const String androidPackageName = 'co.thepact.app';
   
-  /// iOS bundle ID for Google Sign-In  
-  static const String iosBundleId = 'com.example.atomicHabitsHookApp';
+  /// iOS bundle ID for Google Sign-In
+  /// CRITICAL: Must match PRODUCT_BUNDLE_IDENTIFIER in iOS project
+  static const String iosBundleId = 'co.thepact.app';
   
   // Phase 16.4: Deep Links Configuration
   
