@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.4)  
-> **Last Verified:** Phase 28.4 Complete (Council of Five)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.5)  
+> **Last Verified:** Phase 28.5 Complete (Docs & Journey Map Update)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -65,21 +65,21 @@ When stale branches accumulate (> 10 unmerged):
 
 ## Phase 28.4: Council of Five Implementation
 
-Implemented recommendations from a strategic "Council of Five" analysis (Musk, Clear, Fogg, Bezos, Eyal) to optimise the new user acquisition funnel.
+Implemented recommendations from a strategic "Council of Five" analysis (Musk, Clear, Fogg, Bezos, Eyal) to optimise the new user acquisition funnel. This sprint focused on high-leverage, code-based changes to the onboarding and witness flows.
 
 **Key Changes Implemented:**
 
 | Recommendation | Advisor | File Changed | Details |
-|----------------|---------|--------------|---------||
-| **Route Consolidation** | Musk | `main.dart` | Niche routes now pass `presetIdentity` to pre-fill the identity field. |
-| **Identity Mad-Libs** | Clear | `IdentityAccessGateScreen.dart` | Horizontal scrolling chip selector with visual feedback. Identity is now mandatory. |
-| **Native Contact Picker** | Fogg | `PactWitnessScreen.dart` | One-tap witness selection from device contacts with fallback to manual entry. |
-| **Trust Grant Dialog** | Bezos | `PactTierSelectorScreen.dart` | "Early Access Grant" dialog for premium tiers (grandfathered users). |
-| **Reciprocity Loop** | Eyal | `WitnessAcceptScreen.dart` | "Now it's your turn" prompt after sealing a pact as witness. |
+|---|---|---|---|
+| **Route Consolidation** | Musk | `main.dart` | Niche routes (`/devs`, `/writers`, etc.) now pass a `presetIdentity` string to the `IdentityAccessGateScreen`. This pre-fills the identity field, creating a more contextual and lower-friction entry point from targeted ad campaigns or landing pages. |
+| **Identity Mad-Libs** | Clear | `IdentityAccessGateScreen.dart` | The identity input screen now features a horizontal scrolling list of tappable `_IdentityChip` widgets. These act as "Mad-Libs" style suggestions. The identity field is now **mandatory**; authentication buttons are disabled until it is filled. Selected chips have a distinct visual state (brand gradient) to provide clear feedback. |
+| **Native Contact Picker** | Fogg | `PactWitnessScreen.dart` | Replaced the manual witness input field with a one-tap native contact picker using the `flutter_contacts` package. This significantly reduces the friction of adding a witness. The implementation includes robust permission handling (`permission_handler`) with a graceful fallback to manual entry if permissions are denied. |
+| **Trust Grant Dialog** | Bezos | `PactTierSelectorScreen.dart` | Implemented an "Early Access Grant" dialog. When a user selects a premium tier ('Builder' or 'Ally'), instead of a payment screen, they are presented with a dialog granting them free, lifetime access as an "early believer." This builds trust and captures high-intent users for future pricing validation. |
+| **Reciprocity Loop** | Eyal | `WitnessAcceptScreen.dart` | After a user successfully becomes a witness for someone else, the success dialog now includes a prominent "Now it's your turn" section. This psychological hook creates a feeling of obligation to reciprocate by creating their own pact, turning the witness flow into a powerful user acquisition channel. |
 
 **New Dependencies Added:**
-- `flutter_contacts: ^1.1.9+2` - Native contact picker
-- `permission_handler: ^11.3.1` - Contact permission management
+- `flutter_contacts: ^1.1.9+2` - For native contact picker functionality.
+- `permission_handler: ^11.3.1` - For managing access to device contacts.
 
 ---
 

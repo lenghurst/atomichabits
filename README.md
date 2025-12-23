@@ -13,13 +13,13 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 28 - Gemini 3 Compliant | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 28.5 - Onboarding Optimised | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟢 Live | Gemini 3 Live API |
+| **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Smoke Test) |
 
-> **Last Updated:** December 23, 2025 (Commit: Phase 28.2)  
-> **Current Phase:** Phase 28.2 - Ready to Deploy & Test
+> **Last Updated:** December 23, 2025 (Commit: Phase 28.5)  
+> **Current Phase:** Phase 28.5 - Docs & Journey Map Updated
 
 ---
 
@@ -160,33 +160,35 @@ Edge Fn     (Direct API)
 
 ---
 
-## 🚀 Next Steps: Deployment & Testing
+## 🚀 Next Steps: Final Build & Smoke Test
 
-**Phase 28.1 has fixed the critical Gemini 3 compliance issues. The next step is to deploy these changes and test the voice connection.**
+**Phase 28.4 has implemented the Council of Five optimisations. The final step before launch is a full smoke test.**
 
-### 1. Deploy Supabase Edge Function
+### 1. Get New Dependencies
 
-The `get-gemini-ephemeral-token` function has been updated. Deploy it now:
+Run `flutter pub get` to install the new contact picker dependencies:
 
 ```bash
-supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
+flutter pub get
 ```
 
 ### 2. Rebuild the Mobile App (APK)
 
-The Flutter app must be rebuilt to include the `GeminiLiveService` fixes.
+The Flutter app must be rebuilt to include all the new onboarding flows.
 
 ```bash
 flutter build apk --debug --dart-define-from-file=secrets.json
 ```
 
-### 3. Test the Voice Connection
+### 3. Perform the Smoke Test
 
 1. Install the newly built APK on a physical Android device.
-2. **Triple-tap** the screen title to open **Developer Tools**.
-3. Enable **Premium (Tier 2)**.
-4. Go back and tap **AI Coach**.
-5. The **Voice Coach** should now connect successfully.
+2. **Test Niche Route:** Open a browser and go to `thepact.co/devs`. Verify it opens the app with "A World-Class Developer" pre-filled.
+3. **Test Mad-Libs:** On the identity screen, tap a chip and verify it highlights. Try to continue without an identity to ensure buttons are disabled.
+4. **Test Contact Picker:** Proceed to the witness screen and tap "Add from Contacts." Verify the native contact picker opens.
+5. **Test Trust Grant:** Proceed to the tier selection screen and choose "Builder" or "Ally." Verify the "Early Access Grant" dialog appears.
+6. **Test Reciprocity Loop:** Use a deep link to accept a witness invite. After sealing the pact, verify the "Now it's your turn" prompt appears.
+7. **Test Voice Connection:** Use the Dev Tools to enable Premium and test the AI Voice Coach connection.
 
 ---
 

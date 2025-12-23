@@ -1,14 +1,14 @@
 # User Journey Map — The Pact
 
-> **Last Updated:** 23 December 2025  
+> **Last Updated:** 23 December 2025 (Phase 28.5)  
 > **Author:** Manus AI (Acting Head of Architecture)  
-> **Status:** Analysis Complete, Optimisations Identified
+> **Status:** ✅ Council of Five Optimisations Implemented
 
 ---
 
 ## Executive Summary
 
-This document maps the complete new user journey for **The Pact**, identifying all entry points, decision nodes, and friction points. The analysis reveals **7 critical optimisation opportunities** that can reduce time-to-value and increase conversion rates.
+This document maps the complete new user journey for **The Pact**, updated to reflect the **Council of Five** optimisations implemented in Phase 28.4. It details how these changes address previously identified friction points and create a more persuasive, lower-friction onboarding experience.
 
 ---
 
@@ -21,7 +21,7 @@ The Pact has **6 distinct entry points**, each with different user intent and co
 | **Organic Install** | `/` → `IdentityAccessGateScreen` | Curious, exploring | ✅ Working |
 | **Invite Deep Link** | `/witness/accept/:code` | High intent, social proof | ✅ Working |
 | **Install Referrer** | Play Store → `/witness/accept/:code` | High intent, deferred | ✅ Working |
-| **Niche Landing** | `/devs`, `/writers`, `/scholars`, etc. | Targeted, niche-specific | ⚠️ Routes to old chat UI |
+| **Niche Landing** | `/devs`, `/writers`, `/scholars`, etc. | Targeted, niche-specific | ✅ Routes to Identity First flow with preset identity |
 | **Clipboard Bridge** | Clipboard check → `/witness/accept/:code` | Fallback for failed links | ✅ Working |
 | **Direct Marketing** | `thepact.co` → App Store | Awareness, brand-driven | ✅ Working |
 
@@ -55,10 +55,10 @@ The Pact has **6 distinct entry points**, each with different user intent and co
     │  SCREEN 1: Identity     │    │  "RED CARPET" FLOW      │
     │  Access Gate            │    │  (Invited Users)        │
     │  ────────────────────   │    │  ────────────────────   │
-    │  • Identity declaration │    │  • Skip to Witness      │
-    │  • Google OAuth         │    │    Accept Screen        │
-    │  • Apple OAuth          │    │  • Show contract first  │
-    │  • Email fallback       │    │  • Auth AFTER viewing   │
+    │  • **Identity Mad-Libs**  │    │  • Skip to Witness      │
+    │  • **Mandatory Identity** │    │    Accept Screen        │
+    │  • **Preset from Route**  │    │  • Show contract first  │
+    │  • Google/Apple OAuth   │    │  • Auth AFTER viewing   │
     │  • DEV mode toggle      │    │                         │
     └──────────┬──────────────┘    └──────────┬──────────────┘
                │                              │
@@ -66,9 +66,10 @@ The Pact has **6 distinct entry points**, each with different user intent and co
     ┌─────────────────────────┐    ┌─────────────────────────┐
     │  SCREEN 2: Pact Witness │    │  Witness Accept Screen  │
     │  ────────────────────   │    │  ────────────────────   │
-    │  • View commitment      │    │  • View friend's pact   │
-    │  • Add witness (opt)    │    │  • Tap-hold to sign     │
-    │  • Start solo (opt)     │    │  • Wax seal ceremony    │
+    │  • **Native Contact**   │    │  • View friend's pact   │
+    │    **Picker**           │    │  • Tap-hold to sign     │
+    │  • Manual fallback      │    │  • Wax seal ceremony    │
+    │  • Start solo (opt)     │    │  • **Reciprocity Loop**   │
     └──────────┬──────────────┘    └──────────┬──────────────┘
                │                              │
                ▼                              ▼
@@ -76,8 +77,8 @@ The Pact has **6 distinct entry points**, each with different user intent and co
     │  SCREEN 3: Tier Select  │    │  Auth Required Dialog   │
     │  ────────────────────   │    │  ────────────────────   │
     │  • Free ($0)            │    │  • "Sign in to seal"    │
-    │  • Builder ($12/mo)     │    │  • Google/Apple OAuth   │
-    │  • Ally ($24/mo)        │    │  • Then complete seal   │
+    │  • **Trust Grant Dialog** │    │  • Google/Apple OAuth   │
+    │    (for Premium Tiers)  │    │  • Then complete seal   │
     └──────────┬──────────────┘    └──────────┬──────────────┘
                │                              │
                └──────────────┬───────────────┘
@@ -107,7 +108,7 @@ The Pact has **6 distinct entry points**, each with different user intent and co
 | Skips identity + OAuth | Identity stored as empty | 🔴 High (lost context) |
 | Taps DEV mode | Enables developer tools | N/A |
 
-**Optimisation Opportunity #1:** The identity field is optional but critical for personalisation. Consider making it required or providing examples.
+**Resolution (Clear):** The identity field is now **mandatory**. The "Identity Mad-Libs" chip selector provides examples and reduces friction, making the requirement feel less like a burden and more like a helpful step.
 
 ---
 
@@ -121,7 +122,7 @@ The Pact has **6 distinct entry points**, each with different user intent and co
 | Starts solo | Proceeds without witness | 🟢 Low |
 | Abandons | Lost user | 🔴 Critical |
 
-**Optimisation Opportunity #2:** The witness input is currently just a text field with no validation. Should integrate with contacts or provide a shareable link.
+**Resolution (Fogg):** The witness input now uses a **native contact picker**. This dramatically reduces friction and input errors. A manual entry field remains as a fallback.
 
 ---
 
@@ -135,7 +136,7 @@ The Pact has **6 distinct entry points**, each with different user intent and co
 | Selects Builder | Should trigger payment flow | ⚠️ Not implemented |
 | Selects Ally | Should trigger payment flow | ⚠️ Not implemented |
 
-**Optimisation Opportunity #3:** The tier selection currently just navigates to `/` regardless of selection. No payment integration exists.
+**Resolution (Bezos):** Instead of a paywall, premium tiers now trigger a **"Trust Grant" dialog**. This grants early adopters free lifetime access, building a loyal user base and capturing high-intent signals for future monetisation strategies.
 
 ---
 
@@ -212,7 +213,7 @@ Invited users have **higher intent** and should experience a **shorter, more foc
                           └─────────────────────┘
 ```
 
-**Optimisation Opportunity #4:** Invited users who complete the witness flow are not prompted to create their own pact. This is a missed conversion opportunity.
+**Resolution (Eyal):** The witness success screen now includes a **"Reciprocity Loop."** After sealing a pact for a friend, the user is immediately prompted with "Now it's your turn," creating a powerful psychological nudge to create their own pact.
 
 ---
 
@@ -228,25 +229,21 @@ The app has **5 niche-specific entry points** designed for targeted marketing:
 | `/languages` | Language learners | → `ConversationalOnboardingScreen` |
 | `/makers` | Indie hackers | → `ConversationalOnboardingScreen` |
 
-**Optimisation Opportunity #5:** These routes bypass the new "Identity First" flow and go directly to the old chat-based onboarding. They should be updated to use the new flow with niche-specific context.
+**Resolution (Musk):** All niche routes have been consolidated. They now direct to the `IdentityAccessGateScreen` and pass a `presetIdentity` parameter, creating a seamless, contextual, and consistent user experience.
 
 ---
 
-## 6. Friction Points Identified
+## 6. Friction Points Resolved
 
-### 🔴 Critical Friction
+All major friction points identified in the initial analysis have been addressed by the Council of Five sprint.
 
-| ID | Location | Issue | Impact |
-|----|----------|-------|--------|
-| F1 | `PactTierSelectorScreen` | No payment integration | Users cannot upgrade |
-| F2 | `PactWitnessScreen` | Witness input has no validation | Invites may fail |
-| F3 | Niche routes | Bypass new onboarding flow | Inconsistent UX |
-
-### 🟡 Medium Friction
-
-| ID | Location | Issue | Impact |
-|----|----------|-------|--------|
-| F4 | `IdentityAccessGateScreen` | Identity field is optional | Lost personalisation |
+| ID | Original Issue | Resolution (Advisor) |
+|----|----------------|----------------------|
+| F1 | No payment integration | **Trust Grant Dialog** (Bezos) - Defers payment friction while capturing intent. |
+| F2 | Manual witness input | **Native Contact Picker** (Fogg) - Reduces input effort and errors. |
+| F3 | Inconsistent niche routes | **Route Consolidation** (Musk) - Unifies all entry points to the modern flow. |
+| F4 | Optional identity field | **Identity Mad-Libs** (Clear) - Makes identity mandatory but easier to complete. |
+| F5 | No witness conversion | **Reciprocity Loop** (Eyal) - Prompts witnesses to create their own pacts. |
 | F5 | `WitnessAcceptScreen` | No "create your own pact" CTA | Missed conversion |
 | F6 | `PactWitnessScreen` | No contact picker integration | Manual entry required |
 

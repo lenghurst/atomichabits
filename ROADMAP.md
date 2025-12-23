@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.4)  
-> **Last Verified:** Phase 28.4 Complete (Council of Five)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.5)  
+> **Last Verified:** Phase 28.5 Complete (Docs & Journey Map Update)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 READY - Onboarding Optimised, Awaiting Build & Test
+> **Status:** 🟢 READY - Onboarding Optimised, Awaiting Final Build & Test
 
 ---
 
@@ -24,7 +24,32 @@
 
 ---
 
-## 🚀 Current Sprint: Phase 28 "Council of Five"
+## 🚀 Next Sprint: Phase 29 "Final Polish & Launch"
+
+**Goal:** Complete final features, conduct a full smoke test, and prepare for the NYE 2025 launch.
+
+**Status:** 🟡 PENDING - Awaiting user to build APK and perform smoke test.
+
+**Target:** NYE 2025 Launch
+
+### High-Priority Tasks
+
+- [ ] **Build & Smoke Test:** User to build APK and test the complete onboarding and voice flows.
+- [ ] **British Coach Persona:** Implement the "Witty, Dry, British" persona for the AI Voice Coach.
+- [ ] **Payment Flow:** Integrate Stripe for premium tier subscriptions.
+
+---
+
+## ✅ Sprint History
+
+### Completed (Phase 28.5) - Documentation Update
+
+- [x] Updated `AI_CONTEXT.md` with comprehensive details of the Council of Five sprint.
+- [x] Updated `ROADMAP.md` to reflect the completion of Phase 28.4 and outline the next sprint.
+- [x] Updated `README.md` with the latest feature set and status.
+- [x] Updated `docs/USER_JOURNEY_MAP.md` to include the new optimisation flows.
+
+### Completed (Phase 28.4) - Council of Five
 
 **Goal:** Optimise new user acquisition funnel based on strategic advisor recommendations
 
@@ -114,23 +139,11 @@
 - [x] Build now compiles successfully
 - [ ] **NEXT:** Rebuild APK and test voice connection from UK
 
-### In Progress (Phase 28.2)
 
-#### Deployment & Verification
+
+### Completed (Phase 28.2) - Deployment & Verification
+
 - [x] **Deploy Supabase Edge Function:** The updated `get-gemini-ephemeral-token` function has been deployed (Version 5).
-- [ ] **Rebuild APK:** The Flutter app must be rebuilt to include the new `GeminiLiveService` logic.
-- [ ] **Test Voice Connection:** Install the new APK and verify the voice interface connects without errors.
-
-### Next Sprint (Phase 29 - Feature Implementation)
-
-#### Audio Recording Implementation (UNBLOCKED)
-
-#### Audio Recording Implementation (UNBLOCKED)
-- [ ] Add microphone permissions (Android + iOS)
-- [ ] Implement audio capture (16kHz, 16-bit PCM, mono)
-- [ ] Stream audio to Gemini Live API via WebSocket
-- [ ] Add audio visualization (waveform or level meter)
-- [ ] Test end-to-end voice flow
 
 #### Google OAuth Configuration
 - [ ] Create OAuth 2.0 Client IDs in Google Cloud Console
