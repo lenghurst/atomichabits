@@ -13,13 +13,13 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 28.5 - Onboarding Optimised | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 30 - Delight & Monetise | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Smoke Test) |
 
-> **Last Updated:** December 23, 2025 (Commit: Phase 28.5)  
-> **Current Phase:** Phase 28.5 - Docs & Journey Map Updated
+> **Last Updated:** December 23, 2025 (Commit: Phase 30)  
+> **Current Phase:** Phase 30 - Delight & Monetise Implemented
 
 ---
 
@@ -162,7 +162,7 @@ Edge Fn     (Direct API)
 
 ## 🚀 Next Steps: Final Build & Smoke Test
 
-**Phase 28.4 has implemented the Council of Five optimisations. The final step before launch is a full smoke test.**
+**Phases 29 & 30 have implemented the Second Council of Five recommendations. The final step before launch is a full smoke test.**
 
 ### 1. Get New Dependencies
 
@@ -183,12 +183,14 @@ flutter build apk --debug --dart-define-from-file=secrets.json
 ### 3. Perform the Smoke Test
 
 1. Install the newly built APK on a physical Android device.
-2. **Test Niche Route:** Open a browser and go to `thepact.co/devs`. Verify it opens the app with "A World-Class Developer" pre-filled.
-3. **Test Mad-Libs:** On the identity screen, tap a chip and verify it highlights. Try to continue without an identity to ensure buttons are disabled.
-4. **Test Contact Picker:** Proceed to the witness screen and tap "Add from Contacts." Verify the native contact picker opens.
-5. **Test Trust Grant:** Proceed to the tier selection screen and choose "Builder" or "Ally." Verify the "Early Access Grant" dialog appears.
-6. **Test Reciprocity Loop:** Use a deep link to accept a witness invite. After sealing the pact, verify the "Now it's your turn" prompt appears.
-7. **Test Voice Connection:** Use the Dev Tools to enable Premium and test the AI Voice Coach connection.
+2. **Test Hook Screen:** On first open, verify the new "Value Proposition" screen appears with the testimonial carousel.
+3. **Test Benefit-Driven Headline:** Proceed to the identity screen and verify the headline is "I want to become...".
+4. **Test Graceful Consistency:** Verify the "No streaks, no shame" message is present on the identity screen.
+5. **Test Testimonials:** Verify the testimonial widget is present on the identity screen.
+6. **Test AI Coach Sample:** Proceed to the tier screen and tap the "Play Sample" button. Verify the audio plays.
+7. **Test Binary Tiers:** Verify only "Free" and "Premium" tiers are shown.
+8. **Test Privacy Controls:** On the witness screen, verify the "Share only milestones" toggle is present.
+9. **Test Confetti:** Complete the onboarding flow and verify the confetti celebration and dialog appear.
 
 ---
 

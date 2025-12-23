@@ -1,8 +1,8 @@
 # User Journey Analysis V2 — The Pact
 
-> **Last Updated:** 23 December 2025 (Phase 29)  
+> **Last Updated:** 23 December 2025 (Phase 30)  
 > **Author:** Manus AI (Acting CTO)  
-> **Status:** Deep Scrutiny & Second Council Review
+> **Status:** Tier 1 & 2 Recommendations Implemented
 
 ---
 
@@ -128,10 +128,10 @@ The current onboarding flow forces **System 2 thinking** at the wrong moments. A
 
 | ID | Recommendation | Rationale | Metric Impact |
 |----|----------------|-----------|---------------|
-| K1 | **Add a "hook" screen before identity** | Show the value proposition first. Let System 1 say "yes, I want this" before System 2 is engaged. | `screen_1_bounce` -20% |
-| K2 | **Reframe identity as selection, not creation** | The Mad-Libs chips help, but the headline still implies creation. Change to "I want to become..." with chips as completions. | `identity_entered` +10% |
-| K3 | **Add default selections** | Pre-select the most popular identity chip. Defaults are powerful (anchoring bias). | `time_to_identity` -30% |
-| K4 | **Simplify tier selection to binary** | Three tiers trigger comparison mode (System 2). Offer "Free" vs "Premium" only. | `tier_decision_time` -40% |
+| K1 | **Add a "hook" screen before identity** | Show the value proposition first. Let System 1 say "yes, I want this" before System 2 is engaged. | ✅ Implemented |
+| K2 | **Reframe identity as selection, not creation** | The Mad-Libs chips help, but the headline still implies creation. Change to "I want to become..." with chips as completions. | ✅ Implemented |
+| K3 | **Add default selections** | Pre-select the most popular identity chip. Defaults are powerful (anchoring bias). | ⏳ Backlog |
+| K4 | **Simplify tier selection to binary** | Three tiers trigger comparison mode (System 2). Offer "Free" vs "Premium" only. | ✅ Implemented |
 
 **Implementation Priority:** K1 (High), K2 (Medium), K3 (Low), K4 (Medium)
 
@@ -149,10 +149,10 @@ The Pact asks users to be vulnerable — to declare an identity, to invite a wit
 
 | ID | Recommendation | Rationale | Metric Impact |
 |----|----------------|-----------|---------------|
-| B1 | **Add "Graceful Consistency" messaging in onboarding** | Explicitly tell users: "We don't do streaks. Missing a day is human. We measure progress, not perfection." | `witness_added` +15% (reduces fear of public failure) |
-| B2 | **Reframe witness as "supporter" not "accountability partner"** | "Accountability" implies judgement. "Supporter" implies encouragement. | `witness_added` +10% |
-| B3 | **Add privacy controls for witnesses** | Let users choose what witnesses see (completions only, or misses too). | `witness_added` +20% |
-| B4 | **Show recovery messaging** | After the wax seal, show: "If you stumble, [Witness Name] will help you get back up, not judge you." | `witness_sealed` +5% |
+| B1 | **Add "Graceful Consistency" messaging in onboarding** | Explicitly tell users: "We don't do streaks. Missing a day is human. We measure progress, not perfection." | ✅ Implemented |
+| B2 | **Reframe witness as "supporter" not "accountability partner"** | "Accountability" implies judgement. "Supporter" implies encouragement. | ⏳ Backlog |
+| B3 | **Add privacy controls for witnesses** | Let users choose what witnesses see (completions only, or misses too). | ✅ Implemented |
+| B4 | **Show recovery messaging** | After the wax seal, show: "If you stumble, [Witness Name] will help you get back up, not judge you." | ⏳ Backlog |
 
 **Implementation Priority:** B1 (High), B2 (Medium), B3 (High), B4 (Low)
 
@@ -170,10 +170,10 @@ The current onboarding maximises **Effort & Sacrifice** (identity declaration, w
 
 | ID | Recommendation | Rationale | Metric Impact |
 |----|----------------|-----------|---------------|
-| H1 | **Lead with the dream outcome** | First screen should show: "Users with witnesses are 3x more likely to build lasting habits." (Social proof + outcome) | `onboarding_started` → `auth_completed` +25% |
-| H2 | **Show the AI coach in action** | Before asking for payment/tier, let users hear a 15-second sample of the voice coach. | `tier_2_selected` +30% |
-| H3 | **Add a "quick win" before witness selection** | Let users create a micro-habit (e.g., "Drink water when I wake up") before asking for a witness. Demonstrates value. | `witness_added` +20% |
-| H4 | **Reframe Trust Grant as exclusive** | "You're one of our first 1,000 users. Premium is yours, free, forever." Add a counter. | `tier_2_selected` +15% |
+| H1 | **Lead with the dream outcome** | First screen should show: "Users with witnesses are 3x more likely to build lasting habits." (Social proof + outcome) | ✅ Implemented |
+| H2 | **Show the AI coach in action** | Before asking for payment/tier, let users hear a 15-second sample of the voice coach. | ✅ Implemented |
+| H3 | **Add a "quick win" before witness selection** | Let users create a micro-habit (e.g., "Drink water when I wake up") before asking for a witness. Demonstrates value. | ⏳ Backlog |
+| H4 | **Reframe Trust Grant as exclusive** | "You're one of our first 1,000 users. Premium is yours, free, forever." Add a counter. | ⏳ Backlog |
 
 **Implementation Priority:** H1 (High), H2 (High), H3 (Medium), H4 (Low)
 
@@ -191,11 +191,11 @@ The onboarding flow is functional but not delightful. The wax seal ceremony is e
 
 | ID | Recommendation | Rationale | Metric Impact |
 |----|----------------|-----------|---------------|
-| Z1 | **Add progress indicator with celebration** | Show "Step 1 of 3" with a subtle animation on completion. | `onboarding_completed` +10% |
-| Z2 | **Animate the identity selection** | When a chip is tapped, animate it expanding into the text field with a satisfying "click" haptic. | `identity_entered` +5% |
-| Z3 | **Add a "pact preview" before tier selection** | Show a mock-up of what their pact will look like with their identity and witness. Makes it real. | `tier_selected` +10% |
-| Z4 | **Celebrate first pact creation** | Confetti animation + haptic burst when the first pact is created. | `first_pact_created` +15% |
-| Z5 | **Add personality to empty states** | Dashboard empty state should have a friendly illustration and encouraging copy. | `first_pact_created` +10% |
+| Z1 | **Add progress indicator with celebration** | Show "Step 1 of 3" with a subtle animation on completion. | ✅ Implemented |
+| Z2 | **Animate the identity selection** | When a chip is tapped, animate it expanding into the text field with a satisfying "click" haptic. | ⏳ Backlog |
+| Z3 | **Add a "pact preview" before tier selection** | Show a mock-up of what their pact will look like with their identity and witness. Makes it real. | ⏳ Backlog |
+| Z4 | **Celebrate first pact creation** | Confetti animation + haptic burst when the first pact is created. | ✅ Implemented |
+| Z5 | **Add personality to empty states** | Dashboard empty state should have a friendly illustration and encouraging copy. | ⏳ Backlog |
 
 **Implementation Priority:** Z1 (High), Z4 (High), Z2 (Medium), Z3 (Medium), Z5 (Low)
 
