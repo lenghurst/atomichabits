@@ -303,13 +303,36 @@ class AuthService extends ChangeNotifier {
       _errorMessage = 'Google sign-in failed';
       notifyListeners();
       return AuthResult.failure('Google sign-in failed');
-    } catch (e) {
+    } catch (e, stackTrace) {
       _authState = AuthState.error;
       _errorMessage = e.toString();
       notifyListeners();
+      
+      // VERBOSE ERROR LOGGING for ApiException: 10 debugging
       if (kDebugMode) {
-        debugPrint('Google sign-in error: $e');
+        debugPrint('╔══════════════════════════════════════════════════════════');
+        debugPrint('║ GOOGLE SIGN-IN ERROR - VERBOSE DIAGNOSTICS');
+        debugPrint('╠══════════════════════════════════════════════════════════');
+        debugPrint('║ Error Type: ${e.runtimeType}');
+        debugPrint('║ Error Message: $e');
+        debugPrint('║ ');
+        debugPrint('║ Configuration Check:');
+        debugPrint('║   - Package Name (code): ${SupabaseConfig.androidPackageName}');
+        debugPrint('║   - Supabase URL: ${SupabaseConfig.url}');
+        debugPrint('║   - Supabase Configured: ${SupabaseConfig.isConfigured}');
+        debugPrint('║ ');
+        debugPrint('║ Stack Trace:');
+        for (final line in stackTrace.toString().split('\n').take(15)) {
+          debugPrint('║   $line');
+        }
+        debugPrint('║ ');
+        debugPrint('║ TROUBLESHOOTING TIPS:');
+        debugPrint('║   1. Run: adb logcat *:E | grep -i "google\|auth\|sign"');
+        debugPrint('║   2. Verify SHA-1: cd android && ./gradlew signingReport');
+        debugPrint('║   3. Check Google Cloud Console for package: co.thepact.app');
+        debugPrint('╚══════════════════════════════════════════════════════════');
       }
+      
       return AuthResult.failure(e.toString());
     }
   }
