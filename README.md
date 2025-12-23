@@ -18,8 +18,8 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟢 Live | Gemini 3 Live API |
 
-> **Last Updated:** December 23, 2025 (Commit: Phase 28.1)  
-> **Current Phase:** Phase 28.1 - Gemini 3 Compliance Fixes Complete
+> **Last Updated:** December 23, 2025 (Commit: Phase 28.2)  
+> **Current Phase:** Phase 28.2 - Ready to Deploy & Test
 
 ---
 
@@ -157,6 +157,36 @@ Edge Fn     (Direct API)
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Real-time voice coaching |
 | **Voice** | Gemini Live API | WebSocket audio streaming |
 | **Hosting** | Netlify | Web Deployment |
+
+---
+
+## 🚀 Next Steps: Deployment & Testing
+
+**Phase 28.1 has fixed the critical Gemini 3 compliance issues. The next step is to deploy these changes and test the voice connection.**
+
+### 1. Deploy Supabase Edge Function
+
+The `get-gemini-ephemeral-token` function has been updated. Deploy it now:
+
+```bash
+supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
+```
+
+### 2. Rebuild the Mobile App (APK)
+
+The Flutter app must be rebuilt to include the `GeminiLiveService` fixes.
+
+```bash
+flutter build apk --debug --dart-define-from-file=secrets.json
+```
+
+### 3. Test the Voice Connection
+
+1. Install the newly built APK on a physical Android device.
+2. **Triple-tap** the screen title to open **Developer Tools**.
+3. Enable **Premium (Tier 2)**.
+4. Go back and tap **AI Coach**.
+5. The **Voice Coach** should now connect successfully.
 
 ---
 

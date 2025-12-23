@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.1)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.2)  
 > **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
@@ -367,7 +367,18 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ## Known Issues & Technical Debt
 
-### Phase 28: Gemini 3 Compliance (✅ COMPLETE)
+### Next Steps (Immediate)
+
+1.  **Deploy Supabase Edge Function:** The updated `get-gemini-ephemeral-token` function must be deployed to take effect.
+    ```bash
+    supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
+    ```
+2.  **Rebuild APK:** The Flutter app must be rebuilt to include the new `GeminiLiveService` logic.
+    ```bash
+    flutter build apk --debug --dart-define-from-file=secrets.json
+    ```
+
+### Phase 28.1: Gemini 3 Compliance (✅ COMPLETE)
 - **Root Cause:** The previous integration was based on Gemini 2.0 protocols. Gemini 3 introduced breaking changes.
 - **Fix #1 (Thought Signatures):** Implemented handling for `thoughtSignature` in `GeminiLiveService` to maintain conversational context.
 - **Fix #2 (Thinking Level):** Added `thinking_config: { thinking_level: "MINIMAL" }` to the WebSocket setup to reduce voice latency.
@@ -508,4 +519,4 @@ Testing: Build debug APK and voice interface should work without auth
 ---
 
 **Last Session:** Phase 28.1 - Gemini 3 Compliance Fixes  
-**Next Session:** Phase 28.2 - Audio Recording Implementation
+**Next Session:** Phase 28.2 - Deploy Edge Function & Build APK

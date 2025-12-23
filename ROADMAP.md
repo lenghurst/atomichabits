@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.1)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.2)  
 > **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Build Fixed, Audio Recording Next
@@ -24,11 +24,11 @@
 
 ---
 
-## 🚀 Current Sprint: Phase 27 "Voice First Pivot"
+## 🚀 Current Sprint: Phase 28 "Deployment & Testing"
 
 **Goal:** Transform onboarding from text-based to voice-first conversational AI coaching
 
-**Status:** 🟡 UNBLOCKED (Phase 27.9 - WebSocket Fixed, Audio Recording Next)
+**Status:** 🟢 READY (Phase 28.2 - Ready to Deploy Edge Function & Build APK)
 
 **Target:** NYE 2025 Launch
 
@@ -100,7 +100,16 @@
 - [x] Build now compiles successfully
 - [ ] **NEXT:** Rebuild APK and test voice connection from UK
 
-### In Progress (Phase 27.8)
+### In Progress (Phase 28.2)
+
+#### Deployment & Verification
+- [x] **Deploy Supabase Edge Function:** The updated `get-gemini-ephemeral-token` function has been deployed (Version 5).
+- [ ] **Rebuild APK:** The Flutter app must be rebuilt to include the new `GeminiLiveService` logic.
+- [ ] **Test Voice Connection:** Install the new APK and verify the voice interface connects without errors.
+
+### Next Sprint (Phase 29 - Feature Implementation)
+
+#### Audio Recording Implementation (UNBLOCKED)
 
 #### Audio Recording Implementation (UNBLOCKED)
 - [ ] Add microphone permissions (Android + iOS)
