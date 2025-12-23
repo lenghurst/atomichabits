@@ -39,7 +39,7 @@ class DevToolsOverlay extends StatelessWidget {
     // Get AI status
     final aiStatus = AIModelConfig.getStatusSummary();
     final currentTier = AIModelConfig.selectTier(
-      isPremiumUser: settings.devModePremium,
+      isPremiumUser: settings.developerMode,
       isBreakHabit: false,
     );
 
@@ -99,8 +99,8 @@ class DevToolsOverlay extends StatelessWidget {
                     ),
                     _StatusRow(
                       label: 'Premium Mode',
-                      value: settings.devModePremium ? 'ON' : 'OFF',
-                      valueColor: settings.devModePremium ? Colors.green : Colors.grey,
+                      value: settings.developerMode ? 'ON' : 'OFF',
+                      valueColor: settings.developerMode ? Colors.green : Colors.grey,
                     ),
                     _StatusRow(
                       label: 'DeepSeek',
@@ -133,14 +133,14 @@ class DevToolsOverlay extends StatelessWidget {
               SwitchListTile(
                 title: const Text('Premium Mode (Tier 2)'),
                 subtitle: Text(
-                  settings.devModePremium 
+                  settings.developerMode 
                       ? 'Using Gemini Voice' 
                       : 'Using DeepSeek Text',
                 ),
-                value: settings.devModePremium,
+                value: settings.developerMode,
                 onChanged: (value) {
                   appState.updateSettings(
-                    settings.copyWith(devModePremium: value),
+                    settings.copyWith(developerMode: value),
                   );
                 },
               ),
@@ -175,7 +175,7 @@ class DevToolsOverlay extends StatelessWidget {
                       Navigator.pop(context);
                       // Force text mode temporarily
                       appState.updateSettings(
-                        settings.copyWith(devModePremium: false),
+                        settings.copyWith(developerMode: false),
                       );
                       context.go('/');
                     },
@@ -283,7 +283,7 @@ Version: 0.27.6-dev
 
 --- AI Configuration ---
 Current Tier: ${currentTier.displayName} (${currentTier.emoji})
-Premium Mode: ${settings.devModePremium}
+Developer Mode: ${settings.developerMode}
 DeepSeek Available: ${aiStatus['tier1Available']}
 Gemini Available: ${aiStatus['tier2Available']}
 Voice Enabled: ${aiStatus['voiceEnabled']}

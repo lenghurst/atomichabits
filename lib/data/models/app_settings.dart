@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 /// App-wide settings that persist across sessions
 /// 
 /// **Phase 6: Settings & Polish**
+/// **Phase 27.17: Developer Mode Rename & Enhanced Logging**
+/// 
 /// Follows the project's data model conventions:
 /// - Immutable with copyWith
 /// - JSON serialization for Hive persistence
@@ -26,9 +28,22 @@ class AppSettings {
   /// Whether to show motivational quotes
   final bool showQuotes;
   
-  /// Developer mode: Simulates premium user for tier testing
-  /// Phase 27.5: Added for testing Tier 2/3 without subscription
-  final bool devModePremium;
+  /// Developer Mode: Enables premium features for testing
+  /// Phase 27.17: Renamed from devModePremium to developerMode
+  /// When enabled:
+  /// - Uses Tier 2 (Gemini Flash) instead of Tier 1 (DeepSeek)
+  /// - Enables Voice Coach functionality
+  /// - Activates detailed logging when developerLogging is also enabled
+  final bool developerMode;
+  
+  /// Developer Logging: Enables verbose logging throughout the app
+  /// Phase 27.17: Added for debugging Voice Coach and AI services
+  /// When enabled:
+  /// - Detailed WebSocket connection logs
+  /// - Token fetching diagnostics
+  /// - Audio streaming debug info
+  /// - Supabase Edge Function request/response logging
+  final bool developerLogging;
 
   const AppSettings({
     this.themeMode = ThemeMode.system,
@@ -37,7 +52,8 @@ class AppSettings {
     this.defaultNotificationTime = '08:00',
     this.notificationsEnabled = true,
     this.showQuotes = true,
-    this.devModePremium = false,
+    this.developerMode = false,
+    this.developerLogging = false,
   });
 
   /// Create a copy with modified values
@@ -48,7 +64,8 @@ class AppSettings {
     String? defaultNotificationTime,
     bool? notificationsEnabled,
     bool? showQuotes,
-    bool? devModePremium,
+    bool? developerMode,
+    bool? developerLogging,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -57,11 +74,13 @@ class AppSettings {
       defaultNotificationTime: defaultNotificationTime ?? this.defaultNotificationTime,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       showQuotes: showQuotes ?? this.showQuotes,
-      devModePremium: devModePremium ?? this.devModePremium,
+      developerMode: developerMode ?? this.developerMode,
+      developerLogging: developerLogging ?? this.developerLogging,
     );
   }
 
   /// Convert to JSON for Hive persistence
+  /// Maintains backward compatibility with devModePremium
   Map<String, dynamic> toJson() {
     return {
       'themeMode': themeMode.index,
@@ -70,12 +89,21 @@ class AppSettings {
       'defaultNotificationTime': defaultNotificationTime,
       'notificationsEnabled': notificationsEnabled,
       'showQuotes': showQuotes,
-      'devModePremium': devModePremium,
+      'developerMode': developerMode,
+      'developerLogging': developerLogging,
+      // Backward compatibility
+      'devModePremium': developerMode,
     };
   }
 
   /// Create from JSON (Hive persistence)
+  /// Supports both old (devModePremium) and new (developerMode) field names
   factory AppSettings.fromJson(Map<String, dynamic> json) {
+    // Support migration from devModePremium to developerMode
+    final devMode = json['developerMode'] as bool? ?? 
+                    json['devModePremium'] as bool? ?? 
+                    false;
+    
     return AppSettings(
       themeMode: ThemeMode.values[json['themeMode'] as int? ?? 0],
       soundEnabled: json['soundEnabled'] as bool? ?? true,
@@ -83,7 +111,8 @@ class AppSettings {
       defaultNotificationTime: json['defaultNotificationTime'] as String? ?? '08:00',
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
       showQuotes: json['showQuotes'] as bool? ?? true,
-      devModePremium: json['devModePremium'] as bool? ?? false,
+      developerMode: devMode,
+      developerLogging: json['developerLogging'] as bool? ?? false,
     );
   }
 
@@ -100,11 +129,16 @@ class AppSettings {
   static String timeOfDayToString(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
+  
+  /// Backward compatibility getter for devModePremium
+  /// @deprecated Use developerMode instead
+  bool get devModePremium => developerMode;
 
   @override
   String toString() {
     return 'AppSettings(theme: $themeMode, sound: $soundEnabled, haptics: $hapticsEnabled, '
-        'notifications: $notificationsEnabled @ $defaultNotificationTime, quotes: $showQuotes, devPremium: $devModePremium)';
+        'notifications: $notificationsEnabled @ $defaultNotificationTime, quotes: $showQuotes, '
+        'developerMode: $developerMode, developerLogging: $developerLogging)';
   }
 
   @override
@@ -117,7 +151,8 @@ class AppSettings {
         other.defaultNotificationTime == defaultNotificationTime &&
         other.notificationsEnabled == notificationsEnabled &&
         other.showQuotes == showQuotes &&
-        other.devModePremium == devModePremium;
+        other.developerMode == developerMode &&
+        other.developerLogging == developerLogging;
   }
 
   @override
@@ -129,7 +164,8 @@ class AppSettings {
       defaultNotificationTime,
       notificationsEnabled,
       showQuotes,
-      devModePremium,
+      developerMode,
+      developerLogging,
     );
   }
 }

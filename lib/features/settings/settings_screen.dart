@@ -271,36 +271,64 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 
-                // ========== Developer Section (Phase 27.5) ==========
+                // ========== Developer Section (Phase 27.17) ==========
                 _buildSectionTitle(context, 'Developer'),
                 Card(
                   child: Column(
                     children: [
                       SwitchListTile(
-                        secondary: const Icon(Icons.science),
-                        title: const Text('Simulate Premium'),
+                        secondary: const Icon(Icons.developer_mode),
+                        title: const Text('Developer Mode'),
                         subtitle: Text(
-                          settings.devModePremium 
-                            ? 'Using Tier 2 (Gemini Flash)' 
-                            : 'Using Tier 1 (DeepSeek)',
+                          settings.developerMode 
+                            ? 'Using Tier 2 (Gemini Flash) - Voice Enabled' 
+                            : 'Using Tier 1 (DeepSeek) - Text Only',
                         ),
-                        value: settings.devModePremium,
+                        value: settings.developerMode,
                         onChanged: (value) {
                           appState.updateSettings(
-                            settings.copyWith(devModePremium: value),
+                            settings.copyWith(developerMode: value),
                           );
                         },
+                      ),
+                      const Divider(height: 1),
+                      SwitchListTile(
+                        secondary: const Icon(Icons.bug_report),
+                        title: const Text('Developer Logging'),
+                        subtitle: Text(
+                          settings.developerLogging 
+                            ? 'Verbose logging enabled - Check console' 
+                            : 'Standard logging only',
+                        ),
+                        value: settings.developerLogging,
+                        onChanged: settings.developerMode ? (value) {
+                          appState.updateSettings(
+                            settings.copyWith(developerLogging: value),
+                          );
+                        } : null,
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.psychology),
                         title: const Text('AI Status'),
                         subtitle: Text(
-                          settings.devModePremium
-                            ? '🎙️ Voice-capable (Gemini)'
-                            : '🪞 Text-only (DeepSeek)',
+                          settings.developerMode
+                            ? '🎙️ Voice Coach Active (Gemini Live API)'
+                            : '🪞 Text-only Mode (DeepSeek)',
                         ),
                       ),
+                      if (settings.developerMode && settings.developerLogging) ...[
+                        const Divider(height: 1),
+                        ListTile(
+                          leading: Icon(Icons.info_outline, color: Colors.blue.shade700),
+                          title: const Text('Logging Active'),
+                          subtitle: const Text(
+                            'WebSocket, Token, Audio logs enabled.\n'
+                            'Check debug console for detailed output.',
+                          ),
+                          isThreeLine: true,
+                        ),
+                      ],
                     ],
                   ),
                 ),

@@ -12,6 +12,7 @@ import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
+import '../utils/developer_logger.dart';
 
 /// Enum for haptic feedback types
 enum HapticFeedbackType {
@@ -360,6 +361,8 @@ class AppState extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('⚙️ Loaded settings: $_settings');
       }
+      // Phase 27.17: Initialize developer logging based on saved settings
+      DevLog.setEnabled(_settings.developerMode && _settings.developerLogging);
     }
 
     // Load user profile
@@ -1014,9 +1017,15 @@ class AppState extends ChangeNotifier {
   Future<void> updateSettings(AppSettings newSettings) async {
     final notificationsChanged = _settings.notificationsEnabled != newSettings.notificationsEnabled;
     final timeChanged = _settings.defaultNotificationTime != newSettings.defaultNotificationTime;
+    final developerLoggingChanged = _settings.developerLogging != newSettings.developerLogging;
     
     _settings = newSettings;
     await _saveToStorage();
+    
+    // Phase 27.17: Update developer logging state
+    if (developerLoggingChanged || newSettings.developerMode != _settings.developerMode) {
+      DevLog.setEnabled(newSettings.developerMode && newSettings.developerLogging);
+    }
     
     // Handle notification changes
     if (notificationsChanged || timeChanged) {

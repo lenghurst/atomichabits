@@ -251,7 +251,7 @@ class _MyAppState extends State<MyApp> {
                 path: '/',
                 builder: (context, state) {
                   final appState = context.read<AppState>();
-                  final isPremium = appState.settings.devModePremium;
+                  final isPremium = appState.settings.developerMode;
                   
                   // Premium users get voice interface (Tier 2)
                   if (isPremium) {

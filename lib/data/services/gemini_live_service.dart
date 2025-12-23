@@ -6,6 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
+import '../../utils/developer_logger.dart';
 
 /// Gemini Live API Service - DEBUG EDITION (Phase 27.12)
 /// 
@@ -77,33 +78,47 @@ class GeminiLiveService {
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
     
+    // Phase 27.17: Enhanced Developer Logging
+    DevLog.separator(label: 'VOICE COACH CONNECTION START');
+    DevLog.voice('Initiating connection to Gemini Live API');
+    DevLog.summary('Connection Parameters', {
+      'Model': AIModelConfig.tier2Model,
+      'Endpoint': 'v1alpha',
+      'Transcription': enableTranscription,
+      'System Instruction': systemInstruction != null ? 'Provided (${systemInstruction.length} chars)' : 'None',
+    });
+    
     try {
       // PHASE 1: TOKEN
       _setPhase("FETCHING_TOKEN");
+      DevLog.tokenFetchStart();
       final tokenResult = await _getEphemeralTokenWithReason();
       if (tokenResult.token == null) {
+        DevLog.tokenFetchFailed(tokenResult.reason);
         throw 'Token is null: ${tokenResult.reason}';
       }
       final token = tokenResult.token;
+      DevLog.tokenFetchSuccess(source: tokenResult.reason, expiry: _tokenExpiry);
       
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
       String wsUrl = _wsEndpoint;
       if (_isUsingApiKey) {
         wsUrl += '?key=$token';
-        if (kDebugMode) debugPrint('GeminiLiveService: Using API Key auth (key= param)');
+        DevLog.websocket('Auth method: API Key (key= param)');
       } else {
         wsUrl += '?access_token=$token';
-        if (kDebugMode) debugPrint('GeminiLiveService: Using OAuth token auth (access_token= param)');
+        DevLog.websocket('Auth method: OAuth Token (access_token= param)');
       }
       
       // PHASE 3: SOCKET CONNECT
       _setPhase("CONNECTING_SOCKET");
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Connecting to WebSocket...');
-        debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-        debugPrint('GeminiLiveService: Endpoint: v1alpha');
-      }
+      DevLog.websocketConnecting(wsUrl);
+      DevLog.summary('WebSocket Connection', {
+        'Model': AIModelConfig.tier2Model,
+        'Endpoint': 'v1alpha',
+        'Auth Type': _isUsingApiKey ? 'API Key' : 'OAuth Token',
+      });
       
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
       
@@ -156,7 +171,14 @@ class GeminiLiveService {
       _setPhase("CONNECTED_STABLE");
       _isConnected = true;
       _notifyConnectionState(LiveConnectionState.connected);
-      if (kDebugMode) debugPrint('GeminiLiveService: ✅ Handshake successful! Connected to ${AIModelConfig.tier2Model}');
+      DevLog.websocketConnected();
+      DevLog.voice('✅ Voice Coach connected successfully!');
+      DevLog.summary('Connection Established', {
+        'Model': AIModelConfig.tier2Model,
+        'Auth Type': _isUsingApiKey ? 'API Key' : 'OAuth Token',
+        'Token Expiry': _tokenExpiry?.toIso8601String() ?? 'N/A',
+      });
+      DevLog.separator(label: 'VOICE COACH READY');
       return true;
       
     } catch (e) {
@@ -331,30 +353,39 @@ Endpoint: v1alpha''';
 
   /// Result class for token fetching with detailed reason
   Future<_TokenResult> _getEphemeralTokenWithReason() async {
+    DevLog.separator(label: 'TOKEN FETCH');
+    
     // Check if we have a valid cached token
     if (_ephemeralToken != null && _tokenExpiry != null &&
         _tokenExpiry!.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
+      DevLog.token('Using cached token (still valid)');
       return _TokenResult(_ephemeralToken, 'Cached token valid');
     }
 
     try {
       final supabase = Supabase.instance.client;
       final session = supabase.auth.currentSession;
+      
+      DevLog.supabaseAuth(
+        session != null ? 'Authenticated' : 'Not authenticated',
+        userId: session?.user.id,
+      );
 
       // DEV MODE BYPASS: Use API key directly if no session
       if (session == null) {
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
-          debugPrint('GeminiLiveService: DEV MODE - Using Gemini API key directly (no auth session)');
+          DevLog.token('DEV MODE: No auth session, using API key directly');
           _ephemeralToken = AIModelConfig.geminiApiKey;
           _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
           _isUsingApiKey = true;
           return _TokenResult(_ephemeralToken, 'Dev mode API key');
         }
-        debugPrint('GeminiLiveService: No session and no API key available');
+        DevLog.token('No session and no API key - cannot authenticate', details: 'User must log in or add GEMINI_API_KEY to secrets.json');
         return _TokenResult(null, 'No Supabase session (not logged in) and no GEMINI_API_KEY in secrets.json for dev fallback');
       }
 
       // Try to get ephemeral token from Supabase Edge Function
+      DevLog.supabaseFunction(_tokenEndpoint, params: {'lockToConfig': true});
       final response = await supabase.functions.invoke(
         _tokenEndpoint,
         body: {'lockToConfig': true},
@@ -362,7 +393,7 @@ Endpoint: v1alpha''';
 
       if (response.status != 200) {
         final errorMsg = 'Edge function returned status ${response.status}';
-        debugPrint('GeminiLiveService: $errorMsg');
+        DevLog.supabaseFunctionResponse(_tokenEndpoint, status: response.status, error: errorMsg);
 
         // Fallback to API key in dev mode
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
@@ -375,10 +406,13 @@ Endpoint: v1alpha''';
         return _TokenResult(null, '$errorMsg - check Supabase Edge Function logs');
       }
 
+      DevLog.supabaseFunctionResponse(_tokenEndpoint, status: response.status);
+      
       final data = response.data as Map<String, dynamic>;
       _ephemeralToken = data['token'] as String?;
 
       if (_ephemeralToken == null || _ephemeralToken!.isEmpty) {
+        DevLog.token('Edge function returned empty token', details: 'Check backend GEMINI_API_KEY');
         return _TokenResult(null, 'Edge function returned empty token - check backend GEMINI_API_KEY');
       }
 
@@ -387,12 +421,18 @@ Endpoint: v1alpha''';
 
       // Log the model returned by backend for debugging
       final backendModel = data['model'] as String?;
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Backend token model: $backendModel');
-        debugPrint('GeminiLiveService: Frontend model: ${AIModelConfig.tier2Model}');
-        if (backendModel != null && backendModel != AIModelConfig.tier2Model) {
-          debugPrint('GeminiLiveService: ⚠️ WARNING - Model mismatch detected!');
-        }
+      final websocketUrl = data['websocketUrl'] as String?;
+      
+      DevLog.summary('Ephemeral Token Received', {
+        'Backend Model': backendModel ?? 'Not specified',
+        'Frontend Model': AIModelConfig.tier2Model,
+        'Model Match': backendModel == AIModelConfig.tier2Model ? '✅ Yes' : '⚠️ MISMATCH',
+        'Token Expiry': _tokenExpiry?.toIso8601String() ?? 'Unknown',
+        'WebSocket URL': websocketUrl != null ? '${websocketUrl.substring(0, 50)}...' : 'Not provided',
+      });
+      
+      if (backendModel != null && backendModel != AIModelConfig.tier2Model) {
+        DevLog.warning('Model mismatch detected!', details: 'Backend: $backendModel, Frontend: ${AIModelConfig.tier2Model}');
       }
 
       return _TokenResult(_ephemeralToken, 'Ephemeral token from backend');
