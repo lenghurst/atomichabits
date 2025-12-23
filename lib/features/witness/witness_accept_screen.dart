@@ -305,12 +305,24 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
           ],
         ),
         actions: [
-          FilledButton(
+          // Phase 28.3: Add conversion CTA for witnesses to create their own pact
+          TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.of(context).pushReplacementNamed('/witness');
             },
             child: const Text('View My Pacts'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Navigate to onboarding to create their own pact
+              Navigator.of(context).pushReplacementNamed('/');
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF22C55E),
+            ),
+            child: const Text('Create Your Own Pact'),
           ),
         ],
       ),

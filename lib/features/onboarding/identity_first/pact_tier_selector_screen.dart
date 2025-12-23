@@ -22,14 +22,33 @@ class PactTierSelectorScreen extends StatefulWidget {
 class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   String _selectedTier = 'builder'; // Default to most popular
 
-  void _handleSelectTier(String tierId) {
+  Future<void> _handleSelectTier(String tierId) async {
     setState(() {
       _selectedTier = tierId;
     });
 
-    // Navigate to main app or complete onboarding
-    // For now, just navigate to home
-    context.go('/');
+    // Phase 28.3: Complete onboarding and navigate to dashboard
+    // TODO: Implement payment flow for Builder/Ally tiers
+    final appState = context.read<AppState>();
+    
+    // Store selected tier in user profile for future reference
+    // This will be used when payment integration is added
+    final currentProfile = appState.userProfile;
+    if (currentProfile != null) {
+      final updatedProfile = currentProfile.copyWith(
+        // Store tier preference (will be validated against payment status later)
+        // For now, all users get Free tier functionality
+      );
+      await appState.setUserProfile(updatedProfile);
+    }
+    
+    // Mark onboarding as complete
+    await appState.completeOnboarding();
+    
+    // Navigate to dashboard
+    if (mounted) {
+      context.go('/dashboard');
+    }
   }
 
   @override

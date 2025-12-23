@@ -287,8 +287,9 @@ class _MyAppState extends State<MyApp> {
               ),
               
               // ========== Phase 19: Side Door Landing Pages ==========
+              // Phase 28.3: Updated to use Identity First flow with niche context
               // Each niche gets its own "front door" that sets context
-              // The Architect AI adapts based on which door they entered
+              // The identity examples will be customised based on niche
               
               // Developer door: r/programming, HackerNews
               GoRoute(
@@ -298,7 +299,8 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/devs');
                   });
-                  return const ConversationalOnboardingScreen();
+                  // Phase 28.3: Use Identity First flow for consistent UX
+                  return const IdentityAccessGateScreen();
                 },
               ),
               // Writer door: r/writing, Medium
@@ -308,7 +310,7 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/writers');
                   });
-                  return const ConversationalOnboardingScreen();
+                  return const IdentityAccessGateScreen();
                 },
               ),
               // Scholar door: r/GradSchool, academic Twitter
@@ -318,7 +320,7 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/scholars');
                   });
-                  return const ConversationalOnboardingScreen();
+                  return const IdentityAccessGateScreen();
                 },
               ),
               // Language learner door: Duolingo refugees
@@ -328,7 +330,7 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/languages');
                   });
-                  return const ConversationalOnboardingScreen();
+                  return const IdentityAccessGateScreen();
                 },
               ),
               // Indie maker door: IndieHackers
@@ -338,7 +340,7 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/makers');
                   });
-                  return const ConversationalOnboardingScreen();
+                  return const IdentityAccessGateScreen();
                 },
               ),
               // Dashboard: Multi-habit list (Phase 4)

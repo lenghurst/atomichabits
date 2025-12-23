@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.2)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.3)  
 > **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
@@ -60,6 +60,23 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 28.3: User Journey Optimisation
+
+A comprehensive user journey map was created to identify and implement high-impact optimisations to the onboarding flow.
+
+**New Documentation:** `docs/USER_JOURNEY_MAP.md`
+
+**Key Changes Implemented:**
+
+| Optimisation | File Changed | Details |
+|--------------|--------------|---------|
+| **Fix Tier Selection** | `PactTierSelectorScreen.dart` | Onboarding now completes correctly, navigating users to the dashboard. |
+| **Unify Niche Routes** | `main.dart` | Niche landing pages (`/devs`, `/writers`, etc.) now use the modern "Identity First" flow. |
+| **Add Witness CTA** | `WitnessAcceptScreen.dart` | Invited users who become witnesses are now prompted to create their own pact. |
+| **Add Identity Examples** | `IdentityAccessGateScreen.dart` | Added tappable chips with examples to guide users during identity declaration. |
 
 ---
 

@@ -412,7 +412,33 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
+
+                      // Phase 28.3: Identity examples to help users
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _IdentityChip(
+                            label: 'A Marathon Runner',
+                            onTap: () => _identityController.text = 'A Marathon Runner',
+                          ),
+                          _IdentityChip(
+                            label: 'A Published Author',
+                            onTap: () => _identityController.text = 'A Published Author',
+                          ),
+                          _IdentityChip(
+                            label: 'A Fluent Spanish Speaker',
+                            onTap: () => _identityController.text = 'A Fluent Spanish Speaker',
+                          ),
+                          _IdentityChip(
+                            label: 'A Morning Person',
+                            onTap: () => _identityController.text = 'A Morning Person',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
 
                       // Subtext
                       const Text(
@@ -706,6 +732,43 @@ class _OAuthButton extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Phase 28.3: Identity suggestion chip
+/// Tappable chip that fills in the identity field with an example
+class _IdentityChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _IdentityChip({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          border: Border.all(color: const Color(0xFF334155)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF94A3B8),
+          ),
+        ),
+      ),
     );
   }
 }
