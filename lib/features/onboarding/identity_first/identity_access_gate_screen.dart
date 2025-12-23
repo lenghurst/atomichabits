@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/app_state.dart';
+import '../../../data/models/user_profile.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../utils/developer_logger.dart';
 
@@ -60,10 +61,15 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         // Save identity to user profile
         if (_identityController.text.isNotEmpty) {
           final appState = context.read<AppState>();
-          final profile = appState.userProfile.copyWith(
+          final currentProfile = appState.userProfile;
+          final profile = currentProfile?.copyWith(
             identity: _identityController.text.trim(),
+          ) ?? UserProfile(
+            identity: _identityController.text.trim(),
+            name: '',
+            createdAt: DateTime.now(),
           );
-          await appState.updateUserProfile(profile);
+          await appState.setUserProfile(profile);
         }
         
         // Navigate to next onboarding screen
@@ -120,10 +126,15 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         // Save identity
         if (_identityController.text.isNotEmpty) {
           final appState = context.read<AppState>();
-          final profile = appState.userProfile.copyWith(
+          final currentProfile = appState.userProfile;
+          final profile = currentProfile?.copyWith(
             identity: _identityController.text.trim(),
+          ) ?? UserProfile(
+            identity: _identityController.text.trim(),
+            name: '',
+            createdAt: DateTime.now(),
           );
-          await appState.updateUserProfile(profile);
+          await appState.setUserProfile(profile);
         }
         
         context.go('/onboarding/witness');
@@ -202,7 +213,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             child: Container(
               width: 384,
               height: 384,
-              decoration: BoxDecation(
+              decoration: BoxDecoration(
                 color: const Color(0xFF06B6D4).withOpacity(0.05),
                 shape: BoxShape.circle,
                 boxShadow: [

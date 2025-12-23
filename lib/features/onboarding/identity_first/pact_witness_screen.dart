@@ -55,11 +55,11 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final userName = appState.userProfile.name.isNotEmpty
-        ? appState.userProfile.name
+    final userName = appState.userProfile?.name.isNotEmpty == true
+        ? appState.userProfile!.name
         : 'You';
-    final identity = appState.userProfile.identity.isNotEmpty
-        ? appState.userProfile.identity
+    final identity = appState.userProfile?.identity.isNotEmpty == true
+        ? appState.userProfile!.identity
         : 'A Better Version of Yourself';
     final currentDate = DateFormat('MMMM d, y').format(DateTime.now());
 

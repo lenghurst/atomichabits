@@ -35,8 +35,8 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final identity = appState.userProfile.identity.isNotEmpty
-        ? appState.userProfile.identity
+    final identity = appState.userProfile?.identity.isNotEmpty == true
+        ? appState.userProfile!.identity
         : 'A Better Version of Yourself';
 
     return Scaffold(
