@@ -1,6 +1,5 @@
 // Supabase Edge Function: get-gemini-ephemeral-token
 // Phase 25.3: Secure ephemeral token generation for Gemini Live API
-// Phase 27.17: Enhanced Developer Logging
 //
 // This function:
 // 1. Authenticates the user via Supabase Auth JWT
@@ -30,25 +29,11 @@ const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com'
 // NEW (GA - Global): 'gemini-live-2.5-flash-native-audio'
 const LIVE_API_MODEL = 'gemini-live-2.5-flash-native-audio'
 
-// Phase 27.17: Developer Logging Helper
-function devLog(category: string, message: string, data?: Record<string, unknown>) {
-  const timestamp = new Date().toISOString()
-  const logEntry = {
-    timestamp,
-    category,
-    message,
-    ...data,
-  }
-  console.log(`[${timestamp}] [${category}] ${message}`, data ? JSON.stringify(data, null, 2) : '')
-}
-
 interface EphemeralTokenRequest {
   // Optional: Lock token to specific configuration
   lockToConfig?: boolean
   // Optional: Custom expiry in minutes (default 30)
   expiryMinutes?: number
-  // Phase 27.17: Enable verbose logging in response
-  debugMode?: boolean
 }
 
 interface EphemeralTokenResponse {
@@ -56,31 +41,18 @@ interface EphemeralTokenResponse {
   expiresAt: string
   model: string
   websocketUrl: string
-  // Phase 27.17: Debug info (only included if debugMode is true)
-  debug?: {
-    tokenRequestTime: string
-    googleApiResponseTime: number
-    authMethod: string
-    userId: string
-  }
 }
 
 serve(async (req) => {
-  const requestId = crypto.randomUUID().substring(0, 8)
-  devLog('REQUEST', `[${requestId}] Incoming request`, { method: req.method, url: req.url })
-  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    devLog('CORS', `[${requestId}] Preflight request handled`)
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     // === 1. AUTHENTICATE USER ===
-    devLog('AUTH', `[${requestId}] Checking authorization header`)
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      devLog('AUTH', `[${requestId}] ❌ Missing authorization header`)
       return new Response(
         JSON.stringify({ error: 'Missing authorisation header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -88,7 +60,6 @@ serve(async (req) => {
     }
 
     // Verify Supabase JWT
-    devLog('AUTH', `[${requestId}] Verifying Supabase JWT`)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -97,53 +68,35 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      devLog('AUTH', `[${requestId}] ❌ Invalid or expired token`, { error: authError?.message })
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-    devLog('AUTH', `[${requestId}] ✅ User authenticated`, { userId: user.id.substring(0, 8) + '...' })
 
     // === 2. CHECK API KEY ===
-    devLog('CONFIG', `[${requestId}] Checking GEMINI_API_KEY configuration`)
     if (!GEMINI_API_KEY) {
-      devLog('CONFIG', `[${requestId}] ❌ GEMINI_API_KEY not configured in environment`)
       console.error('GEMINI_API_KEY not configured in environment')
       return new Response(
         JSON.stringify({ error: 'Service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-    devLog('CONFIG', `[${requestId}] ✅ GEMINI_API_KEY configured (${GEMINI_API_KEY.substring(0, 8)}...)`)
 
     // === 3. PARSE REQUEST ===
     let requestBody: EphemeralTokenRequest = {}
     if (req.method === 'POST') {
       try {
         requestBody = await req.json()
-        devLog('REQUEST', `[${requestId}] Request body parsed`, { 
-          lockToConfig: requestBody.lockToConfig,
-          expiryMinutes: requestBody.expiryMinutes,
-          debugMode: requestBody.debugMode,
-        })
       } catch {
-        devLog('REQUEST', `[${requestId}] Empty request body, using defaults`)
+        // Empty body is fine, use defaults
       }
     }
 
     const expiryMinutes = requestBody.expiryMinutes ?? 30
     const lockToConfig = requestBody.lockToConfig ?? true
-    const debugMode = requestBody.debugMode ?? false
 
     // === 4. REQUEST EPHEMERAL TOKEN FROM GOOGLE ===
-    devLog('GOOGLE_API', `[${requestId}] Preparing ephemeral token request`, {
-      model: LIVE_API_MODEL,
-      apiVersion: GEMINI_API_VERSION,
-      expiryMinutes,
-      lockToConfig,
-    })
-    
     const now = new Date()
     const expireTime = new Date(now.getTime() + expiryMinutes * 60 * 1000)
     const newSessionExpireTime = new Date(now.getTime() + 60 * 1000) // 1 minute to start session
@@ -165,14 +118,9 @@ serve(async (req) => {
           response_modalities: ['AUDIO'],
         }
       }
-      devLog('GOOGLE_API', `[${requestId}] Token locked to config`, { model: LIVE_API_MODEL })
     }
 
     // Call Google's auth token endpoint
-    const googleApiUrl = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/authTokens?key=${GEMINI_API_KEY.substring(0, 8)}...`
-    devLog('GOOGLE_API', `[${requestId}] Calling Google API`, { url: googleApiUrl })
-    
-    const googleApiStartTime = Date.now()
     const tokenResponse = await fetch(
       `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/authTokens?key=${GEMINI_API_KEY}`,
       {
@@ -183,15 +131,9 @@ serve(async (req) => {
         body: JSON.stringify(tokenRequestPayload),
       }
     )
-    const googleApiResponseTime = Date.now() - googleApiStartTime
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text()
-      devLog('GOOGLE_API', `[${requestId}] ❌ Google API error`, {
-        status: tokenResponse.status,
-        error: errorText,
-        responseTime: googleApiResponseTime,
-      })
       console.error('Gemini API error:', tokenResponse.status, errorText)
       return new Response(
         JSON.stringify({ 
@@ -203,10 +145,6 @@ serve(async (req) => {
     }
 
     const tokenData = await tokenResponse.json()
-    devLog('GOOGLE_API', `[${requestId}] ✅ Token received from Google`, {
-      responseTime: googleApiResponseTime,
-      tokenName: tokenData.name ? tokenData.name.substring(0, 20) + '...' : 'N/A',
-    })
 
     // === 5. LOG USAGE (Optional: for analytics) ===
     // You can log token generation to a Supabase table for monitoring
@@ -218,37 +156,18 @@ serve(async (req) => {
         created_at: now.toISOString(),
         expires_at: expireTime.toISOString(),
       })
-      devLog('ANALYTICS', `[${requestId}] Token usage logged to database`)
     } catch (logError) {
       // Non-critical, don't fail the request
-      devLog('ANALYTICS', `[${requestId}] ⚠️ Failed to log token usage (non-critical)`, { error: String(logError) })
+      console.warn('Failed to log token usage:', logError)
     }
 
     // === 6. RETURN TOKEN TO CLIENT ===
-    const websocketUrl = `wss://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${LIVE_API_MODEL}:streamGenerateContent`
-    
     const response: EphemeralTokenResponse = {
       token: tokenData.name, // The ephemeral token string
       expiresAt: expireTime.toISOString(),
       model: LIVE_API_MODEL,
-      websocketUrl,
+      websocketUrl: `wss://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${LIVE_API_MODEL}:streamGenerateContent`,
     }
-    
-    // Include debug info if requested
-    if (debugMode) {
-      response.debug = {
-        tokenRequestTime: now.toISOString(),
-        googleApiResponseTime,
-        authMethod: 'supabase_jwt',
-        userId: user.id.substring(0, 8) + '...',
-      }
-    }
-    
-    devLog('RESPONSE', `[${requestId}] ✅ Sending successful response`, {
-      model: LIVE_API_MODEL,
-      expiresAt: expireTime.toISOString(),
-      websocketUrl: websocketUrl.substring(0, 50) + '...',
-    })
 
     return new Response(
       JSON.stringify(response),
@@ -259,7 +178,6 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    devLog('ERROR', `[${requestId}] ❌ Unexpected error`, { error: String(error) })
     console.error('Unexpected error:', error)
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
