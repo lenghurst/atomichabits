@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 29)  
-> **Last Verified:** Phase 29 Complete (Second Council Review)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 30)  
+> **Last Verified:** Phase 30 Complete (Delight & Monetise)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -60,6 +60,25 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 30: "Delight & Monetise" Sprint (Tier 2 Implementation)
+
+Implemented the high-value Tier 2 recommendations from the Second Council of Five to increase user delight and improve monetisation potential before launch.
+
+**Key Changes Implemented:**
+
+| Recommendation | Advisor | File(s) Changed | Details |
+|---|---|---|---|
+| **AI Coach Sample** | Hormozi | `pact_tier_selector_screen.dart` | Added a one-tap audio sample of the AI Voice Coach directly on the tier selection screen. This demonstrates the premium value *before* asking for payment, significantly increasing the perceived value of the premium tier. |
+| **Privacy Controls** | Brown | `pact_witness_screen.dart` | Implemented a "Privacy Controls" section on the witness screen. Users can now choose to share only weekly milestones with their witness, not daily check-ins. This gives users a greater sense of control and emotional safety. |
+| **Confetti Celebration** | Zhuo | `pact_tier_selector_screen.dart` | Added a confetti explosion and a celebratory dialog upon the user's first pact creation. This creates a moment of delight and positive reinforcement at a key moment in the user journey. |
+| **Testimonials** | Ogilvy | `identity_access_gate_screen.dart` | Added a social proof testimonial widget to the identity screen. This provides a relatable success story to increase user motivation and conversion. |
+| **Binary Tier Choice** | Kahneman | `pact_tier_selector_screen.dart` | Simplified the tier selection from three options (Free, Builder, Ally) to a binary choice (Free vs. Premium). This reduces cognitive load and makes the decision to upgrade much simpler. |
+
+**New Dependencies Added:**
+- `confetti: ^0.7.0` - For the celebration animation.
 
 ---
 

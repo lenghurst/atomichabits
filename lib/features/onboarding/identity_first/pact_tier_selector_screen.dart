@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:confetti/confetti.dart';
 import '../../../data/app_state.dart';
 
 /// Pact Tier Selector Screen
@@ -22,6 +23,21 @@ class PactTierSelectorScreen extends StatefulWidget {
 class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   String _selectedTier = 'builder'; // Default to most popular
   bool _isProcessing = false;
+  
+  // Phase 30 (Zhuo Z4): Confetti celebration
+  late ConfettiController _confettiController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  }
+  
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSelectTier(String tierId) async {
     if (_isProcessing) return;
@@ -47,13 +63,21 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         // TODO: Send to analytics: payment_intent_captured, tier: tierId
         debugPrint('[Telemetry] payment_intent_captured: tier=$tierId');
         
+        // Phase 30 (Zhuo Z4): Celebrate first pact creation!
+        _confettiController.play();
+        await _showCelebrationDialog();
+        
         await appState.completeOnboarding();
-        context.go('/dashboard');
+        if (mounted) context.go('/dashboard');
       } else {
         setState(() => _isProcessing = false);
       }
     } else {
       // Free tier - proceed directly
+      // Phase 30 (Zhuo Z4): Celebrate first pact creation!
+      _confettiController.play();
+      await _showCelebrationDialog();
+      
       await appState.completeOnboarding();
       
       if (mounted) {
@@ -175,6 +199,118 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
       ),
     ) ?? false;
   }
+  
+  /// Phase 30 (Zhuo Z4): Show celebration dialog on first pact creation
+  Future<void> _showCelebrationDialog() async {
+    final appState = context.read<AppState>();
+    final identity = appState.userProfile?.identity.isNotEmpty == true
+        ? appState.userProfile!.identity
+        : 'A Better Version of Yourself';
+    
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        icon: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: const Icon(
+            Icons.celebration,
+            size: 32,
+            color: Colors.white,
+          ),
+        ),
+        title: const Text(
+          'Your Pact is Sealed!',
+          style: TextStyle(
+            color: Color(0xFFF8FAFC),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'You\'ve taken the first step towards becoming ',
+                  ),
+                  TextSpan(
+                    text: identity,
+                    style: const TextStyle(
+                      color: Color(0xFF22C55E),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: '. This is where it begins.',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withOpacity(0.3),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.lightbulb,
+                    color: Color(0xFFF59E0B),
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tip: Check in daily to build momentum.',
+                      style: TextStyle(
+                        color: Color(0xFFF59E0B),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF22C55E),
+            ),
+            child: const Text('Let\'s Go!'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +323,24 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
       backgroundColor: const Color(0xFF0F172A), // slate-900
       body: Stack(
         children: [
+          // Phase 30 (Zhuo Z4): Confetti widget
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              colors: const [
+                Color(0xFF22C55E),
+                Color(0xFF3B82F6),
+                Color(0xFFF59E0B),
+                Color(0xFFEC4899),
+                Color(0xFF8B5CF6),
+              ],
+              numberOfParticles: 30,
+              gravity: 0.1,
+            ),
+          ),
           // Background gradient accents
           Positioned(
             top: 0,
@@ -336,6 +490,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
+                      // Phase 30 (Hormozi H2): AI Coach Audio Sample
+                      // Show the value of premium BEFORE asking for payment
+                      _buildAICoachSample(),
+                      const SizedBox(height: 24),
                       _TierCard(
                         tier: _Tier(
                           id: 'free',
@@ -356,46 +514,28 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                         onSelect: () => _handleSelectTier('free'),
                       ),
                       const SizedBox(height: 16),
+                      // Phase 30 (Kahneman K4): Simplified to Binary Choice
+                      // Reduced cognitive load by removing the "Ally" tier
+                      // Users now choose between Free and Premium (Builder)
                       _TierCard(
                         tier: _Tier(
                           id: 'builder',
-                          name: 'Builder',
+                          name: 'Premium',
                           price: '\$12',
                           priceSubtext: 'per month',
                           icon: Icons.bolt,
                           features: const [
                             'Unlimited active pacts',
+                            'AI Voice Coach (Gemini)',
                             'Social accountability partners',
-                            'AI Pact Coach guidance',
-                            'Advanced streak analytics',
-                            'Breach recovery tools',
+                            'Advanced analytics & insights',
+                            'Priority support',
                           ],
                           buttonText: 'Start Free Trial',
                           isPopular: true,
                         ),
                         isSelected: _selectedTier == 'builder',
                         onSelect: () => _handleSelectTier('builder'),
-                      ),
-                      const SizedBox(height: 16),
-                      _TierCard(
-                        tier: _Tier(
-                          id: 'ally',
-                          name: 'Ally',
-                          price: '\$24',
-                          priceSubtext: 'per month',
-                          icon: Icons.workspace_premium,
-                          features: const [
-                            'Everything in Builder',
-                            'Priority AI coaching',
-                            'Community accountability groups',
-                            'Custom pact templates',
-                            'Lifetime achievement vault',
-                          ],
-                          buttonText: 'Start Free Trial',
-                          isPopular: false,
-                        ),
-                        isSelected: _selectedTier == 'ally',
-                        onSelect: () => _handleSelectTier('ally'),
                       ),
                       const SizedBox(height: 32),
 
@@ -449,6 +589,143 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                       const SizedBox(height: 24),
                     ],
                   ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Phase 30 (Hormozi H2): AI Coach Audio Sample Widget
+  /// Shows a preview of the AI coach to demonstrate premium value
+  Widget _buildAICoachSample() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1E293B),
+            const Color(0xFF1E293B).withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.mic,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AI Voice Coach',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFF8FAFC),
+                      ),
+                    ),
+                    Text(
+                      'Premium Feature',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Play button
+              GestureDetector(
+                onTap: () {
+                  // TODO: Play audio sample when available
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Audio sample coming soon!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF22C55E),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Sample transcript
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '"Good morning! I noticed you\'ve been consistent with your writing habit for 5 days now. That\'s the kind of momentum that builds real change. Ready to make today count?"',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white.withOpacity(0.8),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.graphic_eq,
+                      size: 16,
+                      color: const Color(0xFF22C55E).withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '15 sec sample',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

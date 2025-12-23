@@ -531,6 +531,12 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           ],
                         ),
                       ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Phase 30 (Ogilvy O4): Testimonials
+                      // Social proof to increase conversion
+                      _buildTestimonial(),
                     ],
                   ),
 
@@ -788,6 +794,87 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Phase 30 (Ogilvy O4): Testimonial Widget
+  /// Social proof to increase conversion
+  Widget _buildTestimonial() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF334155),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Center(
+              child: Text(
+                'JM',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Quote
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '"The Pact helped me finally stick to my writing habit. 90 days and counting!"',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white.withOpacity(0.8),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      'James M.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.verified,
+                      size: 14,
+                      color: const Color(0xFF22C55E).withOpacity(0.8),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

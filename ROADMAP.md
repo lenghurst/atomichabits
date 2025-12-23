@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 29.1)  
-> **Last Verified:** Phase 29.1 Complete (Tier 1 Implementation)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 30)  
+> **Last Verified:** Phase 30 Complete (Delight & Monetise)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Awaiting Final Build & Test
 
@@ -24,9 +24,9 @@
 
 ---
 
-## 🚀 Next Sprint: Phase 30 "Delight & Monetise"
+## 🚀 Next Sprint: Phase 31 "Final Polish"
 
-**Goal:** Implement high-value Tier 2 recommendations to increase delight and begin monetisation experiments.
+**Goal:** Implement remaining Tier 3 recommendations for a polished, world-class user experience.
 
 **Status:** 🟡 PENDING - Awaiting implementation.
 
@@ -36,11 +36,11 @@
 
 | ID | Recommendation | Advisor | Status |
 |----|----------------|---------|--------|
-| H2 | Show AI coach sample before tier selection | Hormozi | [ ] |
-| B3 | Add privacy controls for witnesses | Brown | [ ] |
-| Z4 | Celebrate first pact creation (confetti) | Zhuo | [ ] |
-| O4 | Add testimonials to identity screen | Ogilvy | [ ] |
-| K4 | Simplify tier selection to binary | Kahneman | [ ] |
+| H2 | Show AI coach sample before tier selection | Hormozi | ✅ |
+| B3 | Add privacy controls for witnesses | Brown | ✅ |
+| Z4 | Celebrate first pact creation (confetti) | Zhuo | ✅ |
+| O4 | Add testimonials to identity screen | Ogilvy | ✅ |
+| K4 | Simplify tier selection to binary | Kahneman | ✅ |
 
 ---
 
@@ -52,11 +52,11 @@
 
 | ID | Recommendation | Advisor | Status |
 |----|----------------|---------|--------|
-| H2 | Show AI coach sample before tier selection | Hormozi | [ ] |
-| B3 | Add privacy controls for witnesses | Brown | [ ] |
-| Z4 | Celebrate first pact creation (confetti) | Zhuo | [ ] |
-| O4 | Add testimonials to identity screen | Ogilvy | [ ] |
-| K4 | Simplify tier selection to binary | Kahneman | [ ] |
+| H2 | Show AI coach sample before tier selection | Hormozi | ✅ |
+| B3 | Add privacy controls for witnesses | Brown | ✅ |
+| Z4 | Celebrate first pact creation (confetti) | Zhuo | ✅ |
+| O4 | Add testimonials to identity screen | Ogilvy | ✅ |
+| K4 | Simplify tier selection to binary | Kahneman | ✅ |
 
 ### Phase 31: "Final Polish"
 
@@ -74,6 +74,14 @@
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 30) - "Delight & Monetise" Sprint
+
+- [x] **AI Coach Sample:** Added a one-tap audio sample of the AI Voice Coach to the tier selection screen.
+- [x] **Privacy Controls:** Implemented a "Share only milestones" toggle on the witness screen.
+- [x] **Confetti Celebration:** Added a confetti explosion and celebratory dialog on first pact creation.
+- [x] **Testimonials:** Added a social proof testimonial widget to the identity screen.
+- [x] **Binary Tier Choice:** Simplified the tier selection to a binary choice (Free vs. Premium).
 
 ### Completed (Phase 29.1) - "Value & Safety" Sprint
 

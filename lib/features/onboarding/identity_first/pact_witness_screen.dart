@@ -27,6 +27,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
   bool _showWitnessInput = false;
   bool _showManualEntry = false; // Phase 28.4: Fallback for privacy-conscious users
   String? _selectedContactName; // Phase 28.4: Store selected contact name
+  bool _hideProgressFromWitness = false; // Phase 30 (Brown B3): Privacy controls
 
   @override
   void dispose() {
@@ -825,6 +826,12 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
 
                       const SizedBox(height: 16),
 
+                      // Phase 30 (Brown B3): Privacy Controls
+                      // Gives users control over what witnesses can see
+                      _buildPrivacyControls(),
+
+                      const SizedBox(height: 16),
+
                       const Text(
                         'Having a witness increases accountability by 65%. You can always add one later.',
                         textAlign: TextAlign.center,
@@ -838,6 +845,113 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Phase 30 (Brown B3): Privacy Controls Widget
+  /// Gives users control over what their witness can see
+  Widget _buildPrivacyControls() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF334155),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.shield_outlined,
+                size: 18,
+                color: Colors.white.withOpacity(0.7),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Privacy Controls',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFF8FAFC),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Toggle for hiding daily progress
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Share only milestones',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Your witness will only see weekly summaries, not daily check-ins.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Switch(
+                value: _hideProgressFromWitness,
+                onChanged: (value) {
+                  setState(() => _hideProgressFromWitness = value);
+                },
+                activeColor: const Color(0xFF22C55E),
+                activeTrackColor: const Color(0xFF22C55E).withOpacity(0.3),
+                inactiveThumbColor: const Color(0xFF64748B),
+                inactiveTrackColor: const Color(0xFF334155),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Reassurance message
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: const Color(0xFF3B82F6).withOpacity(0.8),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'You can change these settings anytime. Your journey, your rules.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.6),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
