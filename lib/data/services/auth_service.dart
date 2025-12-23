@@ -236,26 +236,44 @@ class AuthService extends ChangeNotifier {
       _authState = AuthState.loading;
       notifyListeners();
       
-      // Get Google credentials
-      // CRITICAL: Must pass Web Client ID for Supabase OAuth flow
-      // Without this, the native Android side won't request an OIDC ID Token
-      // which Supabase needs to verify the user
-      final googleSignIn = GoogleSignIn(
-        clientId: SupabaseConfig.webClientId.isNotEmpty 
-            ? SupabaseConfig.webClientId 
-            : null,
-        serverClientId: SupabaseConfig.webClientId.isNotEmpty 
-            ? SupabaseConfig.webClientId 
-            : null,
-        scopes: ['email', 'profile'],
-      );
+      // CRITICAL: Verify Web Client ID is configured before attempting sign-in
+      // Without serverClientId, Android performs "Basic Profile" sign-in instead of OIDC
+      // which means idToken will be null and Supabase auth will fail
+      final webClientId = SupabaseConfig.webClientId;
+      
+      if (webClientId.isEmpty) {
+        if (kDebugMode) {
+          debugPrint('╔══════════════════════════════════════════════════════════');
+          debugPrint('║ GOOGLE SIGN-IN ERROR: Web Client ID not configured!');
+          debugPrint('║');
+          debugPrint('║ To fix:');
+          debugPrint('║ 1. Get your WEB Client ID from Google Cloud Console');
+          debugPrint('║    (APIs & Services > Credentials > OAuth 2.0 > Web application)');
+          debugPrint('║ 2. Add to secrets.json: "GOOGLE_WEB_CLIENT_ID": "your-id.apps.googleusercontent.com"');
+          debugPrint('║ 3. Rebuild with: flutter run --dart-define-from-file=secrets.json');
+          debugPrint('╚══════════════════════════════════════════════════════════');
+        }
+        _authState = AuthState.error;
+        _errorMessage = 'Google Sign-In not configured. Please add GOOGLE_WEB_CLIENT_ID to secrets.json';
+        notifyListeners();
+        return AuthResult.failure('Google Sign-In not configured. Missing Web Client ID.');
+      }
       
       // Log configuration for debugging
       if (kDebugMode) {
         debugPrint('GoogleSignIn Config:');
-        debugPrint('  - webClientId configured: ${SupabaseConfig.webClientId.isNotEmpty}');
+        debugPrint('  - webClientId: ${webClientId.substring(0, 20)}...apps.googleusercontent.com');
+        debugPrint('  - serverClientId: same as webClientId (required for OIDC)');
         debugPrint('  - androidPackageName: ${SupabaseConfig.androidPackageName}');
       }
+      
+      // Get Google credentials
+      // CRITICAL: serverClientId MUST be the WEB Client ID (not Android Client ID)
+      // This tells Google Play Services to perform OIDC sign-in and return an idToken
+      final googleSignIn = GoogleSignIn(
+        serverClientId: webClientId,  // REQUIRED for idToken
+        scopes: ['email', 'profile'],
+      );
       
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
@@ -269,10 +287,26 @@ class AuthService extends ChangeNotifier {
       final idToken = googleAuth.idToken;
       
       if (accessToken == null || idToken == null) {
+        if (kDebugMode) {
+          debugPrint('╔══════════════════════════════════════════════════════════');
+          debugPrint('║ GOOGLE AUTH ERROR: Token retrieval failed!');
+          debugPrint('║');
+          debugPrint('║ User signed in: ${googleUser.email}');
+          debugPrint('║ accessToken: ${accessToken != null ? "present" : "NULL"}');
+          debugPrint('║ idToken: ${idToken != null ? "present" : "NULL"}');
+          debugPrint('║');
+          debugPrint('║ If idToken is NULL, check:');
+          debugPrint('║ 1. Is GOOGLE_WEB_CLIENT_ID a WEB client (not Android)?');
+          debugPrint('║ 2. Is your email in OAuth consent screen Test Users?');
+          debugPrint('║ 3. Is the Web Client ID in Supabase Auth > Google?');
+          debugPrint('║');
+          debugPrint('║ Current webClientId: ${webClientId.substring(0, 20)}...');
+          debugPrint('╚══════════════════════════════════════════════════════════');
+        }
         _authState = AuthState.error;
-        _errorMessage = 'Failed to get Google credentials';
+        _errorMessage = 'Failed to get Google credentials. idToken=${idToken != null}, accessToken=${accessToken != null}';
         notifyListeners();
-        return AuthResult.failure('Failed to get Google credentials');
+        return AuthResult.failure('Failed to get Google credentials. Check that GOOGLE_WEB_CLIENT_ID is a Web Client ID (not Android).');
       }
       
       // If anonymous, link Google to existing account
