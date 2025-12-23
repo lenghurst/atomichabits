@@ -19,6 +19,9 @@ import 'core/error_boundary.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/onboarding/voice_onboarding_screen.dart';
+import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
+import 'features/onboarding/identity_first/pact_witness_screen.dart';
+import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -271,6 +274,21 @@ class _MyAppState extends State<MyApp> {
               GoRoute(
                 path: '/onboarding/manual',
                 builder: (context, state) => const OnboardingScreen(),
+              ),
+              
+              // ========== Identity First Onboarding (Phase 27.17) ==========
+              // New onboarding flow based on Figma designs
+              GoRoute(
+                path: '/onboarding/identity',
+                builder: (context, state) => const IdentityAccessGateScreen(),
+              ),
+              GoRoute(
+                path: '/onboarding/witness',
+                builder: (context, state) => const PactWitnessScreen(),
+              ),
+              GoRoute(
+                path: '/onboarding/tier',
+                builder: (context, state) => const PactTierSelectorScreen(),
               ),
               
               // ========== Phase 19: Side Door Landing Pages ==========
