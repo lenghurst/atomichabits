@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.15)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.1)  
 > **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
@@ -57,7 +57,7 @@ When stale branches accumulate (> 10 unmerged):
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **AI (Tier 1)** | DeepSeek-V3 | Text Chat |
-| **AI (Tier 2)** | Gemini 2.0 Flash | Voice + Text |
+| **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
 
@@ -171,7 +171,7 @@ atomichabits/
 | **Dev Mode Voice Bypass** | ✅ Live | Direct API key usage (no auth required in debug) |
 | **Deep Linking** | ✅ Live | `PlayInstallReferrer` + `InviteRedirector.tsx` (Web) |
 | **Viral Loop** | ✅ Live | Share Sheet → Web Anchor → Store → App → Auto-Accept |
-| **AI Brain** | ✅ Live | **DeepSeek-V3** (Tier 1) + **Gemini 2.0 Flash** (Tier 2) |
+| **AI Brain** | ✅ Live | **DeepSeek-V3** (Tier 1) + **Gemini 3 Flash (2.5 Live)** (Tier 2) |
 | **Rebrand** | ✅ Live | App ID: `co.thepact.app`, Name: "The Pact" |
 | **Social** | ✅ Live | Wax Seal UI, Haptic Contracts, Witness Feeds |
 | **Testing** | ✅ Live | Unit tests for AI services with HTTP mocks |
@@ -367,6 +367,12 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ## Known Issues & Technical Debt
 
+### Phase 28: Gemini 3 Compliance (✅ COMPLETE)
+- **Root Cause:** The previous integration was based on Gemini 2.0 protocols. Gemini 3 introduced breaking changes.
+- **Fix #1 (Thought Signatures):** Implemented handling for `thoughtSignature` in `GeminiLiveService` to maintain conversational context.
+- **Fix #2 (Thinking Level):** Added `thinking_config: { thinking_level: "MINIMAL" }` to the WebSocket setup to reduce voice latency.
+- **Fix #3 (Temperature):** Removed all `temperature` settings for Gemini 3 models to prevent documented looping behaviour.
+
 ### High Priority (BLOCKING NYE LAUNCH)
 
 1. **WebSocket Connection Fixed** (Phase 27.15 - ✅ COMPLETE)
@@ -427,6 +433,7 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 | 17-20 | AI Optimization | ✅ Complete | DeepSeek prompts, intelligent nudges, feedback |
 | 21-24 | Viral Growth | ✅ Complete | Deep linking, web anchor, install referrer |
 | 25 | Gemini Pivot | ⏸️ Paused | Gemini 3 integration (superseded by Phase 27) |
+| **28** | **Gemini 3 Compliance** | ✅ **Complete** | **Thought Signatures, Thinking Level, Temperature Fix** |
 | 26 | The Lab | ⏸️ Paused | A/B testing framework (deferred) |
 | **27.1-27.4** | **Bug Fixes** | ✅ Complete | Ghost habits, DeepSeek routing, branding |
 | **27.5** | **Voice First Pivot** | ✅ Complete | Voice interface, routing logic, new icon |
@@ -500,5 +507,5 @@ Testing: Build debug APK and voice interface should work without auth
 
 ---
 
-**Last Session:** Phase 27.7 - Voice First Pivot Complete  
-**Next Session:** Phase 27.8 - Audio Recording Implementation
+**Last Session:** Phase 28.1 - Gemini 3 Compliance Fixes  
+**Next Session:** Phase 28.2 - Audio Recording Implementation

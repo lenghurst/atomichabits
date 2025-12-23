@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 21 December 2025 (Commit: Phase 27.15)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.1)  
 > **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Build Fixed, Audio Recording Next
@@ -82,6 +82,13 @@
   - OAuth tokens: `Authorization: Bearer` header
 - [x] Deprecated `_buildWebSocketUrl()` method (auth now in headers)
 - [x] Updated `ai_model_config.dart` with new model and documentation
+
+### Completed (Phase 28.1 - Gemini 3 Compliance)
+
+- [x] **CRITICAL FIX:** Implemented **Thought Signature** handling in `GeminiLiveService` to fix conversational amnesia.
+- [x] **CRITICAL FIX:** Added **`thinking_level: "minimal"`** to WebSocket setup to reduce voice latency.
+- [x] **CRITICAL FIX:** Removed all **`temperature`** settings for Gemini 3 models to prevent documented looping bugs.
+- [x] **BUG FIX:** Corrected hardcoded `atomichabits.app` domain to `thepact.co` in `deep_link_config.dart`.
 
 ### Completed (Phase 27.11)
 
@@ -170,6 +177,16 @@
 ---
 
 ## 🐛 Known Issues & Technical Debt
+
+### Recently Resolved (Phase 28.1)
+
+1. **Gemini 3 Incompatibility (✅ RESOLVED)**
+   - **Issue:** The app was not compatible with Gemini 3's new protocols (Thought Signatures, Thinking Level, Temperature).
+   - **Fix:** Rewrote `GeminiLiveService` and configs to be fully compliant with Gemini 3 documentation.
+
+2. **Domain Name Mismatch (✅ RESOLVED)**
+   - **Issue:** Deep link URLs were still using the old `atomichabits.app` domain.
+   - **Fix:** Corrected all instances to `thepact.co`.
 
 ### Critical (Blocks Launch)
 

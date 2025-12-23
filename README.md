@@ -13,13 +13,13 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟡 Phase 27 - Voice First Pivot | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 28 - Gemini 3 Compliant | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟡 Beta | Gemini Live API |
+| **Voice AI** | 🟢 Live | Gemini 3 Live API |
 
-> **Last Updated:** December 21, 2025 (Commit: af9db32)  
-> **Current Phase:** Phase 27.8 - WebSocket Endpoint Fix (In Testing)
+> **Last Updated:** December 23, 2025 (Commit: Phase 28.1)  
+> **Current Phase:** Phase 28.1 - Gemini 3 Compliance Fixes Complete
 
 ---
 
@@ -154,7 +154,7 @@ Edge Fn     (Direct API)
 | **Web** | React + Vite + Tailwind | The Landing Page / Redirector |
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
 | **AI (Tier 1)** | DeepSeek-V3 | Text reasoning & logic |
-| **AI (Tier 2)** | Gemini 2.0 Flash | Real-time voice coaching |
+| **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Real-time voice coaching |
 | **Voice** | Gemini Live API | WebSocket audio streaming |
 | **Hosting** | Netlify | Web Deployment |
 

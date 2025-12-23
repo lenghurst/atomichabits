@@ -2,6 +2,7 @@
 /// 
 /// Phase 25.3: "The Reality Alignment" - Verified December 2025 Endpoints
 /// Phase 25.9: "The Kill Switch" - Model Agnostic Failover (Peter Thiel)
+/// Phase 28: "Gemini 3 Compliance" - Thought Signatures & Thinking Level
 /// 
 /// SME Recommendation (Peter Thiel - Zero to One):
 /// "You are building a single point of failure on Google's API. If Gemini's
@@ -19,8 +20,13 @@
 /// 
 /// IMPORTANT: Marketing vs Technical Reality
 /// - Marketing: "Gemini 3 Flash" / "Gemini 3 Pro" (December 2025 branding)
-/// - Technical: "gemini-2.5-flash-native-audio-preview-12-2025" / "gemini-2.5-pro"
+/// - Technical: "gemini-live-2.5-flash-native-audio" / "gemini-2.5-pro"
 /// - The "3.0" endpoints do NOT exist. Always use the 2.5 series for API calls.
+/// 
+/// GEMINI 3 COMPLIANCE (Phase 28):
+/// - DO NOT set temperature for Gemini 3 models. Values < 1.0 cause looping.
+/// - MUST use thinking_level: "MINIMAL" for voice to reduce latency.
+/// - MUST capture and echo back thoughtSignature for context retention.
 /// 
 /// API keys are injected via environment variables at build time:
 /// ```bash
@@ -57,6 +63,7 @@ class AIModelConfig {
   /// - Text Input / Text Output
   /// - Cost: ~$0.14/1M tokens (Extremely Cheap)
   /// - Role: Basic logging, text chat, fallback
+  /// - Temperature: 1.0 (DeepSeek recommends higher temp for reasoning)
   static const String tier1Model = 'deepseek-chat'; 
   static const double tier1Temperature = 1.0;
   
@@ -70,7 +77,17 @@ class AIModelConfig {
   /// - CRITICAL: Gemini 2.0 Live endpoints were SHUT DOWN on Dec 9, 2025!
   /// - NOTE: This is the stable GA Live endpoint, available globally (UK included)
   /// - CRITICAL: Must match backend LIVE_API_MODEL in get-gemini-ephemeral-token/index.ts
+  /// 
+  /// GEMINI 3 COMPLIANCE (Phase 28):
+  /// - DO NOT use tier2Temperature for Gemini 3 Live API calls.
+  /// - Temperature values < 1.0 cause "unexpected behavior, such as looping".
+  /// - Use thinking_level: "MINIMAL" in the setup message instead.
   static const String tier2Model = 'gemini-live-2.5-flash-native-audio'; // Live API GA (Global)
+  
+  /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
+  /// Gemini 3 documentation warns: "setting temperature < 1.0 causes unexpected
+  /// behavior, such as looping". Use thinking_level instead.
+  @Deprecated('Do not use for Gemini 3 Live API. Causes looping behaviour.')
   static const double tier2Temperature = 0.7;
   
   /// Tier 2 Text-Only Fallback (for non-voice interactions)
@@ -83,7 +100,14 @@ class AIModelConfig {
   /// - Technical Endpoint: gemini-2.5-pro
   /// - Deep Reasoning + Agentic Planning
   /// - Role: Complex schedule restructuring, long-term pattern analysis
+  /// 
+  /// GEMINI 3 COMPLIANCE (Phase 28):
+  /// - DO NOT use tier3Temperature for Gemini 3 API calls.
+  /// - Temperature values < 1.0 cause "unexpected behavior, such as looping".
   static const String tier3Model = 'gemini-2.5-pro';
+  
+  /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
+  @Deprecated('Do not use for Gemini 3 API. Causes looping behaviour.')
   static const double tier3Temperature = 0.9;
   
   // === LIVE API CONFIGURATION ===

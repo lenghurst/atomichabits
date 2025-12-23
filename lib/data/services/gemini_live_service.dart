@@ -7,13 +7,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
 
-/// Gemini Live API Service - DEBUG EDITION (Phase 27.12)
+/// Gemini Live API Service - Phase 28: Gemini 3 Compliance
 /// 
 /// Features:
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
 /// - Detailed Error Reporting (Pastes codes/reasons into error message)
 /// - Universal Auth (URL Parameters: ?key= or ?access_token=)
-/// - Global Model Support (gemini-2.0-flash-exp via v1alpha)
+/// - Global Model Support (gemini-live-2.5-flash-native-audio via v1alpha)
+/// - **Gemini 3 Compliance:**
+///   - Thought Signature handling (maintains conversational context)
+///   - thinking_level: "minimal" (reduces latency for voice interactions)
+///   - No temperature setting (prevents looping behaviour)
 /// 
 /// When connection fails, the error message will include:
 /// - [PHASE] Where exactly it failed
@@ -35,6 +39,12 @@ class GeminiLiveService {
   DateTime? _tokenExpiry;
   Completer<void>? _setupCompleter;
   bool _isUsingApiKey = false;
+  
+  // === GEMINI 3: THOUGHT SIGNATURE STATE ===
+  /// Stores the encrypted reasoning context from the model.
+  /// CRITICAL: Must be echoed back in subsequent messages to maintain context.
+  /// Without this, the AI experiences "amnesia" after every turn.
+  String? _currentThoughtSignature;
   
   // === DEBUG STATE (The Black Box) ===
   String _connectionPhase = "IDLE"; // Tracks exactly what we were doing
@@ -68,6 +78,9 @@ class GeminiLiveService {
   bool get isListening => _isListening;
   String get connectionPhase => _connectionPhase;
   String get lastErrorDetail => _lastErrorDetail;
+  
+  /// Exposes the current thought signature for debugging purposes.
+  String? get currentThoughtSignature => _currentThoughtSignature;
 
   Future<bool> connect({
     String? systemInstruction,
@@ -76,6 +89,9 @@ class GeminiLiveService {
     if (_isConnected) return true;
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
+    
+    // Reset thought signature on new connection
+    _currentThoughtSignature = null;
     
     try {
       // PHASE 1: TOKEN
@@ -103,6 +119,7 @@ class GeminiLiveService {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
         debugPrint('GeminiLiveService: Endpoint: v1alpha');
+        debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=minimal, thoughtSignature=enabled');
       }
       
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
@@ -182,7 +199,8 @@ $title
 $details
 Model: ${AIModelConfig.tier2Model}
 Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}
-Endpoint: v1alpha''';
+Endpoint: v1alpha
+ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     
     _lastErrorDetail = fullError;
     onError?.call(fullError);
@@ -209,6 +227,11 @@ Endpoint: v1alpha''';
     }
   }
 
+  /// Sends the initial setup message to the Gemini Live API.
+  /// 
+  /// Phase 28: Gemini 3 Compliance
+  /// - Added `thinkingConfig` with `thinkingLevel: "MINIMAL"` to reduce latency.
+  /// - Removed `temperature` setting to prevent looping behaviour.
   Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
     final setupConfig = {
       'setup': {
@@ -221,7 +244,14 @@ Endpoint: v1alpha''';
                 'voiceName': 'Kore',
               }
             }
-          }
+          },
+          // GEMINI 3 COMPLIANCE: Do NOT set temperature. 
+          // Values < 1.0 cause "unexpected behavior, such as looping".
+        },
+        // GEMINI 3 COMPLIANCE: Set thinking level to minimal for voice.
+        // This reduces server-side processing time and minimises "dead air".
+        'thinkingConfig': {
+          'thinkingLevel': 'MINIMAL',
         },
         if (instruction != null) 
           'systemInstruction': {
@@ -249,6 +279,16 @@ Endpoint: v1alpha''';
       }
       
       final data = jsonDecode(message as String) as Map<String, dynamic>;
+
+      // GEMINI 3 COMPLIANCE: Capture Thought Signature
+      // The thought signature is an encrypted string that stores the model's
+      // reasoning state. It MUST be echoed back in subsequent messages.
+      if (data.containsKey('thoughtSignature')) {
+        _currentThoughtSignature = data['thoughtSignature'] as String?;
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: 🧠 Thought Signature captured (${_currentThoughtSignature?.length ?? 0} chars)');
+        }
+      }
 
       // HANDSHAKE SUCCESS
       if (data.containsKey('setupComplete')) {
@@ -426,6 +466,7 @@ Endpoint: v1alpha''';
     _isConnected = false;
     _isListening = false;
     _setupComplete = false;
+    _currentThoughtSignature = null; // Clear thought signature on disconnect
     await _subscription?.cancel();
     _subscription = null;
     await _channel?.sink.close();
@@ -438,6 +479,7 @@ Endpoint: v1alpha''';
     _isConnected = false;
     _isListening = false;
     _setupComplete = false;
+    // Note: We do NOT clear _currentThoughtSignature here to allow for reconnection
     _subscription?.cancel();
     _subscription = null;
     _channel = null;
@@ -448,11 +490,15 @@ Endpoint: v1alpha''';
     onConnectionStateChanged?.call(state);
   }
   
+  /// Sends audio data to the Gemini Live API.
+  /// 
+  /// Phase 28: Gemini 3 Compliance
+  /// - Includes `thoughtSignature` if available to maintain context.
   void sendAudio(Uint8List audioData) {
     if (!_isConnected || _channel == null) return;
     
     final base64Audio = base64Encode(audioData);
-    final message = jsonEncode({
+    final Map<String, dynamic> message = {
       'realtimeInput': {
         'mediaChunks': [
           {
@@ -461,19 +507,28 @@ Endpoint: v1alpha''';
           }
         ]
       }
-    });
+    };
+    
+    // GEMINI 3 COMPLIANCE: Echo back the thought signature
+    if (_currentThoughtSignature != null) {
+      message['thoughtSignature'] = _currentThoughtSignature;
+    }
     
     try {
-      _channel!.sink.add(message);
+      _channel!.sink.add(jsonEncode(message));
     } catch (e) {
       debugPrint('GeminiLiveService: Failed to send audio: $e');
     }
   }
   
+  /// Sends text input to the Gemini Live API.
+  /// 
+  /// Phase 28: Gemini 3 Compliance
+  /// - Includes `thoughtSignature` if available to maintain context.
   void sendText(String text, {bool turnComplete = true}) {
     if (!_isConnected || _channel == null) return;
     
-    final message = jsonEncode({
+    final Map<String, dynamic> message = {
       'clientContent': {
         'turns': [
           {
@@ -483,10 +538,15 @@ Endpoint: v1alpha''';
         ],
         'turnComplete': turnComplete,
       }
-    });
+    };
+    
+    // GEMINI 3 COMPLIANCE: Echo back the thought signature
+    if (_currentThoughtSignature != null) {
+      message['thoughtSignature'] = _currentThoughtSignature;
+    }
     
     try {
-      _channel!.sink.add(message);
+      _channel!.sink.add(jsonEncode(message));
     } catch (e) {
       debugPrint('GeminiLiveService: Failed to send text: $e');
     }

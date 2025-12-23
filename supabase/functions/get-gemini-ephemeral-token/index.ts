@@ -1,5 +1,6 @@
 // Supabase Edge Function: get-gemini-ephemeral-token
 // Phase 25.3: Secure ephemeral token generation for Gemini Live API
+// Phase 28: Gemini 3 Compliance - Removed temperature, added thinkingConfig
 //
 // This function:
 // 1. Authenticates the user via Supabase Auth JWT
@@ -8,6 +9,10 @@
 //
 // The ephemeral token is valid for ~30 minutes and can only start 1 session.
 // This prevents API key exposure in client-side applications.
+//
+// GEMINI 3 COMPLIANCE:
+// - DO NOT set temperature. Values < 1.0 cause "unexpected behavior, such as looping".
+// - Use thinkingConfig with thinkingLevel: "MINIMAL" for voice interactions.
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -25,8 +30,7 @@ const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com'
 
 // Model configuration (December 2025 verified endpoints)
 // Phase 27.15: CRITICAL - Must match Flutter app's AIModelConfig.tier2Model
-// OLD (Preview - US-only): 'gemini-2.5-flash-native-audio-preview-12-2025'
-// NEW (GA - Global): 'gemini-live-2.5-flash-native-audio'
+// Phase 28: Using GA Live endpoint (globally available)
 const LIVE_API_MODEL = 'gemini-live-2.5-flash-native-audio'
 
 interface EphemeralTokenRequest {
@@ -109,13 +113,18 @@ serve(async (req) => {
     }
 
     // Optionally lock token to specific configuration (enhanced security)
+    // GEMINI 3 COMPLIANCE: DO NOT set temperature. Use thinkingConfig instead.
     if (lockToConfig) {
       tokenRequestPayload.live_connect_constraints = {
         model: LIVE_API_MODEL,
         config: {
           session_resumption: {},
-          temperature: 0.7,
+          // REMOVED: temperature: 0.7 - Gemini 3 docs warn this causes looping
           response_modalities: ['AUDIO'],
+          // GEMINI 3 COMPLIANCE: Use thinking level to control latency
+          thinking_config: {
+            thinking_level: 'MINIMAL', // Reduces "dead air" in voice conversations
+          },
         }
       }
     }

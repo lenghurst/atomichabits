@@ -71,7 +71,7 @@ class DeepLinkConfig {
   
   /// Generate contract invite URL (Universal Link)
   /// 
-  /// Returns: https://atomichabits.app/c/ABCD1234
+  /// Returns: https://thepact.co/c/ABCD1234
   static String getContractInviteUrl(String inviteCode) {
     return 'https://$productionDomain$invitePathShort/$inviteCode';
   }
@@ -82,28 +82,28 @@ class DeepLinkConfig {
   /// - Mobile: Detects OS and redirects to App Store with referrer
   /// - Desktop: Shows landing page with invite banner + email capture
   /// 
-  /// Returns: https://atomichabits.app/join/ABCD1234
+  /// Returns: https://thepact.co/join/ABCD1234
   static String getWebAnchorUrl(String inviteCode) {
     return 'https://$productionDomain$joinPath/$inviteCode';
   }
   
   /// Generate contract invite URL with query param (fallback)
   /// 
-  /// Returns: https://atomichabits.app/invite?c=ABCD1234
+  /// Returns: https://thepact.co/invite?c=ABCD1234
   static String getContractInviteUrlWithQuery(String inviteCode) {
     return 'https://$productionDomain$invitePathLong?c=$inviteCode';
   }
   
   /// Generate custom scheme URL (fallback for deep linking)
   /// 
-  /// Returns: atomichabits://invite?c=ABCD1234
+  /// Returns: thepact://invite?c=ABCD1234
   static String getCustomSchemeUrl(String inviteCode) {
     return '$customScheme://invite?c=$inviteCode';
   }
   
   /// Generate niche landing page URL
   /// 
-  /// Returns: https://atomichabits.app/devs
+  /// Returns: https://thepact.co/devs
   static String getNicheLandingUrl(String nichePath) {
     if (!nichePath.startsWith('/')) {
       nichePath = '/$nichePath';
