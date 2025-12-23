@@ -80,10 +80,11 @@ class GeminiLiveService {
     try {
       // PHASE 1: TOKEN
       _setPhase("FETCHING_TOKEN");
-      final token = await _getEphemeralToken();
-      if (token == null) {
-        throw 'Token is null (Check API Key in secrets.json)';
+      final tokenResult = await _getEphemeralTokenWithReason();
+      if (tokenResult.token == null) {
+        throw 'Token is null: ${tokenResult.reason}';
       }
+      final token = tokenResult.token;
       
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
@@ -328,17 +329,18 @@ Endpoint: v1alpha''';
     }
   }
 
-  Future<String?> _getEphemeralToken() async {
+  /// Result class for token fetching with detailed reason
+  Future<_TokenResult> _getEphemeralTokenWithReason() async {
     // Check if we have a valid cached token
-    if (_ephemeralToken != null && _tokenExpiry != null && 
+    if (_ephemeralToken != null && _tokenExpiry != null &&
         _tokenExpiry!.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
-      return _ephemeralToken;
+      return _TokenResult(_ephemeralToken, 'Cached token valid');
     }
-    
+
     try {
       final supabase = Supabase.instance.client;
       final session = supabase.auth.currentSession;
-      
+
       // DEV MODE BYPASS: Use API key directly if no session
       if (session == null) {
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
@@ -346,36 +348,55 @@ Endpoint: v1alpha''';
           _ephemeralToken = AIModelConfig.geminiApiKey;
           _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
           _isUsingApiKey = true;
-          return _ephemeralToken;
+          return _TokenResult(_ephemeralToken, 'Dev mode API key');
         }
         debugPrint('GeminiLiveService: No session and no API key available');
-        return null;
+        return _TokenResult(null, 'No Supabase session (not logged in) and no GEMINI_API_KEY in secrets.json for dev fallback');
       }
-      
+
       // Try to get ephemeral token from Supabase Edge Function
       final response = await supabase.functions.invoke(
         _tokenEndpoint,
         body: {'lockToConfig': true},
       );
-      
+
       if (response.status != 200) {
+        final errorMsg = 'Edge function returned status ${response.status}';
+        debugPrint('GeminiLiveService: $errorMsg');
+
         // Fallback to API key in dev mode
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
           debugPrint('GeminiLiveService: DEV MODE FALLBACK - Edge function failed, using API key');
           _ephemeralToken = AIModelConfig.geminiApiKey;
           _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
           _isUsingApiKey = true;
-          return _ephemeralToken;
+          return _TokenResult(_ephemeralToken, 'Dev fallback after edge function error');
         }
-        return null;
+        return _TokenResult(null, '$errorMsg - check Supabase Edge Function logs');
       }
-      
+
       final data = response.data as Map<String, dynamic>;
       _ephemeralToken = data['token'] as String?;
+
+      if (_ephemeralToken == null || _ephemeralToken!.isEmpty) {
+        return _TokenResult(null, 'Edge function returned empty token - check backend GEMINI_API_KEY');
+      }
+
       _tokenExpiry = DateTime.parse(data['expiresAt'] as String);
       _isUsingApiKey = false;
-      return _ephemeralToken;
-      
+
+      // Log the model returned by backend for debugging
+      final backendModel = data['model'] as String?;
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Backend token model: $backendModel');
+        debugPrint('GeminiLiveService: Frontend model: ${AIModelConfig.tier2Model}');
+        if (backendModel != null && backendModel != AIModelConfig.tier2Model) {
+          debugPrint('GeminiLiveService: ⚠️ WARNING - Model mismatch detected!');
+        }
+      }
+
+      return _TokenResult(_ephemeralToken, 'Ephemeral token from backend');
+
     } catch (e) {
       // Fallback to API key in dev mode
       if (kDebugMode && AIModelConfig.hasGeminiKey) {
@@ -383,10 +404,16 @@ Endpoint: v1alpha''';
         _ephemeralToken = AIModelConfig.geminiApiKey;
         _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
         _isUsingApiKey = true;
-        return _ephemeralToken;
+        return _TokenResult(_ephemeralToken, 'Dev fallback after exception');
       }
-      return null;
+      return _TokenResult(null, 'Exception: $e');
     }
+  }
+
+  // Legacy method for backwards compatibility
+  Future<String?> _getEphemeralToken() async {
+    final result = await _getEphemeralTokenWithReason();
+    return result.token;
   }
 
   // === PUBLIC METHODS ===
@@ -521,4 +548,12 @@ extension LiveConnectionStateExtension on LiveConnectionState {
   }
   
   bool get isActive => this == LiveConnectionState.connected;
+}
+
+/// Internal helper class for token fetching results
+class _TokenResult {
+  final String? token;
+  final String reason;
+
+  _TokenResult(this.token, this.reason);
 }
