@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.5)  
-> **Last Verified:** Phase 28.5 Complete (Docs & Journey Map Update)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 29)  
+> **Last Verified:** Phase 29 Complete (Second Council Review)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -60,6 +60,34 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 29: Second Council of Five Review
+
+A deep scrutiny of the User Journey Map was conducted, with element-by-element objectives defined for every screen and component. A new "Second Council of Five" was convened, featuring SMEs from adjacent but distinct domains to bring fresh perspectives.
+
+**The Second Council:**
+
+| Persona | Domain | Philosophy | Focus Area |
+|---------|--------|------------|------------|
+| **Daniel Kahneman** | Behavioural Economics | System 1/System 2 thinking | Decision architecture |
+| **Brené Brown** | Vulnerability Research | Shame resilience, courage | Emotional safety |
+| **Alex Hormozi** | Business Growth | Value equation, offer creation | Monetisation & perceived value |
+| **Julie Zhuo** | Product Design | User empathy, design thinking | UX polish and delight |
+| **David Ogilvy** | Advertising | Headline writing, persuasion | Copy and messaging |
+
+**Key Recommendations (Tier 1 - Critical):**
+
+| ID | Recommendation | Advisor | Rationale |
+|----|----------------|---------|----------|
+| K1 | Add "hook" screen before identity | Kahneman | Show value proposition first to engage System 1 before System 2 is required. |
+| H1 | Lead with dream outcome (social proof stat) | Hormozi | Demonstrate the value *before* asking for effort. |
+| B1 | Add "Graceful Consistency" messaging | Brown | Create emotional safety by explicitly stating "no streaks, no shame." |
+| Z1 | Add progress indicator with celebration | Zhuo | Set user expectations and create moments of delight. |
+| O1 | Rewrite headline to be benefit-driven | Ogilvy | Change "Who are you..." to a more compelling, outcome-focused headline. |
+
+**New Documentation:** `docs/USER_JOURNEY_ANALYSIS_V2.md` (Full analysis with all 17 recommendations)
 
 ---
 

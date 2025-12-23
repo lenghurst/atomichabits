@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.5)  
-> **Last Verified:** Phase 28.5 Complete (Docs & Journey Map Update)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 29)  
+> **Last Verified:** Phase 29 Complete (Second Council Review)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 READY - Onboarding Optimised, Awaiting Final Build & Test
+> **Status:** 🟡 PENDING - Awaiting implementation of Phase 29 recommendations
 
 ---
 
@@ -24,23 +24,64 @@
 
 ---
 
-## 🚀 Next Sprint: Phase 29 "Final Polish & Launch"
+## 🚀 Next Sprint: Phase 29 "Value & Safety"
 
-**Goal:** Complete final features, conduct a full smoke test, and prepare for the NYE 2025 launch.
+**Goal:** Implement the critical Tier 1 recommendations from the Second Council of Five to maximise user value and emotional safety before launch.
 
-**Status:** 🟡 PENDING - Awaiting user to build APK and perform smoke test.
+**Status:** 🟡 PENDING - Awaiting implementation.
 
 **Target:** NYE 2025 Launch
 
-### High-Priority Tasks
+### Tier 1 Recommendations (Critical)
 
-- [ ] **Build & Smoke Test:** User to build APK and test the complete onboarding and voice flows.
-- [ ] **British Coach Persona:** Implement the "Witty, Dry, British" persona for the AI Voice Coach.
-- [ ] **Payment Flow:** Integrate Stripe for premium tier subscriptions.
+| ID | Recommendation | Advisor | Status |
+|----|----------------|---------|--------|
+| K1 | Add "hook" screen before identity | Kahneman | [ ] |
+| H1 | Lead with dream outcome (social proof stat) | Hormozi | [ ] |
+| B1 | Add "Graceful Consistency" messaging | Brown | [ ] |
+| Z1 | Add progress indicator with celebration | Zhuo | [ ] |
+| O1 | Rewrite headline to be benefit-driven | Ogilvy | [ ] |
+
+---
+
+## 📋 Backlog (Prioritised)
+
+### Phase 30: "Delight & Monetise"
+
+**Goal:** Implement high-value Tier 2 recommendations to increase delight and begin monetisation experiments.
+
+| ID | Recommendation | Advisor | Status |
+|----|----------------|---------|--------|
+| H2 | Show AI coach sample before tier selection | Hormozi | [ ] |
+| B3 | Add privacy controls for witnesses | Brown | [ ] |
+| Z4 | Celebrate first pact creation (confetti) | Zhuo | [ ] |
+| O4 | Add testimonials to identity screen | Ogilvy | [ ] |
+| K4 | Simplify tier selection to binary | Kahneman | [ ] |
+
+### Phase 31: "Final Polish"
+
+**Goal:** Implement remaining Tier 3 recommendations for a polished, world-class user experience.
+
+| ID | Recommendation | Advisor | Status |
+|----|----------------|---------|--------|
+| K2 | Reframe identity as selection | Kahneman | [ ] |
+| B2 | Reframe witness as "supporter" | Brown | [ ] |
+| H3 | Add "quick win" before witness | Hormozi | [ ] |
+| Z3 | Add pact preview before tier | Zhuo | [ ] |
+| O5 | Add tagline to onboarding | Ogilvy | [ ] |
+| ... | *Other Tier 3 items from analysis* | ... | [ ] |
 
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 29) - Second Council Review
+
+- [x] Conducted deep scrutiny of User Journey Map with element-by-element objectives.
+- [x] Convened a new "Council of Five" with diverse SME personas (Kahneman, Brown, Hormozi, Zhuo, Ogilvy).
+- [x] Generated and documented 17 new metric-driven recommendations.
+- [x] Created a new 3-sprint plan (Phase 29, 30, 31) to implement the recommendations.
+- [x] Updated `ROADMAP.md` and `docs/USER_JOURNEY_MAP.md`.
 
 ### Completed (Phase 28.5) - Documentation Update
 
