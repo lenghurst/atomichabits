@@ -59,11 +59,25 @@ void main() {
     errorMsg: 'Gemini key seems too short',
   );
 
+  // Google OAuth Configuration (CRITICAL for Google Sign-In)
+  print('');
+  print('─── GOOGLE OAUTH CONFIGURATION ───');
+  print('⚠️  IMPORTANT: This must be the WEB Client ID, NOT Android Client ID!');
+  print('   Go to: Google Cloud Console > APIs & Services > Credentials');
+  print('   Look for: OAuth 2.0 Client IDs > "Web application" type');
+  print('');
+  secrets['GOOGLE_WEB_CLIENT_ID'] = _prompt(
+    '5. Enter GOOGLE_WEB_CLIENT_ID (Web application type)',
+    hint: 'xxxxx.apps.googleusercontent.com',
+    validator: (v) => v.endsWith('.apps.googleusercontent.com'),
+    errorMsg: 'Web Client ID must end with ".apps.googleusercontent.com"',
+  );
+
   // Optional: OpenAI for TTS fallback
   print('');
   print('─── OPTIONAL CONFIGURATION ───');
   final openAiKey = _promptOptional(
-    '5. Enter OPENAI_API_KEY (optional, for TTS fallback)',
+    '6. Enter OPENAI_API_KEY (optional, for TTS fallback)',
     hint: 'sk-... or press Enter to skip',
   );
   if (openAiKey != null && openAiKey.isNotEmpty) {

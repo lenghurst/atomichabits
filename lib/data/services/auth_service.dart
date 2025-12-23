@@ -228,35 +228,76 @@ class AuthService extends ChangeNotifier {
   /// If anonymous, links Google to existing account
   /// Otherwise, creates new account or signs in
   Future<AuthResult> signInWithGoogle() async {
-    if (!isSupabaseAvailable) {
-      return AuthResult.failure('Supabase not configured');
+    // Phase 27.25: Enhanced Five-Axis Diagnostic Logging
+    if (kDebugMode) {
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════════════════════════════════╗');
+      debugPrint('║           GOOGLE SIGN-IN DIAGNOSTIC - FIVE AXIS CHECK                ║');
+      debugPrint('╠══════════════════════════════════════════════════════════════════════╣');
+      debugPrint('║ AXIS 1: Supabase Configuration');
+      debugPrint('║   - URL: ${SupabaseConfig.url.isNotEmpty ? "${SupabaseConfig.url.substring(0, 30)}..." : "EMPTY ❌"}');
+      debugPrint('║   - Anon Key: ${SupabaseConfig.anonKey.isNotEmpty ? "configured ✅" : "EMPTY ❌"}');
+      debugPrint('║   - isConfigured: ${SupabaseConfig.isConfigured ? "YES ✅" : "NO ❌"}');
+      debugPrint('║');
+      debugPrint('║ AXIS 2: Google Web Client ID');
+      debugPrint('║   - GOOGLE_WEB_CLIENT_ID: ${SupabaseConfig.webClientId.isNotEmpty ? "${SupabaseConfig.webClientId.substring(0, 20)}... ✅" : "EMPTY ❌"}');
+      debugPrint('║   - isGoogleConfigured: ${SupabaseConfig.isGoogleConfigured ? "YES ✅" : "NO ❌"}');
+      debugPrint('║');
+      debugPrint('║ AXIS 3: Package Name Alignment');
+      debugPrint('║   - androidPackageName: ${SupabaseConfig.androidPackageName}');
+      debugPrint('║   - Expected: co.thepact.app');
+      debugPrint('║   - Match: ${SupabaseConfig.androidPackageName == "co.thepact.app" ? "YES ✅" : "NO ❌"}');
+      debugPrint('║');
+      debugPrint('║ AXIS 4: SHA-1 Fingerprint (verify manually)');
+      debugPrint('║   - Run: cd android && ./gradlew signingReport');
+      debugPrint('║   - Expected: C6:B1:B4:D7:93:9B:6B:E8:EC:AD:BC:96:01:99:11:62:84:B6:5E:6A');
+      debugPrint('║');
+      debugPrint('║ AXIS 5: OAuth Consent Screen');
+      debugPrint('║   - Ensure your email is in Test Users list');
+      debugPrint('║   - Or publish app for production');
+      debugPrint('╚══════════════════════════════════════════════════════════════════════╝');
+      debugPrint('');
     }
-    
+
+    if (!isSupabaseAvailable) {
+      if (kDebugMode) {
+        debugPrint('❌ FAIL: Supabase not available (check AXIS 1)');
+      }
+      return AuthResult.failure('Supabase not configured. Check SUPABASE_URL and SUPABASE_ANON_KEY in secrets.json');
+    }
+
     try {
       _authState = AuthState.loading;
       notifyListeners();
-      
+
       // CRITICAL: Verify Web Client ID is configured before attempting sign-in
       // Without serverClientId, Android performs "Basic Profile" sign-in instead of OIDC
       // which means idToken will be null and Supabase auth will fail
       final webClientId = SupabaseConfig.webClientId;
-      
+
       if (webClientId.isEmpty) {
         if (kDebugMode) {
+          debugPrint('');
           debugPrint('╔══════════════════════════════════════════════════════════');
-          debugPrint('║ GOOGLE SIGN-IN ERROR: Web Client ID not configured!');
+          debugPrint('║ ❌ GOOGLE SIGN-IN ERROR: Web Client ID not configured!');
+          debugPrint('║');
+          debugPrint('║ AXIS 2 FAILURE: GOOGLE_WEB_CLIENT_ID is empty');
           debugPrint('║');
           debugPrint('║ To fix:');
-          debugPrint('║ 1. Get your WEB Client ID from Google Cloud Console');
+          debugPrint('║ 1. Run: dart run tool/setup_secrets.dart');
+          debugPrint('║    OR');
+          debugPrint('║ 2. Get your WEB Client ID from Google Cloud Console');
           debugPrint('║    (APIs & Services > Credentials > OAuth 2.0 > Web application)');
-          debugPrint('║ 2. Add to secrets.json: "GOOGLE_WEB_CLIENT_ID": "your-id.apps.googleusercontent.com"');
-          debugPrint('║ 3. Rebuild with: flutter run --dart-define-from-file=secrets.json');
+          debugPrint('║ 3. Add to secrets.json: "GOOGLE_WEB_CLIENT_ID": "your-id.apps.googleusercontent.com"');
+          debugPrint('║ 4. Rebuild with: flutter run --dart-define-from-file=secrets.json');
+          debugPrint('║');
+          debugPrint('║ IMPORTANT: Must be WEB Client ID, NOT Android Client ID!');
           debugPrint('╚══════════════════════════════════════════════════════════');
         }
         _authState = AuthState.error;
-        _errorMessage = 'Google Sign-In not configured. Please add GOOGLE_WEB_CLIENT_ID to secrets.json';
+        _errorMessage = 'Google Sign-In not configured. Run: dart run tool/setup_secrets.dart';
         notifyListeners();
-        return AuthResult.failure('Google Sign-In not configured. Missing Web Client ID.');
+        return AuthResult.failure('Google Sign-In not configured. Missing GOOGLE_WEB_CLIENT_ID in secrets.json');
       }
       
       // Log configuration for debugging

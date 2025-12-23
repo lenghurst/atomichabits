@@ -96,19 +96,62 @@ defaultConfig {
 4. Select your Google account
 5. You should see "Signed in with Google!" toast
 
-## Troubleshooting
+## Troubleshooting - The Five-Axis Problem
+
+When Google Sign-In fails, run the diagnostic tool first:
+```bash
+dart run tool/diagnose_google_signin.dart
+```
+
+### AXIS 1: secrets.json Configuration
+- **Symptom**: "Supabase not configured" or immediate failure
+- **Check**: Does `secrets.json` exist? Run `ls secrets.json`
+- **Fix**: Run `dart run tool/setup_secrets.dart`
+
+### AXIS 2: Web Client ID (Most Common Issue)
+- **Symptom**: "Google Sign-In not configured" or idToken is NULL
+- **Check**: Is `GOOGLE_WEB_CLIENT_ID` in secrets.json a **WEB** Client ID?
+- **CRITICAL**: Must be "Web application" type, NOT "Android" type
+- **Fix**:
+  1. Go to Google Cloud Console > APIs & Services > Credentials
+  2. Find OAuth 2.0 Client ID with type "Web application"
+  3. Copy that Client ID to secrets.json
+
+### AXIS 3: Package Name Mismatch
+- **Symptom**: ApiException: 10 or silent failure
+- **Check**: Package name must be `co.thepact.app` everywhere:
+  - `android/app/build.gradle.kts`: applicationId
+  - `lib/config/supabase_config.dart`: androidPackageName
+  - Google Cloud Console: Android OAuth Client
+
+### AXIS 4: SHA-1 Fingerprint Mismatch
+- **Symptom**: Google account picker doesn't appear
+- **Check**: Your machine's SHA-1 vs Google Cloud Console
+- **Get your SHA-1**: `cd android && ./gradlew signingReport`
+- **Fix**: Add your SHA-1 to Google Cloud Console Android OAuth Client
+
+### AXIS 5: OAuth Consent Screen
+- **Symptom**: "Access blocked" or consent fails
+- **Check**: Is your email in Test Users? (if app is in Testing mode)
+- **Fix**:
+  1. Google Cloud Console > OAuth consent screen
+  2. Add your email to "Test users"
+  3. Or publish app for production
 
 ### "Google sign-in cancelled"
-- Check that your SHA-1 fingerprint matches
-- Ensure the package name is exactly `co.thepact.app`
+- User cancelled, or SHA-1 mismatch (AXIS 4)
+- Verify SHA-1 matches your debug keystore
 
-### Silent failure (no error shown)
-- Check Supabase auth logs
-- Verify the Web Client ID and Secret are correct in Supabase
+### Build Command Error
+**WRONG** (missing `&&`):
+```bash
+flutter pub get flutter build apk --dart-define-from-file=secrets.json
+```
 
-### "Developer error" or "DEVELOPER_ERROR"
-- The SHA-1 fingerprint doesn't match
-- Run `./gradlew signingReport` to get the correct fingerprint
+**CORRECT**:
+```bash
+flutter clean && flutter pub get && flutter build apk --dart-define-from-file=secrets.json
+```
 
 ## Dev Mode Bypass
 
