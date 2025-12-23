@@ -344,6 +344,12 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                     ],
                   ),
 
+                  const SizedBox(height: 24),
+                  
+                  // Phase 29 (Zhuo Z1): Progress Indicator
+                  // Sets user expectations and creates moments of delight
+                  _buildProgressIndicator(1, 3),
+
                   const Spacer(),
 
                   // Identity Declaration Section
@@ -385,23 +391,19 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Main headline
+                      // Phase 29 (Ogilvy O1): Benefit-driven headline
+                      // Changed from "Who are you committed to becoming?" to outcome-focused
                       RichText(
                         text: const TextSpan(
                           style: TextStyle(
-                            fontSize: 36,
+                            fontSize: 32,
                             fontWeight: FontWeight.w800,
-                            height: 1.1,
+                            height: 1.2,
                             letterSpacing: -0.02,
                             color: Color(0xFFF8FAFC),
                           ),
                           children: [
-                            TextSpan(text: 'Who are you '),
-                            TextSpan(
-                              text: 'committed',
-                              style: TextStyle(color: Color(0xFF22C55E)),
-                            ),
-                            TextSpan(text: ' to becoming?'),
+                            TextSpan(text: 'I want to become...'),
                           ],
                         ),
                       ),
@@ -496,13 +498,37 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Subtext
-                      const Text(
-                        'This isn\'t just a login. It\'s the first step in becoming that person.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF94A3B8),
-                          height: 1.5,
+                      // Phase 29 (Brown B1): Graceful Consistency Messaging
+                      // Creates emotional safety by explicitly stating "no streaks, no shame"
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF22C55E).withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.favorite_outline,
+                              color: const Color(0xFF22C55E).withOpacity(0.8),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'We measure progress, not perfection. No streaks. No shame.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white.withOpacity(0.8),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -766,6 +792,29 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
           ),
         ],
       ),
+    );
+  }
+  
+  /// Phase 29 (Zhuo Z1): Progress Indicator Widget
+  /// Shows current step in the onboarding flow
+  Widget _buildProgressIndicator(int current, int total) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(total + 1, (index) {
+        final isActive = index <= current;
+        final isCurrent = index == current;
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isCurrent ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: isActive
+                ? const Color(0xFF22C55E)
+                : const Color(0xFF334155),
+          ),
+        );
+      }),
     );
   }
 }

@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 29)  
-> **Last Verified:** Phase 29 Complete (Second Council Review)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 29.1)  
+> **Last Verified:** Phase 29.1 Complete (Tier 1 Implementation)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟡 PENDING - Awaiting implementation of Phase 29 recommendations
+> **Status:** 🟢 READY - Awaiting Final Build & Test
 
 ---
 
@@ -24,23 +24,23 @@
 
 ---
 
-## 🚀 Next Sprint: Phase 29 "Value & Safety"
+## 🚀 Next Sprint: Phase 30 "Delight & Monetise"
 
-**Goal:** Implement the critical Tier 1 recommendations from the Second Council of Five to maximise user value and emotional safety before launch.
+**Goal:** Implement high-value Tier 2 recommendations to increase delight and begin monetisation experiments.
 
 **Status:** 🟡 PENDING - Awaiting implementation.
 
 **Target:** NYE 2025 Launch
 
-### Tier 1 Recommendations (Critical)
+### Tier 2 Recommendations (High Value)
 
 | ID | Recommendation | Advisor | Status |
 |----|----------------|---------|--------|
-| K1 | Add "hook" screen before identity | Kahneman | [ ] |
-| H1 | Lead with dream outcome (social proof stat) | Hormozi | [ ] |
-| B1 | Add "Graceful Consistency" messaging | Brown | [ ] |
-| Z1 | Add progress indicator with celebration | Zhuo | [ ] |
-| O1 | Rewrite headline to be benefit-driven | Ogilvy | [ ] |
+| H2 | Show AI coach sample before tier selection | Hormozi | [ ] |
+| B3 | Add privacy controls for witnesses | Brown | [ ] |
+| Z4 | Celebrate first pact creation (confetti) | Zhuo | [ ] |
+| O4 | Add testimonials to identity screen | Ogilvy | [ ] |
+| K4 | Simplify tier selection to binary | Kahneman | [ ] |
 
 ---
 
@@ -74,6 +74,14 @@
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 29.1) - "Value & Safety" Sprint
+
+- [x] **Hook Screen:** Created `value_proposition_screen.dart` to lead with value and social proof.
+- [x] **Graceful Consistency:** Added "No streaks, no shame" messaging to the identity screen.
+- [x] **Progress Indicator:** Implemented a visual step indicator across the new onboarding flow.
+- [x] **Benefit-Driven Headline:** Rewrote the identity screen headline to be more direct and actionable.
+- [x] **Routing:** Updated `main.dart` to make the new Hook Screen the default entry point for all new users.
 
 ### Completed (Phase 29) - Second Council Review
 

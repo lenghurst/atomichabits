@@ -22,6 +22,7 @@ import 'features/onboarding/voice_onboarding_screen.dart';
 import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
 import 'features/onboarding/identity_first/pact_witness_screen.dart';
 import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
+import 'features/onboarding/identity_first/value_proposition_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -248,12 +249,12 @@ class _MyAppState extends State<MyApp> {
           final router = GoRouter(
             initialLocation: appState.hasCompletedOnboarding ? '/dashboard' : '/',
             routes: [
-              // Default onboarding: Identity First Flow (Phase 27.17)
-              // All new users start with identity declaration + OAuth
-              // Developer Mode users can access Voice/Chat from within the flow
+              // Phase 29: Value First Flow (Second Council of Five)
+              // All new users start with the Hook Screen (value proposition)
+              // Then proceed to identity declaration + OAuth
               GoRoute(
                 path: '/',
-                builder: (context, state) => const IdentityAccessGateScreen(),
+                builder: (context, state) => const ValuePropositionScreen(),
               ),
               // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
               GoRoute(
