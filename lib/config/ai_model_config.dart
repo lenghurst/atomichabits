@@ -60,7 +60,7 @@ class AIModelConfig {
   static const String tier1Model = 'deepseek-chat'; 
   static const double tier1Temperature = 1.0;
   
-  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 27.14 - Live GA)
+  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 27.16 - Live GA Aligned)
   /// - Marketing Name: "Gemini 3 Flash"
   /// - Technical Endpoint: gemini-live-2.5-flash-native-audio (LIVE GA - Dec 12, 2025)
   /// - Native Audio/Video Input & Output (Live API)
@@ -69,7 +69,8 @@ class AIModelConfig {
   /// - Protocol: WebSocket bidirectional streaming (NOT REST)
   /// - CRITICAL: Gemini 2.0 Live endpoints were SHUT DOWN on Dec 9, 2025!
   /// - NOTE: This is the stable GA Live endpoint, available globally (UK included)
-  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025'; // Live API (Dec 2025)
+  /// - CRITICAL: Must match backend LIVE_API_MODEL in get-gemini-ephemeral-token/index.ts
+  static const String tier2Model = 'gemini-live-2.5-flash-native-audio'; // Live API GA (Global)
   static const double tier2Temperature = 0.7;
   
   /// Tier 2 Text-Only Fallback (for non-voice interactions)
