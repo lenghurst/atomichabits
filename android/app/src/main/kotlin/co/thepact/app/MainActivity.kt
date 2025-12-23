@@ -1,4 +1,4 @@
-package com.example.atomic_habits_hook_app
+package co.thepact.app
 
 import io.flutter.embedding.android.FlutterActivity
 

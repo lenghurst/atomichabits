@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.atomic_habits_hook_app"
+    namespace = "co.thepact.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
