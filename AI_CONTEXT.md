@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.3)  
-> **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.4)  
+> **Last Verified:** Phase 28.4 Complete (Council of Five)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -63,6 +63,26 @@ When stale branches accumulate (> 10 unmerged):
 
 ---
 
+## Phase 28.4: Council of Five Implementation
+
+Implemented recommendations from a strategic "Council of Five" analysis (Musk, Clear, Fogg, Bezos, Eyal) to optimise the new user acquisition funnel.
+
+**Key Changes Implemented:**
+
+| Recommendation | Advisor | File Changed | Details |
+|----------------|---------|--------------|---------||
+| **Route Consolidation** | Musk | `main.dart` | Niche routes now pass `presetIdentity` to pre-fill the identity field. |
+| **Identity Mad-Libs** | Clear | `IdentityAccessGateScreen.dart` | Horizontal scrolling chip selector with visual feedback. Identity is now mandatory. |
+| **Native Contact Picker** | Fogg | `PactWitnessScreen.dart` | One-tap witness selection from device contacts with fallback to manual entry. |
+| **Trust Grant Dialog** | Bezos | `PactTierSelectorScreen.dart` | "Early Access Grant" dialog for premium tiers (grandfathered users). |
+| **Reciprocity Loop** | Eyal | `WitnessAcceptScreen.dart` | "Now it's your turn" prompt after sealing a pact as witness. |
+
+**New Dependencies Added:**
+- `flutter_contacts: ^1.1.9+2` - Native contact picker
+- `permission_handler: ^11.3.1` - Contact permission management
+
+---
+
 ## Phase 28.3: User Journey Optimisation
 
 A comprehensive user journey map was created to identify and implement high-impact optimisations to the onboarding flow.
@@ -72,7 +92,7 @@ A comprehensive user journey map was created to identify and implement high-impa
 **Key Changes Implemented:**
 
 | Optimisation | File Changed | Details |
-|--------------|--------------|---------|
+|--------------|--------------|---------||
 | **Fix Tier Selection** | `PactTierSelectorScreen.dart` | Onboarding now completes correctly, navigating users to the dashboard. |
 | **Unify Niche Routes** | `main.dart` | Niche landing pages (`/devs`, `/writers`, etc.) now use the modern "Identity First" flow. |
 | **Add Witness CTA** | `WitnessAcceptScreen.dart` | Invited users who become witnesses are now prompted to create their own pact. |

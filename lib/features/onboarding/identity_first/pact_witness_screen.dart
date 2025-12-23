@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../data/app_state.dart';
 
 /// Pact Witness Screen
@@ -23,6 +25,8 @@ class PactWitnessScreen extends StatefulWidget {
 class _PactWitnessScreenState extends State<PactWitnessScreen> {
   final _witnessController = TextEditingController();
   bool _showWitnessInput = false;
+  bool _showManualEntry = false; // Phase 28.4: Fallback for privacy-conscious users
+  String? _selectedContactName; // Phase 28.4: Store selected contact name
 
   @override
   void dispose() {
@@ -30,10 +34,174 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
     super.dispose();
   }
 
-  void _handleAddWitness() {
+  /// Phase 28.4 (Fogg): Open native contact picker
+  Future<void> _handlePickContact() async {
+    // Request permission
+    final status = await Permission.contacts.request();
+    
+    if (status.isGranted) {
+      try {
+        // Open native contact picker
+        final contact = await FlutterContacts.openExternalPick();
+        
+        if (contact != null) {
+          // Get full contact with properties
+          final fullContact = await FlutterContacts.getContact(
+            contact.id,
+            withProperties: true,
+          );
+          
+          if (fullContact != null) {
+            _handleContactSelected(fullContact);
+          }
+        }
+      } catch (e) {
+        // Fallback to manual entry on error
+        setState(() {
+          _showManualEntry = true;
+          _showWitnessInput = true;
+        });
+      }
+    } else if (status.isPermanentlyDenied) {
+      // Show dialog to open settings
+      _showPermissionDeniedDialog();
+    } else {
+      // Permission denied, show manual entry
+      setState(() {
+        _showManualEntry = true;
+        _showWitnessInput = true;
+      });
+    }
+  }
+  
+  /// Phase 28.4: Handle contact selection
+  void _handleContactSelected(Contact contact) {
+    final emails = contact.emails;
+    final phones = contact.phones;
+    
+    // If multiple contact methods, show picker
+    if (emails.length + phones.length > 1) {
+      _showContactMethodPicker(contact);
+    } else if (emails.isNotEmpty) {
+      _setWitnessFromContact(contact.displayName, emails.first.address);
+    } else if (phones.isNotEmpty) {
+      _setWitnessFromContact(contact.displayName, phones.first.number);
+    } else {
+      // No email or phone, use name only
+      _setWitnessFromContact(contact.displayName, contact.displayName);
+    }
+  }
+  
+  /// Phase 28.4: Show picker for multiple contact methods
+  void _showContactMethodPicker(Contact contact) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'How should we reach ${contact.displayName}?',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFF8FAFC),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...contact.emails.map((email) => ListTile(
+                leading: const Icon(Icons.email, color: Color(0xFF22C55E)),
+                title: Text(
+                  email.address,
+                  style: const TextStyle(color: Color(0xFFF8FAFC)),
+                ),
+                subtitle: Text(
+                  email.label.name,
+                  style: const TextStyle(color: Color(0xFF94A3B8)),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _setWitnessFromContact(contact.displayName, email.address);
+                },
+              )),
+              ...contact.phones.map((phone) => ListTile(
+                leading: const Icon(Icons.phone, color: Color(0xFF22C55E)),
+                title: Text(
+                  phone.number,
+                  style: const TextStyle(color: Color(0xFFF8FAFC)),
+                ),
+                subtitle: Text(
+                  phone.label.name,
+                  style: const TextStyle(color: Color(0xFF94A3B8)),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _setWitnessFromContact(contact.displayName, phone.number);
+                },
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// Phase 28.4: Set witness from contact selection
+  void _setWitnessFromContact(String name, String contactInfo) {
     setState(() {
+      _witnessController.text = contactInfo;
+      _selectedContactName = name;
       _showWitnessInput = true;
     });
+  }
+  
+  /// Phase 28.4: Show permission denied dialog
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text(
+          'Contacts Access',
+          style: TextStyle(color: Color(0xFFF8FAFC)),
+        ),
+        content: const Text(
+          'To quickly add a witness, please enable contacts access in Settings.',
+          style: TextStyle(color: Color(0xFF94A3B8)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _showManualEntry = true;
+                _showWitnessInput = true;
+              });
+            },
+            child: const Text('Enter Manually'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleAddWitness() {
+    // Phase 28.4: Open contact picker instead of showing text field
+    _handlePickContact();
   }
 
   void _handleContinueWithWitness() {
@@ -432,42 +600,89 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
 
                                       const SizedBox(height: 12),
 
+                                      // Phase 28.4 (Fogg): Witness input with contact picker
                                       if (_showWitnessInput)
-                                        TextField(
-                                          controller: _witnessController,
-                                          autofocus: true,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF0F172A),
-                                          ),
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter name or email',
-                                            filled: true,
-                                            fillColor: Colors.white,
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Color(0xFF94A3B8),
-                                                width: 2,
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            // Show selected contact name if available
+                                            if (_selectedContactName != null) ...[
+                                              Text(
+                                                _selectedContactName!,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF0F172A),
+                                                ),
                                               ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Color(0xFF94A3B8),
-                                                width: 2,
+                                              const SizedBox(height: 4),
+                                            ],
+                                            // Read-only field with contact info
+                                            TextField(
+                                              controller: _witnessController,
+                                              readOnly: !_showManualEntry,
+                                              autofocus: _showManualEntry,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF0F172A),
                                               ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                color: Color(0xFF22C55E),
-                                                width: 2,
+                                              decoration: InputDecoration(
+                                                hintText: _showManualEntry 
+                                                    ? 'Enter email or phone' 
+                                                    : 'Tap to select contact',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                // Phase 28.4: Contact picker icon button
+                                                suffixIcon: IconButton(
+                                                  icon: const Icon(
+                                                    Icons.contacts,
+                                                    color: Color(0xFF22C55E),
+                                                  ),
+                                                  onPressed: _handlePickContact,
+                                                ),
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                    color: Color(0xFF94A3B8),
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                    color: Color(0xFF94A3B8),
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                    color: Color(0xFF22C55E),
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                contentPadding: const EdgeInsets.all(12),
                                               ),
+                                              onTap: _showManualEntry ? null : _handlePickContact,
                                             ),
-                                            contentPadding: const EdgeInsets.all(12),
-                                          ),
+                                            // Phase 28.4: Manual entry fallback link
+                                            if (!_showManualEntry)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 8),
+                                                child: GestureDetector(
+                                                  onTap: () => setState(() => _showManualEntry = true),
+                                                  child: const Text(
+                                                    'Enter manually instead',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Color(0xFF64748B),
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         )
                                       else
                                         Stack(
@@ -486,11 +701,12 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                                             Positioned(
                                               right: 0,
                                               top: 0,
+                                              // Phase 28.4: Primary button opens contact picker
                                               child: ElevatedButton.icon(
                                                 onPressed: _handleAddWitness,
-                                                icon: const Icon(Icons.person_add, size: 16),
+                                                icon: const Icon(Icons.contacts, size: 16),
                                                 label: const Text(
-                                                  'Add Witness',
+                                                  'Add from Contacts',
                                                   style: TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w600,

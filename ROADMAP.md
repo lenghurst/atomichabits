@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 28.2)  
-> **Last Verified:** Phase 27.15 Complete (Token Scope Alignment)  
+> **Last Updated:** 23 December 2025 (Commit: Phase 28.4)  
+> **Last Verified:** Phase 28.4 Complete (Council of Five)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 READY - Build Fixed, Audio Recording Next
+> **Status:** 🟢 READY - Onboarding Optimised, Awaiting Build & Test
 
 ---
 
@@ -24,13 +24,27 @@
 
 ---
 
-## 🚀 Current Sprint: Phase 28 "Deployment & Testing"
+## 🚀 Current Sprint: Phase 28 "Council of Five"
 
-**Goal:** Transform onboarding from text-based to voice-first conversational AI coaching
+**Goal:** Optimise new user acquisition funnel based on strategic advisor recommendations
 
-**Status:** 🟢 READY (Phase 28.2 - Ready to Deploy Edge Function & Build APK)
+**Status:** 🟢 COMPLETE (Phase 28.4 - All Five Recommendations Implemented)
 
 **Target:** NYE 2025 Launch
+
+### Completed (Phase 28.4) - Council of Five
+
+| Recommendation | Advisor | Status | Details |
+|----------------|---------|--------|---------||
+| Route Consolidation | Musk | ✅ | Niche routes pass `presetIdentity` to pre-fill identity field |
+| Identity Mad-Libs | Clear | ✅ | Horizontal chip selector, identity now mandatory |
+| Native Contact Picker | Fogg | ✅ | One-tap witness selection from device contacts |
+| Trust Grant Dialog | Bezos | ✅ | "Early Access Grant" for premium tiers |
+| Reciprocity Loop | Eyal | ✅ | "Now it's your turn" prompt after witness acceptance |
+
+**New Dependencies:**
+- `flutter_contacts: ^1.1.9+2`
+- `permission_handler: ^11.3.1`
 
 ### Completed (Phase 27.1-27.7)
 

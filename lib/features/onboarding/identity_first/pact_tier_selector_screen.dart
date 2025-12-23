@@ -21,34 +21,159 @@ class PactTierSelectorScreen extends StatefulWidget {
 
 class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   String _selectedTier = 'builder'; // Default to most popular
+  bool _isProcessing = false;
 
   Future<void> _handleSelectTier(String tierId) async {
+    if (_isProcessing) return;
+    
     setState(() {
       _selectedTier = tierId;
+      _isProcessing = true;
     });
 
-    // Phase 28.3: Complete onboarding and navigate to dashboard
-    // TODO: Implement payment flow for Builder/Ally tiers
     final appState = context.read<AppState>();
     
-    // Store selected tier in user profile for future reference
-    // This will be used when payment integration is added
-    final currentProfile = appState.userProfile;
-    if (currentProfile != null) {
-      final updatedProfile = currentProfile.copyWith(
-        // Store tier preference (will be validated against payment status later)
-        // For now, all users get Free tier functionality
-      );
-      await appState.setUserProfile(updatedProfile);
+    // Phase 28.4 (Bezos): "Grandfathered" Trust Grant
+    // For premium tiers, show trust dialog instead of payment
+    if (tierId == 'builder' || tierId == 'ally') {
+      final tierName = tierId == 'builder' ? 'Builder' : 'Ally';
+      final confirmed = await _showTrustGrantDialog(tierName);
+      
+      if (confirmed && mounted) {
+        // Grant premium access
+        await appState.setPremiumStatus(true);
+        
+        // Log telemetry event for pricing validation
+        // TODO: Send to analytics: payment_intent_captured, tier: tierId
+        debugPrint('[Telemetry] payment_intent_captured: tier=$tierId');
+        
+        await appState.completeOnboarding();
+        context.go('/dashboard');
+      } else {
+        setState(() => _isProcessing = false);
+      }
+    } else {
+      // Free tier - proceed directly
+      await appState.completeOnboarding();
+      
+      if (mounted) {
+        context.go('/dashboard');
+      }
     }
-    
-    // Mark onboarding as complete
-    await appState.completeOnboarding();
-    
-    // Navigate to dashboard
-    if (mounted) {
-      context.go('/dashboard');
-    }
+  }
+  
+  /// Phase 28.4 (Bezos): Show the "Early Access Grant" trust dialog
+  Future<bool> _showTrustGrantDialog(String tierName) async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        icon: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF22C55E), Color(0xFF06B6D4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: const Icon(
+            Icons.stars,
+            size: 32,
+            color: Colors.white,
+          ),
+        ),
+        title: const Text(
+          'Early Access Grant',
+          style: TextStyle(
+            color: Color(0xFFF8FAFC),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'As an early believer in The Pact, we are upgrading you to ',
+                  ),
+                  TextSpan(
+                    text: tierName,
+                    style: const TextStyle(
+                      color: Color(0xFF22C55E),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: ' for free, for life.',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22C55E).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF22C55E).withOpacity(0.3),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.verified,
+                    color: Color(0xFF22C55E),
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Welcome to the inner circle.',
+                      style: TextStyle(
+                        color: Color(0xFF22C55E),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Maybe Later',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF22C55E),
+            ),
+            child: const Text('Accept Grant'),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   @override

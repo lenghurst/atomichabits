@@ -93,6 +93,10 @@ dependencies:
   
   # Phase 25.3: WebSocket for Gemini Live API (Voice)
   web_socket_channel: ^3.0.1
+  
+  # Phase 28.4 (Fogg): Native contact picker for frictionless witness selection
+  flutter_contacts: ^1.1.9+2
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

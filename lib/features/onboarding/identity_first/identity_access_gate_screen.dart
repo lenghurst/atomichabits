@@ -19,8 +19,20 @@ import '../../../utils/developer_logger.dart';
 /// - Colors: Slate Gray (#334155), Electric Green (#22C55E)
 /// - Typography: Bold hierarchy, Inter font
 /// - Layout: Asymmetric, bold accents
+///
+/// Phase 28.4 (Council of Five):
+/// - Added presetIdentity parameter for niche landing pages
+/// - Identity is now mandatory (button disabled until filled)
+/// - "Mad Libs" chip selector for common identities
 class IdentityAccessGateScreen extends StatefulWidget {
-  const IdentityAccessGateScreen({super.key});
+  /// Optional preset identity from niche landing pages
+  /// e.g., "/devs" → "A World-Class Developer"
+  final String? presetIdentity;
+  
+  const IdentityAccessGateScreen({
+    super.key,
+    this.presetIdentity,
+  });
 
   @override
   State<IdentityAccessGateScreen> createState() => _IdentityAccessGateScreenState();
@@ -35,9 +47,32 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
   bool _isSignUp = true;
   bool _isLoading = false;
   String? _errorMessage;
+  
+  /// Phase 28.4: Track if identity is filled for mandatory validation
+  bool _hasIdentity = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Phase 28.4: Pre-fill identity from niche landing page
+    if (widget.presetIdentity != null && widget.presetIdentity!.isNotEmpty) {
+      _identityController.text = widget.presetIdentity!;
+      _hasIdentity = true;
+    }
+    // Listen for changes to update _hasIdentity
+    _identityController.addListener(_onIdentityChanged);
+  }
+  
+  void _onIdentityChanged() {
+    final hasText = _identityController.text.trim().isNotEmpty;
+    if (hasText != _hasIdentity) {
+      setState(() => _hasIdentity = hasText);
+    }
+  }
 
   @override
   void dispose() {
+    _identityController.removeListener(_onIdentityChanged);
     _identityController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -414,28 +449,49 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Phase 28.3: Identity examples to help users
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _IdentityChip(
-                            label: 'A Marathon Runner',
-                            onTap: () => _identityController.text = 'A Marathon Runner',
-                          ),
-                          _IdentityChip(
-                            label: 'A Published Author',
-                            onTap: () => _identityController.text = 'A Published Author',
-                          ),
-                          _IdentityChip(
-                            label: 'A Fluent Spanish Speaker',
-                            onTap: () => _identityController.text = 'A Fluent Spanish Speaker',
-                          ),
-                          _IdentityChip(
-                            label: 'A Morning Person',
-                            onTap: () => _identityController.text = 'A Morning Person',
-                          ),
-                        ],
+                      // Phase 28.4 (Clear): "Mad Libs" Identity Selector
+                      // High-value identities derived from niche landing pages
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _IdentityChip(
+                              label: 'A Prolific Writer',
+                              isSelected: _identityController.text == 'A Prolific Writer',
+                              onTap: () => _identityController.text = 'A Prolific Writer',
+                            ),
+                            const SizedBox(width: 8),
+                            _IdentityChip(
+                              label: 'A Stoic Developer',
+                              isSelected: _identityController.text == 'A Stoic Developer',
+                              onTap: () => _identityController.text = 'A Stoic Developer',
+                            ),
+                            const SizedBox(width: 8),
+                            _IdentityChip(
+                              label: 'A Marathon Runner',
+                              isSelected: _identityController.text == 'A Marathon Runner',
+                              onTap: () => _identityController.text = 'A Marathon Runner',
+                            ),
+                            const SizedBox(width: 8),
+                            _IdentityChip(
+                              label: 'A Deep Sleeper',
+                              isSelected: _identityController.text == 'A Deep Sleeper',
+                              onTap: () => _identityController.text = 'A Deep Sleeper',
+                            ),
+                            const SizedBox(width: 8),
+                            _IdentityChip(
+                              label: 'A Polyglot',
+                              isSelected: _identityController.text == 'A Polyglot',
+                              onTap: () => _identityController.text = 'A Polyglot',
+                            ),
+                            const SizedBox(width: 8),
+                            _IdentityChip(
+                              label: 'A Morning Person',
+                              isSelected: _identityController.text == 'A Morning Person',
+                              onTap: () => _identityController.text = 'A Morning Person',
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 24),
@@ -508,10 +564,42 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                       ],
 
                       // OAuth or Email Auth
+                      // Phase 28.4 (Clear): Show hint when identity not filled
+                      if (!_hasIdentity) ...[                        
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF334155).withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: const [
+                              Icon(
+                                Icons.arrow_upward,
+                                size: 16,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'First, declare who you\'re becoming',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      
                       if (!_showEmailAuth) ...[
                         // Google Sign-In Button
                         _OAuthButton(
-                          onPressed: _isLoading ? null : _handleGoogleSignIn,
+                          // Phase 28.4: Disable until identity is filled
+                          onPressed: (_isLoading || !_hasIdentity) ? null : _handleGoogleSignIn,
                           icon: Icons.g_mobiledata,
                           label: 'Continue with Google',
                           isLoading: _isLoading,
@@ -736,36 +824,51 @@ class _OAuthButton extends StatelessWidget {
   }
 }
 
-/// Phase 28.3: Identity suggestion chip
+/// Phase 28.4 (Clear): Identity "Mad Libs" chip
 /// Tappable chip that fills in the identity field with an example
+/// Visual feedback: selected chips show brand gradient (Blue-to-Pink)
 class _IdentityChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const _IdentityChip({
     required this.label,
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 8,
+          horizontal: 16,
+          vertical: 10,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          border: Border.all(color: const Color(0xFF334155)),
+          // Phase 28.4: Brand gradient when selected (Blue-to-Pink)
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : const Color(0xFF1E293B),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : const Color(0xFF334155),
+          ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF94A3B8),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
           ),
         ),
       ),

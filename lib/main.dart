@@ -287,20 +287,20 @@ class _MyAppState extends State<MyApp> {
               ),
               
               // ========== Phase 19: Side Door Landing Pages ==========
-              // Phase 28.3: Updated to use Identity First flow with niche context
-              // Each niche gets its own "front door" that sets context
-              // The identity examples will be customised based on niche
+              // Phase 28.4 (Musk): Route consolidation with preset identities
+              // Each niche gets its own "front door" with pre-filled identity
+              // Eliminates the old ConversationalOnboardingScreen entirely
               
               // Developer door: r/programming, HackerNews
               GoRoute(
                 path: '/devs',
                 builder: (context, state) {
-                  // Set niche context before showing onboarding
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/devs');
                   });
-                  // Phase 28.3: Use Identity First flow for consistent UX
-                  return const IdentityAccessGateScreen();
+                  return const IdentityAccessGateScreen(
+                    presetIdentity: 'A World-Class Developer',
+                  );
                 },
               ),
               // Writer door: r/writing, Medium
@@ -310,7 +310,9 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/writers');
                   });
-                  return const IdentityAccessGateScreen();
+                  return const IdentityAccessGateScreen(
+                    presetIdentity: 'A Best-Selling Author',
+                  );
                 },
               ),
               // Scholar door: r/GradSchool, academic Twitter
@@ -320,7 +322,9 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/scholars');
                   });
-                  return const IdentityAccessGateScreen();
+                  return const IdentityAccessGateScreen(
+                    presetIdentity: 'A Distinguished Scholar',
+                  );
                 },
               ),
               // Language learner door: Duolingo refugees
@@ -330,7 +334,9 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/languages');
                   });
-                  return const IdentityAccessGateScreen();
+                  return const IdentityAccessGateScreen(
+                    presetIdentity: 'A Fluent Polyglot',
+                  );
                 },
               ),
               // Indie maker door: IndieHackers
@@ -340,7 +346,9 @@ class _MyAppState extends State<MyApp> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<OnboardingOrchestrator>().setNicheFromUrl('/makers');
                   });
-                  return const IdentityAccessGateScreen();
+                  return const IdentityAccessGateScreen(
+                    presetIdentity: 'A Prolific Maker',
+                  );
                 },
               ),
               // Dashboard: Multi-habit list (Phase 4)

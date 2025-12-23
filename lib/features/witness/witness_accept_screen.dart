@@ -270,34 +270,124 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        icon: const Text('🤝', style: TextStyle(fontSize: 48)),
-        title: const Text('Pact Sealed!'),
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        icon: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF22C55E), Color(0xFF06B6D4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: const Icon(
+            Icons.handshake,
+            size: 32,
+            color: Colors.white,
+          ),
+        ),
+        title: const Text(
+          'Pact Sealed!',
+          style: TextStyle(
+            color: Color(0xFFF8FAFC),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'You\'re now the accountability witness for "${_contract!.title}".',
               textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 15,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: const Color(0xFF22C55E).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF22C55E).withOpacity(0.3),
+                ),
               ),
               child: const Column(
                 children: [
                   Text(
                     'Your Role:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF8FAFC),
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     '• Get notified on their completions\n'
                     '• Send high-fives to celebrate wins\n'
                     '• Nudge them if they\'re drifting',
-                    style: TextStyle(fontSize: 13),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Phase 28.4 (Eyal): Reciprocity Loop
+            // "Now it's your turn" - creates obligation to reciprocate
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF3B82F6).withOpacity(0.2),
+                    const Color(0xFFEC4899).withOpacity(0.2),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.swap_horiz,
+                        color: Color(0xFF3B82F6),
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Now it\'s your turn',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFF8FAFC),
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'What habit will you ask ${_contract!.builderName ?? 'them'} to witness for you?',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF94A3B8),
+                    ),
                   ),
                 ],
               ),
@@ -305,24 +395,28 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
           ],
         ),
         actions: [
-          // Phase 28.3: Add conversion CTA for witnesses to create their own pact
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.of(context).pushReplacementNamed('/witness');
             },
-            child: const Text('View My Pacts'),
+            child: const Text(
+              'Maybe Later',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
-          FilledButton(
+          // Phase 28.4: Primary CTA is now the reciprocity action
+          FilledButton.icon(
             onPressed: () {
               Navigator.of(context).pop();
               // Navigate to onboarding to create their own pact
               Navigator.of(context).pushReplacementNamed('/');
             },
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Create My Pact'),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF22C55E),
             ),
-            child: const Text('Create Your Own Pact'),
           ),
         ],
       ),
