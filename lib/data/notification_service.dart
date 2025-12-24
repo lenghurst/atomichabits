@@ -69,7 +69,7 @@ class NotificationService {
       );
 
       // Request permissions (required for Android 13+)
-      await _requestPermissions();
+      // DEFERRED: await requestPermissions();
 
       _initialized = true;
       
@@ -86,7 +86,7 @@ class NotificationService {
   }
 
   /// Request notification permissions (Android 13+)
-  Future<void> _requestPermissions() async {
+  Future<void> requestPermissions() async {
     try {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
           _notifications.resolvePlatformSpecificImplementation<
