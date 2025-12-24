@@ -1,10 +1,13 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import '../entities/psychometric_profile.dart';
 import '../../data/models/habit.dart';
 
 /// PsychometricEngine: Analyzes behavioral patterns and updates the user's psychological profile.
 /// 
 /// This service runs in the background, analyzing raw habit logs to update the PsychometricProfile.
-/// Satisfies: Fowler (Logic Extraction), Muratori (Incremental updates).
+/// Satisfies: Fowler (Logic Extraction), Muratori (Incremental updates + Isolate for O(N) ops).
 class PsychometricEngine {
   
   /// Analyzes a NEW miss to update resilience incrementally.
@@ -40,24 +43,50 @@ class PsychometricEngine {
   }
 
   /// Called via background job occasionally to recalibrate risks.
-  /// This is the heavy O(N) logic that happens OFF the UI thread.
-  PsychometricProfile recalibrateRisks(PsychometricProfile profile, List<Habit> habits) {
+  /// This is the heavy O(N) logic that runs in an Isolate OFF the UI thread.
+  /// 
+  /// MURATORI CAVEAT: This method MUST run in an Isolate to prevent UI jank.
+  /// Use [recalibrateRisksAsync] for production code.
+  Future<PsychometricProfile> recalibrateRisksAsync(
+    PsychometricProfile profile, 
+    List<Habit> habits,
+  ) async {
+    // Prepare serialisable data for the Isolate
+    final payload = _RecalibratePayload(
+      profileJson: profile.toJson(),
+      habitsJson: habits.map((h) => h.toSerializableMap()).toList(),
+    );
+    
+    // Run the heavy computation in an Isolate
+    final resultJson = await Isolate.run(() => _recalibrateInIsolate(payload));
+    
+    // Reconstruct the profile from the result
+    return PsychometricProfile.fromJson(resultJson);
+  }
+
+  /// Synchronous version for testing or when Isolate overhead isn't worth it.
+  /// WARNING: Do NOT call this on the UI thread with large habit lists.
+  @Deprecated('Use recalibrateRisksAsync for production code')
+  PsychometricProfile recalibrateRisksSync(PsychometricProfile profile, List<Habit> habits) {
+    return _performRecalibration(profile, habits);
+  }
+
+  /// The actual recalibration logic (pure function, no Flutter dependencies).
+  static PsychometricProfile _performRecalibration(
+    PsychometricProfile profile, 
+    List<Habit> habits,
+  ) {
     int newMask = 0;
     final List<String> identifiedRisks = [];
     
     // Analyze all habits for patterns
     final Map<int, int> missCountsByDay = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0};
-    final Map<int, int> missCountsByHour = {};
     
     for (final habit in habits) {
       // Analyze miss history for day-of-week patterns
       for (final recovery in habit.recoveryHistory) {
         final dayOfWeek = recovery.missDate.weekday;
         missCountsByDay[dayOfWeek] = (missCountsByDay[dayOfWeek] ?? 0) + 1;
-        
-        // If we had time data, we'd analyze hours too
-        // final hour = recovery.missDate.hour;
-        // missCountsByHour[hour] = (missCountsByHour[hour] ?? 0) + 1;
       }
     }
     
@@ -173,7 +202,22 @@ class PsychometricEngine {
   }
 
   /// Calculates peak energy window based on completion times.
-  String calculatePeakEnergyWindow(List<Habit> habits) {
+  /// Runs in Isolate for large habit lists.
+  Future<String> calculatePeakEnergyWindowAsync(List<Habit> habits) async {
+    if (habits.isEmpty) return '09:00 - 11:00';
+    
+    // For small lists, run synchronously
+    if (habits.length < 10) {
+      return _calculatePeakEnergyWindow(habits);
+    }
+    
+    // For large lists, use Isolate
+    final habitsJson = habits.map((h) => h.toSerializableMap()).toList();
+    return await Isolate.run(() => _calculatePeakEnergyWindowFromJson(habitsJson));
+  }
+
+  /// Synchronous version for small habit lists.
+  String _calculatePeakEnergyWindow(List<Habit> habits) {
     final Map<int, int> completionsByHour = {};
     
     for (final habit in habits) {
@@ -183,7 +227,7 @@ class PsychometricEngine {
       }
     }
     
-    if (completionsByHour.isEmpty) return '09:00';
+    if (completionsByHour.isEmpty) return '09:00 - 11:00';
     
     // Find the hour with most completions
     int peakHour = 9;
@@ -200,4 +244,65 @@ class PsychometricEngine {
     final endHour = (peakHour + 2) % 24;
     return '${peakHour.toString().padLeft(2, '0')}:00 - ${endHour.toString().padLeft(2, '0')}:00';
   }
+
+  /// Static version for Isolate execution.
+  static String _calculatePeakEnergyWindowFromJson(List<Map<String, dynamic>> habitsJson) {
+    final Map<int, int> completionsByHour = {};
+    
+    for (final habitJson in habitsJson) {
+      final completionHistory = habitJson['completionHistory'] as List<dynamic>? ?? [];
+      for (final completion in completionHistory) {
+        if (completion is DateTime) {
+          final hour = completion.hour;
+          completionsByHour[hour] = (completionsByHour[hour] ?? 0) + 1;
+        } else if (completion is String) {
+          final dt = DateTime.tryParse(completion);
+          if (dt != null) {
+            final hour = dt.hour;
+            completionsByHour[hour] = (completionsByHour[hour] ?? 0) + 1;
+          }
+        }
+      }
+    }
+    
+    if (completionsByHour.isEmpty) return '09:00 - 11:00';
+    
+    int peakHour = 9;
+    int maxCompletions = 0;
+    
+    completionsByHour.forEach((hour, count) {
+      if (count > maxCompletions) {
+        maxCompletions = count;
+        peakHour = hour;
+      }
+    });
+    
+    final endHour = (peakHour + 2) % 24;
+    return '${peakHour.toString().padLeft(2, '0')}:00 - ${endHour.toString().padLeft(2, '0')}:00';
+  }
+}
+
+/// Payload for Isolate communication (must be serialisable).
+class _RecalibratePayload {
+  final Map<String, dynamic> profileJson;
+  final List<Map<String, dynamic>> habitsJson;
+  
+  _RecalibratePayload({
+    required this.profileJson,
+    required this.habitsJson,
+  });
+}
+
+/// Top-level function for Isolate execution.
+/// Must be static/top-level to work with Isolate.run().
+Map<String, dynamic> _recalibrateInIsolate(_RecalibratePayload payload) {
+  // Reconstruct objects from JSON
+  final profile = PsychometricProfile.fromJson(payload.profileJson);
+  final habits = payload.habitsJson.map((json) => Habit.fromSerializableMap(json)).toList();
+  
+  // Perform the heavy computation
+  final result = PsychometricEngine._performRecalibration(profile, habits);
+  
+  // Return as JSON for serialisation back to main isolate
+  return result.toJson();
 }

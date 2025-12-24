@@ -661,6 +661,14 @@ class Habit {
       recoveryPlan: json['recoveryPlan'] as String?,
     );
   }
+
+  /// Alias for toJson - used for Isolate serialisation.
+  /// Required by PsychometricEngine.recalibrateRisksAsync.
+  Map<String, dynamic> toSerializableMap() => toJson();
+
+  /// Alias for fromJson - used for Isolate deserialisation.
+  /// Required by PsychometricEngine.recalibrateRisksAsync.
+  static Habit fromSerializableMap(Map<String, dynamic> map) => Habit.fromJson(map);
 }
 
 /// Failure Playbook - User's pre-planned recovery strategy

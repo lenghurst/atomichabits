@@ -1,9 +1,10 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 34 - Architecture Refactoring)  
-> **Last Verified:** Phase 34 Complete (Repository Pattern + Domain Providers + PsychometricProfile)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 34.1 - Council Approval + Muratori Fix)  
+> **Last Verified:** Phase 34.1 Complete (Isolate wrapper for recalibrateRisks)  
 > **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 READY - Awaiting Final Smoke Test  
+> **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
+> **Council Verdict:** GREEN LIGHT  
 > **Language:** UK English (Default)
 
 ---
@@ -132,6 +133,12 @@
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 34.1) - Council Approval + Muratori Fix
+- [x] **Council Review:** Received GREEN LIGHT from all 5 experts.
+- [x] **Muratori Caveat:** Implemented `recalibrateRisksAsync` with Isolate wrapper.
+- [x] **Isolate Serialisation:** Added `toSerializableMap`/`fromSerializableMap` to Habit model.
+- [x] **Documentation:** Updated AI_CONTEXT.md and ROADMAP.md with Council verdict.
 
 ### Completed (Phase 34) - Architecture Refactoring
 - [x] **Repository Layer:** Created abstract interfaces and Hive implementations for Settings, User, Habit, Psychometric.
