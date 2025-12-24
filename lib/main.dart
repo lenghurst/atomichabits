@@ -21,7 +21,6 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/onboarding/voice_onboarding_screen.dart';
 import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
-import 'features/onboarding/identity_first/pact_witness_screen.dart';
 import 'features/onboarding/identity_first/witness_investment_screen.dart';
 import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
 import 'features/onboarding/identity_first/value_proposition_screen.dart';
