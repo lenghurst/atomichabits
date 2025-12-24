@@ -28,7 +28,7 @@ class VoiceOnboardingScreen extends StatefulWidget {
 }
 
 class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
   final List<TranscriptMessage> _transcript = [];
@@ -42,6 +42,8 @@ class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen>
   @override
   void initState() {
     super.initState();
+    // Security Fix: Observe app lifecycle to prevent hot mic in background
+    WidgetsBinding.instance.addObserver(this);
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
@@ -58,9 +60,25 @@ class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen>
   
   @override
   void dispose() {
+    // Security Fix: Remove observer
+    WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
     _sessionManager?.dispose();
     super.dispose();
+  }
+
+  /// Security Fix: Handle app backgrounding to prevent hot mic
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      if (_sessionManager?.isActive == true) {
+        if (kDebugMode) {
+          debugPrint('VoiceOnboardingScreen: App backgrounded, pausing session for security.');
+        }
+        _sessionManager?.pauseSession();
+        // UI updates will happen via the state listener callback
+      }
+    }
   }
   
   /// Initialize the voice session manager
@@ -333,333 +351,187 @@ Use British English spelling and phrasing.''';
     final colorScheme = theme.colorScheme;
     
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: DevToolsGestureDetector(
-          child: const Text('Voice Coach'),
-        ),
+        title: const Text('Voice Coach'),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () => context.go('/settings'),
-          ),
-          TextButton(
+            icon: const Icon(Icons.keyboard),
             onPressed: () => context.go('/onboarding/manual'),
-            child: const Text('Manual'),
+            tooltip: 'Switch to Manual Entry',
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Status Banner
-          _buildStatusBanner(theme, colorScheme),
-          
-          // Transcript
-          Expanded(
-            child: _transcript.isEmpty
-                ? _buildEmptyState(theme, colorScheme)
-                : _buildTranscriptList(theme, colorScheme),
-          ),
-          
-          // Voice Control Panel
-          _buildVoiceControlPanel(theme, colorScheme),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStatusBanner(ThemeData theme, ColorScheme colorScheme) {
-    if (_voiceState == VoiceState.connecting) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        color: colorScheme.primaryContainer,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Connecting to voice coach...',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    if (_voiceState == VoiceState.error && _errorMessage != null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        color: colorScheme.errorContainer,
-        child: Row(
-          children: [
-            Icon(Icons.error, color: colorScheme.onErrorContainer),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                _errorMessage!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onErrorContainer,
+          Column(
+            children: [
+              // Transcript Area
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _transcript.length,
+                  itemBuilder: (context, index) {
+                    final message = _transcript[index];
+                    return _TranscriptBubble(message: message);
+                  },
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    return const SizedBox.shrink();
-  }
-  
-  Widget _buildEmptyState(ThemeData theme, ColorScheme colorScheme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.mic,
-            size: 64,
-            color: colorScheme.primary.withOpacity(0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Tap the microphone to start',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildTranscriptList(ThemeData theme, ColorScheme colorScheme) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _transcript.length,
-      itemBuilder: (context, index) {
-        final message = _transcript[index];
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Align(
-            alignment: message.isUser
-                ? Alignment.centerRight
-                : Alignment.centerLeft,
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.8,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: message.isSystem
-                    ? colorScheme.surfaceContainerHighest
-                    : message.isUser
-                        ? colorScheme.primaryContainer
-                        : colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!message.isSystem)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        message.isUser ? '🎤 You' : '🤖 Coach',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: message.isUser
-                              ? colorScheme.onPrimaryContainer.withOpacity(0.7)
-                              : colorScheme.onSecondaryContainer.withOpacity(0.7),
-                        ),
+              
+              // Visualisation Area
+              Container(
+                height: 200,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainer,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Status Text
+                    Text(
+                      _getStatusText(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: _getStatusColor(colorScheme),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  Text(
-                    message.isSystem ? 'ℹ️ ${message.text}' : message.text,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: message.isSystem
-                          ? colorScheme.onSurfaceVariant
-                          : message.isUser
-                              ? colorScheme.onPrimaryContainer
-                              : colorScheme.onSecondaryContainer,
+                    const Spacer(),
+                    
+                    // Microphone Button
+                    GestureDetector(
+                      onTap: _handleMicrophoneTap,
+                      child: AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _voiceState == VoiceState.listening 
+                                ? _pulseAnimation.value 
+                                : 1.0,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _getButtonColor(colorScheme),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _getButtonColor(colorScheme).withOpacity(0.4),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                _getButtonIcon(),
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-  
-  Widget _buildVoiceControlPanel(ThemeData theme, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Audio Level Indicator
-          if (_voiceState == VoiceState.listening)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildAudioLevelIndicator(colorScheme),
-            ),
-          
-          // Status Text
-          Text(
-            _getStatusText(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Microphone Button with pulse animation
-          AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _voiceState == VoiceState.listening
-                    ? _pulseAnimation.value
-                    : 1.0,
-                child: child,
-              );
-            },
-            child: GestureDetector(
-              onTap: _handleMicrophoneTap,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _getMicrophoneColor(colorScheme),
-                  boxShadow: _voiceState == VoiceState.listening
-                      ? [
-                          BoxShadow(
-                            color: colorScheme.primary.withOpacity(0.4),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Icon(
-                  _getMicrophoneIcon(),
-                  size: 40,
-                  color: Colors.white,
+                    const Spacer(),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
+          
+          // Dev Tools Overlay
+          const DevToolsOverlay(),
         ],
       ),
-    );
-  }
-  
-  Widget _buildAudioLevelIndicator(ColorScheme colorScheme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(10, (index) {
-        final threshold = index / 10;
-        final isActive = _audioLevel > threshold;
-        return Container(
-          width: 6,
-          height: 20 + (index * 2),
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: isActive
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        );
-      }),
     );
   }
   
   String _getStatusText() {
     switch (_voiceState) {
       case VoiceState.idle:
-        return 'Tap to speak';
-      case VoiceState.listening:
-        return 'Listening... (tap to pause)';
-      case VoiceState.thinking:
-        return 'Processing...';
-      case VoiceState.speaking:
-        return 'Coach is speaking...';
+        return 'Tap to Speak';
       case VoiceState.connecting:
         return 'Connecting...';
+      case VoiceState.listening:
+        return 'Listening...';
+      case VoiceState.thinking:
+        return 'Thinking...';
+      case VoiceState.speaking:
+        return 'Speaking...';
       case VoiceState.error:
-        return 'Error - tap to retry';
+        return 'Connection Error';
     }
   }
   
-  IconData _getMicrophoneIcon() {
+  Color _getStatusColor(ColorScheme colorScheme) {
     switch (_voiceState) {
+      case VoiceState.idle:
+        return colorScheme.onSurfaceVariant;
+      case VoiceState.connecting:
+        return colorScheme.primary;
+      case VoiceState.listening:
+        return Colors.redAccent;
+      case VoiceState.thinking:
+        return Colors.amber;
+      case VoiceState.speaking:
+        return Colors.green;
+      case VoiceState.error:
+        return colorScheme.error;
+    }
+  }
+  
+  Color _getButtonColor(ColorScheme colorScheme) {
+    switch (_voiceState) {
+      case VoiceState.idle:
+        return colorScheme.primary;
+      case VoiceState.connecting:
+        return colorScheme.surfaceContainerHighest;
+      case VoiceState.listening:
+        return Colors.redAccent;
+      case VoiceState.thinking:
+        return Colors.amber;
+      case VoiceState.speaking:
+        return Colors.green;
+      case VoiceState.error:
+        return colorScheme.error;
+    }
+  }
+  
+  IconData _getButtonIcon() {
+    switch (_voiceState) {
+      case VoiceState.idle:
+        return Icons.mic_none;
+      case VoiceState.connecting:
+        return Icons.cloud_sync;
       case VoiceState.listening:
         return Icons.mic;
       case VoiceState.thinking:
+        return Icons.psychology;
       case VoiceState.speaking:
-        return Icons.graphic_eq;
+        return Icons.volume_up;
       case VoiceState.error:
         return Icons.refresh;
-      default:
-        return Icons.mic_none;
-    }
-  }
-  
-  Color _getMicrophoneColor(ColorScheme colorScheme) {
-    switch (_voiceState) {
-      case VoiceState.listening:
-        return Colors.red;
-      case VoiceState.thinking:
-      case VoiceState.speaking:
-        return colorScheme.tertiary;
-      case VoiceState.error:
-        return colorScheme.error;
-      default:
-        return colorScheme.primary;
     }
   }
 }
 
-/// Voice interaction states
 enum VoiceState {
   idle,
+  connecting,
   listening,
   thinking,
   speaking,
-  connecting,
   error,
 }
 
-/// Transcript message model
 class TranscriptMessage {
   final String text;
   final bool isUser;
@@ -672,4 +544,60 @@ class TranscriptMessage {
     this.isSystem = false,
     required this.timestamp,
   });
+}
+
+class _TranscriptBubble extends StatelessWidget {
+  final TranscriptMessage message;
+  
+  const _TranscriptBubble({required this.message});
+  
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    if (message.isSystem) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: Text(
+            message.text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    
+    return Align(
+      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        decoration: BoxDecoration(
+          color: message.isUser 
+              ? colorScheme.primaryContainer 
+              : colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16).copyWith(
+            bottomRight: message.isUser ? const Radius.circular(4) : null,
+            bottomLeft: !message.isUser ? const Radius.circular(4) : null,
+          ),
+        ),
+        child: Text(
+          message.text,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: message.isUser 
+                ? colorScheme.onPrimaryContainer 
+                : colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
 }
