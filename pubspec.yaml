@@ -102,7 +102,6 @@ dependencies:
   # record: Real-time audio recording with streaming support
   # audio_session: Audio session management for proper mic handling
   record: ^5.2.0
-  record_linux: ^1.2.0 # Force compatible version
   audio_session: ^0.1.21
   
   # Phase 33: Investment Screen - TypeAhead contact search
