@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../data/app_state.dart';
 
 /// Pact Witness Screen
@@ -283,25 +284,43 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Brand mark
+                  // Header with Brand mark and Share button
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF22C55E),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                      // Brand mark
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF22C55E),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF22C55E),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF22C55E),
-                          borderRadius: BorderRadius.circular(1),
-                        ),
+                      
+                      // Share Button (Manual Invite)
+                      IconButton(
+                        icon: const Icon(Icons.share, color: Color(0xFF94A3B8)),
+                        tooltip: 'Share Invite Link',
+                        onPressed: () {
+                          Share.share(
+                            'I’m starting a new habit pact. Will you be my witness? Download The Pact here: https://atomichabits.app',
+                            subject: 'Be my witness on The Pact',
+                          );
+                        },
                       ),
                     ],
                   ),

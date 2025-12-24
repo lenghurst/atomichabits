@@ -174,7 +174,7 @@ class HabitListScreen extends StatelessWidget {
             const SizedBox(height: 32),
             // Phase 31: More prominent CTA
             FilledButton.icon(
-              onPressed: () => context.go('/'),
+              onPressed: () => context.push('/habit/add'),
               icon: const Icon(Icons.add_circle_outline),
               label: const Text('Create Your First Habit'),
               style: FilledButton.styleFrom(
@@ -410,7 +410,7 @@ class HabitListScreen extends StatelessWidget {
                 subtitle: const Text('Let AI guide you through habit creation'),
                 onTap: () {
                   Navigator.pop(context);
-                  context.go('/'); // Conversational onboarding
+                  context.push('/habit/add'); // Conversational onboarding (new habit flow)
                 },
               ),
               ListTile(

@@ -197,7 +197,12 @@ class _MyAppState extends State<MyApp> {
         // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
         GoRoute(
           path: '/onboarding/chat',
-          builder: (context, state) => const ConversationalOnboardingScreen(),
+          builder: (context, state) => const ConversationalOnboardingScreen(isOnboarding: true),
+        ),
+        // Phase 64: Distinct route for adding habits (avoids onboarding loop)
+        GoRoute(
+          path: '/habit/add',
+          builder: (context, state) => const ConversationalOnboardingScreen(isOnboarding: false),
         ),
         // Voice onboarding: Gemini Live API (Phase 27.5)
         GoRoute(

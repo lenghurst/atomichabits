@@ -45,6 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>
+	<string>We need access to your contacts to help you select a witness for your pact.</string>
 	<!-- Phase 9: URL Schemes for widget deep links -->
 	<key>CFBundleURLTypes</key>
 	<array>

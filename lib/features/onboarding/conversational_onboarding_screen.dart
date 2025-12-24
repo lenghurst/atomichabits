@@ -21,7 +21,12 @@ import '../dev/dev_tools_overlay.dart';
 /// 
 /// Uses OnboardingOrchestrator as the "brain" - this screen is just the UI.
 class ConversationalOnboardingScreen extends StatefulWidget {
-  const ConversationalOnboardingScreen({super.key});
+  final bool isOnboarding;
+
+  const ConversationalOnboardingScreen({
+    super.key,
+    this.isOnboarding = true,
+  });
 
   @override
   State<ConversationalOnboardingScreen> createState() =>
@@ -396,13 +401,15 @@ class _ConversationalOnboardingScreenState
       final appState = context.read<AppState>();
       await appState.createHabit(habit);
       
-      // 3. Complete onboarding
-      await appState.completeOnboarding();
+      // 3. Complete onboarding (only if in onboarding mode)
+      if (widget.isOnboarding) {
+        await appState.completeOnboarding();
+      }
       
       if (!mounted) return;
       
       // 4. Navigate to home
-      context.go('/');
+      context.go('/dashboard');
       
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
