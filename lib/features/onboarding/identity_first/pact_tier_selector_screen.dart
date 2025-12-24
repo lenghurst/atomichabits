@@ -330,6 +330,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
     final orchestrator = context.watch<OnboardingOrchestrator>();
     final habitName = orchestrator.extractedData?.name ?? "My Atomic Habit";
     final witnessName = appState.userProfile?.witnessName;
+    final userName = appState.userProfile?.name ?? "I";
     
     final identity = appState.userProfile?.identity.isNotEmpty == true
         ? appState.userProfile!.identity
@@ -506,7 +507,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                                 const Icon(Icons.gavel, color: Colors.amber, size: 16),
                                 const SizedBox(width: 8),
                                 const Text(
-                                  "OFFICIAL COMMITMENT",
+                                  "THE PLEDGE",
                                   style: TextStyle(
                                     fontSize: 10, 
                                     letterSpacing: 1.5, 
@@ -518,7 +519,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                             ),
                             const SizedBox(height: 16),
                             const Text(
-                              "I hereby pledge to complete:",
+                              "I, $userName, stake my reputation and money on:",
                               style: TextStyle(color: Colors.white70, fontSize: 14),
                             ),
                             const SizedBox(height: 12),
@@ -615,9 +616,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                             'Social accountability partners',
                             'Advanced analytics & insights',
                             'Priority support',
-                          ],
-                          buttonText: 'Start Free Trial',
-                          isPopular: true,
+                                                   buttonText: 'Seal the Pact',                         isPopular: true,
                         ),
                         isSelected: _selectedTier == 'builder',
                         onSelect: () => _handleSelectTier('builder'),

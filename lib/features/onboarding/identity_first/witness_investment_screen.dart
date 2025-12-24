@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../data/app_state.dart';
 import '../../../data/services/voice_session_manager.dart';
 import '../components/permission_glass_pane.dart';
@@ -249,20 +249,15 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     final myName = appState.userProfile?.name ?? "I";
     final habitName = context.read<OnboardingOrchestrator>().extractedData?.name ?? "a new habit";
     
-    final message = "Hey $name, $myName is starting a pact to build $habitName. "
-        "Will you be the witness? https://atomichabits.app/witness";
-    
-    final uri = Uri.parse("sms:$contact?body=${Uri.encodeComponent(message)}");
+    // Polished Copy (Brain Surgery 2.5)
+    final message = "Hey $name, $myName here. I just bet money that I'll build a habit of $habitName. "
+        "I named you as my witness. If I slack off, I lose the cash. Keep me honest? https://atomichabits.app/witness";
     
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        // Fallback for simulators or no SMS app
-        debugPrint("Could not launch SMS: $uri");
-      }
+      // Use system share sheet (works for WhatsApp, SMS, Signal, etc.)
+      await Share.share(message, subject: "Witness my Pact");
     } catch (e) {
-      debugPrint("Error launching SMS: $e");
+      debugPrint("Error sharing invite: $e");
     }
     
     // Navigate regardless of success (don't block user)
