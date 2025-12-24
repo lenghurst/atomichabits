@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 31)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 32)  
 > **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
@@ -60,6 +60,25 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 32: FEAT-01 - Audio Recording Integration
+
+Implemented a robust audio recording and session management system to enable real-time voice conversations with the AI coach. This is a critical step towards a fully voice-first user experience.
+
+**Key Changes Implemented:**
+
+| Component | File(s) Changed | Details |
+|---|---|---|
+| **Audio Dependencies** | `pubspec.yaml` | Added `flutter_sound` and `permission_handler` to manage microphone access and audio streaming. |
+| **Audio Recording Service** | `audio_recording_service.dart` | Created a new service to handle microphone initialisation, recording lifecycle (start, stop, pause, resume), and audio data streaming. Includes voice activity detection (VAD) to minimise data transmission. |
+| **Voice Session Manager** | `voice_session_manager.dart` | Created a new orchestration layer to manage the entire voice session. It integrates the `AudioRecordingService` and `GeminiLiveService`, handling state synchronisation, error recovery, and audio routing between the microphone, the AI, and the user's speaker. |
+| **Voice Onboarding Screen** | `voice_onboarding_screen.dart` | Refactored the screen to use the new `VoiceSessionManager`. This simplifies the UI logic and provides a more robust and responsive user experience with real-time audio level visualisation. |
+
+**New Files Created:**
+- `lib/data/services/audio_recording_service.dart`
+- `lib/data/services/voice_session_manager.dart`
 
 ---
 

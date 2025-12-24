@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 31)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 32)  
 > **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Awaiting Final Build & Test
@@ -21,6 +21,18 @@
 2. Add to Sprint History with date and changes
 3. Update `AI_CONTEXT.md` with changes made
 4. Commit all changes to `main` branch
+
+---
+
+## Phase 32: FEAT-01 - Audio Recording Integration
+
+**Goal:** Implement a robust audio recording and session management system.
+
+**Status:** 🟢 COMPLETE
+
+| ID | Recommendation | Advisor | Status |
+|----|----------------|---------|--------|
+| FEAT-01 | Audio Recording Service | Robustness Review | ✅ |
 
 ---
 

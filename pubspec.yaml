@@ -97,6 +97,12 @@ dependencies:
   # Phase 28.4 (Fogg): Native contact picker for frictionless witness selection
   flutter_contacts: ^1.1.9+2
   permission_handler: ^11.3.1
+  
+  # Phase 32: Audio Recording for Voice AI (FEAT-01)
+  # record: Real-time audio recording with streaming support
+  # audio_session: Audio session management for proper mic handling
+  record: ^5.1.2
+  audio_session: ^0.1.21
 
 dev_dependencies:
   flutter_test:
