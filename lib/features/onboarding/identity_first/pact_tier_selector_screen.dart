@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../data/app_state.dart';
+import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 
 /// Pact Tier Selector Screen
 /// 
@@ -326,6 +327,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final orchestrator = context.watch<OnboardingOrchestrator>();
+    final habitName = orchestrator.extractedData?.name ?? "My Atomic Habit";
+    final witnessName = appState.userProfile?.witnessName;
+    
     final identity = appState.userProfile?.identity.isNotEmpty == true
         ? appState.userProfile!.identity
         : 'A Better Version of Yourself';
@@ -482,6 +487,71 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                           ],
                         ),
                       ),
+
+                      const SizedBox(height: 24),
+
+                      // --- NEW: THE CONTRACT CARD ---
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.gavel, color: Colors.amber, size: 16),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "OFFICIAL COMMITMENT",
+                                  style: TextStyle(
+                                    fontSize: 10, 
+                                    letterSpacing: 1.5, 
+                                    color: Colors.white54, 
+                                    fontWeight: FontWeight.w900
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "I hereby pledge to complete:",
+                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                            ),
+                            const SizedBox(height: 12),
+                            // Dynamic Habit
+                            Row(
+                              children: [
+                                const Icon(Icons.check_circle, size: 16, color: Color(0xFF4CAF50)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    habitName, 
+                                    style: const TextStyle(
+                                      color: Colors.white, 
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(color: Colors.white10, height: 24),
+                            if (witnessName != null && witnessName.isNotEmpty)
+                              Row(
+                                children: [
+                                  const Text("Witnessed by: ", style: TextStyle(color: Colors.white54)),
+                                  Text(witnessName!, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                      // --- END CONTRACT CARD ---
 
                       const SizedBox(height: 16),
 

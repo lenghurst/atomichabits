@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../data/app_state.dart';
 import '../../../data/services/voice_session_manager.dart';
 import '../components/permission_glass_pane.dart';
@@ -233,9 +234,39 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
       );
       appState.setUserProfile(updatedProfile);
     }
+
+    // --- NEW: INVITE THE WITNESS (Brain Surgery 2.5) ---
+    if (witnessContact.isNotEmpty) {
+      _inviteWitness(witnessName, witnessContact);
+    } else {
+      // Navigate to tier selection if no contact info
+      context.go('/onboarding/tier');
+    }
+  }
+
+  Future<void> _inviteWitness(String name, String contact) async {
+    final appState = context.read<AppState>();
+    final myName = appState.userProfile?.name ?? "I";
+    final habitName = context.read<OnboardingOrchestrator>().extractedData?.name ?? "a new habit";
     
-    // Navigate to tier selection
-    context.go('/onboarding/tier');
+    final message = "Hey $name, $myName is starting a pact to build $habitName. "
+        "Will you be the witness? https://atomichabits.app/witness";
+    
+    final uri = Uri.parse("sms:$contact?body=${Uri.encodeComponent(message)}");
+    
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        // Fallback for simulators or no SMS app
+        debugPrint("Could not launch SMS: $uri");
+      }
+    } catch (e) {
+      debugPrint("Error launching SMS: $e");
+    }
+    
+    // Navigate regardless of success (don't block user)
+    if (mounted) context.go('/onboarding/tier');
   }
   
   /// Continue without a witness.
