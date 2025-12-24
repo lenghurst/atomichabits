@@ -13,35 +13,25 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 31 - LAUNCH READY | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 33 - LAUNCH READY | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Final Smoke Test) |
 
-> **Last Updated:** December 24, 2025 (Commit: Phase 31)  
-> **Current Phase:** Phase 31 - Final Polish Complete
+> **Last Updated:** December 24, 2025 (Commit: Phase 33)  
+> **Current Phase:** Phase 33 - Brain Surgery 2.5 Complete
 
 ---
 
-## 🎙️ Voice First Pivot (Phase 27)
+## 🧠 The "Brain Surgery" Protocol (Phase 33)
 
-**The Pact** is pivoting from text-based onboarding to **voice-first conversational AI coaching**.
+We have just completed a critical architectural overhaul ("Brain Surgery 2.5") to close the loop on social accountability.
 
-### Why Voice?
-
-- **10x faster** than typing on mobile
-- **More natural** for habit discussions
-- **Higher completion rates** (voice feels like talking to a friend)
-- **Accessibility** for users who struggle with forms
-
-### Two-Tier AI System
-
-| Tier | Model | Interface | Use Case |
-|------|-------|-----------|----------|
-| **Tier 1 (Free)** | DeepSeek-V3 | Text Chat | Reasoning, logic, habit design |
-| **Tier 2 (Premium)** | Gemini Live | Voice | Real-time voice coaching |
-
-**Dev Mode:** Enable "Premium (Tier 2)" in Settings → Developer Settings to test voice interface.
+### Key Changes
+1.  **The Pledge (Contract Card):** Before paying, users now see a binding contract card listing their specific habit, witness, and stakes.
+2.  **Witness Invite (Share Sheet):** Selecting a witness now triggers a native share sheet (WhatsApp, SMS, etc.) to actually invite them.
+3.  **Explicit Auth:** Google Sign-In now explicitly requests `email` and `profile` scopes for trust.
+4.  **Voice Coach Polish:** Added sound effects and improved feedback for the AI Coach placeholder.
 
 ---
 
@@ -64,25 +54,24 @@ atomichabits/
 ├── lib/                  # === FLUTTER MOBILE APP ===
 │   ├── features/
 │   │   ├── onboarding/
-│   │   │   ├── voice_onboarding_screen.dart      # NEW: Voice interface
-│   │   │   ├── conversational_onboarding_screen.dart  # Text chat
-│   │   │   └── onboarding_screen.dart            # Manual form (fallback)
-│   │   ├── dev/
-│   │   │   └── dev_tools_overlay.dart            # NEW: Developer tools
+│   │   │   ├── identity_first/           # NEW: The "Pact" Flow
+│   │   │   │   ├── value_proposition_screen.dart
+│   │   │   │   ├── identity_access_gate_screen.dart
+│   │   │   │   ├── witness_investment_screen.dart
+│   │   │   │   └── pact_tier_selector_screen.dart
+│   │   │   ├── voice_onboarding_screen.dart
+│   │   │   └── conversational_onboarding_screen.dart
 │   │   └── ...
 │   ├── data/
 │   │   └── services/
-│   │       ├── gemini_live_service.dart          # NEW: Voice WebSocket
-│   │       └── ...
+│   │       ├── gemini_live_service.dart
+│   │       └── deep_seek_service.dart
 │   └── config/
-│       └── ai_model_config.dart                  # AI tier configuration
-├── supabase/
-│   └── functions/
-│       └── get-gemini-ephemeral-token/           # Edge Function for voice auth
+│       └── ai_model_config.dart
 ├── docs/                 # === DOCUMENTATION ===
-│   ├── GOOGLE_OAUTH_SETUP.md                     # NEW: OAuth setup guide
+│   ├── GOOGLE_OAUTH_SETUP.md
 │   └── ...
-└── landing_page/         # === REACT WEB ANCHOR (The Trojan Horse) ===
+└── landing_page/         # === REACT WEB ANCHOR ===
 ```
 
 ---
@@ -162,7 +151,7 @@ Edge Fn     (Direct API)
 
 ## 🚀 Next Steps: Final Build & Smoke Test
 
-**Phases 29 & 30 have implemented the Second Council of Five recommendations. The final step before launch is a full smoke test.**
+**Phase 33 has implemented the "Brain Surgery 2.5" recommendations. The final step before launch is a full smoke test.**
 
 ### 1. Get New Dependencies
 
@@ -177,19 +166,15 @@ flutter pub get
 The Flutter app must be rebuilt to include all the new onboarding flows.
 
 ```bash
-flutter build apk --debug --dart-define-from-file=secrets.json
+flutter build apk --release --dart-define-from-file=secrets.json
 ```
 
 ### 3. Perform the Final Smoke Test
 
-1. Install the newly built APK on a physical Android device.
-2. **Test Hook Screen & Tagline:** On first open, verify the new "Value Proposition" screen appears with the "Become who you said you'd be" tagline.
-3. **Test Default Identity & Haptics:** Proceed to the identity screen. Verify "A Morning Person" is pre-selected and that tapping other chips gives haptic feedback.
-4. **Test Supporter Reframing:** Proceed to the witness screen. Verify all copy refers to "Supporter," not "Witness."
-5. **Test Pact Preview:** Proceed to the tier screen. Verify the "Your Pact Preview" card appears before the tier options.
-6. **Test AI Coach Sample:** Tap the "Play Sample" button on the tier screen and verify the audio plays.
-7. **Test Confetti:** Complete the onboarding flow and verify the confetti celebration appears.
-8. **Test Dashboard Empty State:** Skip adding a habit and go to the dashboard. Verify the new personalised, motivational empty state is shown.
+1. **Test The Pledge:** Verify the "Contract Card" appears on the Tier Selector screen.
+2. **Test Witness Invite:** Verify the Share Sheet opens when selecting a witness.
+3. **Test Voice Feedback:** Verify the sound effect plays when tapping the AI Coach sample.
+4. **Test Google Auth:** Verify the permission dialog requests email/profile access.
 
 ---
 
@@ -204,8 +189,8 @@ flutter pub get
 # Run with secrets (required for AI features)
 flutter run --dart-define-from-file=secrets.json
 
-# Build debug APK
-flutter build apk --debug --dart-define-from-file=secrets.json
+# Build release APK
+flutter build apk --release --dart-define-from-file=secrets.json
 ```
 
 ### Secrets Configuration
@@ -220,36 +205,7 @@ Create `secrets.json` in project root:
 }
 ```
 
-### Landing Page (React)
-
-```bash
-cd landing_page
-npm install
-npm run dev
-```
-
----
-
-## 🧪 Developer Tools (NEW)
-
-**Phase 27.6** introduced a comprehensive developer tools overlay for testing.
-
-### Access Developer Tools
-
-**Triple-tap** on any screen title (e.g., "AI Coach", "Voice Coach") in debug builds.
-
-### Features
-
-- ✅ **Toggle Premium Mode** (Tier 2) instantly
-- ✅ **View AI Status** (tier, availability, kill switches)
-- ✅ **Quick Navigation** to any screen
-- ✅ **Skip Onboarding** for testing
-- ✅ **Copy Debug Info** for bug reports
-
-### Settings Access
-
-All onboarding screens now have a **Settings gear icon** in the top-right corner.  
-No need to create a habit first!
+**Note:** Ensure `DEEPSEEK_API_KEY` is named exactly as shown.
 
 ---
 
@@ -298,15 +254,6 @@ flutter test
 
 - `test/services/ai/deep_seek_service_test.dart` - AI model integration tests
 - `test/services/ai/ai_service_manager_test.dart` - Tier selection logic tests
-
-### Testing Voice Interface
-
-1. Build debug APK: `flutter build apk --debug --dart-define-from-file=secrets.json`
-2. Install on device
-3. Tap **Settings** (gear icon) → **Developer Settings**
-4. Enable **Premium (Tier 2)**
-5. Go back → Tap **AI Coach**
-6. Should route to **Voice Coach** (no auth required in dev mode)
 
 ---
 
