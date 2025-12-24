@@ -166,3 +166,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Force compatible version of record_linux to resolve build conflict
+dependency_overrides:
+  record_linux: ^1.2.0
