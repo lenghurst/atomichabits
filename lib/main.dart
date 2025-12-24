@@ -118,36 +118,55 @@ void main() async {
     contractService: contractService,
   );
   await witnessService.initialize();
+
+  // Initialize AppState (moved from MultiProvider to main to prevent router recreation loops)
+  final appState = AppState();
+  await appState.initialize();
+
+  // Initialize dependent services
+  final weeklyReviewService = WeeklyReviewService(aiServiceManager);
+  final onboardingOrchestrator = OnboardingOrchestrator(aiServiceManager: aiServiceManager);
   
-  runApp(MyApp(
-    aiServiceManager: aiServiceManager,
-    authService: authService,
-    syncService: syncService,
-    contractService: contractService,
-    soundService: soundService,
-    deepLinkService: deepLinkService,
-    witnessService: witnessService,
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        // App State (central state management)
+        ChangeNotifierProvider.value(value: appState),
+        // Phase 24: AI Service Manager (The Brain)
+        ChangeNotifierProvider.value(value: aiServiceManager),
+        // Phase 15: Auth Service (Identity Foundation)
+        ChangeNotifierProvider.value(value: authService),
+        // Phase 15: Sync Service (Cloud Backup)
+        ChangeNotifierProvider.value(value: syncService),
+        // Phase 16.2: Contract Service (Habit Contracts)
+        ChangeNotifierProvider.value(value: contractService),
+        // Phase 18: Sound Service (The Pulse)
+        ChangeNotifierProvider.value(value: soundService),
+        // Phase 21.1: Deep Link Service (The Viral Engine)
+        ChangeNotifierProvider.value(value: deepLinkService),
+        // Phase 22: Witness Service (The Accountability Loop)
+        ChangeNotifierProvider.value(value: witnessService),
+        // Weekly Review Service
+        Provider.value(value: weeklyReviewService),
+        // Onboarding Orchestrator
+        ChangeNotifierProvider.value(value: onboardingOrchestrator),
+      ],
+      child: MyApp(
+        appState: appState,
+        deepLinkService: deepLinkService,
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
-  final AIServiceManager aiServiceManager;
-  final AuthService authService;
-  final SyncService syncService;
-  final ContractService contractService;
-  final SoundService soundService;
+  final AppState appState;
   final DeepLinkService deepLinkService;
-  final WitnessService witnessService;
   
   const MyApp({
     super.key, 
-    required this.aiServiceManager,
-    required this.authService,
-    required this.syncService,
-    required this.contractService,
-    required this.soundService,
+    required this.appState,
     required this.deepLinkService,
-    required this.witnessService,
   });
 
   @override
@@ -157,6 +176,195 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // Phase 9: Stream subscription for widget clicks
   StreamSubscription<Uri?>? _widgetClickSubscription;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize Router ONCE to prevent recreation loops on state changes
+    _router = GoRouter(
+      initialLocation: widget.appState.hasCompletedOnboarding ? '/dashboard' : '/',
+      refreshListenable: widget.appState, // Listen to app state changes for redirects
+      routes: [
+        // Phase 29: Value First Flow (Second Council of Five)
+        // All new users start with the Hook Screen (value proposition)
+        // Then proceed to identity declaration + OAuth
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const ValuePropositionScreen(),
+        ),
+        // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
+        GoRoute(
+          path: '/onboarding/chat',
+          builder: (context, state) => const ConversationalOnboardingScreen(),
+        ),
+        // Voice onboarding: Gemini Live API (Phase 27.5)
+        GoRoute(
+          path: '/onboarding/voice',
+          builder: (context, state) => const VoiceOnboardingScreen(),
+        ),
+        // Manual onboarding: Form UI (Tier 3 fallback)
+        GoRoute(
+          path: '/onboarding/manual',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        
+        // ========== Identity First Onboarding (Phase 27.17) ==========
+        // New onboarding flow based on Figma designs
+        GoRoute(
+          path: '/onboarding/identity',
+          builder: (context, state) => const IdentityAccessGateScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding/witness',
+          builder: (context, state) => const WitnessInvestmentScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding/tier',
+          builder: (context, state) => const PactTierSelectorScreen(),
+        ),
+        
+        // ========== Phase 19: Side Door Landing Pages ==========
+        // Phase 28.4 (Musk): Route consolidation with preset identities
+        // Each niche gets its own "front door" with pre-filled identity
+        // Eliminates the old ConversationalOnboardingScreen entirely
+        
+        // Developer door: r/programming, HackerNews
+        GoRoute(
+          path: '/devs',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<OnboardingOrchestrator>().setNicheFromUrl('/devs');
+            });
+            return const IdentityAccessGateScreen(
+              presetIdentity: 'A World-Class Developer',
+            );
+          },
+        ),
+        // Writer door: r/writing, Medium
+        GoRoute(
+          path: '/writers',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<OnboardingOrchestrator>().setNicheFromUrl('/writers');
+            });
+            return const IdentityAccessGateScreen(
+              presetIdentity: 'A Best-Selling Author',
+            );
+          },
+        ),
+        // Scholar door: r/GradSchool, academic Twitter
+        GoRoute(
+          path: '/scholars',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<OnboardingOrchestrator>().setNicheFromUrl('/scholars');
+            });
+            return const IdentityAccessGateScreen(
+              presetIdentity: 'A Distinguished Scholar',
+            );
+          },
+        ),
+        // Language learner door: Duolingo refugees
+        GoRoute(
+          path: '/languages',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<OnboardingOrchestrator>().setNicheFromUrl('/languages');
+            });
+            return const IdentityAccessGateScreen(
+              presetIdentity: 'A Fluent Polyglot',
+            );
+          },
+        ),
+        // Indie maker door: IndieHackers
+        GoRoute(
+          path: '/makers',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<OnboardingOrchestrator>().setNicheFromUrl('/makers');
+            });
+            return const IdentityAccessGateScreen(
+              presetIdentity: 'A Prolific Maker',
+            );
+          },
+        ),
+        // Dashboard: Multi-habit list (Phase 4)
+        GoRoute(
+          path: '/dashboard',
+          builder: (context, state) => const HabitListScreen(),
+        ),
+        // Today: Focus mode for single habit (Phase 4 updated)
+        GoRoute(
+          path: '/today',
+          builder: (context, state) => const TodayScreen(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        // History: Calendar view (Phase 5)
+        GoRoute(
+          path: '/history',
+          builder: (context, state) => const HistoryScreen(),
+        ),
+        // Analytics: Dashboard with charts (Phase 10)
+        GoRoute(
+          path: '/analytics',
+          builder: (context, state) => const AnalyticsScreen(),
+        ),
+        // Data Management: Backup & Restore (Phase 11)
+        GoRoute(
+          path: '/data-management',
+          builder: (context, state) => const DataManagementScreen(),
+        ),
+        // Habit Edit: Edit habit properties + stacking (Phase 13)
+        GoRoute(
+          path: '/habit/:habitId/edit',
+          builder: (context, state) {
+            final habitId = state.pathParameters['habitId'] ?? '';
+            return HabitEditScreen(habitId: habitId);
+          },
+        ),
+        // Phase 16.2: Contracts routes
+        GoRoute(
+          path: '/contracts',
+          builder: (context, state) => const ContractsListScreen(),
+        ),
+        GoRoute(
+          path: '/contracts/create',
+          builder: (context, state) {
+            final habitId = state.uri.queryParameters['habitId'];
+            return CreateContractScreen(habitId: habitId);
+          },
+        ),
+        // Phase 16.4: Deep Link for contract join
+        GoRoute(
+          path: '/contracts/join/:inviteCode',
+          builder: (context, state) {
+            final inviteCode = state.pathParameters['inviteCode'] ?? '';
+            return JoinContractScreen(inviteCode: inviteCode);
+          },
+        ),
+        // Phase 22: Witness routes (The Accountability Loop)
+        GoRoute(
+          path: '/witness',
+          builder: (context, state) => const WitnessDashboard(),
+        ),
+        GoRoute(
+          path: '/witness/accept/:inviteCode',
+          builder: (context, state) {
+            final inviteCode = state.pathParameters['inviteCode'] ?? '';
+            return WitnessAcceptScreen(inviteCode: inviteCode);
+          },
+        ),
+      ],
+    );
+    
+    // Phase 21.1: Initialize deep link service with router
+    widget.deepLinkService.setRouter(_router);
+  }
 
   @override
   void dispose() {
@@ -166,312 +374,90 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // App State (central state management)
-        ChangeNotifierProvider(
-          create: (context) {
-            final appState = AppState();
-            appState.initialize();
-            return appState;
-          },
-        ),
-        // Phase 24: AI Service Manager (The Brain)
-        ChangeNotifierProvider<AIServiceManager>.value(value: widget.aiServiceManager),
-        // Phase 15: Auth Service (Identity Foundation)
-        ChangeNotifierProvider<AuthService>.value(value: widget.authService),
-        // Phase 15: Sync Service (Cloud Backup)
-        ChangeNotifierProvider<SyncService>.value(value: widget.syncService),
-        // Phase 16.2: Contract Service (Habit Contracts)
-        ChangeNotifierProvider<ContractService>.value(value: widget.contractService),
-        // Phase 18: Sound Service (The Pulse)
-        ChangeNotifierProvider<SoundService>.value(value: widget.soundService),
-        // Phase 21.1: Deep Link Service (The Viral Engine)
-        ChangeNotifierProvider<DeepLinkService>.value(value: widget.deepLinkService),
-        // Phase 22: Witness Service (The Accountability Loop)
-        ChangeNotifierProvider<WitnessService>.value(value: widget.witnessService),
-        // Weekly Review Service (Phase 7 → Phase 24: Now uses AIServiceManager)
-        ProxyProvider<AIServiceManager, WeeklyReviewService>(
-          update: (context, aiServiceManager, previous) =>
-              previous ?? WeeklyReviewService(aiServiceManager),
-        ),
-        // Onboarding Orchestrator (Phase 2 → Phase 24: Now uses AIServiceManager)
-        ChangeNotifierProxyProvider<AIServiceManager, OnboardingOrchestrator>(
-          create: (context) => OnboardingOrchestrator(
-            aiServiceManager: context.read<AIServiceManager>(),
-          ),
-          update: (context, aiServiceManager, previous) {
-            return previous ?? OnboardingOrchestrator(aiServiceManager: aiServiceManager);
-          },
-        ),
-      ],
-      child: Consumer<AppState>(
-        builder: (context, appState, child) {
-          // Show loading screen while initializing
-          if (appState.isLoading) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: Scaffold(
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Loading your habits...',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
+    // Consumer is no longer needed for AppState creation, but we still watch it for UI updates
+    // However, MaterialApp.router listens to the router, which listens to AppState (refreshListenable)
+    // So we don't strictly need Consumer here unless we want to rebuild MaterialApp on other changes
+    // like themeMode.
+    
+    final appState = context.watch<AppState>();
+    
+    // Show loading screen while initializing (though main() waits for it now, so this might be redundant but safe)
+    if (appState.isLoading) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  'Loading your habits...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
                   ),
                 ),
-              ),
-            );
-          }
-
-          // Phase 9: Set up widget click listener (once app is loaded)
-          _widgetClickSubscription?.cancel();
-          _widgetClickSubscription = appState.widgetClickStream.listen((uri) {
-            if (uri != null) {
-              if (kDebugMode) {
-                debugPrint('Widget click received: $uri');
-              }
-              appState.handleWidgetUri(uri);
-            }
-          });
-
-          // Configure navigation routes
-          // Phase 4: Dashboard is home for returning users
-          // Phase 2: Chat UI for new users, Form is fallback
-          // Phase 21.1: Deep link service gets router reference
-          final router = GoRouter(
-            initialLocation: appState.hasCompletedOnboarding ? '/dashboard' : '/',
-            routes: [
-              // Phase 29: Value First Flow (Second Council of Five)
-              // All new users start with the Hook Screen (value proposition)
-              // Then proceed to identity declaration + OAuth
-              GoRoute(
-                path: '/',
-                builder: (context, state) => const ValuePropositionScreen(),
-              ),
-              // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
-              GoRoute(
-                path: '/onboarding/chat',
-                builder: (context, state) => const ConversationalOnboardingScreen(),
-              ),
-              // Voice onboarding: Gemini Live API (Phase 27.5)
-              GoRoute(
-                path: '/onboarding/voice',
-                builder: (context, state) => const VoiceOnboardingScreen(),
-              ),
-              // Manual onboarding: Form UI (Tier 3 fallback)
-              GoRoute(
-                path: '/onboarding/manual',
-                builder: (context, state) => const OnboardingScreen(),
-              ),
-              
-              // ========== Identity First Onboarding (Phase 27.17) ==========
-              // New onboarding flow based on Figma designs
-              GoRoute(
-                path: '/onboarding/identity',
-                builder: (context, state) => const IdentityAccessGateScreen(),
-              ),
-              GoRoute(
-                path: '/onboarding/witness',
-                builder: (context, state) => const WitnessInvestmentScreen(),
-              ),
-              GoRoute(
-                path: '/onboarding/tier',
-                builder: (context, state) => const PactTierSelectorScreen(),
-              ),
-              
-              // ========== Phase 19: Side Door Landing Pages ==========
-              // Phase 28.4 (Musk): Route consolidation with preset identities
-              // Each niche gets its own "front door" with pre-filled identity
-              // Eliminates the old ConversationalOnboardingScreen entirely
-              
-              // Developer door: r/programming, HackerNews
-              GoRoute(
-                path: '/devs',
-                builder: (context, state) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<OnboardingOrchestrator>().setNicheFromUrl('/devs');
-                  });
-                  return const IdentityAccessGateScreen(
-                    presetIdentity: 'A World-Class Developer',
-                  );
-                },
-              ),
-              // Writer door: r/writing, Medium
-              GoRoute(
-                path: '/writers',
-                builder: (context, state) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<OnboardingOrchestrator>().setNicheFromUrl('/writers');
-                  });
-                  return const IdentityAccessGateScreen(
-                    presetIdentity: 'A Best-Selling Author',
-                  );
-                },
-              ),
-              // Scholar door: r/GradSchool, academic Twitter
-              GoRoute(
-                path: '/scholars',
-                builder: (context, state) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<OnboardingOrchestrator>().setNicheFromUrl('/scholars');
-                  });
-                  return const IdentityAccessGateScreen(
-                    presetIdentity: 'A Distinguished Scholar',
-                  );
-                },
-              ),
-              // Language learner door: Duolingo refugees
-              GoRoute(
-                path: '/languages',
-                builder: (context, state) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<OnboardingOrchestrator>().setNicheFromUrl('/languages');
-                  });
-                  return const IdentityAccessGateScreen(
-                    presetIdentity: 'A Fluent Polyglot',
-                  );
-                },
-              ),
-              // Indie maker door: IndieHackers
-              GoRoute(
-                path: '/makers',
-                builder: (context, state) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<OnboardingOrchestrator>().setNicheFromUrl('/makers');
-                  });
-                  return const IdentityAccessGateScreen(
-                    presetIdentity: 'A Prolific Maker',
-                  );
-                },
-              ),
-              // Dashboard: Multi-habit list (Phase 4)
-              GoRoute(
-                path: '/dashboard',
-                builder: (context, state) => const HabitListScreen(),
-              ),
-              // Today: Focus mode for single habit (Phase 4 updated)
-              GoRoute(
-                path: '/today',
-                builder: (context, state) => const TodayScreen(),
-              ),
-              GoRoute(
-                path: '/settings',
-                builder: (context, state) => const SettingsScreen(),
-              ),
-              // History: Calendar view (Phase 5)
-              GoRoute(
-                path: '/history',
-                builder: (context, state) => const HistoryScreen(),
-              ),
-              // Analytics: Dashboard with charts (Phase 10)
-              GoRoute(
-                path: '/analytics',
-                builder: (context, state) => const AnalyticsScreen(),
-              ),
-              // Data Management: Backup & Restore (Phase 11)
-              GoRoute(
-                path: '/data-management',
-                builder: (context, state) => const DataManagementScreen(),
-              ),
-              // Habit Edit: Edit habit properties + stacking (Phase 13)
-              GoRoute(
-                path: '/habit/:habitId/edit',
-                builder: (context, state) {
-                  final habitId = state.pathParameters['habitId'] ?? '';
-                  return HabitEditScreen(habitId: habitId);
-                },
-              ),
-              // Phase 16.2: Contracts routes
-              GoRoute(
-                path: '/contracts',
-                builder: (context, state) => const ContractsListScreen(),
-              ),
-              GoRoute(
-                path: '/contracts/create',
-                builder: (context, state) {
-                  final habitId = state.uri.queryParameters['habitId'];
-                  return CreateContractScreen(habitId: habitId);
-                },
-              ),
-              // Phase 16.4: Deep Link for contract join
-              GoRoute(
-                path: '/contracts/join/:inviteCode',
-                builder: (context, state) {
-                  final inviteCode = state.pathParameters['inviteCode'] ?? '';
-                  return JoinContractScreen(inviteCode: inviteCode);
-                },
-              ),
-              // Phase 22: Witness routes (The Accountability Loop)
-              GoRoute(
-                path: '/witness',
-                builder: (context, state) => const WitnessDashboard(),
-              ),
-              GoRoute(
-                path: '/witness/accept/:inviteCode',
-                builder: (context, state) {
-                  final inviteCode = state.pathParameters['inviteCode'] ?? '';
-                  return WitnessAcceptScreen(inviteCode: inviteCode);
-                },
-              ),
-            ],
-          );
-          
-          // Phase 21.1: Initialize deep link service with router
-          widget.deepLinkService.setRouter(router);
-
-          // Phase 6: Dynamic theming based on AppState settings
-          return MaterialApp.router(
-            title: 'The Pact',
-            debugShowCheckedModeBanner: false,
-            themeMode: appState.themeMode,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.light,
-              ),
-              useMaterial3: true,
-              cardTheme: const CardThemeData(
-                elevation: 2,
-                margin: EdgeInsets.zero,
-              ),
-              // Custom snackbar theme for AI feedback
-              snackBarTheme: const SnackBarThemeData(
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-              ),
+              ],
             ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.dark,
-              ),
-              useMaterial3: true,
-              cardTheme: const CardThemeData(
-                elevation: 2,
-                margin: EdgeInsets.zero,
-              ),
-              snackBarTheme: const SnackBarThemeData(
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-              ),
-            ),
-            routerConfig: router,
-          );
-        },
+          ),
+        ),
+      );
+    }
+
+    // Phase 9: Set up widget click listener (once app is loaded)
+    _widgetClickSubscription?.cancel();
+    _widgetClickSubscription = appState.widgetClickStream.listen((uri) {
+      if (uri != null) {
+        if (kDebugMode) {
+          debugPrint('Widget click received: $uri');
+        }
+        appState.handleWidgetUri(uri);
+      }
+    });
+
+    // Phase 6: Dynamic theming based on AppState settings
+    return MaterialApp.router(
+      title: 'The Pact',
+      debugShowCheckedModeBanner: false,
+      themeMode: appState.themeMode,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        cardTheme: const CardThemeData(
+          elevation: 2,
+          margin: EdgeInsets.zero,
+        ),
+        // Custom snackbar theme for AI feedback
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+        ),
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        cardTheme: const CardThemeData(
+          elevation: 2,
+          margin: EdgeInsets.zero,
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+        ),
+      ),
+      routerConfig: _router,
     );
   }
 }

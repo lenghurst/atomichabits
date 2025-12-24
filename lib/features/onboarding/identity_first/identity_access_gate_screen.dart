@@ -214,8 +214,8 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
       SnackBar(
         content: Text(
           appState.settings.developerMode 
-              ? 'Developer Mode Disabled' 
-              : 'Developer Mode Enabled',
+              ? 'Developer Mode Enabled' 
+              : 'Developer Mode Disabled',
         ),
         duration: const Duration(seconds: 2),
         backgroundColor: const Color(0xFF22C55E),
