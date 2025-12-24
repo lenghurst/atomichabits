@@ -13,65 +13,59 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 33 - LAUNCH READY | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 34 - Architecture Refactor | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Final Smoke Test) |
 
-> **Last Updated:** December 24, 2025 (Commit: Phase 33)  
-> **Current Phase:** Phase 33 - Brain Surgery 2.5 Complete
+> **Last Updated:** 24 December 2025 (Commit: Phase 34)  
+> **Current Phase:** Phase 34 - Architecture Refactoring Complete  
+> **Language:** UK English (Default)
 
 ---
 
-## 🧠 The "Brain Surgery" Protocol (Phase 33)
+## 🧠 The "Council of Five" Architecture (Phase 34)
 
-We have just completed a critical architectural overhaul ("Brain Surgery 2.5") to close the loop on social accountability.
+We have implemented a comprehensive architectural refactoring based on expert review from the "Council of Five" (Martin Fowler, Eric Evans, Robert C. Martin, Casey Muratori, Remi Rousselet).
 
-### Key Changes
-1.  **The Pledge (Contract Card):** Before paying, users now see a binding contract card listing their specific habit, witness, and stakes.
-2.  **Witness Invite (Share Sheet):** Selecting a witness now triggers a native share sheet (WhatsApp, SMS, etc.) to actually invite them.
-3.  **Explicit Auth:** Google Sign-In now explicitly requests `email` and `profile` scopes for trust.
-4.  **Voice Coach Polish:** Added sound effects and improved feedback for the AI Coach placeholder.
+### Key Architectural Changes
 
----
+| Pattern | Implementation | Purpose |
+|---------|---------------|---------|
+| **Repository Pattern** | `lib/data/repositories/` | Decouples persistence from business logic |
+| **Domain Providers** | `lib/data/providers/` | Separated state management by domain |
+| **PsychometricProfile** | `lib/domain/entities/` | Rich domain entity for AI personalisation |
+| **PsychometricEngine** | `lib/domain/services/` | Incremental behavioural analysis |
 
-## 🤖 AI Agent Quick Start
-
-### The "Big Three" Documentation Files
-
-| File | Purpose | When to Update |
-|------|---------|----------------|
-| **README.md** | Project overview, architecture, user-facing docs | On major features |
-| **AI_CONTEXT.md** | Current state checkpoint for AI agents | Every session end |
-| **ROADMAP.md** | Priorities, sprint tracking, technical debt | Every session end |
-
-### Project Structure
+### New Directory Structure
 
 ```
-atomichabits/
-├── android/              # Native Android (Package: co.thepact.app)
-├── ios/                  # Native iOS (Bundle: co.thepact.app)
-├── lib/                  # === FLUTTER MOBILE APP ===
-│   ├── features/
-│   │   ├── onboarding/
-│   │   │   ├── identity_first/           # NEW: The "Pact" Flow
-│   │   │   │   ├── value_proposition_screen.dart
-│   │   │   │   ├── identity_access_gate_screen.dart
-│   │   │   │   ├── witness_investment_screen.dart
-│   │   │   │   └── pact_tier_selector_screen.dart
-│   │   │   ├── voice_onboarding_screen.dart
-│   │   │   └── conversational_onboarding_screen.dart
-│   │   └── ...
-│   ├── data/
-│   │   └── services/
-│   │       ├── gemini_live_service.dart
-│   │       └── deep_seek_service.dart
-│   └── config/
-│       └── ai_model_config.dart
-├── docs/                 # === DOCUMENTATION ===
-│   ├── GOOGLE_OAUTH_SETUP.md
-│   └── ...
-└── landing_page/         # === REACT WEB ANCHOR ===
+lib/
+├── data/
+│   ├── repositories/           # Infrastructure Layer (Uncle Bob)
+│   │   ├── settings_repository.dart      (Interface)
+│   │   ├── hive_settings_repository.dart (Implementation)
+│   │   ├── user_repository.dart
+│   │   ├── hive_user_repository.dart
+│   │   ├── habit_repository.dart
+│   │   ├── hive_habit_repository.dart
+│   │   ├── psychometric_repository.dart
+│   │   └── hive_psychometric_repository.dart
+│   │
+│   ├── providers/              # State Management Layer (Rousselet)
+│   │   ├── settings_provider.dart
+│   │   ├── user_provider.dart
+│   │   ├── habit_provider.dart
+│   │   └── psychometric_provider.dart
+│   │
+│   └── app_state.dart          # LEGACY: Being strangled
+│
+├── domain/
+│   ├── entities/               # Pure Domain Models (Fowler)
+│   │   └── psychometric_profile.dart
+│   │
+│   └── services/               # Domain Logic (Evans)
+│       └── psychometric_engine.dart
 ```
 
 ---
@@ -89,27 +83,43 @@ Traditional habit apps fail because they rely on **you**.
 
 ---
 
+## 🤖 AI Agent Quick Start
+
+### The "Big Three" Documentation Files
+
+| File | Purpose | When to Update |
+|------|---------|----------------|
+| **README.md** | Project overview, architecture, user-facing docs | On major features |
+| **AI_CONTEXT.md** | Current state checkpoint for AI agents | Every session end |
+| **ROADMAP.md** | Priorities, sprint tracking, technical debt | Every session end |
+
+### Mandatory Session Checklist
+
+**Before Starting:**
+```
+□ 1. Read README.md (project overview, architecture)
+□ 2. Read AI_CONTEXT.md (current state, what's implemented)
+□ 3. Read ROADMAP.md (what's next, priorities)
+□ 4. Read docs/ARCHITECTURE_MIGRATION.md (new provider architecture)
+```
+
+**After Completing:**
+```
+□ 1. SAVE ALL FILES: Ensure no unsaved buffers exist.
+□ 2. COMMIT ALL CHANGES: git commit -am "feat/fix: description"
+□ 3. PUSH TO REMOTE: git push origin main
+□ 4. Update AI_CONTEXT.md with any new features/changes
+□ 5. Update ROADMAP.md if priorities changed
+```
+
+---
+
 ## 🏗️ Architecture: "The Unified Front"
 
-We use a **Hybrid Viral Architecture** to ensure invite links work everywhere.
-
-1. **The Signal (Mobile App):**
-   - Generates a link: `https://thepact.co/join/XYZ`
-
-2. **The Anchor (React Web):**
-   - Hosted on Netlify.
-   - Detects OS (Android/iOS/Desktop).
-   - **Mobile:** Redirects to App Store / Play Store with `referrer` params.
-   - **Desktop:** Shows a high-fidelity landing page to capture emails.
-
-3. **The Receiver (Mobile App):**
-   - Uses `PlayInstallReferrer` API on Android to auto-accept invites after install.
-   - Bypasses onboarding for invited users ("The Red Carpet").
-
-### Voice Architecture (NEW)
+### Voice Architecture
 
 ```
-User → Voice Onboarding Screen
+User → Voice Coach Screen
          ↓
      Gemini Live Service
          ↓
@@ -130,8 +140,31 @@ Edge Fn     (Direct API)
    Real-time Voice
 ```
 
-**Production:** Uses Supabase Edge Function to get ephemeral tokens (requires auth)  
-**Dev Mode:** Uses Gemini API key directly (debug builds only, no auth required)
+### PsychometricProfile Architecture (NEW)
+
+```
+User Behaviour → PsychometricEngine
+                       ↓
+              PsychometricProfile
+                       ↓
+              toSystemPrompt()
+                       ↓
+              [[USER PSYCHOMETRICS]]
+              CORE DRIVERS:
+              - Values: Health, Mastery
+              - Primary Drive: Become the best version
+              - FEARS: The Lazy Stoner
+              
+              COMMUNICATION PROTOCOL:
+              - Adopt Persona: SUPPORTIVE
+              - Verbosity Level: 3/5
+              
+              BEHAVIORAL RISKS:
+              - High-Risk Drop-off Zones: Weekends
+              - Current Resilience: 70%
+                       ↓
+              Gemini/DeepSeek LLM
+```
 
 ---
 
@@ -146,35 +179,6 @@ Edge Fn     (Direct API)
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Real-time voice coaching |
 | **Voice** | Gemini Live API | WebSocket audio streaming |
 | **Hosting** | Netlify | Web Deployment |
-
----
-
-## 🚀 Next Steps: Final Build & Smoke Test
-
-**Phase 33 has implemented the "Brain Surgery 2.5" recommendations. The final step before launch is a full smoke test.**
-
-### 1. Get New Dependencies
-
-Run `flutter pub get` to install the new contact picker dependencies:
-
-```bash
-flutter pub get
-```
-
-### 2. Rebuild the Mobile App (APK)
-
-The Flutter app must be rebuilt to include all the new onboarding flows.
-
-```bash
-flutter build apk --release --dart-define-from-file=secrets.json
-```
-
-### 3. Perform the Final Smoke Test
-
-1. **Test The Pledge:** Verify the "Contract Card" appears on the Tier Selector screen.
-2. **Test Witness Invite:** Verify the Share Sheet opens when selecting a witness.
-3. **Test Voice Feedback:** Verify the sound effect plays when tapping the AI Coach sample.
-4. **Test Google Auth:** Verify the permission dialog requests email/profile access.
 
 ---
 
@@ -205,8 +209,8 @@ flutter build apk --release --dart-define-from-file=secrets.json
 
 #### ⚠️ Xiaomi/MIUI Users
 If the app crashes on microphone access or shows "Permission Denied":
-1. Long press App Icon -> **App Info**
-2. Go to **Permissions** -> **Microphone**
+1. Long press App Icon → **App Info**
+2. Go to **Permissions** → **Microphone**
 3. Set to **"Allow only while using the app"**
 
 ### Secrets Configuration
@@ -215,34 +219,15 @@ Create `secrets.json` in project root:
 
 ```json
 {
+  "SUPABASE_URL": "your_supabase_url",
+  "SUPABASE_ANON_KEY": "your_supabase_anon_key",
   "DEEPSEEK_API_KEY": "your_deepseek_key",
   "GEMINI_API_KEY": "your_gemini_key",
   "OPENAI_API_KEY": "your_openai_key"
 }
 ```
 
-**Note:** Ensure `DEEPSEEK_API_KEY` is named exactly as shown.
-
----
-
-## 🎨 Customization & Branding
-
-### App Icon
-
-The app icon is **The Pact handshake logo** (blue-to-pink gradient).
-
-**Location:** `android/app/src/main/res/mipmap-*/ic_launcher.png`
-
-To update:
-1. Replace icon files in all `mipmap-*` directories
-2. Or use `flutter_launcher_icons` package (see docs)
-
-### Branding
-
-- **App Name:** "The Pact"
-- **Package:** `co.thepact.app`
-- **Domain:** `thepact.co`
-- **Colors:** Blue (#00B4D8) to Pink (#FF006E) gradient
+**Note:** Ensure keys are named exactly as shown. The file is in `.gitignore`.
 
 ---
 
@@ -251,6 +236,7 @@ To update:
 ### Core Docs
 - **[AI_CONTEXT.md](./AI_CONTEXT.md)** - Full feature matrix, architecture deep-dive
 - **[ROADMAP.md](./ROADMAP.md)** - Sprint history, current priorities, technical debt
+- **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** - New provider architecture guide
 
 ### Setup Guides
 - **[GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** - Google Sign-In configuration
@@ -289,13 +275,6 @@ flutter build ipa --release --dart-define-from-file=secrets.json
 
 Auto-deployed via Netlify on push to `main` branch.
 
-**Manual deploy:**
-```bash
-cd landing_page
-npm run build
-# Upload dist/ to Netlify
-```
-
 ### Supabase Edge Functions
 
 ```bash
@@ -328,14 +307,16 @@ See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setu
 
 ---
 
-## 📄 License
+## 📄 Licence
 
-MIT License - See LICENSE file for details
+MIT Licence - See LICENCE file for details
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgements
 
 Built with inspiration from James Clear's *Atomic Habits* and the philosophy of social accountability.
 
 **Phase 27 Voice First Pivot** inspired by the success of voice-first apps like Replika and Character.AI.
+
+**Phase 34 Architecture** guided by the "Council of Five": Martin Fowler, Eric Evans, Robert C. Martin, Casey Muratori, and Remi Rousselet.
