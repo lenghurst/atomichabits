@@ -182,16 +182,32 @@ flutter build apk --release --dart-define-from-file=secrets.json
 
 ### Mobile App (Flutter)
 
+#### Option A: The "Quick AI Test" (Debug APK)
+*Use this to test voice latency and AI response without Supabase Auth (uses direct API key).*
+
 ```bash
 # Get dependencies
 flutter pub get
 
-# Run with secrets (required for AI features)
-flutter run --dart-define-from-file=secrets.json
+# Build Debug APK (bypasses auth for AI)
+flutter build apk --debug --dart-define-from-file=secrets.json
+```
+*Output:* `build/app/outputs/flutter-apk/app-debug.apk`
 
-# Build release APK
+#### Option B: The "Production Reality" (Release APK)
+*Use this to test the full user flow including Supabase Auth and Edge Functions.*
+
+```bash
+# Build Release APK (requires valid Supabase session)
 flutter build apk --release --dart-define-from-file=secrets.json
 ```
+*Output:* `build/app/outputs/flutter-apk/app-release.apk`
+
+#### ⚠️ Xiaomi/MIUI Users
+If the app crashes on microphone access or shows "Permission Denied":
+1. Long press App Icon -> **App Info**
+2. Go to **Permissions** -> **Microphone**
+3. Set to **"Allow only while using the app"**
 
 ### Secrets Configuration
 
