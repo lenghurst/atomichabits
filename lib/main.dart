@@ -13,6 +13,7 @@ import 'data/services/onboarding/onboarding_orchestrator.dart';
 import 'data/services/home_widget_service.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/sync_service.dart';
+import 'data/services/voice_session_manager.dart';
 import 'config/ai_model_config.dart';
 import 'config/supabase_config.dart';
 import 'core/error_boundary.dart';
@@ -83,6 +84,9 @@ void main() async {
   
   // Phase 24: Initialize AI Service Manager (The Brain Transplant)
   final aiServiceManager = AIServiceManager();
+
+  // Phase 32: Initialize Voice Session Manager (The Silent Coach)
+  final voiceSessionManager = VoiceSessionManager();
   
   // Phase 15: Initialize Auth service
   final authService = AuthService(supabaseClient: supabaseClient);
@@ -150,6 +154,9 @@ void main() async {
         Provider.value(value: weeklyReviewService),
         // Onboarding Orchestrator
         ChangeNotifierProvider.value(value: onboardingOrchestrator),
+        
+        // Phase 32: Voice Session Manager
+        Provider.value(value: voiceSessionManager),
       ],
       child: MyApp(
         appState: appState,
@@ -223,7 +230,9 @@ class _MyAppState extends State<MyApp> {
         ),
         GoRoute(
           path: '/onboarding/witness',
-          builder: (context, state) => const WitnessInvestmentScreen(),
+          builder: (context, state) => WitnessInvestmentScreen(
+            voiceSessionManager: context.read<VoiceSessionManager>(),
+          ),
         ),
         GoRoute(
           path: '/onboarding/tier',

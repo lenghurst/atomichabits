@@ -223,7 +223,16 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     
     // Save witness to app state
     final appState = context.read<AppState>();
-    // TODO: Add witness field to UserProfile model
+    final witnessName = _selectedContact?.displayName ?? _searchController.text;
+    final witnessContact = _selectedContactMethod ?? '';
+    
+    if (appState.userProfile != null) {
+      final updatedProfile = appState.userProfile!.copyWith(
+        witnessName: witnessName,
+        witnessContact: witnessContact,
+      );
+      appState.setUserProfile(updatedProfile);
+    }
     
     // Navigate to tier selection
     context.go('/onboarding/tier');
