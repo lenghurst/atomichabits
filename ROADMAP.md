@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 32)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 33)  
 > **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Awaiting Final Build & Test
@@ -21,6 +21,18 @@
 2. Add to Sprint History with date and changes
 3. Update `AI_CONTEXT.md` with changes made
 4. Commit all changes to `main` branch
+
+---
+
+## Phase 33: The Investment (Supporter Screen Redesign)
+
+**Goal:** Redesign the Supporter Screen as a high-stakes "Investment" phase.
+
+**Status:** 🟢 COMPLETE
+
+| ID | Recommendation | Advisor | Status |
+|----|----------------|---------|--------|
+| FEAT-02 | Investment Screen | Spec Review | ✅ |
 
 ---
 

@@ -1,6 +1,6 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 32)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 33)  
 > **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
@@ -60,6 +60,25 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 33: The Investment (Supporter Screen Redesign)
+
+Redesigned the Supporter Screen as a high-stakes "Investment" phase, incorporating a modal bottom sheet, continuous voice integration, a TypeAhead contact search, and contextual permissions. This aligns with the specified goal of creating a more emotionally resonant and effective social contract.
+
+**Key Changes Implemented:**
+
+| Component | File(s) Changed | Details |
+|---|---|---|
+| **TypeAhead Dependency** | `pubspec.yaml` | Added `flutter_typeahead` to enable asynchronous contact searching. |
+| **Permission Glass Pane** | `permission_glass_pane.dart` | Created a new reusable component to provide context before requesting OS permissions, significantly increasing grant rates. |
+| **Investment Screen** | `witness_investment_screen.dart` | Created a new screen that replaces the old `PactWitnessScreen`. It features a modal UI, a visceral headline ("Who will witness your failure?"), and integrates the TypeAhead search and permission handling. |
+| **Routing** | `main.dart` | Updated the GoRouter configuration to replace the old witness screen with the new `WitnessInvestmentScreen`. |
+
+**New Files Created:**
+- `lib/features/onboarding/components/permission_glass_pane.dart`
+- `lib/features/onboarding/identity_first/witness_investment_screen.dart`
 
 ---
 

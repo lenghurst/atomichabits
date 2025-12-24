@@ -21,6 +21,7 @@ import 'features/onboarding/conversational_onboarding_screen.dart';
 import 'features/onboarding/voice_onboarding_screen.dart';
 import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
 import 'features/onboarding/identity_first/pact_witness_screen.dart';
+import 'features/onboarding/identity_first/witness_investment_screen.dart';
 import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
 import 'features/onboarding/identity_first/value_proposition_screen.dart';
 import 'features/dashboard/habit_list_screen.dart';
@@ -280,7 +281,7 @@ class _MyAppState extends State<MyApp> {
               ),
               GoRoute(
                 path: '/onboarding/witness',
-                builder: (context, state) => const PactWitnessScreen(),
+                builder: (context, state) => const WitnessInvestmentScreen(),
               ),
               GoRoute(
                 path: '/onboarding/tier',

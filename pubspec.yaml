@@ -103,6 +103,9 @@ dependencies:
   # audio_session: Audio session management for proper mic handling
   record: ^5.1.2
   audio_session: ^0.1.21
+  
+  # Phase 33: Investment Screen - TypeAhead contact search
+  flutter_typeahead: ^5.2.0
 
 dev_dependencies:
   flutter_test:
