@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 30)  
-> **Last Verified:** Phase 30 Complete (Delight & Monetise)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 31)  
+> **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 READY - Awaiting Final Build & Test
 
@@ -24,23 +24,24 @@
 
 ---
 
-## 🚀 Next Sprint: Phase 31 "Final Polish"
+## 🚀 LAUNCH READY
 
-**Goal:** Implement remaining Tier 3 recommendations for a polished, world-class user experience.
+**Goal:** Final build, test, and launch for NYE 2025.
 
-**Status:** 🟡 PENDING - Awaiting implementation.
+**Status:** 🟢 COMPLETE - All planned features implemented. Awaiting final smoke test.
 
 **Target:** NYE 2025 Launch
 
-### Tier 2 Recommendations (High Value)
+### Tier 3 Recommendations (Final Polish)
 
 | ID | Recommendation | Advisor | Status |
 |----|----------------|---------|--------|
-| H2 | Show AI coach sample before tier selection | Hormozi | ✅ |
-| B3 | Add privacy controls for witnesses | Brown | ✅ |
-| Z4 | Celebrate first pact creation (confetti) | Zhuo | ✅ |
-| O4 | Add testimonials to identity screen | Ogilvy | ✅ |
-| K4 | Simplify tier selection to binary | Kahneman | ✅ |
+| K3 | Add default identity selection (anchoring bias) | Kahneman | ✅ |
+| B2 | Reframe witness as 'supporter' in copy | Brown | ✅ |
+| Z2 | Animate identity chip selection with haptic | Zhuo | ✅ |
+| Z3 | Add pact preview before tier selection | Zhuo | ✅ |
+| Z5 | Add personality to dashboard empty state | Zhuo | ✅ |
+| O5 | Add tagline to onboarding flow | Ogilvy | ✅ |
 
 ---
 
@@ -74,6 +75,15 @@
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 31) - "Final Polish" Sprint
+
+- [x] **Default Identity:** Pre-selected the most popular identity chip to anchor the user and reduce cognitive load.
+- [x] **Reframe Witness:** Replaced all instances of "witness" with the more positive term "supporter."
+- [x] **Haptic Feedback:** Added haptic feedback and a scale animation to the identity chips for a more delightful micro-interaction.
+- [x] **Pact Preview:** Added a "Pact Preview" card before the tier selection to make the commitment tangible.
+- [x] **Dashboard Personality:** Overhauled the empty state of the dashboard with a personalised greeting, rotating motivational quotes, and a more prominent CTA.
+- [x] **Brand Tagline:** Added the official brand tagline, "THE PACT: Become who you said you'd be," to the main hook screen.
 
 ### Completed (Phase 30) - "Delight & Monetise" Sprint
 

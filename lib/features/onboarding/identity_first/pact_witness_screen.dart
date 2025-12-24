@@ -11,8 +11,8 @@ import '../../../data/app_state.dart';
 /// Screen 2 of the Identity First onboarding flow.
 /// Allows users to:
 /// - View their commitment contract
-/// - Add a witness/accountability partner
-/// - Start solo without a witness
+/// - Add a supporter (reframed from "witness" per Brown B2)
+/// - Start solo without a supporter
 /// 
 /// Design: Contract-style visual with decorative corners
 class PactWitnessScreen extends StatefulWidget {
@@ -570,7 +570,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           const Text(
-                                            'Witnessed by:',
+                                            'Supported by:',
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -707,7 +707,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                                                 onPressed: _handleAddWitness,
                                                 icon: const Icon(Icons.contacts, size: 16),
                                                 label: const Text(
-                                                  'Add from Contacts',
+                                                  'Add Supporter',
                                                   style: TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w600,
@@ -801,7 +801,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                             elevation: 0,
                           ),
                           child: const Text(
-                            'Choose a Partner',
+                            'Choose a Supporter',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -814,7 +814,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                         TextButton(
                           onPressed: _handleStartSolo,
                           child: const Text(
-                            'Start My First Pact Solo',
+                            'Start Solo (Add Supporter Later)',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -833,7 +833,7 @@ class _PactWitnessScreenState extends State<PactWitnessScreen> {
                       const SizedBox(height: 16),
 
                       const Text(
-                        'Having a witness increases accountability by 65%. You can always add one later.',
+                        'Having a supporter increases your success rate by 65%. They\'re here to cheer you on, not judge you.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,

@@ -247,27 +247,69 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
     );
   }
   
+  /// Phase 31 (Ogilvy O5): Enhanced tagline with brand positioning
   Widget _buildTagline() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: const Color(0xFF22C55E).withOpacity(0.5),
-            width: 3,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Primary tagline
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: const Color(0xFF22C55E).withOpacity(0.5),
+                width: 3,
+              ),
+            ),
+          ),
+          child: Text(
+            "Don't rely on willpower.\nRely on your people.",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withOpacity(0.9),
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
           ),
         ),
-      ),
-      child: Text(
-        "Don't rely on willpower.\nRely on your friends.",
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          color: Colors.white.withOpacity(0.9),
-          fontStyle: FontStyle.italic,
-          height: 1.4,
+        const SizedBox(height: 16),
+        // Brand tagline (Phase 31)
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF22C55E), Color(0xFF3B82F6)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'THE PACT',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Become who you said you\'d be.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
         ),
-      ),
+      ],
     );
   }
   

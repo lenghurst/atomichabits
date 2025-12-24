@@ -92,36 +92,101 @@ class HabitListScreen extends StatelessWidget {
     );
   }
 
+  /// Phase 31 (Zhuo Z5): Enhanced empty state with personality
+  /// Creates an emotional connection and motivates action
   Widget _buildEmptyState(BuildContext context) {
+    final profile = context.read<AppState>().userProfile;
+    final identity = profile?.identity ?? 'the person you want to become';
+    
+    // Motivational quotes that rotate
+    final quotes = [
+      '"Every action is a vote for the type of person you wish to become."\n— James Clear',
+      '"You do not rise to the level of your goals. You fall to the level of your systems."\n— James Clear',
+      '"The secret to getting results that last is to never stop making improvements."\n— James Clear',
+    ];
+    final quote = quotes[DateTime.now().day % quotes.length];
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.track_changes,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            // Phase 31: Animated icon with gradient
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.rocket_launch_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
+            // Phase 31: Personalised greeting
             Text(
-              'No habits yet',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start your journey by creating your first habit.\n"Every action is a vote for the type of person you wish to become."',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              'Ready to become',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              identity,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              '?',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 24),
+            // Phase 31: Rotating motivational quote
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                quote,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Phase 31: More prominent CTA
             FilledButton.icon(
               onPressed: () => context.go('/'),
-              icon: const Icon(Icons.auto_awesome),
+              icon: const Icon(Icons.add_circle_outline),
               label: const Text('Create Your First Habit'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'It only takes 2 minutes to start',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

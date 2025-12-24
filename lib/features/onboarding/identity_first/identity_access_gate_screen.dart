@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/app_state.dart';
@@ -51,12 +52,21 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
   /// Phase 28.4: Track if identity is filled for mandatory validation
   bool _hasIdentity = false;
 
+  /// Phase 31 (Kahneman K3): Default identity for anchoring bias
+  /// The most popular identity is pre-selected to reduce cognitive load
+  static const String _defaultIdentity = 'A Morning Person';
+
   @override
   void initState() {
     super.initState();
     // Phase 28.4: Pre-fill identity from niche landing page
     if (widget.presetIdentity != null && widget.presetIdentity!.isNotEmpty) {
       _identityController.text = widget.presetIdentity!;
+      _hasIdentity = true;
+    } else {
+      // Phase 31 (Kahneman K3): Pre-select default identity (anchoring bias)
+      // This reduces cognitive load and increases conversion
+      _identityController.text = _defaultIdentity;
       _hasIdentity = true;
     }
     // Listen for changes to update _hasIdentity
@@ -963,7 +973,9 @@ class _OAuthButton extends StatelessWidget {
 /// Phase 28.4 (Clear): Identity "Mad Libs" chip
 /// Tappable chip that fills in the identity field with an example
 /// Visual feedback: selected chips show brand gradient (Blue-to-Pink)
-class _IdentityChip extends StatelessWidget {
+/// 
+/// Phase 31 (Zhuo Z2): Enhanced with scale animation and haptic feedback
+class _IdentityChip extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
   final bool isSelected;
@@ -975,36 +987,90 @@ class _IdentityChip extends StatelessWidget {
   });
 
   @override
+  State<_IdentityChip> createState() => _IdentityChipState();
+}
+
+class _IdentityChipState extends State<_IdentityChip> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    // Phase 31 (Zhuo Z2): Haptic feedback on selection
+    HapticFeedback.lightImpact();
+    
+    // Animate the press
+    _controller.forward().then((_) {
+      _controller.reverse();
+    });
+    
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      onTap: _handleTap,
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 10,
         ),
-        decoration: BoxDecoration(
-          // Phase 28.4: Brand gradient when selected (Blue-to-Pink)
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected ? null : const Color(0xFF1E293B),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : const Color(0xFF334155),
+          decoration: BoxDecoration(
+            // Phase 28.4: Brand gradient when selected (Blue-to-Pink)
+            gradient: widget.isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: widget.isSelected ? null : const Color(0xFF1E293B),
+            border: Border.all(
+              color: widget.isSelected ? Colors.transparent : const Color(0xFF334155),
+            ),
+            borderRadius: BorderRadius.circular(20),
+            // Phase 31 (Zhuo Z2): Subtle shadow when selected
+            boxShadow: widget.isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
           ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+          child: Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.normal,
+              color: widget.isSelected ? Colors.white : const Color(0xFF94A3B8),
+            ),
           ),
         ),
       ),

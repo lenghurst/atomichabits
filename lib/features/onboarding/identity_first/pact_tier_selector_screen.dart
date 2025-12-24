@@ -490,6 +490,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
+                      // Phase 31 (Zhuo Z3): Pact Preview Card
+                      // Shows users what they're about to create
+                      _buildPactPreview(identity, witnessName),
+                      const SizedBox(height: 16),
                       // Phase 30 (Hormozi H2): AI Coach Audio Sample
                       // Show the value of premium BEFORE asking for payment
                       _buildAICoachSample(),
@@ -723,6 +727,152 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Phase 31 (Zhuo Z3): Pact Preview Card
+  /// Shows users what they're about to create before selecting a tier
+  Widget _buildPactPreview(String identity, String? witnessName) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF22C55E).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF22C55E).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.description_outlined,
+                  color: Color(0xFF22C55E),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Your Pact Preview',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFF8FAFC),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Pact details
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Identity
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      size: 16,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Identity: ',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        identity,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF22C55E),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Supporter
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.people_outline,
+                      size: 16,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Supporter: ',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    Text(
+                      witnessName ?? 'Solo mode',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: witnessName != null
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Start date
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 16,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Starts: ',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    const Text(
+                      'Today',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF59E0B),
                       ),
                     ),
                   ],

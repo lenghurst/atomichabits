@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 23 December 2025 (Commit: Phase 30)  
-> **Last Verified:** Phase 30 Complete (Delight & Monetise)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 31)  
+> **Last Verified:** Phase 31 Complete (Final Polish)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -60,6 +60,23 @@ When stale branches accumulate (> 10 unmerged):
 | **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
+
+---
+
+## Phase 31: "Final Polish" Sprint (Tier 3 Implementation)
+
+Implemented the remaining Tier 3 recommendations from the Second Council of Five to add a final layer of polish and delight to the user experience before launch.
+
+**Key Changes Implemented:**
+
+| Recommendation | Advisor | File(s) Changed | Details |
+|---|---|---|---|
+| **Default Identity** | Kahneman | `identity_access_gate_screen.dart` | Pre-selected the most popular identity chip ("A Morning Person") to anchor the user and reduce cognitive load. This simple change is proven to increase conversion by providing a clear starting point. |
+| **Reframe Witness** | Brown | `pact_witness_screen.dart` | Replaced all instances of "witness" and "accountability partner" with the more positive and encouraging term "supporter." This reframing reduces the user's fear of being judged and increases their willingness to invite someone. |
+| **Haptic Feedback** | Zhuo | `identity_access_gate_screen.dart` | Added haptic feedback and a subtle scale animation to the identity chips. This creates a more tactile and satisfying micro-interaction, making the selection process more delightful. |
+| **Pact Preview** | Zhuo | `pact_tier_selector_screen.dart` | Added a "Pact Preview" card before the tier selection. This shows the user exactly what they are creating (their identity, their supporter, and the start date), making the abstract concept of a "pact" tangible and increasing their commitment. |
+| **Dashboard Personality** | Zhuo | `habit_list_screen.dart` | Overhauled the empty state of the dashboard. It now includes a personalised greeting, a rotating motivational quote from James Clear, and a more prominent, encouraging call-to-action. This transforms a functional empty state into an inspiring and motivating experience. |
+| **Brand Tagline** | Ogilvy | `value_proposition_screen.dart` | Added the official brand tagline, "THE PACT: Become who you said you'd be," to the main hook screen. This reinforces the brand's core promise and creates a more memorable and professional first impression. |
 
 ---
 
