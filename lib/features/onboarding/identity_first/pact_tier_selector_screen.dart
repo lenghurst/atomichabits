@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../../data/app_state.dart';
 
 /// Pact Tier Selector Screen
@@ -21,6 +22,7 @@ class PactTierSelectorScreen extends StatefulWidget {
 }
 
 class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
   String _selectedTier = 'builder'; // Default to most popular
   bool _isProcessing = false;
   late String witnessName;
@@ -44,6 +46,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   @override
   void dispose() {
     _confettiController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -677,14 +680,18 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
               ),
               // Play button
               GestureDetector(
-                onTap: () {
-                  // TODO: Play audio sample when available
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Audio sample coming soon!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                onTap: () async {
+                  // Play signature sound as placeholder
+                  await _audioPlayer.play(AssetSource('sounds/sign.mp3'));
+                  
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Voice preview: "I am your Pact Coach."'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(12),
