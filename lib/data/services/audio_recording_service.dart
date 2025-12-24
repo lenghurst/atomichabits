@@ -157,14 +157,14 @@ class AudioRecordingService {
   Future<void> _configureAudioSession() async {
     _audioSession = await AudioSession.instance;
     
-    await _audioSession!.configure(const AudioSessionConfiguration(
+    await _audioSession!.configure(AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.defaultToSpeaker |
-          AVAudioSessionCategoryOptions.allowBluetooth |
-          AVAudioSessionCategoryOptions.allowBluetoothA2DP,
-      avAudioSessionMode: AVAudioSessionMode.voiceChat,
-      androidAudioAttributes: AndroidAudioAttributes(
+      avAudioSessionMode: AVAudioSessionMode.videoChat,
+      avAudioSessionRouteSharingPolicy: AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.defaultToSpeaker | AVAudioSessionCategoryOptions.allowBluetooth,
+      androidAudioAttributes: const AndroidAudioAttributes(
         contentType: AndroidAudioContentType.speech,
+        flags: AndroidAudioFlags.none,
         usage: AndroidAudioUsage.voiceCommunication,
       ),
       androidAudioFocusGainType: AndroidAudioFocusGainType.gain,

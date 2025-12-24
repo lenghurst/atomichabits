@@ -73,6 +73,8 @@ class HabitContract {
   final String? builderDisplayName;
   final String? habitEmoji;
   
+  String? get builderName => builderDisplayName ?? "The Builder";
+  
   // Phase 21.3: Nudge Effectiveness Tracking
   // These fields enable building a "Behavior Model" by tracking
   // how nudges influence completion behavior

@@ -23,6 +23,7 @@ class PactTierSelectorScreen extends StatefulWidget {
 class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
   String _selectedTier = 'builder'; // Default to most popular
   bool _isProcessing = false;
+  final String witnessName = "Your Supporter";
   
   // Phase 30 (Zhuo Z4): Confetti celebration
   late ConfettiController _confettiController;

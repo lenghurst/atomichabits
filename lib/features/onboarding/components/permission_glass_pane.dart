@@ -105,7 +105,11 @@ class PermissionGlassPane extends StatelessWidget {
   void _handleSkip(BuildContext context) {
     HapticFeedback.lightImpact();
     Navigator.of(context).pop();
-    onSkip?.call() ?? onDenied();
+    if (onSkip != null) {
+      onSkip!();
+    } else {
+      onDenied();
+    }
   }
   
   void _showSettingsDialog(BuildContext context) {

@@ -269,6 +269,15 @@ class AppState extends ChangeNotifier {
     return false;
   }
   
+  // ========== Premium Status ==========
+  bool _isPremium = false;
+  bool get isPremium => _isPremium;
+
+  void setPremiumStatus(bool status) {
+    _isPremium = status;
+    notifyListeners();
+  }
+
   // ========== Graceful Consistency Getters ==========
   
   /// Current recovery need (null if none needed)

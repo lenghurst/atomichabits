@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 33 + Hot Mic Patch)  
-> **Last Verified:** Phase 33 Complete (Investment Screen + Voice Safety)  
+> **Last Updated:** 24 December 2025 (Commit: Phase 33 + Build Fixes)  
+> **Last Verified:** Phase 33 Complete (Investment Screen + Voice Safety + Build Fixes)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -102,6 +102,13 @@ Implemented a robust audio recording and session management system to enable rea
 **New Files Created:**
 - `lib/data/services/audio_recording_service.dart`
 - `lib/data/services/voice_session_manager.dart`
+
+**Build Fixes (Phase 33.1):**
+- Fixed `void` expression in `permission_glass_pane.dart`
+- Fixed `AudioSession` configuration in `audio_recording_service.dart`
+- Added missing `setPremiumStatus` in `app_state.dart`
+- Added missing `witnessName` in `pact_tier_selector_screen.dart`
+- Added missing `builderName` in `habit_contract.dart`
 
 ---
 
