@@ -1,0 +1,14 @@
+# Ignore React landing page (distinct from Flutter Mobile App)
+landing_page/
+
+# Historical specs (archived)
+docs/archive/
+
+# Non-functional reference code
+lib/**/reference/
+
+# Build artifacts
+build/
+.dart_tool/
+android/.gradle/
+ios/Pods/

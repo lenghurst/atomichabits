@@ -518,9 +518,9 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Text(
+                            Text(
                               "I, $userName, stake my reputation and money on:",
-                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                              style: const TextStyle(color: Colors.white70, fontSize: 14),
                             ),
                             const SizedBox(height: 12),
                             // Dynamic Habit
@@ -616,7 +616,9 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                             'Social accountability partners',
                             'Advanced analytics & insights',
                             'Priority support',
-                                                   buttonText: 'Seal the Pact',                         isPopular: true,
+                          ],
+                          buttonText: 'Seal the Pact',
+                          isPopular: true,
                         ),
                         isSelected: _selectedTier == 'builder',
                         onSelect: () => _handleSelectTier('builder'),
