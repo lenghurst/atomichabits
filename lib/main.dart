@@ -19,7 +19,7 @@ import 'config/supabase_config.dart';
 import 'core/error_boundary.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/conversational_onboarding_screen.dart';
-import 'features/onboarding/voice_onboarding_screen.dart';
+import 'features/onboarding/voice_coach_screen.dart';
 import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
 import 'features/onboarding/identity_first/witness_investment_screen.dart';
 import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
@@ -213,7 +213,7 @@ class _MyAppState extends State<MyApp> {
         // Voice onboarding: Gemini Live API (Phase 27.5)
         GoRoute(
           path: '/onboarding/voice',
-          builder: (context, state) => const VoiceOnboardingScreen(),
+          builder: (context, state) => const VoiceCoachScreen(),
         ),
         // Manual onboarding: Form UI (Tier 3 fallback)
         GoRoute(

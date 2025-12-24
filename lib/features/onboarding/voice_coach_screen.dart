@@ -20,14 +20,14 @@ import '../dev/dev_tools_overlay.dart';
 /// - Visual status indicators (listening, thinking, speaking)
 /// - Live transcription display
 /// - Graceful fallback to manual entry
-class VoiceOnboardingScreen extends StatefulWidget {
-  const VoiceOnboardingScreen({super.key});
+class VoiceCoachScreen extends StatefulWidget {
+  const VoiceCoachScreen({super.key});
 
   @override
-  State<VoiceOnboardingScreen> createState() => _VoiceOnboardingScreenState();
+  State<VoiceCoachScreen> createState() => _VoiceCoachScreenState();
 }
 
-class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen>
+class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
@@ -73,7 +73,7 @@ class _VoiceOnboardingScreenState extends State<VoiceOnboardingScreen>
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
       if (_sessionManager?.isActive == true) {
         if (kDebugMode) {
-          debugPrint('VoiceOnboardingScreen: App backgrounded, pausing session for security.');
+          debugPrint('VoiceCoachScreen: App backgrounded, pausing session for security.');
         }
         _sessionManager?.pauseSession();
         // UI updates will happen via the state listener callback
