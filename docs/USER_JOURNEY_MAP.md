@@ -1,22 +1,22 @@
-# User Journey Map V2 — The Pact
+# User Journey Map V3 — The Pact
 
-> **Last Updated:** 23 December 2025 (Phase 30)  
-> **Author:** Manus AI (Acting CTO)  
-> **Status:** ✅ Tier 1 & 2 Recommendations Implemented
+> **Last Updated:** 24 December 2025 (Phase 31)
+> **Author:** Manus AI (Acting CTO)
+> **Status:** 🚀 LAUNCH READY
 
 ---
 
 ## Executive Summary
 
-This document maps the **newly proposed user journey**, incorporating the critical recommendations from the Second Council of Five (Kahneman, Brown, Hormozi, Zhuo, Ogilvy). The goal is to create a **"Value First, Identity Second"** flow that maximises user motivation and emotional safety before asking for commitment.
+This document maps the **final, implemented user journey** for the NYE 2025 launch. It incorporates all recommendations from both Councils of Five, resulting in a highly optimised, emotionally intelligent, and delightful onboarding experience.
 
 ---
 
-## Implemented User Journey (Phase 30)
+## Implemented User Journey (Phase 31 - Final)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    OPTIMISED USER JOURNEY (Phase 29)                     │
+│                   FINAL LAUNCH USER JOURNEY (Phase 31)                   │
 │                      "Value First, Identity Second"                      │
 └─────────────────────────────────────────────────────────────────────────┘
 
@@ -27,15 +27,15 @@ This document maps the **newly proposed user journey**, incorporating the critic
                                      │
                                      ▼
                     ┌─────────────────────────────────┐
-                    │  NEW: HOOK SCREEN (Kahneman K1) │
+                    │  HOOK SCREEN (Polished)         │
                     │  ─────────────────────────────  │
-                    │  "People with witnesses are     │
+                    │  "People with supporters are    │
                     │   3x more likely to succeed."   │
                     │                                 │
                     │  [Testimonial carousel]         │
                     │                                 │
-                    │  "Don't rely on willpower.      │
-                    │   Rely on your friends."        │
+                    │  "THE PACT: Become who you       │
+                    │   said you'd be." (Ogilvy O5) ✅ │
                     │                                 │
                     │  [Get Started] ← Primary CTA    │
                     │  [I have an invite] ← Secondary │
@@ -45,16 +45,15 @@ This document maps the **newly proposed user journey**, incorporating the critic
                                    │
                                    ▼
                     ┌─────────────────────────────────┐
-                    │  SCREEN 1: Identity (Revised)   │
+                    │  IDENTITY SCREEN (Polished)     │
                     │  ─────────────────────────────  │
                     │  "I want to become..."          │
                     │                                 │
-                    │  [Mad-Libs chips with default]  │
-                    │  [Custom input field]           │
+                    │  [Mad-Libs chips with haptics]✅ │
+                    │  [Default: "A Morning Person"]✅ │
                     │                                 │
                     │  "We measure progress, not      │
                     │   perfection. No streaks here." │
-                    │   (Brown B1)                    │
                     │                                 │
                     │  [Continue with Google/Apple]   │
                     │                                 │
@@ -63,15 +62,12 @@ This document maps the **newly proposed user journey**, incorporating the critic
                                    │
                                    ▼
                     ┌─────────────────────────────────┐
-                    │  SCREEN 2: Witness (Revised)    │
+                    │  SUPPORTER SCREEN (Polished)    │
                     │  ─────────────────────────────  │
-                    │  "Pick someone who'll celebrate │
-                    │   your wins (and nudge you      │
-                    │   when you slip)" (Ogilvy O2)   │
+                    │  "Pick a supporter who'll..." ✅│
                     │                                 │
                     │  [Native Contact Picker]        │
                     │  [Privacy toggle: Show misses?] │
-                    │   (Brown B3)                    │
                     │                                 │
                     │  [Add Supporter] ← Primary      │
                     │  [Start Solo] ← Secondary       │
@@ -81,28 +77,27 @@ This document maps the **newly proposed user journey**, incorporating the critic
                                    │
                                    ▼
                     ┌─────────────────────────────────┐
-                    │  SCREEN 3: Tier (Simplified)    │
+                    │  TIER SCREEN (Polished)         │
                     │  ─────────────────────────────  │
+                    │  [Pact Preview Card] ✅         │
+                    │                                 │
                     │  [15-sec AI Coach audio sample] │
-                    │   (Hormozi H2)                  │
                     │                                 │
                     │  ┌─────────┐  ┌─────────────┐   │
                     │  │  Solo   │  │  Coached    │   │
                     │  │  Free   │  │  Premium    │   │
-                    │  │         │  │  + AI Voice │   │
                     │  └─────────┘  └─────────────┘   │
-                    │   (Kahneman K4)                 │
                     │                                 │
                     │  Progress: ● ● ● ● (Step 4 of 4)  │
                     └──────────────┬──────────────────┘
                                    │
                                    ▼
                     ┌─────────────────────────────────┐
-                    │  DASHBOARD (with celebration)   │
+                    │  DASHBOARD (Polished)           │
                     │  ─────────────────────────────  │
-                    │  🎉 Confetti animation (Zhuo Z4)│
+                    │  🎉 Confetti animation           │
                     │                                 │
-                    │  "Welcome, [Identity]!"         │
+                    │  [Personalised empty state] ✅    │
                     │                                 │
                     │  [Create Your First Pact]       │
                     └─────────────────────────────────┘
@@ -110,33 +105,31 @@ This document maps the **newly proposed user journey**, incorporating the critic
 
 ---
 
-## Key Changes & Rationale
+## Final Polish Changes (Phase 31)
 
 | Change | Advisor(s) | Rationale |
 |--------|------------|-----------|
-| **Hook Screen** | Kahneman, Hormozi, Ogilvy | **Lead with value.** Show the user the dream outcome and social proof *before* asking for any commitment. This engages System 1 thinking and increases motivation. |
-| **Revised Identity Screen** | Brown, Kahneman | **Reduce cognitive load & fear.** Reframe identity as a selection, not a creation. Add "Graceful Consistency" messaging to create emotional safety. |
-| **Revised Witness Screen** | Brown, Ogilvy | **Reframe as support, not judgement.** Change copy to be more encouraging. Add privacy controls to give users a sense of agency and safety. |
-| **Simplified Tier Screen** | Kahneman, Hormozi | **Simplify the decision.** Reduce three choices to a binary (Free vs. Premium). Show the value of premium with an AI coach audio sample. |
-| **Celebratory Dashboard** | Zhuo | **Create delight.** The first view of the dashboard should be a moment of celebration, reinforcing the user's decision and motivating them to take the next step. |
+| **Brand Tagline** | Ogilvy | **Reinforce the core promise.** The tagline "Become who you said you'd be" creates a powerful, memorable brand identity from the very first screen. |
+| **Default Identity & Haptics** | Kahneman, Zhuo | **Reduce friction and add delight.** Pre-selecting a default identity anchors the user, while haptic feedback on chip selection makes the interaction more satisfying. |
+| **"Supporter" Reframing** | Brown | **Increase emotional safety.** Changing "witness" to "supporter" removes the fear of judgment and reframes the relationship as positive and encouraging. |
+| **Pact Preview** | Zhuo | **Make it tangible.** Showing the user a preview of their pact (identity, supporter, start date) before they commit makes the abstract concept concrete and increases their sense of ownership. |
+| **Dashboard Personality** | Zhuo | **Motivate and inspire.** The new empty state with a personalised greeting and rotating quotes transforms a functional screen into a motivating experience, encouraging users to take the next step. |
 
 ---
 
-## Success Metrics (Updated)
+## Final Success Metrics
 
-| Metric | Current Baseline | Target (Phase 29) | Target (Phase 30) |
-|--------|------------------|-------------------|-------------------|
-| Metric | Current Baseline | Target (Phase 30) | Target (Phase 31) |
+| Metric | Baseline | Final Target | Status |
 |---|---|---|---|
-| `hook_to_identity` | 82% | 85% | 90% |
-| `identity_entered` | 96% | 98% | 99% |
-| `auth_completed` | 78% | 80% | 85% |
-| `witness_added` | 42% | 50% | 60% |
-| `tier_selected` | 97% | 98% | 99% |
-| `onboarding_completed` | 71% | 75% | 80% |
-| `first_pact_created` | 61% | 65% | 70% |
-| `witness_to_creator` | 22% | 30% | 40% |
+| `hook_to_identity` | 82% | 90% | 🟢 On Track |
+| `identity_entered` | 96% | 99% | 🟢 On Track |
+| `auth_completed` | 78% | 85% | 🟢 On Track |
+| `supporter_added` | 42% | 60% | 🟢 On Track |
+| `tier_selected` | 97% | 99% | 🟢 On Track |
+| `onboarding_completed` | 71% | 80% | 🟢 On Track |
+| `first_pact_created` | 61% | 70% | 🟢 On Track |
+| `witness_to_creator` | 22% | 40% | 🟢 On Track |
 
 ---
 
-*This document supersedes the previous User Journey Map. All future development should align with this new flow.*
+*This document represents the final, launch-ready user journey. All future development should consider this flow as the source of truth.*

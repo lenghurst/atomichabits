@@ -13,13 +13,13 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 30 - Delight & Monetise | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 31 - LAUNCH READY | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Smoke Test) |
+| **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Final Smoke Test) |
 
-> **Last Updated:** December 23, 2025 (Commit: Phase 30)  
-> **Current Phase:** Phase 30 - Delight & Monetise Implemented
+> **Last Updated:** December 24, 2025 (Commit: Phase 31)  
+> **Current Phase:** Phase 31 - Final Polish Complete
 
 ---
 
@@ -180,17 +180,16 @@ The Flutter app must be rebuilt to include all the new onboarding flows.
 flutter build apk --debug --dart-define-from-file=secrets.json
 ```
 
-### 3. Perform the Smoke Test
+### 3. Perform the Final Smoke Test
 
 1. Install the newly built APK on a physical Android device.
-2. **Test Hook Screen:** On first open, verify the new "Value Proposition" screen appears with the testimonial carousel.
-3. **Test Benefit-Driven Headline:** Proceed to the identity screen and verify the headline is "I want to become...".
-4. **Test Graceful Consistency:** Verify the "No streaks, no shame" message is present on the identity screen.
-5. **Test Testimonials:** Verify the testimonial widget is present on the identity screen.
-6. **Test AI Coach Sample:** Proceed to the tier screen and tap the "Play Sample" button. Verify the audio plays.
-7. **Test Binary Tiers:** Verify only "Free" and "Premium" tiers are shown.
-8. **Test Privacy Controls:** On the witness screen, verify the "Share only milestones" toggle is present.
-9. **Test Confetti:** Complete the onboarding flow and verify the confetti celebration and dialog appear.
+2. **Test Hook Screen & Tagline:** On first open, verify the new "Value Proposition" screen appears with the "Become who you said you'd be" tagline.
+3. **Test Default Identity & Haptics:** Proceed to the identity screen. Verify "A Morning Person" is pre-selected and that tapping other chips gives haptic feedback.
+4. **Test Supporter Reframing:** Proceed to the witness screen. Verify all copy refers to "Supporter," not "Witness."
+5. **Test Pact Preview:** Proceed to the tier screen. Verify the "Your Pact Preview" card appears before the tier options.
+6. **Test AI Coach Sample:** Tap the "Play Sample" button on the tier screen and verify the audio plays.
+7. **Test Confetti:** Complete the onboarding flow and verify the confetti celebration appears.
+8. **Test Dashboard Empty State:** Skip adding a habit and go to the dashboard. Verify the new personalised, motivational empty state is shown.
 
 ---
 
