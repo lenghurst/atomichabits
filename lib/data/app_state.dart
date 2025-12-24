@@ -273,9 +273,10 @@ class AppState extends ChangeNotifier {
   bool _isPremium = false;
   bool get isPremium => _isPremium;
 
-  void setPremiumStatus(bool status) {
+  Future<void> setPremiumStatus(bool status) async {
     _isPremium = status;
     notifyListeners();
+    await _saveToStorage();
   }
 
   // ========== Graceful Consistency Getters ==========

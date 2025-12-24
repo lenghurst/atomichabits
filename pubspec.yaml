@@ -101,7 +101,7 @@ dependencies:
   # Phase 32: Audio Recording for Voice AI (FEAT-01)
   # record: Real-time audio recording with streaming support
   # audio_session: Audio session management for proper mic handling
-  record: ^5.1.2
+  record: ^5.2.0
   audio_session: ^0.1.21
   
   # Phase 33: Investment Screen - TypeAhead contact search
