@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_profile.dart';
 import '../repositories/user_repository.dart';
 
@@ -19,8 +20,28 @@ class UserProvider extends ChangeNotifier {
   // === Getters ===
   UserProfile? get userProfile => _userProfile;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
-  bool get isPremium => _isPremium;
   bool get isLoading => _isLoading;
+  
+  /// Premium status with verification backdoor
+  /// 
+  /// TODO: REMOVE BEFORE PRODUCTION DEPLOYMENT
+  /// This backdoor allows specific test users to access Tier 2 features
+  /// without going through the payment flow. Added for NYE 2025 verification.
+  bool get isPremium {
+    // 1. The Backdoor for Oliver (Tier 2 Verification)
+    // Allows testing Voice Coach without payment flow
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser?.email == 'oliver.longhurst@gmail.com') {
+        return true;
+      }
+    } catch (_) {
+      // Supabase not initialized - fall through to real logic
+    }
+    
+    // 2. The Real Logic
+    return _isPremium;
+  }
   
   /// Convenience getters for common profile fields
   String get userName => _userProfile?.name ?? '';
@@ -52,14 +73,12 @@ class UserProvider extends ChangeNotifier {
   Future<void> updateProfile({
     String? name,
     String? identity,
-    String? motivation,
   }) async {
     if (_userProfile == null) return;
     
     _userProfile = _userProfile!.copyWith(
       name: name ?? _userProfile!.name,
       identity: identity ?? _userProfile!.identity,
-      motivation: motivation ?? _userProfile!.motivation,
     );
     await _repository.saveProfile(_userProfile!);
     notifyListeners();
