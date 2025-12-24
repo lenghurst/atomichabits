@@ -365,6 +365,9 @@ class AppState extends ChangeNotifier {
     // Load onboarding status
     _hasCompletedOnboarding = _dataBox!.get('hasCompletedOnboarding', defaultValue: false);
     
+    // Load premium status
+    _isPremium = _dataBox!.get('isPremium', defaultValue: false);
+
     // Phase 6: Load app settings
     final settingsJson = _dataBox!.get('appSettings');
     if (settingsJson != null) {
@@ -438,6 +441,9 @@ class AppState extends ChangeNotifier {
       // Save onboarding status
       await _dataBox!.put('hasCompletedOnboarding', _hasCompletedOnboarding);
       
+      // Save premium status
+      await _dataBox!.put('isPremium', _isPremium);
+
       // Phase 6: Save app settings
       await _dataBox!.put('appSettings', _settings.toJson());
 
