@@ -43,6 +43,20 @@ import 'config/niche_config.dart';
 import 'features/witness/witness_accept_screen.dart';
 import 'features/witness/witness_dashboard.dart';
 
+// Phase 34: Shadow Wiring - New Architecture (Dark Launch)
+// These providers are initialized but not yet consumed by UI
+// They share the same Hive box as AppState for data consistency
+import 'data/repositories/hive_settings_repository.dart';
+import 'data/repositories/hive_user_repository.dart';
+import 'data/repositories/hive_habit_repository.dart';
+import 'data/repositories/hive_psychometric_repository.dart';
+import 'data/providers/settings_provider.dart';
+import 'data/providers/user_provider.dart';
+import 'data/providers/habit_provider.dart';
+import 'data/providers/psychometric_provider.dart';
+import 'domain/services/psychometric_engine.dart';
+import 'data/notification_service.dart';
+
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
@@ -130,6 +144,49 @@ void main() async {
   final weeklyReviewService = WeeklyReviewService(aiServiceManager);
   final onboardingOrchestrator = OnboardingOrchestrator(aiServiceManager: aiServiceManager);
   
+  // ========== Phase 34: Shadow Wiring (Dark Launch) ==========
+  // Initialize new architecture providers alongside AppState
+  // These share the same Hive box - no conflict, just different access patterns
+  // UI still consumes AppState; these are "shadow" providers for testing
+  
+  // 1. Initialize Repositories (Infrastructure Layer)
+  final settingsRepository = HiveSettingsRepository();
+  final userRepository = HiveUserRepository();
+  final habitRepository = HiveHabitRepository();
+  final psychometricRepository = HivePsychometricRepository();
+  
+  // 2. Initialize Domain Services
+  final psychometricEngine = PsychometricEngine();
+  
+  // 3. Initialize Domain Providers (consuming Repositories)
+  // Note: These are initialized but NOT yet used by UI screens
+  final settingsProvider = SettingsProvider(settingsRepository);
+  final userProvider = UserProvider(userRepository);
+  final notificationService = NotificationService();
+  final habitProvider = HabitProvider(habitRepository, notificationService);
+  final psychometricProvider = PsychometricProvider(
+    psychometricRepository,
+    psychometricEngine,
+  );
+  
+  // Initialize providers (async operations)
+  // These run in parallel with AppState, reading from same Hive box
+  await Future.wait([
+    settingsProvider.initialize(),
+    userProvider.initialize(),
+    habitProvider.initialize(),
+    psychometricProvider.initialize(),
+  ]);
+  
+  if (kDebugMode) {
+    debugPrint('Phase 34: Shadow Wiring initialized (Dark Launch)');
+    debugPrint('  - SettingsProvider: ready');
+    debugPrint('  - UserProvider: ready');
+    debugPrint('  - HabitProvider: ready');
+    debugPrint('  - PsychometricProvider: ready');
+  }
+  // ========== End Phase 34 Shadow Wiring ==========
+  
   runApp(
     MultiProvider(
       providers: [
@@ -156,6 +213,20 @@ void main() async {
         
         // Phase 32: Voice Session Manager
         Provider.value(value: voiceSessionManager),
+        
+        // ========== Phase 34: Shadow Providers (Dark Launch) ==========
+        // These are available but not yet consumed by UI screens
+        // They will replace AppState usage in Phase 35
+        Provider.value(value: settingsRepository),
+        Provider.value(value: userRepository),
+        Provider.value(value: habitRepository),
+        Provider.value(value: psychometricRepository),
+        Provider.value(value: psychometricEngine),
+        ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider.value(value: userProvider),
+        ChangeNotifierProvider.value(value: habitProvider),
+        ChangeNotifierProvider.value(value: psychometricProvider),
+        // ========== End Phase 34 Shadow Providers ==========
       ],
       child: MyApp(
         appState: appState,
