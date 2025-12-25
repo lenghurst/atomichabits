@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/chat_message.dart';
-import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart' as onboarding;
 import '../../data/services/onboarding/onboarding_orchestrator.dart';

@@ -12,6 +12,7 @@
 /// 
 /// Created by: Council of Five - Security Auditor
 /// Purpose: Validate Auth plumbing before Voice Coach testing
+library;
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -45,8 +46,8 @@ class DiagnosticScreen extends StatefulWidget {
 }
 
 class _DiagnosticScreenState extends State<DiagnosticScreen> {
-  String _sha1Fingerprint = 'Checking...';
-  String _sha256Fingerprint = 'Checking...';
+  final String _sha1Fingerprint = 'Checking...';
+  final String _sha256Fingerprint = 'Checking...';
   String _packageName = 'Checking...';
   String _keystorePath = 'Checking...';
   List<DiagnosticResult> _results = [];

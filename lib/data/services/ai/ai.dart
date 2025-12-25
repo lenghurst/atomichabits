@@ -15,6 +15,7 @@
 /// final aiManager = AIServiceManager();
 /// await aiManager.startConversation(isPremiumUser: false, isBreakHabit: false);
 /// ```
+library;
 
 export 'ai_service_manager.dart';
 export 'deep_seek_service.dart';

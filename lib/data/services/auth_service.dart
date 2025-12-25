@@ -74,7 +74,7 @@ class AuthService extends ChangeNotifier {
       });
       
       // Check for existing session
-      final session = _supabase!.auth.currentSession;
+      final session = _supabase.auth.currentSession;
       if (session != null) {
         _currentUser = session.user;
         _authState = AuthState.authenticated;
@@ -418,7 +418,7 @@ class AuthService extends ChangeNotifier {
         }
         debugPrint('║ ');
         debugPrint('║ TROUBLESHOOTING TIPS:');
-        debugPrint('║   1. Run: adb logcat *:E | grep -i "google\|auth\|sign"');
+        debugPrint('║   1. Run: adb logcat *:E | grep -i "google|auth|sign"');
         debugPrint('║   2. Verify SHA-1: cd android && ./gradlew signingReport');
         debugPrint('║   3. Check Google Cloud Console for package: co.thepact.app');
         debugPrint('╚══════════════════════════════════════════════════════════');

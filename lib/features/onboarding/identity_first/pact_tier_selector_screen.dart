@@ -547,7 +547,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                               Row(
                                 children: [
                                   const Text("Witnessed by: ", style: TextStyle(color: Colors.white54)),
-                                  Text(witnessName!, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                                  Text(witnessName, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                           ],

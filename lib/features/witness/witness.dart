@@ -4,6 +4,7 @@
 /// 
 /// This module provides social accountability features that transform
 /// the app from a single-player tool to a multiplayer network.
+library;
 
 export 'witness_accept_screen.dart';
 export 'witness_dashboard.dart';

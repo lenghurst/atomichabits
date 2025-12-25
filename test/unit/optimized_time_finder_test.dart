@@ -10,6 +10,7 @@
 /// - Insufficient data handling
 /// - Weekend variance detection
 /// - Confidence calculation
+library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:atomic_habits/data/services/smart_nudge/optimized_time_finder.dart';

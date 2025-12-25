@@ -6,7 +6,6 @@ import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart';
-import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../widgets/suggestion_dialog.dart';
 import 'widgets/magic_wand_button.dart';
 import '../../data/ai_suggestion_service.dart';
@@ -56,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   // Phase 13: Habit Stacking
   String? _anchorHabitId;
-  String _stackPosition = 'after'; // 'after' is the default
+  final String _stackPosition = 'after'; // 'after' is the default
   
   // Store the full AI data to preserve invisible fields (motivation, rootCause, etc.)
   // This prevents "Data Amnesia" - losing AI-generated metadata when saving
@@ -684,7 +683,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               );
-            }).toList(),
+            }),
           ],
           onChanged: (value) {
             setState(() {

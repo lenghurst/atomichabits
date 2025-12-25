@@ -3,6 +3,7 @@
 /// Data models for time drift detection and scheduling optimization.
 /// 
 /// Philosophy: "The app should observe what you do, not just what you say you'll do."
+library;
 
 import 'package:flutter/foundation.dart';
 

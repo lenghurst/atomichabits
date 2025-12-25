@@ -5,6 +5,7 @@
 /// 
 /// Part of the "Chain Reaction" feature where completing one habit
 /// can prompt the user to do the next stacked habit.
+library;
 
 class CompletionResult {
   /// Whether this was a new completion (not already completed today)

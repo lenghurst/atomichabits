@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
-import '../../data/models/completion_result.dart';
-import '../../widgets/stack_prompt_dialog.dart';
 import '../review/weekly_review_dialog.dart';
 import 'widgets/habit_summary_card.dart';
 
@@ -273,7 +271,7 @@ class HabitListScreen extends StatelessWidget {
                           onEdit: () => context.push(AppRoutes.habitEdit(habit.id)),
                           onQuickComplete: () async {
                             final result = await appState.completeHabitForToday(habitId: habit.id);
-                            if (result != null && result.wasNewCompletion && context.mounted) {
+                            if (result.wasNewCompletion && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('${habit.name} completed!'),

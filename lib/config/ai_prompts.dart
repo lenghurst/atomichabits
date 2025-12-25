@@ -27,7 +27,6 @@ import 'dart:math';
 /// Collaboration: Elon Musk (physics-based systems) + James Clear (Atomic Habits)
 library;
 
-import 'dart:math';
 
 // ============================================================
 // VARIABLE REWARD PERSONAS (Nir Eyal's Hook Model)

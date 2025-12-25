@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../../data/models/onboarding_data.dart';
-import '../../../config/ai_model_config.dart';
 
 /// Magic Wand button for AI-powered habit auto-completion
 /// 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/app_state.dart';
@@ -7,7 +6,6 @@ import '../../../data/models/consistency_metrics.dart';
 import '../../../data/models/completion_result.dart';
 import '../../../data/services/sound_service.dart';
 import '../../../data/services/smart_nudge/optimized_time_finder.dart';
-import '../../../data/services/smart_nudge/drift_analysis.dart' as drift;
 import '../../../widgets/reward_investment_dialog.dart';
 import '../../../widgets/recovery_prompt_dialog.dart';
 import '../../../widgets/stack_prompt_dialog.dart';
@@ -77,7 +75,7 @@ class TodayScreenController {
       final lastPrompt = DateTime.fromMillisecondsSinceEpoch(lastPromptTimestamp);
       final daysSinceLastPrompt = DateTime.now().difference(lastPrompt).inDays;
       if (daysSinceLastPrompt < 7) {
-        debugPrint('⏰ Too soon to show drift suggestion (${daysSinceLastPrompt} days ago)');
+        debugPrint('⏰ Too soon to show drift suggestion ($daysSinceLastPrompt days ago)');
         return;
       }
     }

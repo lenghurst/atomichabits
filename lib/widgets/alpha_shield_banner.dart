@@ -364,16 +364,15 @@ class AlphaShieldFAB extends StatelessWidget {
                   FeedbackService.sendRoast();
                 },
               ),
-              if (FeedbackService.githubIssues != null)
-                ListTile(
-                  leading: const Icon(Icons.code, color: Colors.purple),
-                  title: const Text('GitHub Issues'),
-                  subtitle: const Text('For technical bugs'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    FeedbackService.openGitHubIssues();
-                  },
-                ),
+              ListTile(
+                leading: const Icon(Icons.code, color: Colors.purple),
+                title: const Text('GitHub Issues'),
+                subtitle: const Text('For technical bugs'),
+                onTap: () {
+                  Navigator.pop(context);
+                  FeedbackService.openGitHubIssues();
+                },
+              ),
               const SizedBox(height: 16),
             ],
           ),

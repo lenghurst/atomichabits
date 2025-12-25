@@ -5,6 +5,7 @@
 /// habits at a different time than scheduled.
 /// 
 /// Philosophy: "The app should observe what you do, not just what you say you'll do."
+library;
 
 import 'package:flutter/material.dart';
 import '../data/services/smart_nudge/drift_analysis.dart' as drift;
@@ -87,7 +88,7 @@ class _TimeDriftSuggestionDialogState extends State<TimeDriftSuggestionDialog>
     if (hours > 0 && mins > 0) {
       return '${hours}h ${mins}m $direction';
     } else if (hours > 0) {
-      return '${hours} hour${hours > 1 ? 's' : ''} $direction';
+      return '$hours hour${hours > 1 ? 's' : ''} $direction';
     } else {
       return '$mins minutes $direction';
     }

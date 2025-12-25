@@ -11,6 +11,7 @@
 /// 3. Calculate median time (more robust than average)
 /// 4. Compare to scheduled time
 /// 5. Flag if drift > 45 minutes with sufficient confidence
+library;
 
 import 'dart:math' as math;
 import 'drift_analysis.dart';

@@ -5,8 +5,6 @@ import '../../config/router/app_routes.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
-import '../../data/services/sound_service.dart';
-import '../../data/app_state.dart';
 import '../../widgets/animated_nudge_button.dart';
 
 /// Contracts List Screen

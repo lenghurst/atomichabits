@@ -2,6 +2,7 @@
 /// 
 /// Centralizes all date comparison and manipulation logic
 /// to avoid duplication across the codebase.
+library;
 
 class HabitDateUtils {
   /// Checks if two dates are the same day (ignoring time)
@@ -32,9 +33,11 @@ class HabitDateUtils {
   }
   
   /// Gets number of days between two dates (absolute value)
+  /// 
+  /// Uses UTC to avoid DST issues that can cause off-by-one errors.
   static int daysBetween(DateTime from, DateTime to) {
-    final fromNormalized = DateTime(from.year, from.month, from.day);
-    final toNormalized = DateTime(to.year, to.month, to.day);
+    final fromNormalized = DateTime.utc(from.year, from.month, from.day);
+    final toNormalized = DateTime.utc(to.year, to.month, to.day);
     return toNormalized.difference(fromNormalized).inDays.abs();
   }
   
@@ -69,6 +72,8 @@ class HabitDateUtils {
   }
   
   /// Generates a list of dates between start and end (inclusive)
+  /// 
+  /// Uses date arithmetic instead of Duration to avoid DST issues.
   static List<DateTime> dateRange(DateTime start, DateTime end) {
     final dates = <DateTime>[];
     var current = startOfDay(start);
@@ -76,7 +81,8 @@ class HabitDateUtils {
     
     while (!current.isAfter(endNormalized)) {
       dates.add(current);
-      current = current.add(const Duration(days: 1));
+      // Use date arithmetic to avoid DST issues
+      current = DateTime(current.year, current.month, current.day + 1);
     }
     
     return dates;

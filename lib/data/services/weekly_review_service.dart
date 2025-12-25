@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/habit.dart';
 import '../models/consistency_metrics.dart';
-import '../models/habit_pattern.dart'; // Phase 14: Pattern Detection
+// Phase 14: Pattern Detection
 import 'ai/ai_service_manager.dart';
 import 'pattern_detection_service.dart'; // Phase 14
 import 'smart_nudge/optimized_time_finder.dart'; // Phase 19

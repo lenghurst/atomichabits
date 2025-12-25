@@ -143,15 +143,17 @@ class ConsistencyService {
       if (!completions.contains(checkDate)) {
         currentMissStreak++;
       } else {
-        if (currentMissStreak == 1) singleMisses++;
-        else if (currentMissStreak > 1) multiDayMisses++;
+        if (currentMissStreak == 1) {
+          singleMisses++;
+        } else if (currentMissStreak > 1) multiDayMisses++;
         currentMissStreak = 0;
       }
     }
     
     // Handle trailing miss streak
-    if (currentMissStreak == 1) singleMisses++;
-    else if (currentMissStreak > 1) multiDayMisses++;
+    if (currentMissStreak == 1) {
+      singleMisses++;
+    } else if (currentMissStreak > 1) multiDayMisses++;
     
     final totalMissEvents = singleMisses + multiDayMisses;
     if (totalMissEvents == 0) return 1.0;

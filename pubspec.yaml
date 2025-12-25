@@ -86,7 +86,7 @@ dependencies:
   package_info_plus: ^8.1.2
   
   # Phase 24: Install Referrer (The Viral Engine - Standard Protocol)
-  play_install_referrer: ^0.5.0
+  # play_install_referrer: ^0.5.0  # Requires Flutter 3.29+, disabled for now
   
   # Gemini AI for chat and suggestions
   google_generative_ai: ^0.4.6
@@ -106,6 +106,10 @@ dependencies:
   
   # Phase 33: Investment Screen - TypeAhead contact search
   flutter_typeahead: ^5.2.0
+
+  # Dependencies added for missing packages (uuid is used by lexicon_entry.dart)
+  uuid: ^4.5.1
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

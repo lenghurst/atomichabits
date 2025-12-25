@@ -8,6 +8,7 @@
 /// - Two misses is the start of a new habit
 /// - Recovery is celebrated, not hidden
 /// - Long-term averages matter more than perfect days
+library;
 
 /// Represents the urgency level for recovery prompts
 enum RecoveryUrgency {
@@ -388,14 +389,16 @@ class ConsistencyMetrics {
       if (!completions.contains(checkDate)) {
         missStreak++;
       } else {
-        if (missStreak == 1) singleMisses++;
-        else if (missStreak > 1) multiDayMisses++;
+        if (missStreak == 1) {
+          singleMisses++;
+        } else if (missStreak > 1) multiDayMisses++;
         missStreak = 0;
       }
     }
     // Handle trailing miss streak
-    if (missStreak == 1) singleMisses++;
-    else if (missStreak > 1) multiDayMisses++;
+    if (missStreak == 1) {
+      singleMisses++;
+    } else if (missStreak > 1) multiDayMisses++;
     
     final totalMissEvents = singleMisses + multiDayMisses;
     final neverMissTwiceRate = totalMissEvents > 0 

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
-import '../../data/models/habit.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
@@ -62,12 +61,10 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
     );
     
     setState(() {
-      _titleController.text = '${_durationDays}-Day ${habit.name} Challenge';
-      if (habit.identity != null) {
-        _commitmentController.text = 
-            'I commit to ${habit.tinyVersion ?? habit.name} daily, becoming ${habit.identity}.';
-      }
-    });
+      _titleController.text = '$_durationDays-Day ${habit.name} Challenge';
+      _commitmentController.text = 
+          'I commit to ${habit.tinyVersion ?? habit.name} daily, becoming ${habit.identity}.';
+        });
   }
   
   @override

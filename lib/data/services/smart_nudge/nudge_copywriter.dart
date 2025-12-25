@@ -9,6 +9,7 @@
 /// Tiered Architecture:
 /// - Free Tier: Local heuristics with static pattern-based copy
 /// - Premium: AI-generated personalized copy (future)
+library;
 
 import '../../models/habit_pattern.dart';
 

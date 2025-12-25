@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import '../models/habit.dart';
-import '../models/consistency_metrics.dart';
 
 /// Service for managing Home Screen Widget data synchronization
 /// 
@@ -234,7 +233,7 @@ class HomeWidgetService {
   Future<int> getInstalledWidgetCount() async {
     try {
       final widgets = await HomeWidget.getInstalledWidgets();
-      return widgets?.length ?? 0;
+      return widgets.length ?? 0;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error getting installed widgets: $e');

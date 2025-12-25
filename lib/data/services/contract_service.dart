@@ -634,7 +634,7 @@ class ContractService extends ChangeNotifier {
           .toList();
       
       // Load witness contracts
-      final witnessResponse = await _supabase!
+      final witnessResponse = await _supabase
           .from(SupabaseTables.contracts)
           .select()
           .eq('witness_id', userId)

@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import '../models/habit.dart';
-import '../models/consistency_metrics.dart';
 
 /// Phase 10: Analytics Dashboard Service
 /// 

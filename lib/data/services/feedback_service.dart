@@ -30,7 +30,7 @@ class FeedbackService {
   static const String? discordInvite = null;
   
   /// GitHub issues URL (if public)
-  static const String? githubIssues = 'https://github.com/lenghurst/atomichabits/issues';
+  static const String githubIssues = 'https://github.com/lenghurst/atomichabits/issues';
   
   /// App version info
   static PackageInfo? _packageInfo;
@@ -216,9 +216,7 @@ ${suggestion ?? '[If you were the developer, what would you do differently?]'}
   
   /// Open GitHub issues (if available)
   static Future<bool> openGitHubIssues() async {
-    if (githubIssues == null) return false;
-    
-    final uri = Uri.parse(githubIssues!);
+    final uri = Uri.parse(githubIssues);
     
     try {
       if (await canLaunchUrl(uri)) {

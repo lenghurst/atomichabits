@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:typed_data';
 import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
 import '../../data/services/voice_session_manager.dart';

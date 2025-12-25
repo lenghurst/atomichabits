@@ -5,6 +5,7 @@
 /// 
 /// Philosophy: "Miss Reasons" → "Actionable Insights"
 /// Local-first heuristics for real-time tags, LLM for weekly synthesis.
+library;
 
 import 'consistency_metrics.dart';
 

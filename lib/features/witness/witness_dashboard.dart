@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/witness_service.dart';
-import '../../data/services/auth_service.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/models/witness_event.dart';
 import '../../widgets/guest_data_warning_banner.dart';

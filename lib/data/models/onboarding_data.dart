@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../../config/niche_config.dart';
 
 /// Type of habit being created

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io'; // Required for HandshakeException, SocketException
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';

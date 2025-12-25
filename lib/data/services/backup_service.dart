@@ -6,9 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../models/habit.dart';
-import '../models/user_profile.dart';
-import '../models/app_settings.dart';
 
 /// Phase 11: Data Safety (Backup & Restore) Service
 /// 

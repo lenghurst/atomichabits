@@ -388,7 +388,7 @@ class GeminiChatService {
       );
 
       // Stream the response
-      final response = await chat.sendMessageStream(Content.text(prompt));
+      final response = chat.sendMessageStream(Content.text(prompt));
 
       await for (final chunk in response) {
         final text = chunk.text;
@@ -501,9 +501,7 @@ class GeminiChatService {
 
   /// Extract structured data from onboarding conversation
   void _extractOnboardingData(ChatConversation conversation) {
-    if (conversation.onboardingData == null) {
-      conversation.onboardingData = OnboardingData();
-    }
+    conversation.onboardingData ??= OnboardingData();
 
     // Simple heuristic extraction from recent messages
     // In production, you might ask the LLM to extract this in a structured format

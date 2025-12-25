@@ -14,8 +14,6 @@ import 'widgets/completion_button.dart';
 import 'widgets/recovery_banner.dart';
 import 'widgets/ritual_button.dart';
 import 'widgets/optimization_tips_button.dart';
-import 'widgets/consistency_details_sheet.dart';
-import 'widgets/improvement_suggestions_dialog.dart';
 import 'controllers/today_screen_controller.dart';
 
 /// TodayScreen - Shows today's habit and graceful consistency metrics

@@ -8,6 +8,7 @@
 /// - Builder is drifting -> Witness can nudge before failure
 /// 
 /// This transforms the app from Single Player (Tool) to Multiplayer (Network)
+library;
 
 /// A real-time event in the witness relationship
 class WitnessEvent {

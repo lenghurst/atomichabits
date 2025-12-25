@@ -15,6 +15,7 @@
 /// - Broken Chain: Stacked habit dependency failures
 /// - Weekend Variance: Different weekend behavior
 /// - Strong Recovery: Positive - good at bouncing back
+library;
 
 import '../models/habit.dart';
 import '../models/habit_pattern.dart';
@@ -257,7 +258,7 @@ class PatternDetectionService {
       occurrences: worstCount,
       totalOpportunities: weekdayMissCount,
       supportingEvents: misses.where((m) => m.dayOfWeek == worstDay).toList(),
-      tags: ['📅 ${dayName} Struggle'],
+      tags: ['📅 $dayName Struggle'],
       specificDetail: dayName,
     );
   }

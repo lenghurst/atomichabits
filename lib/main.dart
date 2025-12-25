@@ -7,17 +7,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 // Phase 41: Centralised Router
 import 'config/router/app_router.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/app_state.dart';
 import 'data/services/ai/ai_service_manager.dart';
 import 'data/services/weekly_review_service.dart';
 import 'data/services/onboarding/onboarding_orchestrator.dart';
-import 'data/services/home_widget_service.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/sync_service.dart';
 import 'data/services/voice_session_manager.dart';
-import 'config/ai_model_config.dart';
 import 'config/supabase_config.dart';
 import 'core/error_boundary.dart';
 // Phase 41: Screen imports moved to app_router.dart
@@ -26,7 +23,6 @@ import 'data/services/sound_service.dart';
 import 'data/services/feedback_service.dart';
 import 'data/services/deep_link_service.dart';
 import 'data/services/witness_service.dart';
-import 'config/niche_config.dart';
 // Phase 41: Witness screen imports moved to app_router.dart
 
 // Phase 34: Shadow Wiring - New Architecture (Dark Launch)

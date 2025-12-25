@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../data/models/witness_event.dart';
 
 /// High Five Sheet
 /// 

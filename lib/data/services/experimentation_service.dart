@@ -401,7 +401,7 @@ class ExperimentationService {
     
     try {
       for (final entry in context.entries) {
-        await _analytics!.logAssignment(
+        await _analytics.logAssignment(
           userId: userId,
           experimentName: entry.key,
           variant: entry.value,
@@ -438,7 +438,7 @@ class ExperimentationService {
     }
     
     try {
-      await _analytics!.logAssignment(
+      await _analytics.logAssignment(
         userId: userId,
         experimentName: experiment.analyticsName,
         variant: variant,
@@ -447,7 +447,7 @@ class ExperimentationService {
       );
       
       // Also log as an event for time-series analysis
-      await _analytics!.logEvent(
+      await _analytics.logEvent(
         userId: userId,
         experimentName: experiment.analyticsName,
         variant: variant,
@@ -479,7 +479,7 @@ class ExperimentationService {
     try {
       final variant = getVariant(experiment, userId);
       
-      await _analytics!.logEvent(
+      await _analytics.logEvent(
         userId: userId,
         experimentName: experiment.analyticsName,
         variant: variant,

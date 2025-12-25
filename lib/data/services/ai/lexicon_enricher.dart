@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'ai_service_manager.dart';
-import '../../models/lexicon_entry.dart';
 
 class LexiconEnricher {
   final AiServiceManager _aiServiceManager;

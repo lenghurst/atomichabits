@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../models/habit.dart';
 import '../models/user_profile.dart';
 import '../models/consistency_metrics.dart';
@@ -214,7 +213,7 @@ class RecoveryEngine {
       quickRecoveries: quickRecoveries,
       averageRecoveryDays: totalDaysMissed / events.length,
       longestGap: longestGap,
-      recoveryRate: events.length > 0 ? quickRecoveries / events.length : 1.0,
+      recoveryRate: events.isNotEmpty ? quickRecoveries / events.length : 1.0,
     );
   }
   
