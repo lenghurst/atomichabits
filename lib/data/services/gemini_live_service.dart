@@ -229,15 +229,19 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   /// Sends the initial setup message to the Gemini Live API.
   /// 
-  /// Phase 28: Gemini 3 Compliance
-  /// - Added `thinkingConfig` with `thinkingLevel: "MINIMAL"` to reduce latency.
+  /// Phase 34.4: Fixed setup message format per official docs
+  /// - REMOVED `thinkingConfig` - not a valid field for WebSocket setup message
+  /// - The native audio model (gemini-2.5-flash-native-audio-preview-12-2025) has
+  ///   thinking enabled by default; use `thinkingBudget: 0` in generationConfig to disable
   /// - Removed `temperature` setting to prevent looping behaviour.
+  /// 
+  /// Reference: https://ai.google.dev/gemini-api/docs/live-guide
   Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
     final setupConfig = {
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
-          'responseModalities': ['AUDIO'], // camelCase per official docs
+          'responseModalities': ['AUDIO'],
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
@@ -245,13 +249,10 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
               }
             }
           },
-          // GEMINI 3 COMPLIANCE: Do NOT set temperature. 
-          // Values < 1.0 cause "unexpected behavior, such as looping".
-        },
-        // GEMINI 3 COMPLIANCE: Set thinking level to minimal for voice.
-        // This reduces server-side processing time and minimises "dead air".
-        'thinkingConfig': {
-          'thinkingLevel': 'MINIMAL',
+          // Phase 34.4: Disable thinking for faster voice response
+          // Native audio model has thinking enabled by default
+          // Set to 0 to disable, or remove for default behaviour
+          'thinkingBudget': 0,
         },
         if (instruction != null) 
           'systemInstruction': {
@@ -263,6 +264,12 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         },
       }
     };
+    
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Sending setup message...');
+      debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
+    }
+    
     _channel!.sink.add(jsonEncode(setupConfig));
   }
 
