@@ -358,3 +358,75 @@ dependencies:
 2. Audio streaming uses Dart Streams for reactive programming
 3. Response handling is async iterator-based
 4. Session management is handled automatically
+
+
+## Phase 35: `thinkingConfig` Hotfix (2025-12-25)
+
+### Problem: WebSocket Connection Failure
+
+Following the implementation of the `GeminiLiveService`, the WebSocket connection was failing with the following error:
+
+```
+Connection Closed During: WAITING_FOR_SERVER_READY
+Code: 1006 | Reason: Abnormal Closure
+```
+
+And the server logs indicated:
+
+```
+Unknown name 'thinkingConfig': Cannot find field.
+```
+
+### Investigation
+
+1.  **Initial Hypothesis:** The `thinkingConfig` field name was incorrect (camelCase vs. snake_case) or not supported by the `gemini-2.5-flash-native-audio-preview-12-2025` model.
+2.  **Documentation Review:** A thorough review of the official Google AI API documentation for the `BidiGenerateContentSetup` message and `GenerationConfig` object was conducted.
+    -   [Live API - WebSockets API reference](https://ai.google.dev/api/live)
+    -   [Generating content - `GenerationConfig`](https://ai.google.dev/api/generate-content#generationconfig)
+3.  **Critical Finding:** The documentation revealed that `thinkingConfig` is a valid field, but it must be nested **inside** the `generationConfig` object, not at the same level.
+
+### The Fix
+
+The `_sendSetupMessage` method in `lib/data/services/gemini_live_service.dart` was modified to move the `thinkingConfig` object into its correct location within the `generationConfig` map.
+
+**Incorrect Structure (Before):**
+
+```dart
+final setupConfig = {
+  'setup': {
+    'model': '...',
+    'generationConfig': {
+      // ...
+    },
+    // WRONG: thinkingConfig at the same level as generationConfig
+    'thinkingConfig': {
+      'thinkingLevel': 'MINIMAL',
+    },
+  }
+};
+```
+
+**Correct Structure (After):**
+
+```dart
+final setupConfig = {
+  'setup': {
+    'model': '...',
+    'generationConfig': {
+      'responseModalities': ['AUDIO'],
+      'speechConfig': { ... },
+      // CORRECT: thinkingConfig is nested inside generationConfig
+      'thinkingConfig': {
+        'thinkingLevel': 'MINIMAL',
+      },
+    },
+    // ...
+  }
+};
+```
+
+### Outcome
+
+This change aligns the WebSocket setup payload with the official API schema, resolving the "Unknown name" error and allowing the connection to be established successfully. The fix was committed and pushed to the `main` branch.
+
+**Commit:** `969cb1d2e1c7f1e6b3f4e1b8a9d9b8e0c8d7f3e1`

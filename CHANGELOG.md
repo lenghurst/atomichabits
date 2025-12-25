@@ -5,7 +5,21 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 27.8
+## [Unreleased] - Phase 35
+
+### Fixed
+- **Gemini Live API Connection:** Fixed a critical bug causing WebSocket connection failure with the error "Unknown name 'thinkingConfig'". The `thinkingConfig` payload was being sent at the wrong level in the setup message. It has been moved inside `generationConfig` to comply with the official Google API schema. [1]
+
+[1]: https://ai.google.dev/api/generate-content#ThinkingConfig
+
+## [6.0.1] - 2025-12-25 - Phase 35: "ThinkingConfig Hotfix"
+
+### Fixed
+- **Gemini Live API Connection:** Fixed a critical bug causing WebSocket connection failure with the error "Unknown name 'thinkingConfig'". The `thinkingConfig` payload was being sent at the wrong level in the setup message. It has been moved inside `generationConfig` to comply with the official Google API schema. [1]
+
+[1]: https://ai.google.dev/api/generate-content#ThinkingConfig
+
+## [6.0.0] - 2025-12-21 - Phase 27: "Voice First Pivot"
 
 ### In Progress
 - Audio recording implementation for voice interface
