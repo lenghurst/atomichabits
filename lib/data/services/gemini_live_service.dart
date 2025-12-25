@@ -7,17 +7,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
 
-/// Gemini Live API Service - Phase 28: Gemini 3 Compliance
+/// Gemini Live API Service - Phase 35: ThinkingConfig Fix
 /// 
 /// Features:
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
 /// - Detailed Error Reporting (Pastes codes/reasons into error message)
 /// - Universal Auth (URL Parameters: ?key= or ?access_token=)
-/// - Global Model Support (gemini-live-2.5-flash-native-audio via v1alpha)
+/// - Global Model Support (gemini-2.5-flash-native-audio-preview-12-2025 via v1beta)
 /// - **Gemini 3 Compliance:**
 ///   - Thought Signature handling (maintains conversational context)
-///   - thinking_level: "minimal" (reduces latency for voice interactions)
+///   - thinkingConfig.thinkingLevel: "MINIMAL" (reduces latency for voice interactions)
 ///   - No temperature setting (prevents looping behaviour)
+/// 
+/// Phase 35 Fix:
+/// - CRITICAL: Moved thinkingConfig INSIDE generationConfig per official API schema
+/// - Previous error "Unknown name 'thinkingConfig'" was caused by incorrect nesting
+/// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
 /// 
 /// When connection fails, the error message will include:
 /// - [PHASE] Where exactly it failed
@@ -256,8 +261,10 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   /// Sends the initial setup message to the Gemini Live API.
   /// 
-  /// Phase 28: Gemini 3 Compliance
-  /// - Added `thinkingConfig` with `thinkingLevel: "MINIMAL"` to reduce latency.
+  /// Phase 35: Fix thinkingConfig placement
+  /// - CRITICAL FIX: Moved `thinkingConfig` INSIDE `generationConfig` per official API schema
+  /// - The API was returning "Unknown name 'thinkingConfig'" because it was at the wrong level
+  /// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
   /// - Removed `temperature` setting to prevent looping behaviour.
   Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
     final setupConfig = {
@@ -272,13 +279,13 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
               }
             }
           },
+          // PHASE 35 FIX: thinkingConfig belongs INSIDE generationConfig
+          // This was causing "Unknown name 'thinkingConfig'" when placed at setup level
+          'thinkingConfig': {
+            'thinkingLevel': 'MINIMAL',
+          },
           // GEMINI 3 COMPLIANCE: Do NOT set temperature. 
           // Values < 1.0 cause "unexpected behavior, such as looping".
-        },
-        // GEMINI 3 COMPLIANCE: Set thinking level to minimal for voice.
-        // This reduces server-side processing time and minimises "dead air".
-        'thinkingConfig': {
-          'thinkingLevel': 'MINIMAL',
         },
         if (instruction != null) 
           'systemInstruction': {
@@ -292,11 +299,11 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     };
     final payload = jsonEncode(setupConfig);
     
-    // PHASE 34: Enhanced debug logging for handshake payload
+    // PHASE 35: Enhanced debug logging for handshake payload
     if (kDebugMode) {
       debugPrint('GeminiLiveService: === HANDSHAKE PAYLOAD ===');
       debugPrint('GeminiLiveService: Model: models/${AIModelConfig.tier2Model}');
-      debugPrint('GeminiLiveService: thinkingConfig.thinkingLevel: MINIMAL');
+      debugPrint('GeminiLiveService: generationConfig.thinkingConfig.thinkingLevel: MINIMAL (FIXED - now inside generationConfig)');
       debugPrint('GeminiLiveService: responseModalities: [AUDIO]');
       debugPrint('GeminiLiveService: voiceName: Kore');
       debugPrint('GeminiLiveService: Full payload: $payload');
