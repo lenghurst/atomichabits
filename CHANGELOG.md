@@ -5,12 +5,21 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 35
+## [6.0.2] - 2025-12-25 - Phase 36: "Header Injection Fix"
 
 ### Fixed
-- **Gemini Live API Connection:** Fixed a critical bug causing WebSocket connection failure with the error "Unknown name 'thinkingConfig'". The `thinkingConfig` payload was being sent at the wrong level in the setup message. It has been moved inside `generationConfig` to comply with the official Google API schema. [1]
+- **CRITICAL: 403 Forbidden Error:** Fixed WebSocket connection being rejected by Google Front End (GFE)
+- Root cause: Dart's default WebSocket client was missing headers that GFE expects for protocol fingerprinting
+- Solution: Use `IOWebSocketChannel.connect()` with explicit `Host` and `User-Agent` headers
+- Added `User-Agent: goog-python-genai/0.1.0` to mimic the working Python client
+- See `docs/PHASE_36_ERROR_ANALYSIS.md` for the full "5 Whys" reasoning framework analysis
 
-[1]: https://ai.google.dev/api/generate-content#ThinkingConfig
+### Technical Details
+- The GFE performs strict protocol fingerprinting and rejects connections that don't "look" like legitimate clients
+- Python's `websockets` library automatically sets these headers, but Dart's `web_socket_channel` does not
+- This fix adds the import `package:web_socket_channel/io.dart` and uses `IOWebSocketChannel.connect()` with custom headers
+
+---
 
 ## [6.0.1] - 2025-12-25 - Phase 35: "ThinkingConfig Hotfix"
 

@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
 
-/// Gemini Live API Service - Phase 35: ThinkingConfig Fix
+/// Gemini Live API Service - Phase 36: Header Injection Fix
 /// 
 /// Features:
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
@@ -23,6 +24,12 @@ import '../../config/ai_model_config.dart';
 /// - CRITICAL: Moved thinkingConfig INSIDE generationConfig per official API schema
 /// - Previous error "Unknown name 'thinkingConfig'" was caused by incorrect nesting
 /// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
+/// 
+/// Phase 36 Fix:
+/// - CRITICAL: Added custom headers to mimic Python client (fixes 403 Forbidden)
+/// - Uses IOWebSocketChannel.connect() with explicit Host and User-Agent headers
+/// - Root cause: Dart's default WebSocket client lacks headers that GFE expects
+/// - See: docs/PHASE_36_ERROR_ANALYSIS.md
 /// 
 /// When connection fails, the error message will include:
 /// - [PHASE] Where exactly it failed
@@ -150,11 +157,21 @@ class GeminiLiveService {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
         debugPrint('GeminiLiveService: Endpoint: v1beta (Phase 34 fix)');
+        debugPrint('GeminiLiveService: Headers: Host + User-Agent (Phase 36 fix)');
         debugPrint('GeminiLiveService: Full URL: $wsUrl');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
       }
       
-      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+      // PHASE 36 FIX: Use IOWebSocketChannel with custom headers to mimic Python client
+      // This fixes 403 Forbidden errors caused by GFE (Google Front End) rejecting
+      // connections that don't have the expected Host and User-Agent headers.
+      _channel = IOWebSocketChannel.connect(
+        Uri.parse(wsUrl),
+        headers: {
+          'Host': 'generativelanguage.googleapis.com',
+          'User-Agent': 'goog-python-genai/0.1.0', // Mimic the working Python client
+        },
+      );
       
       _subscription = _channel!.stream.listen(
         _handleMessage,
