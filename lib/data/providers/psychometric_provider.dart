@@ -126,11 +126,12 @@ class PsychometricProvider extends ChangeNotifier {
   }
 
   /// Recalibrate risks based on habit history (call periodically)
+  /// Uses Isolate for heavy O(N) computation per Muratori's recommendation.
   Future<void> recalibrateRisks(List<Habit> habits) async {
-    _profile = _engine.recalibrateRisks(_profile, habits);
+    _profile = await _engine.recalibrateRisksAsync(_profile, habits);
     
     // Also update peak energy window
-    final peakWindow = _engine.calculatePeakEnergyWindow(habits);
+    final peakWindow = await _engine.calculatePeakEnergyWindowAsync(habits);
     _profile = _profile.copyWith(peakEnergyWindow: peakWindow);
     
     await _repository.saveProfile(_profile);

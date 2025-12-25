@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/habit.dart';
+import '../models/consistency_metrics.dart';
 import '../models/user_profile.dart';
 import '../models/completion_result.dart';
 import '../repositories/habit_repository.dart';
