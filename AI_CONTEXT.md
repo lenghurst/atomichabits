@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 42 - Soul Capture Onboarding  
+> **Current Phase:** Phase 43 - The Variable Reward  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -52,7 +52,7 @@
 
 ---
 
-## Current State: Phase 42
+## Current State: Phase 43
 
 ### What's Working
 
@@ -60,10 +60,11 @@
 |---------|--------|-------|
 | **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
 | **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with tool calling |
-| **Soul Capture Onboarding** | ✅ **NEW** | Sherlock Protocol with real-time tool calls |
+| **Soul Capture Onboarding** | ✅ **WORKING** | Sherlock Protocol with real-time tool calls |
+| **Pact Identity Card** | ✅ **NEW** | Variable Reward - flip card reveal |
 | **In-App Log Console** | ✅ Working | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
-| **Onboarding Flow** | ✅ Working | Voice-first with fallback |
+| **Onboarding Flow** | ✅ Working | Voice → Reveal → Dashboard |
 | **Dashboard** | ✅ Working | Habit tracking |
 
 ### Recent Fixes (Phases 35-42)
@@ -79,18 +80,23 @@
 | **41** | Router extraction, route constants, redirect logic | ✅ |
 | **41.2** | All 44 navigation calls migrated to AppRoutes | ✅ |
 | **42** | Soul Capture Onboarding with Sherlock Protocol | ✅ |
+| **43** | Pact Identity Card (Variable Reward) | ✅ |
 
-### Key Files Changed (Phase 42)
+### Key Files Changed (Phase 42-43)
 
 | File | Changes |
 |------|---------|
 | `lib/config/ai_tools_config.dart` | Tool schema for `update_user_psychometrics` (NEW) |
 | `lib/config/ai_prompts.dart` | Sherlock Protocol prompt (voiceOnboardingSystemPrompt) |
 | `lib/domain/entities/psychometric_profile.dart` | Holy Trinity fields added |
+| `lib/domain/entities/psychometric_profile_extensions.dart` | Display formatting (NEW) |
 | `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` method |
 | `lib/data/services/ai/prompt_factory.dart` | Dynamic prompt generation (NEW) |
 | `lib/data/services/gemini_live_service.dart` | Tool calling support, `sendToolResponse()` |
 | `lib/data/services/voice_session_manager.dart` | `VoiceSessionMode`, orchestration |
+| `lib/features/onboarding/widgets/pact_identity_card.dart` | 3D flip card (NEW) |
+| `lib/features/onboarding/pact_reveal_screen.dart` | Reveal sequence (NEW) |
+| `lib/features/onboarding/voice_coach_screen.dart` | "DONE" button, reveal navigation |
 
 ---
 

@@ -1,3 +1,29 @@
+## [6.2.0] - 2025-12-25 - Phase 43: "The Variable Reward"
+
+### Added
+- **Pact Identity Card:** Flip card widget with 3D animation revealing psychometric profile
+- **Pact Reveal Screen:** Dramatic loading sequence → card reveal → dashboard transition
+- **Profile Extensions:** `ProfileFormatting` extension for display-ready text and archetype colours
+- **"DONE" Button:** Voice coach now has explicit session completion with navigation
+
+### New Files
+- `lib/domain/entities/psychometric_profile_extensions.dart` - Display formatting logic
+- `lib/features/onboarding/widgets/pact_identity_card.dart` - Animated flip card
+- `lib/features/onboarding/pact_reveal_screen.dart` - The "magic moment" screen
+
+### Changed
+- **app_routes.dart:** Added `pactReveal` route
+- **app_router.dart:** Wired `PactRevealScreen`
+- **voice_coach_screen.dart:** Added session completion navigation to reveal screen
+
+### Psychology (Nir Eyal's Hook Model)
+- **Trigger:** Voice onboarding creates investment
+- **Action:** User speaks to Puck (Sherlock Protocol)
+- **Variable Reward:** The Pact Identity Card (this phase)
+- **Investment:** Data saved to Hive for future sessions
+
+---
+
 ## [6.1.0] - 2025-12-25 - Phase 42: "Soul Capture Onboarding"
 
 ### Added

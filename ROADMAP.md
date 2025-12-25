@@ -1,35 +1,57 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 42 - Soul Capture Onboarding  
+> **Current Phase:** Phase 43 - The Variable Reward  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Sherlock Protocol **IMPLEMENTED**. Real-time tool calling working.
+> **Status:** ✅ Pact Identity Card **IMPLEMENTED**. Full Hook Model complete.
 
 ---
 
-## 🎯 Current Focus: Soul Capture Onboarding (Phase 42)
+## 🎯 Current Focus: The Variable Reward (Phase 43)
 
-**Goal:** Implement AI-powered psychological profiling during onboarding using the Sherlock Protocol.
+**Goal:** Visualise the captured psychometric data as a premium digital artifact.
 
-**Status:** ✅ **COMPLETE**. Real-time tool calling integrated with Gemini Live API.
+**Status:** ✅ **COMPLETE**. Nir Eyal's Hook Model fully implemented.
 
-**What Was Built:**
-1. **Tool Schema:** `ai_tools_config.dart` - Function declaration for `update_user_psychometrics`
-2. **Sherlock Protocol Prompt:** `ai_prompts.dart` - Conversation flow that deduces traits
-3. **Tool Call Handler:** `gemini_live_service.dart` - Parses tool_call events, sends responses
-4. **Session Orchestration:** `voice_session_manager.dart` - Routes tool calls to provider
-5. **Profile Updates:** `psychometric_provider.dart` - `updateFromToolCall()` with immediate Hive save
-6. **Dynamic Prompts:** `prompt_factory.dart` - Injects Holy Trinity into subsequent sessions
+**What Was Built (Phase 43):**
+1. **Profile Extensions:** `psychometric_profile_extensions.dart` - Display formatting + archetype colours
+2. **Pact Identity Card:** `pact_identity_card.dart` - 3D flip card with mystery→insight reveal
+3. **Pact Reveal Screen:** `pact_reveal_screen.dart` - Loading sequence → card reveal → CTA
+4. **Navigation Flow:** Voice Coach → (DONE) → Pact Reveal → Dashboard
+
+**The Complete Hook Model:**
+- **Trigger:** User starts voice onboarding
+- **Action:** Sherlock Protocol conversation with Puck
+- **Variable Reward:** Pact Identity Card (screenshot-worthy)
+- **Investment:** Profile data saved to Hive
 
 **Immediate Priorities:**
-1.  **Test on Device:** Verify Sherlock Protocol conversation flow on physical device
+1.  **Test on Device:** Verify complete onboarding → reveal → dashboard flow
 2.  **Fix Unit Tests:** Resolve the 5 failing unit tests in `date_utils_test.dart`
 3.  **Static Analysis:** Clean up the 154 static analysis issues (mostly unused imports)
-4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets for the build workflow
+4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets
 
 ---
 
 ## ✅ Completed Phases
+
+### Phase 43: The Variable Reward (25 Dec 2025)
+
+**Goal:** Visualise the Soul Capture data as a premium digital artifact (Nir Eyal's Hook Model).
+
+| ID | Task | Status |
+|----|------|--------|
+| V1 | Create `psychometric_profile_extensions.dart` | ✅ |
+| V2 | Create `pact_identity_card.dart` (3D flip animation) | ✅ |
+| V3 | Create `pact_reveal_screen.dart` (loading → reveal) | ✅ |
+| V4 | Add `pactReveal` route to `app_routes.dart` | ✅ |
+| V5 | Wire `PactRevealScreen` in `app_router.dart` | ✅ |
+| V6 | Add "DONE" button + navigation in `voice_coach_screen.dart` | ✅ |
+
+**Visual Design:**
+- Front: "THE PACT" fingerprint + "TAP TO REVEAL"
+- Back: "I AM BECOMING..." / "I AM BURYING [strikethrough]" / "OPERATING RULE #1"
+- Dynamic archetype colours (Gold, Purple, Red, Blue, Orange)
 
 ### Phase 42: Soul Capture Onboarding (25 Dec 2025)
 

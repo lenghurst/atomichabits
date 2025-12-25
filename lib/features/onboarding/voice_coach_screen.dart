@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
+import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -370,6 +372,39 @@ Use British English spelling and phrasing.''';
     );
   }
   
+  /// Phase 43: Handle session completion - Navigate to Pact Reveal
+  /// 
+  /// This is called when the user taps "DONE" or when the Sherlock Protocol
+  /// completes successfully. Routes to either:
+  /// - PactRevealScreen (if we captured psychometric data)
+  /// - Dashboard (if no data was captured)
+  Future<void> _onSessionComplete() async {
+    // End the voice session gracefully
+    await _sessionManager?.endSession();
+    
+    if (!mounted) return;
+    
+    // Check if we captured valid psychometric data
+    final profile = context.read<PsychometricProvider>().profile;
+    final hasData = profile.antiIdentityLabel != null ||
+                    profile.failureArchetype != null ||
+                    profile.resistanceLieLabel != null;
+    
+    if (hasData) {
+      // Navigate to the Magic Moment (Pact Reveal)
+      if (kDebugMode) {
+        debugPrint('VoiceCoachScreen: Navigating to Pact Reveal (data captured)');
+      }
+      context.go(AppRoutes.pactReveal);
+    } else {
+      // No data captured, go straight to dashboard
+      if (kDebugMode) {
+        debugPrint('VoiceCoachScreen: Navigating to Dashboard (no data captured)');
+      }
+      context.go(AppRoutes.dashboard);
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -385,6 +420,14 @@ Use British English spelling and phrasing.''';
             icon: const Icon(Icons.keyboard),
             onPressed: () => context.go(AppRoutes.manualOnboarding),
             tooltip: 'Switch to Manual Entry',
+          ),
+          // Phase 43: "Done" button to end session and see results
+          TextButton(
+            onPressed: _onSessionComplete,
+            child: const Text(
+              'DONE',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

@@ -38,6 +38,7 @@ import '../../features/contracts/join_contract_screen.dart';
 import '../../features/contracts/contracts_list_screen.dart';
 import '../../features/witness/witness_accept_screen.dart';
 import '../../features/witness/witness_dashboard.dart';
+import '../../features/onboarding/pact_reveal_screen.dart';
 
 import 'app_routes.dart';
 
@@ -154,6 +155,12 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.tierOnboarding,
         builder: (context, state) => const PactTierSelectorScreen(),
+      ),
+      
+      // Phase 43: Pact Reveal Screen (Variable Reward)
+      GoRoute(
+        path: AppRoutes.pactReveal,
+        builder: (context, state) => const PactRevealScreen(),
       ),
       
       // ============================================================

@@ -42,6 +42,10 @@ abstract class AppRoutes {
   /// Tier selection screen
   static const String tierOnboarding = '/onboarding/tier';
   
+  /// Pact Reveal screen (Phase 43: Variable Reward)
+  /// Shows the Pact Identity Card after Sherlock Protocol completes
+  static const String pactReveal = '/onboarding/pact-reveal';
+  
   // ============================================================
   // NICHE LANDING PAGES (Side Doors)
   // ============================================================
@@ -150,6 +154,7 @@ abstract class AppRoutes {
     identityOnboarding,
     witnessOnboarding,
     tierOnboarding,
+    pactReveal,
   ];
   
   /// Routes that require premium subscription
