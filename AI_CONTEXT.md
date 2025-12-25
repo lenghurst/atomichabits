@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Setup Message Fix)  
-> **Last Verified:** Phase 34.4 Complete (WebSocket Setup Fix - thinkingConfig removed)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4d - Minimal WebSocket Setup)  
+> **Last Verified:** Phase 34.4d Complete (Minimal WebSocket Setup - All Invalid Fields Removed)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
@@ -268,6 +268,57 @@ Unknown name "thinkingConfig" at 'setup': Cannot find field.
 
 **Analysis Document:** `docs/GEMINI_LIVE_API_FINDINGS.md`
 
+### Phase 34.4d: Minimal WebSocket Setup Message
+
+Critical fix for Voice Coach - HANDSHAKE_TIMEOUT after thinkingConfig fix.
+
+**Error Message:**
+```
+HANDSHAKE_TIMEOUT
+Server did not send "setupComplete" within 10 seconds.
+```
+
+**Root Cause:** The `thinkingBudget` field (added to replace `thinkingConfig`) is also NOT in the official WebSocket schema. The official API reference at https://ai.google.dev/api/live shows only these fields in `generationConfig`:
+
+| Valid Fields | Invalid Fields (Removed) |
+|--------------|---------------------------|
+| candidateCount | ❌ thinkingConfig |
+| maxOutputTokens | ❌ thinkingBudget |
+| temperature | ❌ outputAudioTranscription |
+| topP, topK | ❌ inputAudioTranscription |
+| responseModalities | |
+| speechConfig | |
+| mediaResolution | |
+
+**Fix Applied:** Stripped to ONLY official fields:
+
+```json
+{
+  "setup": {
+    "model": "models/gemini-2.5-flash-native-audio-preview-12-2025",
+    "generationConfig": {
+      "responseModalities": ["AUDIO"],
+      "speechConfig": {
+        "voiceConfig": {
+          "prebuiltVoiceConfig": {
+            "voiceName": "Kore"
+          }
+        }
+      }
+    },
+    "systemInstruction": {
+      "parts": [{"text": "..."}]
+    }
+  }
+}
+```
+
+**File Changed:** `lib/data/services/gemini_live_service.dart`
+
+**Reference:** https://ai.google.dev/api/live
+
+**Schema Document:** `docs/GEMINI_WEBSOCKET_SCHEMA.md`
+
 ---
 
 ## PsychometricProfile: The "Brain" of AI Personalisation
@@ -452,7 +503,7 @@ The new architecture coexists with the legacy `AppState` using the "Strangler Fi
 | Tier | Model | Use Case |
 |------|-------|----------|
 | **Tier 1** | `deepseek-chat` | Text reasoning, logic |
-| **Tier 2** | `gemini-live-2.5-flash-native-audio` | Real-time voice |
+| **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | Real-time voice |
 | **Tier 2 Fallback** | `gemini-2.5-flash` | Text when voice unavailable |
 | **Tier 3** | `gemini-2.5-pro` | Complex reasoning |
 

@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 34.4 - Setup Message Fix | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 34.4d - Minimal Setup | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟢 Setup Fixed | thinkingConfig → thinkingBudget |
+| **Voice AI** | 🔧 Testing | Minimal WebSocket Setup (all invalid fields removed) |
 | **Text AI** | 🔧 Debugging | DeepSeek V3 (API key loading under investigation) |
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Setup Message Fix)  
-> **Current Phase:** Phase 34.4 - WebSocket Setup Fix (thinkingConfig removed)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4d - Minimal WebSocket Setup)  
+> **Current Phase:** Phase 34.4d - Minimal WebSocket Setup (thinkingConfig, thinkingBudget, transcription fields removed)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Language:** UK English (Default)
 

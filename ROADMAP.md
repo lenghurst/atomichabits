@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Setup Message Fix)  
-> **Last Verified:** Phase 34.4 Complete (WebSocket Setup Fix - thinkingConfig removed)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4d - Minimal WebSocket Setup)  
+> **Last Verified:** Phase 34.4d Complete (Minimal WebSocket Setup - All Invalid Fields Removed)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
 > **Council Verdict:** GREEN LIGHT  
@@ -56,6 +56,7 @@
 | A12 | Gemini model name fix (verified from docs) | Council | ✅ (34.4b) |
 | A13 | AI response parser Markdown sanitizer | Council | ✅ (34.4b) |
 | A14 | WebSocket setup fix (thinkingConfig removed) | Council | ✅ (34.4c) |
+| A15 | Minimal WebSocket setup (thinkingBudget, transcription removed) | Council | ✅ (34.4d) |
 
 ### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
 
@@ -141,6 +142,22 @@
 ---
 
 ## ✅ Sprint History
+
+### Completed (Phase 34.4d) - Minimal WebSocket Setup
+- [x] **Minimal Setup Message:** Stripped to ONLY official fields from https://ai.google.dev/api/live.
+- [x] **Removed thinkingBudget:** Not in official WebSocket schema (SDK-only).
+- [x] **Removed transcription fields:** outputAudioTranscription, inputAudioTranscription may need different location.
+- [x] **Debug Logging:** Added exact config JSON to debug output for diagnosis.
+- [x] **Schema Documentation:** Created docs/GEMINI_WEBSOCKET_SCHEMA.md with official field reference.
+
+### Completed (Phase 34.4c) - WebSocket Setup Fix (thinkingConfig)
+- [x] **Removed thinkingConfig:** Not a valid field for raw WebSocket setup messages.
+- [x] **Analysis Document:** Created docs/GEMINI_LIVE_API_FINDINGS.md.
+
+### Completed (Phase 34.4b) - Gemini Model Fix
+- [x] **Model Name Correction:** Changed from `gemini-live-2.5-flash-native-audio` to `gemini-2.5-flash-native-audio-preview-12-2025`.
+- [x] **Backend Sync:** Updated Edge Function to match Flutter config.
+- [x] **Parser Improvements:** Added Markdown sanitizer to handle code block wrappers.
 
 ### Completed (Phase 34.4) - Debug Diagnostics + Voice Coach UI
 - [x] **Voice Coach Button:** Added "Voice Coach" option to Dashboard Add Habit bottom sheet.
