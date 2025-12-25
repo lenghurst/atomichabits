@@ -1,274 +1,225 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4d - Minimal WebSocket Setup)  
-> **Last Verified:** Phase 34.4d Complete (Minimal WebSocket Setup - All Invalid Fields Removed)  
-> **Current Focus:** NYE 2025 LAUNCH  
-> **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
-> **Council Verdict:** GREEN LIGHT  
-> **Language:** UK English (Default)
+> **Last Updated:** 25 December 2025  
+> **Current Phase:** Phase 38 - In-App Log Console  
+> **Target:** NYE 2025 Launch  
+> **Status:** 🔧 Testing Voice Connection
 
 ---
 
 ## ⚠️ AI HANDOFF PROTOCOL
 
 ### Before Starting Work
-1. Read `AI_CONTEXT.md` for current architecture state
-2. Read `README.md` for project overview
-3. Read `docs/ARCHITECTURE_MIGRATION.md` for new provider architecture
-4. Check `lib/config/ai_model_config.dart` (AI endpoints)
-5. Check `lib/domain/entities/psychometric_profile.dart` (LLM context)
+1. Read `README.md` for project overview
+2. Read `AI_CONTEXT.md` for current architecture
+3. Read this file for priorities and history
+4. Check `CHANGELOG.md` for recent changes
 
 ### After Completing Work
-1. Update the relevant section below (move items, add details)
-2. Add to Sprint History with date and changes
-3. Update `AI_CONTEXT.md` with changes made
-4. Commit all changes to `main` branch
+1. Update the relevant section below
+2. Add to Sprint History with date
+3. Update `AI_CONTEXT.md` if architecture changed
+4. Commit and push all changes
 
 ---
 
-## 🚀 LAUNCH READY
+## 🎯 Current Focus: Voice Connection Testing
 
-**Goal:** Final build, test, and launch for NYE 2025.
+**Goal:** Verify the Gemini Live WebSocket connection works after Phases 35-38 fixes.
 
-**Status:** 🟢 COMPLETE - All planned features implemented. Awaiting final smoke test.
+**Status:** 🔧 Testing
 
-**Target:** NYE 2025 Launch
+**Verification Steps:**
+1. Build app with latest code
+2. Open DevTools → Enable Premium Mode
+3. Navigate to Voice Coach
+4. Tap microphone to connect
+5. Check logs via "View Gemini Logs"
+6. Analyze result (success, different error, or still 403)
 
-### Phase 34: Architecture Refactoring (The "Council of Five")
-
-**Goal:** Implement comprehensive architectural improvements based on expert review.
-
-**Status:** 🟢 COMPLETE (Phase 34.3)
-
-| ID | Recommendation | Expert | Status |
-|----|----------------|--------|--------|
-| A1 | Repository Pattern (Dependency Inversion) | Uncle Bob | ✅ |
-| A2 | Domain-specific Providers | Rousselet | ✅ |
-| A3 | PsychometricProfile (Rich Domain Entity) | Fowler | ✅ |
-| A4 | PsychometricEngine (Incremental Updates) | Muratori | ✅ |
-| A5 | Bitmask Risk Flags (O(1) checks) | Muratori | ✅ |
-| A6 | Migration Documentation | Evans | ✅ |
-| A7 | Isolate wrapper for recalibrateRisks | Muratori | ✅ (34.1) |
-| A8 | Shadow Wiring in main.dart | Rousselet | ✅ (34.2) |
-| A9 | Oliver Backdoor for Tier 2 verification | Council | ✅ (34.3) |
-| A10 | Voice Coach button in Dashboard | Council | ✅ (34.4) |
-| A11 | In-app API key debug diagnostics | Council | ✅ (34.4) |
-| A12 | Gemini model name fix (verified from docs) | Council | ✅ (34.4b) |
-| A13 | AI response parser Markdown sanitizer | Council | ✅ (34.4b) |
-| A14 | WebSocket setup fix (thinkingConfig removed) | Council | ✅ (34.4c) |
-| A15 | Minimal WebSocket setup (thinkingBudget, transcription removed) | Council | ✅ (34.4d) |
-
-### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
-
-**Goal:** Close the loop on social accountability and trust based on Google feedback.
-
-**Status:** 🟢 COMPLETE
-
-| ID | Recommendation | Advisor | Status |
-|----|----------------|---------|--------|
-| P1 | Add "Contract Card" before payment | Google | ✅ |
-| P2 | Implement native Share Sheet for witness invite | Google | ✅ |
-| P3 | Explicitly request Google Auth scopes | Google | ✅ |
-| P4 | Polish Voice Coach placeholder | Google | ✅ |
+**See:** `docs/VERIFICATION_CHECKLIST.md`
 
 ---
 
-## 📋 Backlog (Prioritised by "Council of Five")
+## ✅ Completed Phases
 
-### Phase 35: Provider Wiring (Post-NYE)
+### Phase 38: In-App Log Console (25 Dec 2025)
 
-**Goal:** Wire new providers into main.dart using ProxyProvider.
+**Goal:** Provide full visibility into Gemini Live connection for debugging.
 
-**Priority:** HIGH (Enables testing, improves maintainability)
+| ID | Task | Status |
+|----|------|--------|
+| L1 | Create LogBuffer singleton | ✅ |
+| L2 | Integrate LogBuffer into GeminiLiveService | ✅ |
+| L3 | Create DebugConsoleView widget | ✅ |
+| L4 | Add "View Gemini Logs" to DevToolsOverlay | ✅ |
+| L5 | Verbose connection logging with emojis | ✅ |
 
-| ID | Task | Expert | Effort | Status |
-|----|------|--------|--------|--------|
-| W1 | Parallel repository initialisation in main.dart | Muratori | Low | [ ] |
-| W2 | ProxyProvider for User → Habit dependency | Rousselet | Medium | [ ] |
-| W3 | Integrate PsychometricProvider with AI services | Fowler | Medium | [ ] |
-| W4 | Update GoRouter to use UserProvider | Rousselet | Low | [ ] |
+**Files Created:**
+- `lib/core/logging/log_buffer.dart`
+- `lib/features/dev/debug_console_view.dart`
+- `docs/PHASE_38_LOG_CONSOLE.md`
 
-### Phase 36: DTO Separation (Clean Architecture)
+### Phase 37: Production-Ready Connection (25 Dec 2025)
 
-**Goal:** Separate domain entities from persistence concerns.
+**Goal:** Implement honest headers and granular error handling.
 
-**Priority:** MEDIUM (Improves testability, enables DB swaps)
+| ID | Task | Status |
+|----|------|--------|
+| H1 | Honest User-Agent header | ✅ |
+| H2 | `await _channel!.ready` for handshake | ✅ |
+| H3 | HandshakeException handling | ✅ |
+| H4 | SocketException handling | ✅ |
+| H5 | URL validation asserts | ✅ |
 
-| ID | Task | Expert | Effort | Status |
-|----|------|--------|--------|--------|
-| D1 | Create HabitDTO for Hive persistence | Uncle Bob | Medium | [ ] |
-| D2 | Create UserProfileDTO for Hive persistence | Uncle Bob | Medium | [ ] |
-| D3 | Remove toJson/fromJson from domain entities | Uncle Bob | Low | [ ] |
-| D4 | Create Mapper classes for DTO ↔ Domain | Evans | Medium | [ ] |
+### Phase 36: Header Injection Fix (25 Dec 2025)
 
-### Phase 37: HabitEngine Extraction
+**Goal:** Fix 403 Forbidden by adding custom WebSocket headers.
 
-**Goal:** Extract business logic from AppState into pure domain service.
+| ID | Task | Status |
+|----|------|--------|
+| F1 | Switch to IOWebSocketChannel | ✅ |
+| F2 | Add Host header | ✅ |
+| F3 | Add User-Agent header | ✅ |
+| F4 | 5 Whys analysis document | ✅ |
 
-**Priority:** MEDIUM (Enables unit testing of core logic)
+### Phase 35: thinkingConfig Fix (25 Dec 2025)
 
-| ID | Task | Expert | Effort | Status |
-|----|------|--------|--------|--------|
-| H1 | Create HabitEngine domain service | Fowler | High | [ ] |
-| H2 | Extract streak calculation logic | Fowler | Medium | [ ] |
-| H3 | Extract recovery logic | Fowler | Medium | [ ] |
-| H4 | Create HabitCompletionResult DTO | Evans | Low | [ ] |
-| H5 | Create DomainEvent enum | Evans | Low | [ ] |
+**Goal:** Fix "Unknown name 'thinkingConfig'" error.
 
-### Phase 38: IdentitySystem Aggregate
+| ID | Task | Status |
+|----|------|--------|
+| T1 | Move thinkingConfig inside generationConfig | ✅ |
+| T2 | Research official API documentation | ✅ |
+| T3 | Update setup payload structure | ✅ |
 
-**Goal:** Unify user context into a single aggregate root.
+### Phase 34: Architecture Refactoring (Dec 2025)
 
-**Priority:** LOW (Refinement, not critical)
+**Goal:** Implement comprehensive architectural improvements.
 
-| ID | Task | Expert | Effort | Status |
-|----|------|--------|--------|--------|
-| I1 | Create IdentitySystem aggregate root | Evans | High | [ ] |
-| I2 | Merge UserProfile + PsychometricProfile | Evans | Medium | [ ] |
-| I3 | Implement Ubiquitous Language | Evans | Low | [ ] |
+| ID | Task | Status |
+|----|------|--------|
+| A1 | Repository Pattern | ✅ |
+| A2 | Domain-specific Providers | ✅ |
+| A3 | PsychometricProfile entity | ✅ |
+| A4 | PsychometricEngine service | ✅ |
+| A5 | Bitmask Risk Flags | ✅ |
+| A6 | Migration Documentation | ✅ |
 
-### Post-Launch Features (Phase 39+)
+### Phase 33: The Investment (Dec 2025)
 
-**Goal:** Optimise retention and viral loops.
+**Goal:** Redesign Supporter Screen with modal UI.
+
+| ID | Task | Status |
+|----|------|--------|
+| I1 | TypeAhead contact search | ✅ |
+| I2 | Permission Glass Pane | ✅ |
+| I3 | Investment Screen | ✅ |
+
+### Phase 32: Audio Recording (Dec 2025)
+
+**Goal:** Implement audio recording and session management.
+
+| ID | Task | Status |
+|----|------|--------|
+| R1 | AudioRecordingService | ✅ |
+| R2 | VoiceSessionManager | ✅ |
+| R3 | VAD integration | ✅ |
+
+### Phases 29-31: Council Recommendations (Dec 2025)
+
+Implemented recommendations from the "Second Council of Five":
+- Hook Screen with value proposition
+- Graceful Consistency messaging
+- Confetti celebration
+- Testimonials
+- Binary tier choice
+- Default identity selection
+- Haptic feedback
+
+---
+
+## 📋 Backlog
+
+### Phase 39: Provider Wiring (Post-Launch)
+
+**Goal:** Wire new providers into main.dart.
+
+**Priority:** HIGH
+
+| ID | Task | Effort | Status |
+|----|------|--------|--------|
+| W1 | Parallel repository initialisation | Low | [ ] |
+| W2 | ProxyProvider for User → Habit | Medium | [ ] |
+| W3 | Integrate PsychometricProvider | Medium | [ ] |
+| W4 | Update GoRouter to use UserProvider | Low | [ ] |
+
+### Phase 40: DTO Separation (Q1 2026)
+
+**Goal:** Separate domain entities from persistence.
+
+**Priority:** MEDIUM
+
+| ID | Task | Effort | Status |
+|----|------|--------|--------|
+| D1 | Create HabitDTO | Medium | [ ] |
+| D2 | Create UserProfileDTO | Medium | [ ] |
+| D3 | Remove toJson from entities | Low | [ ] |
+| D4 | Create Mapper classes | Medium | [ ] |
+
+### Phase 41: HabitEngine Extraction (Q1 2026)
+
+**Goal:** Extract business logic from AppState.
+
+**Priority:** MEDIUM
+
+| ID | Task | Effort | Status |
+|----|------|--------|--------|
+| H1 | Create HabitEngine service | High | [ ] |
+| H2 | Extract streak calculation | Medium | [ ] |
+| H3 | Extract recovery logic | Medium | [ ] |
+
+### Post-Launch Features (Phase 42+)
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
-| R1 | Push Notifications for Witness | High | [ ] |
-| R2 | Deep Link handling for Invite Acceptance | High | [ ] |
-| R3 | Voice Coach "Daily Standup" mode | Medium | [ ] |
-| R4 | Apple Sign-In | Medium | [ ] |
-| R5 | Offline-first sync with Supabase | Low | [ ] |
-
----
-
-## ✅ Sprint History
-
-### Completed (Phase 34.4d) - Minimal WebSocket Setup
-- [x] **Minimal Setup Message:** Stripped to ONLY official fields from https://ai.google.dev/api/live.
-- [x] **Removed thinkingBudget:** Not in official WebSocket schema (SDK-only).
-- [x] **Removed transcription fields:** outputAudioTranscription, inputAudioTranscription may need different location.
-- [x] **Debug Logging:** Added exact config JSON to debug output for diagnosis.
-- [x] **Schema Documentation:** Created docs/GEMINI_WEBSOCKET_SCHEMA.md with official field reference.
-
-### Completed (Phase 34.4c) - WebSocket Setup Fix (thinkingConfig)
-- [x] **Removed thinkingConfig:** Not a valid field for raw WebSocket setup messages.
-- [x] **Analysis Document:** Created docs/GEMINI_LIVE_API_FINDINGS.md.
-
-### Completed (Phase 34.4b) - Gemini Model Fix
-- [x] **Model Name Correction:** Changed from `gemini-live-2.5-flash-native-audio` to `gemini-2.5-flash-native-audio-preview-12-2025`.
-- [x] **Backend Sync:** Updated Edge Function to match Flutter config.
-- [x] **Parser Improvements:** Added Markdown sanitizer to handle code block wrappers.
-
-### Completed (Phase 34.4) - Debug Diagnostics + Voice Coach UI
-- [x] **Voice Coach Button:** Added "Voice Coach" option to Dashboard Add Habit bottom sheet.
-- [x] **Oliver Backdoor Fix:** Moved backdoor from UserProvider to AppState.isPremium (which UI actually uses).
-- [x] **In-App Debug Info:** Added `debugKeyStatus` to AIModelConfig showing key load status.
-- [x] **Error Message Enhancement:** AI connection errors now show which keys are loaded/missing.
-- [x] **Console Logging:** Added debug logging to AIServiceManager for logcat diagnosis.
-
-### Completed (Phase 34.3) - Oliver Backdoor
-- [x] **Oliver Backdoor:** Added temporary `isPremium` bypass for `oliver.longhurst@gmail.com`.
-- [x] **Supabase Integration:** Backdoor uses `Supabase.instance.client.auth.currentUser?.email`.
-- [x] **Documentation:** Updated all docs with Google Sign-In configuration details.
-- [x] **Diagnostic Tool:** Created `lib/tool/diagnose_google_signin.dart` for SHA-1 verification.
-- [x] **Validation Protocol:** Created `docs/VOICE_COACH_VALIDATION.md` for smoke test.
-
-### Completed (Phase 34.2) - Shadow Wiring (Dark Launch)
-- [x] **Repository Initialisation:** Added Hive repository instances to main.dart.
-- [x] **Provider Injection:** Created providers with repository dependencies.
-- [x] **MultiProvider Update:** Added new providers to app's provider tree.
-- [x] **Debug Output:** Added console logging to confirm shadow wiring on startup.
-- [x] **Strangler Pattern:** Legacy AppState coexists with new providers.
-
-### Completed (Phase 34.1) - Council Approval + Muratori Fix
-- [x] **Council Review:** Received GREEN LIGHT from all 5 experts.
-- [x] **Muratori Caveat:** Implemented `recalibrateRisksAsync` with Isolate wrapper.
-- [x] **Isolate Serialisation:** Added `toSerializableMap`/`fromSerializableMap` to Habit model.
-- [x] **Documentation:** Updated AI_CONTEXT.md and ROADMAP.md with Council verdict.
-
-### Completed (Phase 34) - Architecture Refactoring
-- [x] **Repository Layer:** Created abstract interfaces and Hive implementations for Settings, User, Habit, Psychometric.
-- [x] **Domain Providers:** Created SettingsProvider, UserProvider, HabitProvider, PsychometricProvider.
-- [x] **PsychometricProfile:** Created rich domain entity with LLM system prompt generation.
-- [x] **PsychometricEngine:** Created behavioural pattern analyser with incremental updates.
-- [x] **Bitmask Risk Flags:** Implemented O(1) risk checks using bitmask pattern.
-- [x] **Migration Guide:** Created comprehensive docs/ARCHITECTURE_MIGRATION.md.
-- [x] **Voice Coach Rename:** Renamed voice_onboarding_screen.dart → voice_coach_screen.dart.
-- [x] **Gradle Optimisation:** Updated gradle.properties for memory-constrained builds.
-
-### Completed (Phase 33) - Brain Surgery 2.5
-- [x] **The Pledge:** Added a "Contract Card" listing the specific habit, witness, and stakes before payment.
-- [x] **Witness Invite:** Implemented native Share Sheet (`share_plus`) to send invite links via WhatsApp/SMS.
-- [x] **Explicit Auth:** Verified Google Sign-In requests `email` and `profile` scopes explicitly.
-- [x] **Voice Polish:** Added sound effects (`audioplayers`) to the AI Coach placeholder button.
-
-### Completed (Phase 33) - The Investment
-- [x] **TypeAhead Dependency:** Added `flutter_typeahead` to enable asynchronous contact searching.
-- [x] **Permission Glass Pane:** Created a new reusable component to provide context before requesting OS permissions.
-- [x] **Investment Screen:** Created a new screen that replaces the old `PactWitnessScreen`.
-- [x] **Routing:** Updated the GoRouter configuration to replace the old witness screen with the new `WitnessInvestmentScreen`.
-
-### Completed (Phase 32) - Audio Recording Integration
-- [x] **Audio Dependencies:** Added `flutter_sound` and `permission_handler`.
-- [x] **Audio Recording Service:** Created a new service to handle microphone initialisation and VAD.
-- [x] **Voice Session Manager:** Created a new orchestration layer to manage the entire voice session.
-- [x] **Voice Coach Screen:** Refactored the screen to use the new `VoiceSessionManager`.
-
-### Completed (Phase 31) - "Final Polish" Sprint
-- [x] **Default Identity:** Pre-selected the most popular identity chip.
-- [x] **Reframe Witness:** Replaced "witness" with "supporter" (partially reverted in Phase 33).
-- [x] **Haptic Feedback:** Added haptic feedback to chips.
-- [x] **Pact Preview:** Added a "Pact Preview" card.
-- [x] **Dashboard Personality:** Overhauled the empty state of the dashboard.
-- [x] **Brand Tagline:** Added "THE PACT: Become who you said you'd be".
-
-### Completed (Phase 30) - "Delight & Monetise" Sprint
-- [x] **AI Coach Sample:** Added audio sample button.
-- [x] **Privacy Controls:** Implemented "Privacy Controls".
-- [x] **Confetti Celebration:** Added confetti explosion.
-- [x] **Testimonials:** Added social proof testimonial widget.
-- [x] **Binary Tier Choice:** Simplified to Free vs. Premium.
-
-### Completed (Phase 29) - "Value & Safety" Sprint
-- [x] **Hook Screen:** Created new initial screen with strong value prop.
-- [x] **Graceful Consistency:** Added "No streaks. No shame." message.
-- [x] **Progress Indicator:** Implemented visual step indicator.
-- [x] **Benefit-Driven Headline:** Rewrote headline to "I want to become...".
+| F1 | Push Notifications for Witness | High | [ ] |
+| F2 | Deep Link handling | High | [ ] |
+| F3 | Voice Coach "Daily Standup" | Medium | [ ] |
+| F4 | Apple Sign-In | Medium | [ ] |
+| F5 | Offline-first sync | Low | [ ] |
 
 ---
 
 ## 🧠 Technical Debt Register
 
-| ID | Description | Priority | Phase |
-|----|-------------|----------|-------|
-| **TD0** | **⚠️ Oliver Backdoor in AppState.isPremium** | **CRITICAL** | **Post-NYE** |
-| **TD-1** | Debug diagnostics in production builds | Low | Post-NYE |
-| TD1 | AppState is monolithic (1,642 lines) | Medium | 35-37 |
-| TD2 | Habit.dart has toJson (violates Clean Architecture) | Low | 36 |
-| TD3 | No DTO separation for persistence | Low | 36 |
-| TD4 | HabitEngine logic embedded in AppState | Medium | 37 |
-| TD5 | ConsistencyMetrics calculated on every access | Low | 37 |
-| TD6 | landing_page/ React app in Flutter repo | Low | Future |
+| ID | Description | Priority | Target |
+|----|-------------|----------|--------|
+| **TD0** | **Oliver Backdoor in AppState.isPremium** | **CRITICAL** | Post-Launch |
+| TD1 | AppState monolithic (1,642 lines) | Medium | Phase 39-41 |
+| TD2 | Habit.dart has toJson | Low | Phase 40 |
+| TD3 | No DTO separation | Low | Phase 40 |
+| TD4 | HabitEngine in AppState | Medium | Phase 41 |
+| TD5 | landing_page/ in Flutter repo | Low | Future |
 
-**TD0 Cleanup Command:**
+**TD0 Cleanup:**
 ```bash
 grep -rn 'oliver.longhurst' lib/
-# Remove the backdoor block from isPremium getter in user_provider.dart
+# Remove the backdoor from isPremium getter
 ```
 
 ---
 
-## 📊 Architecture Evolution Timeline
+## 📊 Architecture Evolution
 
 ```
-Phase 33 (Dec 2025)     Phase 34 (Dec 2025)     Phase 35 (Jan 2026)     Phase 36-37 (Q1 2026)
-       │                       │                       │                       │
-       ▼                       ▼                       ▼                       ▼
-┌─────────────┐         ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-│  Monolithic │         │  Repository │         │  Provider   │         │  Clean      │
-│  AppState   │   →     │  Pattern    │   →     │  Wiring     │   →     │  Architecture│
-│             │         │  + Domain   │         │  + Proxy    │         │  + DTOs     │
-└─────────────┘         └─────────────┘         └─────────────┘         └─────────────┘
+Phase 33          Phase 34          Phase 35-38       Phase 39+
+    │                 │                 │                 │
+    ▼                 ▼                 ▼                 ▼
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│Monolithic│  →  │Repository│  →  │Voice Fix│  →  │Provider │
+│AppState  │     │Pattern   │     │+ Logging│     │Wiring   │
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
 ```
 
 ---
@@ -276,15 +227,47 @@ Phase 33 (Dec 2025)     Phase 34 (Dec 2025)     Phase 35 (Jan 2026)     Phase 36
 ## 🎯 Success Metrics
 
 ### Launch (NYE 2025)
-- [x] APK builds successfully (74s build time)
-- [ ] Voice latency < 500ms
-- [ ] No crashes on Xiaomi/MIUI
-- [ ] Share Sheet works correctly
-- [ ] Voice Coach accessible from Dashboard
-- [ ] DeepSeek API connection working
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| APK builds | ✅ | ✅ |
+| Voice connects | < 500ms latency | 🔧 Testing |
+| No crashes on Xiaomi | 0 crashes | [ ] |
+| Share Sheet works | Functional | [ ] |
+| Voice Coach accessible | From Dashboard | ✅ |
 
 ### Post-Launch (Q1 2026)
-- [ ] Unit test coverage > 60%
-- [ ] AppState fully deprecated
-- [ ] All domain entities are pure Dart
-- [ ] Repository pattern enables mock testing
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| Unit test coverage | > 60% | [ ] |
+| AppState deprecated | 100% | [ ] |
+| Domain entities pure | 100% | [ ] |
+
+---
+
+## 📁 Documentation Structure
+
+### Core (Root Level)
+- `README.md` - Project overview
+- `AI_CONTEXT.md` - AI assistant context
+- `ROADMAP.md` - This file
+- `CHANGELOG.md` - Version history
+- `CREDITS.md` - Attribution
+
+### Technical (docs/)
+- `docs/BUILD_PIPELINE.md` - Build commands
+- `docs/VERIFICATION_CHECKLIST.md` - Testing protocol
+- `docs/GOOGLE_OAUTH_SETUP.md` - OAuth setup
+- `docs/ARCHITECTURE_MIGRATION.md` - Provider guide
+
+### Gemini Live (docs/)
+- `docs/PHASE_38_LOG_CONSOLE.md`
+- `docs/PHASE_37_PRODUCTION_READY.md`
+- `docs/PHASE_36_ERROR_ANALYSIS.md`
+- `docs/GEMINI_LIVE_API_RESEARCH.md`
+- `docs/GEMINI_WEBSOCKET_SCHEMA.md`
+
+### Archive (docs/archive/)
+- Legacy implementation summaries
+- Old phase specs

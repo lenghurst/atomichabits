@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34)  
-> **Last Verified:** Phase 34 Complete (Handshake Timeout Fix)  
+> **Last Updated:** 25 December 2025  
+> **Current Phase:** Phase 38 - In-App Log Console  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -9,36 +9,22 @@
 
 ## ⚠️ AI HANDOFF PROTOCOL (READ FIRST!)
 
-### The Problem This Solves
-AI agents (Claude, Codex, etc.) working on this codebase have historically:
-- Created documentation on feature branches that were never merged
-- Left orphaned PRs with valuable work
-- Recreated files that already existed on other branches
-- Lost context between sessions
-
 ### Mandatory Session Start Checklist
 ```
-□ 1. Read README.md (project overview, architecture)
-□ 2. Read AI_CONTEXT.md (current state, what's implemented) ← YOU ARE HERE
-□ 3. Read ROADMAP.md (what's next, priorities)
-□ 4. Check for stale branches: git branch -r | wc -l
-□ 5. If stale branches > 10, consider cleanup (see Branch Hygiene below)
+□ 1. Read README.md (project overview, quick start)
+□ 2. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
+□ 3. Read ROADMAP.md (priorities, sprint history)
+□ 4. Check CHANGELOG.md for recent changes
 ```
 
 ### Mandatory Session End Checklist
 ```
-□ 1. Commit all changes to main branch
-□ 2. Update AI_CONTEXT.md with any new features/changes
-□ 3. Update ROADMAP.md if priorities changed
-□ 4. Report to user: "Session complete. Changes pushed to main. Docs updated."
+□ 1. Commit all changes: git add -A && git commit -m "description"
+□ 2. Push to remote: git push origin main
+□ 3. Update AI_CONTEXT.md if architecture changed
+□ 4. Update ROADMAP.md if priorities changed
+□ 5. Update CHANGELOG.md with version entry
 ```
-
-### Branch Hygiene Protocol
-When stale branches accumulate (> 10 unmerged):
-1. List branches: `git branch -r --no-merged main`
-2. For each branch, check last commit: `git log -1 <branch>`
-3. If > 30 days old with no activity: recommend deletion
-4. If contains unmerged valuable code: recommend cherry-pick or rebase
 
 ---
 
@@ -50,234 +36,121 @@ When stale branches accumulate (> 10 unmerged):
 
 **Live URL:** [thepact.co](https://thepact.co)
 
-**Tech Stack:**
+---
+
+## Tech Stack
+
 | Component | Technology | Version |
 |-----------|------------|---------|
-| **Mobile** | Flutter | 3.35.4 |
+| **Mobile** | Flutter | 3.38.4 |
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **AI (Tier 1)** | DeepSeek-V3 | Text Chat |
-| **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Voice + Text |
+| **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
 
-## Phase 34: Gemini Live API Handshake Timeout Fix
+## Current State: Phase 38
 
-Fixed the WebSocket handshake timeout issue that was preventing the Voice AI from connecting. The root cause was an endpoint version mismatch (`v1alpha` vs `v1beta`).
+### What's Working
 
-**Expert Panel Consulted:**
-- **Werner Vogels** (Amazon CTO) — Distributed systems diagnosis
-- **Charity Majors** (Honeycomb CEO) — Observability and debugging
-- **Kelsey Hightower** (Google Cloud) — API design and protocol analysis
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Text AI (DeepSeek)** | ✅ Working | Tier 1 fallback |
+| **Voice AI (Gemini)** | 🔧 Testing | Phases 35-38 fixes applied |
+| **In-App Log Console** | ✅ New | DevTools → View Gemini Logs |
+| **Google Sign-In** | ✅ Working | OAuth configured |
+| **Onboarding Flow** | ✅ Working | Voice-first with fallback |
+| **Dashboard** | ✅ Working | Habit tracking |
 
-**Root Cause:** The code was using `v1alpha` endpoint, but the December 2025 model requires `v1beta`.
+### Recent Fixes (Phases 35-38)
 
-**Fixes Implemented:**
+| Phase | Fix | Status |
+|-------|-----|--------|
+| **35** | `thinkingConfig` moved inside `generationConfig` | ✅ |
+| **36** | `IOWebSocketChannel` with custom headers | ✅ |
+| **37** | Honest User-Agent, `await ready`, granular errors | ✅ |
+| **38** | In-App Log Console for debugging | ✅ |
 
-| Fix | File | Details |
-|-----|------|--------|
-| Endpoint Version | `gemini_live_service.dart` | Changed from `v1alpha` to `v1beta` |
-| Debug Logging | `gemini_live_service.dart` | Added full URL and payload logging |
-| Fallback Model | `ai_model_config.dart` | Added September 2025 model as fallback |
-| API Version | `ai_model_config.dart` | Updated `liveApiVersion` to `v1beta` |
+### Key Files Changed
 
-**New Documentation:**
-- `docs/ERROR_ANALYSIS_HANDSHAKE_TIMEOUT.md` — Full error analysis with expert recommendations
-- `docs/GEMINI_MODEL_RESEARCH.md` — Official model documentation research
-
----
-
-## Phase 33: The Investment (Supporter Screen Redesign)
-
-Redesigned the Supporter Screen as a high-stakes "Investment" phase, incorporating a modal bottom sheet, continuous voice integration, a TypeAhead contact search, and contextual permissions. This aligns with the specified goal of creating a more emotionally resonant and effective social contract.
-
-**Key Changes Implemented:**
-
-| Component | File(s) Changed | Details |
-|---|---|---|
-| **TypeAhead Dependency** | `pubspec.yaml` | Added `flutter_typeahead` to enable asynchronous contact searching. |
-| **Permission Glass Pane** | `permission_glass_pane.dart` | Created a new reusable component to provide context before requesting OS permissions, significantly increasing grant rates. |
-| **Investment Screen** | `witness_investment_screen.dart` | Created a new screen that replaces the old `PactWitnessScreen`. It features a modal UI, a visceral headline ("Who will witness your failure?"), and integrates the TypeAhead search and permission handling. |
-| **Routing** | `main.dart` | Updated the GoRouter configuration to replace the old witness screen with the new `WitnessInvestmentScreen`. |
-
-**New Files Created:**
-- `lib/features/onboarding/components/permission_glass_pane.dart`
-- `lib/features/onboarding/identity_first/witness_investment_screen.dart`
+| File | Changes |
+|------|---------|
+| `lib/data/services/gemini_live_service.dart` | WebSocket connection with verbose logging |
+| `lib/core/logging/log_buffer.dart` | Centralized log storage (NEW) |
+| `lib/features/dev/debug_console_view.dart` | Log viewer widget (NEW) |
+| `lib/features/dev/dev_tools_overlay.dart` | Added "View Gemini Logs" button |
 
 ---
 
-## Phase 32: FEAT-01 - Audio Recording Integration
+## Architecture Overview
 
-Implemented a robust audio recording and session management system to enable real-time voice conversations with the AI coach. This is a critical step towards a fully voice-first user experience.
-
-**Key Changes Implemented:**
-
-| Component | File(s) Changed | Details |
-|---|---|---|
-| **Audio Dependencies** | `pubspec.yaml` | Added `flutter_sound` and `permission_handler` to manage microphone access and audio streaming. |
-| **Audio Recording Service** | `audio_recording_service.dart` | Created a new service to handle microphone initialisation, recording lifecycle (start, stop, pause, resume), and audio data streaming. Includes voice activity detection (VAD) to minimise data transmission. |
-| **Voice Session Manager** | `voice_session_manager.dart` | Created a new orchestration layer to manage the entire voice session. It integrates the `AudioRecordingService` and `GeminiLiveService`, handling state synchronisation, error recovery, and audio routing between the microphone, the AI, and the user's speaker. |
-| **Voice Onboarding Screen** | `voice_onboarding_screen.dart` | Refactored the screen to use the new `VoiceSessionManager`. This simplifies the UI logic and provides a more robust and responsive user experience with real-time audio level visualisation. |
-
-**New Files Created:**
-- `lib/data/services/audio_recording_service.dart`
-- `lib/data/services/voice_session_manager.dart`
-
----
-
-## Phase 31: "Final Polish" Sprint (Tier 3 Implementation)
-
-Implemented the remaining Tier 3 recommendations from the Second Council of Five to add a final layer of polish and delight to the user experience before launch.
-
-**Key Changes Implemented:**
-
-| Recommendation | Advisor | File(s) Changed | Details |
-|---|---|---|---|
-| **Default Identity** | Kahneman | `identity_access_gate_screen.dart` | Pre-selected the most popular identity chip ("A Morning Person") to anchor the user and reduce cognitive load. This simple change is proven to increase conversion by providing a clear starting point. |
-| **Reframe Witness** | Brown | `pact_witness_screen.dart` | Replaced all instances of "witness" and "accountability partner" with the more positive and encouraging term "supporter." This reframing reduces the user's fear of being judged and increases their willingness to invite someone. |
-| **Haptic Feedback** | Zhuo | `identity_access_gate_screen.dart` | Added haptic feedback and a subtle scale animation to the identity chips. This creates a more tactile and satisfying micro-interaction, making the selection process more delightful. |
-| **Pact Preview** | Zhuo | `pact_tier_selector_screen.dart` | Added a "Pact Preview" card before the tier selection. This shows the user exactly what they are creating (their identity, their supporter, and the start date), making the abstract concept of a "pact" tangible and increasing their commitment. |
-| **Dashboard Personality** | Zhuo | `habit_list_screen.dart` | Overhauled the empty state of the dashboard. It now includes a personalised greeting, a rotating motivational quote from James Clear, and a more prominent, encouraging call-to-action. This transforms a functional empty state into an inspiring and motivating experience. |
-| **Brand Tagline** | Ogilvy | `value_proposition_screen.dart` | Added the official brand tagline, "THE PACT: Become who you said you'd be," to the main hook screen. This reinforces the brand's core promise and creates a more memorable and professional first impression. |
-
----
-
-## Phase 30: "Delight & Monetise" Sprint (Tier 2 Implementation)
-
-Implemented the high-value Tier 2 recommendations from the Second Council of Five to increase user delight and improve monetisation potential before launch.
-
-**Key Changes Implemented:**
-
-| Recommendation | Advisor | File(s) Changed | Details |
-|---|---|---|---|
-| **AI Coach Sample** | Hormozi | `pact_tier_selector_screen.dart` | Added a one-tap audio sample of the AI Voice Coach directly on the tier selection screen. This demonstrates the premium value *before* asking for payment, significantly increasing the perceived value of the premium tier. |
-| **Privacy Controls** | Brown | `pact_witness_screen.dart` | Implemented a "Privacy Controls" section on the witness screen. Users can now choose to share only weekly milestones with their witness, not daily check-ins. This gives users a greater sense of control and emotional safety. |
-| **Confetti Celebration** | Zhuo | `pact_tier_selector_screen.dart` | Added a confetti explosion and a celebratory dialog upon the user's first pact creation. This creates a moment of delight and positive reinforcement at a key moment in the user journey. |
-| **Testimonials** | Ogilvy | `identity_access_gate_screen.dart` | Added a social proof testimonial widget to the identity screen. This provides a relatable success story to increase user motivation and conversion. |
-| **Binary Tier Choice** | Kahneman | `pact_tier_selector_screen.dart` | Simplified the tier selection from three options (Free, Builder, Ally) to a binary choice (Free vs. Premium). This reduces cognitive load and makes the decision to upgrade much simpler. |
-
-**New Dependencies Added:**
-- `confetti: ^0.7.0` - For the celebration animation.
-
----
-
-## Phase 29: "Value & Safety" Sprint (Tier 1 Implementation)
-
-Implemented the critical Tier 1 recommendations from the Second Council of Five to maximise user value and emotional safety before launch. This sprint focused on creating a "Value First, Identity Second" onboarding flow.
-
-**Key Changes Implemented:**
-
-| Recommendation | Advisor | File(s) Changed | Details |
-|---|---|---|---|
-| **Hook Screen** | Kahneman, Hormozi, Ogilvy | `value_proposition_screen.dart`, `main.dart` | Created a new initial screen that leads with a strong value proposition (3x more likely to succeed) and social proof (testimonial carousel). This engages the user's System 1 thinking before asking for commitment. The default route `/` now points to this screen. |
-| **Graceful Consistency** | Brown | `identity_access_gate_screen.dart` | Added a prominent message ("We measure progress, not perfection. No streaks. No shame.") to the identity screen. This creates emotional safety and reduces the fear of failure, a key drop-off point. |
-| **Progress Indicator** | Zhuo | `value_proposition_screen.dart`, `identity_access_gate_screen.dart` | Implemented a visual step indicator across the onboarding flow. This sets clear expectations for the user, reducing cognitive load and increasing completion rates. |
-| **Benefit-Driven Headline** | Ogilvy | `identity_access_gate_screen.dart` | Rewrote the main headline from the ambiguous "Who are you committed to becoming?" to the more direct and actionable "I want to become...". This clarifies the user's task and reduces friction. |
-
-**New Files Created:**
-- `lib/features/onboarding/identity_first/value_proposition_screen.dart`
-
----
-
-## Phase 29: Second Council of Five Review
-
-A deep scrutiny of the User Journey Map was conducted, with element-by-element objectives defined for every screen and component. A new "Second Council of Five" was convened, featuring SMEs from adjacent but distinct domains to bring fresh perspectives.
-
-**The Second Council:**
-
-| Persona | Domain | Philosophy | Focus Area |
-|---------|--------|------------|------------|
-| **Daniel Kahneman** | Behavioural Economics | System 1/System 2 thinking | Decision architecture |
-| **Brené Brown** | Vulnerability Research | Shame resilience, courage | Emotional safety |
-| **Alex Hormozi** | Business Growth | Value equation, offer creation | Monetisation & perceived value |
-| **Julie Zhuo** | Product Design | User empathy, design thinking | UX polish and delight |
-| **David Ogilvy** | Advertising | Headline writing, persuasion | Copy and messaging |
-
-**Key Recommendations (Tier 1 - Critical):**
-
-| ID | Recommendation | Advisor | Rationale |
-|----|----------------|---------|----------|
-| K1 | Add "hook" screen before identity | Kahneman | Show value proposition first to engage System 1 before System 2 is required. |
-| H1 | Lead with dream outcome (social proof stat) | Hormozi | Demonstrate the value *before* asking for effort. |
-| B1 | Add "Graceful Consistency" messaging | Brown | Create emotional safety by explicitly stating "no streaks, no shame." |
-| Z1 | Add progress indicator with celebration | Zhuo | Set user expectations and create moments of delight. |
-| O1 | Rewrite headline to be benefit-driven | Ogilvy | Change "Who are you..." to a more compelling, outcome-focused headline. |
-
-**New Documentation:** `docs/USER_JOURNEY_ANALYSIS_V2.md` (Full analysis with all 17 recommendations)
-
----
-
-## Phase 28.4: Council of Five Implementation
-
-Implemented recommendations from a strategic "Council of Five" analysis (Musk, Clear, Fogg, Bezos, Eyal) to optimise the new user acquisition funnel. This sprint focused on high-leverage, code-based changes to the onboarding and witness flows.
-
-**Key Changes Implemented:**
-
-| Recommendation | Advisor | File Changed | Details |
-|---|---|---|---|
-| **Route Consolidation** | Musk | `main.dart` | Niche routes (`/devs`, `/writers`, etc.) now pass a `presetIdentity` string to the `IdentityAccessGateScreen`. This pre-fills the identity field, creating a more contextual and lower-friction entry point from targeted ad campaigns or landing pages. |
-| **Identity Mad-Libs** | Clear | `IdentityAccessGateScreen.dart` | The identity input screen now features a horizontal scrolling list of tappable `_IdentityChip` widgets. These act as "Mad-Libs" style suggestions. The identity field is now **mandatory**; authentication buttons are disabled until it is filled. Selected chips have a distinct visual state (brand gradient) to provide clear feedback. |
-| **Native Contact Picker** | Fogg | `PactWitnessScreen.dart` | Replaced the manual witness input field with a one-tap native contact picker using the `flutter_contacts` package. This significantly reduces the friction of adding a witness. The implementation includes robust permission handling (`permission_handler`) with a graceful fallback to manual entry if permissions are denied. |
-| **Trust Grant Dialog** | Bezos | `PactTierSelectorScreen.dart` | Implemented an "Early Access Grant" dialog. When a user selects a premium tier ('Builder' or 'Ally'), instead of a payment screen, they are presented with a dialog granting them free, lifetime access as an "early believer." This builds trust and captures high-intent users for future pricing validation. |
-| **Reciprocity Loop** | Eyal | `WitnessAcceptScreen.dart` | After a user successfully becomes a witness for someone else, the success dialog now includes a prominent "Now it's your turn" section. This psychological hook creates a feeling of obligation to reciprocate by creating their own pact, turning the witness flow into a powerful user acquisition channel. |
-
-**New Dependencies Added:**
-- `flutter_contacts: ^1.1.9+2` - For native contact picker functionality.
-- `permission_handler: ^11.3.1` - For managing access to device contacts.
-
----
-
-## Phase 28.3: User Journey Optimisation
-
-A comprehensive user journey map was created to identify and implement high-impact optimisations to the onboarding flow.
-
-**New Documentation:** `docs/USER_JOURNEY_MAP.md`
-
-**Key Changes Implemented:**
-
-| Optimisation | File Changed | Details |
-|--------------|--------------|---------||
-| **Fix Tier Selection** | `PactTierSelectorScreen.dart` | Onboarding now completes correctly, navigating users to the dashboard. |
-| **Unify Niche Routes** | `main.dart` | Niche landing pages (`/devs`, `/writers`, etc.) now use the modern "Identity First" flow. |
-| **Add Witness CTA** | `WitnessAcceptScreen.dart` | Invited users who become witnesses are now prompted to create their own pact. |
-| **Add Identity Examples** | `IdentityAccessGateScreen.dart` | Added tappable chips with examples to guide users during identity declaration. |
-
----
-
-## Architecture Snapshot
-
-### The "Voice First" Architecture (Phase 27)
-
-**The Pivot:** From text-based onboarding to voice-first conversational AI coaching.
+### Directory Structure
 
 ```
-User Opens App
-     ↓
-Check Premium Status
-     ↓
-   ┌─────┴─────┐
-   │           │
-Tier 1       Tier 2
-(Free)     (Premium)
-   │           │
-DeepSeek    Gemini Live
-Text Chat   Voice Coach
-   │           │
-   └─────┬─────┘
-         ↓
-   Habit Created
+lib/
+├── config/                     # Configuration
+│   ├── ai_model_config.dart        # AI model settings
+│   └── niche_config.dart           # Target niches
+│
+├── core/                       # Core utilities
+│   └── logging/
+│       └── log_buffer.dart         # Centralized logging
+│
+├── data/
+│   ├── repositories/           # Infrastructure (Repository Pattern)
+│   │   ├── settings_repository.dart
+│   │   ├── hive_settings_repository.dart
+│   │   ├── user_repository.dart
+│   │   ├── habit_repository.dart
+│   │   └── psychometric_repository.dart
+│   │
+│   ├── providers/              # State Management (Riverpod-style)
+│   │   ├── settings_provider.dart
+│   │   ├── user_provider.dart
+│   │   ├── habit_provider.dart
+│   │   └── psychometric_provider.dart
+│   │
+│   ├── services/               # External Services
+│   │   ├── gemini_live_service.dart    # Voice AI WebSocket
+│   │   ├── audio_recording_service.dart
+│   │   ├── voice_session_manager.dart
+│   │   └── ai_service_manager.dart
+│   │
+│   └── app_state.dart          # Legacy (being strangled)
+│
+├── domain/
+│   ├── entities/               # Pure Domain Models
+│   │   └── psychometric_profile.dart
+│   │
+│   └── services/               # Domain Logic
+│       └── psychometric_engine.dart
+│
+└── features/
+    ├── dev/                    # Developer Tools
+    │   ├── dev_tools_overlay.dart
+    │   └── debug_console_view.dart
+    │
+    ├── onboarding/             # Onboarding Flow
+    │   ├── voice_coach_screen.dart
+    │   └── identity_first/
+    │
+    └── dashboard/              # Main Dashboard
+        └── habit_list_screen.dart
 ```
 
-### Voice Interface Flow
+### Voice Architecture
 
 ```
-Voice Onboarding Screen
+User → Voice Coach Screen
          ↓
-  Gemini Live Service
+     Voice Session Manager
          ↓
-    [Auth Check]
+     Gemini Live Service
+         ↓
+     [Auth Check]
          ↓
    ┌─────┴─────┐
    │           │
@@ -286,420 +159,195 @@ Edge Fn     (Direct API)
    │           │
    └─────┬─────┘
          ↓
-  Ephemeral Token
+   Ephemeral Token
          ↓
-  Gemini Live API
-  (WebSocket)
+   IOWebSocketChannel.connect()
+   + Custom Headers (Phase 37)
          ↓
-  Real-time Voice
+   Gemini Live API
+   (wss://generativelanguage.googleapis.com/ws/...)
+         ↓
+   Real-time Voice
 ```
 
-**Production:** Uses Supabase Edge Function to get ephemeral tokens (requires auth)  
-**Dev Mode:** Uses Gemini API key directly (debug builds only, no auth required)
-
-### Project Structure (Updated Phase 27)
+### Logging Architecture (Phase 38)
 
 ```
-atomichabits/
-├── landing_page/                # React Web Application
-│   ├── src/components/InviteRedirector.tsx  # Logic for /join/:code
-│   ├── .env                                 # Environment config
-│   └── netlify.toml                         # Build config
-├── lib/
-│   ├── config/
-│   │   ├── deep_link_config.dart           # Domain: thepact.co, Scheme: thepact
-│   │   └── ai_model_config.dart            # AI tier configuration + API keys
-│   ├── data/services/
-│   │   ├── ai/                             # Multi-Model AI Architecture
-│   │   │   ├── deep_seek_service.dart      # Tier 1: Text reasoning
-│   │   │   └── ai_service_manager.dart     # Tier selector
-│   │   ├── gemini_live_service.dart        # [NEW] Tier 2: Voice WebSocket
-│   │   ├── auth_service.dart               # Anonymous + Google Sign-In
-│   │   ├── deep_link_service.dart          # Install Referrer implementation
-│   │   └── witness_service.dart            # Real-time Pact events
-│   └── features/
-│       ├── onboarding/
-│       │   ├── voice_onboarding_screen.dart          # [NEW] Voice interface
-│       │   ├── conversational_onboarding_screen.dart # Text chat (Tier 1)
-│       │   └── onboarding_screen.dart                # Manual form (fallback)
-│       ├── dev/
-│       │   └── dev_tools_overlay.dart                # [NEW] Developer tools
-│       ├── settings/
-│       │   └── settings_screen.dart                  # Premium toggle, auth
-│       └── witness/
-│           ├── witness_dashboard.dart                # Social feed
-│           └── witness_accept_screen.dart            # Wax Seal UI
-├── supabase/
-│   └── functions/
-│       └── get-gemini-ephemeral-token/     # [NEW] Edge Function for voice auth
-│           └── index.ts                    # Deno Edge Function
-├── docs/
-│   └── GOOGLE_OAUTH_SETUP.md               # [NEW] OAuth setup guide
-├── test/
-│   └── services/ai/
-│       ├── deep_seek_service_test.dart      # Unit tests with mocks
-│       └── ai_service_manager_test.dart     # Tier selection tests
-└── ...
+GeminiLiveService._addDebugLog()
+         ↓
+     LogBuffer.add()
+         ↓
+     ValueNotifier update
+         ↓
+     DebugConsoleView (UI)
+         ↓
+     One-click Copy to Clipboard
 ```
 
 ---
 
-## Feature Matrix (Phase 27 Complete)
+## AI Configuration
 
-| Feature | Status | Implementation Details |
-|---------|--------|------------------------|
-| **Voice First Onboarding** | ✅ Live | Gemini Live API + WebSocket streaming |
-| **Two-Tier AI System** | ✅ Live | DeepSeek (Text) + Gemini (Voice) |
-| **Developer Tools** | ✅ Live | Triple-tap gesture, debug overlay, premium toggle |
-| **Dev Mode Voice Bypass** | ✅ Live | Direct API key usage (no auth required in debug) |
-| **Deep Linking** | ✅ Live | `PlayInstallReferrer` + `InviteRedirector.tsx` (Web) |
-| **Viral Loop** | ✅ Live | Share Sheet → Web Anchor → Store → App → Auto-Accept |
-| **AI Brain** | ✅ Live | **DeepSeek-V3** (Tier 1) + **Gemini 3 Flash (2.5 Live)** (Tier 2) |
-| **Rebrand** | ✅ Live | App ID: `co.thepact.app`, Name: "The Pact" |
-| **Social** | ✅ Live | Wax Seal UI, Haptic Contracts, Witness Feeds |
-| **Testing** | ✅ Live | Unit tests for AI services with HTTP mocks |
-| **Landing Page** | ✅ Live | React app deployed to Netlify |
-| **Google Sign-In** | 🟡 Config Needed | OAuth setup guide in docs/ |
+### Model Names
 
-### Complete Feature List
+| Tier | Model | Use Case |
+|------|-------|----------|
+| **Tier 1** | `deepseek-chat` | Text reasoning |
+| **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | Voice coaching |
 
-| Feature | Status | UI Layer | State Layer | Notes |
-|---------|--------|----------|-------------|-------|
-| **Voice Onboarding (Phase 27)** | ✅ Live | VoiceOnboardingScreen | GeminiLiveService | Real-time voice coaching |
-| **Developer Tools (Phase 27.6)** | ✅ Live | DevToolsOverlay | AppState | Triple-tap gesture, debug info |
-| Identity-Based Onboarding | ✅ Live | OnboardingScreen | AppState | Name, identity, habit, tiny version |
-| AI Onboarding (Text) | ✅ Live | ConversationalOnboardingScreen | OnboardingOrchestrator | Chat UI with DeepSeek |
-| Single Habit Tracking | ✅ Live | TodayScreen | AppState | One habit at a time |
-| Graceful Consistency | ✅ Live | GracefulConsistencyCard | ConsistencyMetrics | Rolling averages, not fragile streaks |
-| Never Miss Twice Engine | ✅ Live | RecoveryBanner, RecoveryPromptDialog | RecoveryEngine | Compassionate recovery system |
-| AI Suggestions | ✅ Live | SuggestionDialog | AiSuggestionService | Local heuristics + async remote fallback |
-| Temptation Bundling | ✅ Live | TodayScreen | Habit model | "Make it Attractive" |
-| Pre-Habit Rituals | ✅ Live | PreHabitRitualDialog | Habit model | 30-second mindset timer |
-| Environment Design | ✅ Live | TodayScreen | Habit model | Cues and distraction guardrails |
-| Daily Notifications | ✅ Live | - | NotificationService | With snooze and mark-done actions |
-| Recovery Notifications | ✅ Live | - | NotificationService | 9 AM after missed day |
-| Settings Screen | ✅ Live | SettingsScreen | AppState (AppSettings) | Theme, notifications, sound, haptics, **premium toggle** |
-| Multi-Habit Engine | ✅ Live | - | AppState (List<Habit>) | CRUD + Focus Mode |
-| Dashboard | ✅ Live | HabitListScreen | AppState | Habit cards, quick-complete, swipe-delete |
-| Focus Mode Swipe | ✅ Live | TodayScreen (PageView) | AppState | Swipe between habits |
-| History/Calendar View | ✅ Live | HistoryScreen, CalendarMonthView | AppState | Stats, calendar dots, milestones |
-| Error Boundaries | ✅ Live | ErrorBoundary, ErrorScreen | - | Global error handling |
-| Weekly Review with AI | ✅ Live | WeeklyReviewDialog | WeeklyReviewService | AI-powered weekly insights |
-| Home Screen Widgets | ✅ Live | Native (Android/iOS) | HomeWidgetService | One-tap habit completion |
-| Analytics Dashboard | ✅ Live | AnalyticsScreen | AnalyticsService | Graceful Consistency charts |
-| Backup & Restore | ✅ Live | DataManagementScreen | BackupService | JSON export/import |
-| Bad Habit Protocol | ✅ Live | Updated UI components | Habit.isBreakHabit | Break habits with purple theme |
-| Habit Stacking | ✅ Live | StackPromptDialog, HabitSummaryCard | CompletionResult, AppState stacking | Chain Reaction prompts |
-| Pattern Detection | ✅ Live | AnalyticsScreen (Insight Cards), RecoveryPromptDialog | PatternDetectionService, MissEvent | Local heuristics + LLM synthesis |
-| Identity Foundation | ✅ Live | - | AuthService, SyncService | Anonymous-first auth, cloud backup |
-| Habit Contracts | ✅ Live | ContractsListScreen, CreateContractScreen, JoinContractScreen | ContractService, HabitContract | Accountability agreements with deep links |
-| The Witness | ✅ Live | WitnessDashboard, WitnessAcceptScreen, HighFiveSheet | WitnessService, WitnessEvent | Social accountability loop |
-| **The Red Carpet** | ✅ Live | InviteRedirector.tsx, GuestDataWarningBanner | DeepLinkService (Install Referrer) | Zero-friction invited user onboarding |
+### WebSocket Endpoint
 
----
+```
+wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent
+```
 
-## Critical Constraints
+### Setup Payload Structure
 
-### DO NOT VIOLATE
-
-1. **Deep Link Domain:** MUST be `thepact.co`. Do not use `atomichabits.app`.
-2. **Package Name:** Android is `co.thepact.app`. iOS is `co.thepact.app`.
-3. **Deployment:** Web updates are auto-deployed via Netlify on `main` push. Mobile updates require manual build.
-4. **AI Tier Selection:** Premium users (Tier 2) get voice. Free users (Tier 1) get text chat.
-5. **Install Referrer Priority:** Install Referrer API > Clipboard Bridge > Manual Entry.
-6. **Voice Auth:** Production requires Supabase Edge Function + Google Sign-In. Dev mode bypasses with direct API key.
-
----
-
-## Quick Wins (Common AI Tasks)
-
-| Task | File to Edit | Key Function |
-|------|--------------|--------------|
-| Change app name | `ios/Runner/Info.plist`, `android/.../strings.xml` | `CFBundleDisplayName`, `app_name` |
-| Update domain | `lib/config/deep_link_config.dart` | `productionDomain` |
-| Add AI model | `lib/data/services/ai/ai_service_manager.dart` | `selectProvider()` |
-| Update landing page | `landing_page/src/components/InviteRedirector.tsx` | OS detection logic |
-| Change package ID | `android/app/build.gradle.kts` | `applicationId` |
-| **Update App Icon** | `android/app/src/main/res/mipmap-*/ic_launcher.png` | Replace PNG files |
-| **Toggle Premium Mode** | Settings → Developer Settings → Premium (Tier 2) | `AppSettings.devModePremium` |
-| **Access Dev Tools** | Triple-tap screen title in debug builds | `DevToolsGestureDetector` |
-
----
-
-## AI Service Architecture (Phase 27: Voice First)
-
-### The Strategic Shift
-
-**Phase 24 (Previous):** Text-only AI with DeepSeek + Claude  
-**Phase 27 (Current):** **Voice-First** AI with DeepSeek (text) + Gemini Live (voice)
-
-### Why Voice?
-
-1. **10x faster** than typing on mobile
-2. **More natural** for habit discussions
-3. **Higher completion rates** (voice feels like talking to a friend)
-4. **Accessibility** for users who struggle with forms
-
-### Two-Tier System
-
-| Tier | Model | Interface | Use Case | Cost |
-|------|-------|-----------|----------|------|
-| **Tier 1 (Free)** | DeepSeek-V3 | Text Chat | Reasoning, logic, habit design | $0.14/M tokens |
-| **Tier 2 (Premium)** | Gemini 2.0 Flash | Voice | Real-time voice coaching | $0.075/M tokens |
-
-### Voice Architecture Components
-
-1. **GeminiLiveService** (`lib/data/services/gemini_live_service.dart`)
-   - WebSocket connection to Gemini Live API
-   - Real-time audio streaming (PCM 16-bit)
-   - Circuit breaker pattern for graceful degradation
-   - Dev mode bypass for testing without auth
-
-2. **VoiceOnboardingScreen** (`lib/features/onboarding/voice_onboarding_screen.dart`)
-   - MVP voice interface with microphone button
-   - Connection status indicators
-   - Fallback to text chat on error
-
-3. **Edge Function** (`supabase/functions/get-gemini-ephemeral-token/`)
-   - Generates ephemeral tokens for Gemini Live API
-   - Requires authentication (Google Sign-In)
-   - Deployed to Supabase
-
-### Dev Mode Bypass
-
-For testing without Google Sign-In:
-
-```dart
-// In GeminiLiveService._getEphemeralToken()
-if (kDebugMode && AIModelConfig.hasGeminiKey) {
-  // Use API key directly (no auth required)
-  return AIModelConfig.geminiApiKey;
+```json
+{
+  "setup": {
+    "model": "models/gemini-2.5-flash-native-audio-preview-12-2025",
+    "generationConfig": {
+      "responseModalities": ["AUDIO"],
+      "speechConfig": {
+        "voiceConfig": {
+          "prebuiltVoiceConfig": {
+            "voiceName": "Aoede"
+          }
+        }
+      },
+      "thinkingConfig": {
+        "thinkingLevel": "MINIMAL"
+      }
+    },
+    "systemInstruction": {
+      "parts": [{ "text": "..." }]
+    }
+  }
 }
 ```
 
-This allows voice testing in debug builds without setting up OAuth.
+---
+
+## Developer Tools
+
+### Accessing DevTools
+
+**Triple-tap** any screen title to open the Developer Tools overlay.
+
+### Available Features
+
+| Feature | Description |
+|---------|-------------|
+| **Premium Toggle** | Enable/disable Tier 2 (Voice) mode |
+| **View Gemini Logs** | In-App Log Console |
+| **Copy Debug Info** | Copy diagnostic info |
+| **Quick Navigation** | Jump to any screen |
+
+### Log Console Usage
+
+1. Open DevTools (triple-tap)
+2. Tap "View Gemini Logs" (green button)
+3. Trigger a connection (Voice Coach → Microphone)
+4. View real-time logs
+5. Tap copy icon to copy all logs
 
 ---
 
-## Developer Tools (Phase 27.6)
+## Target Niches
 
-### Access
+The Pact targets these user segments:
 
-**Triple-tap** on any screen title (e.g., "AI Coach", "Voice Coach") in debug builds.
-
-### Features
-
-- ✅ **Toggle Premium Mode** (Tier 2) instantly
-- ✅ **View AI Status** (tier, availability, kill switches, API keys)
-- ✅ **Quick Navigation** to any screen (Voice Coach, Text Coach, Manual, Dashboard, Settings)
-- ✅ **Skip Onboarding** for testing
-- ✅ **Copy Debug Info** for bug reports (Peter Thiel recommendation)
-
-### Settings Access
-
-All onboarding screens now have a **Settings gear icon** in the top-right corner.  
-No need to create a habit first!
+| Niche | Identity | Pain Point |
+|-------|----------|------------|
+| **Writers** | "A Writer" | Consistency in daily writing |
+| **Developers** | "An Indie Maker" | Shipping consistently |
+| **Fitness** | "A Morning Person" | Workout habits |
+| **Language** | "A Polyglot" | Daily practice |
+| **Academic** | "A Deep Worker" | Thesis/research focus |
 
 ---
 
-## Testing Voice Interface
+## Key Decisions
 
-### Prerequisites
+### Why IOWebSocketChannel?
 
-1. **Secrets file:** Create `secrets.json` in project root:
-   ```json
-   {
-     "DEEPSEEK_API_KEY": "your_key",
-     "GEMINI_API_KEY": "your_key",
-     "OPENAI_API_KEY": "your_key"
-   }
-   ```
+Dart's default `WebSocketChannel.connect()` doesn't support custom headers. We use `IOWebSocketChannel.connect()` from `package:web_socket_channel/io.dart` to inject:
 
-2. **Build debug APK:**
-   ```bash
-   flutter build apk --debug --dart-define-from-file=secrets.json
-   ```
-
-### Test Steps
-
-1. Install APK on device
-2. Tap **Settings** (gear icon) → **Developer Settings**
-3. Enable **Premium (Tier 2)**
-4. Go back → Tap **AI Coach**
-5. Should route to **Voice Coach** (no auth required in dev mode)
-
-### Troubleshooting
-
-- **"Failed to obtain ephemeral token"** → Check `GEMINI_API_KEY` in `secrets.json`
-- **Routes to text chat instead of voice** → Check Premium toggle in Developer Settings
-- **No sound** → Audio recording not implemented yet (Phase 27.8)
-
----
-
-## Google OAuth Setup (For Production)
-
-See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setup guide.
-
-**Quick summary:**
-1. Create OAuth 2.0 Client IDs in Google Cloud Console (Web + Android)
-2. Configure Google provider in Supabase Dashboard
-3. Add SHA-1 fingerprint: `C6:B1:B4:D7:93:9B:6B:E8:EC:AD:BC:96:01:99:11:62:84:B6:5E:6A`
-4. Package name: `co.thepact.app`
-
----
-
-## Known Issues & Technical Debt
-
-### Next Steps (Immediate)
-
-1.  **Deploy Supabase Edge Function:** The updated `get-gemini-ephemeral-token` function must be deployed to take effect.
-    ```bash
-    supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
-    ```
-2.  **Rebuild APK:** The Flutter app must be rebuilt to include the new `GeminiLiveService` logic.
-    ```bash
-    flutter build apk --debug --dart-define-from-file=secrets.json
-    ```
-
-### Phase 28.1: Gemini 3 Compliance (✅ COMPLETE)
-- **Root Cause:** The previous integration was based on Gemini 2.0 protocols. Gemini 3 introduced breaking changes.
-- **Fix #1 (Thought Signatures):** Implemented handling for `thoughtSignature` in `GeminiLiveService` to maintain conversational context.
-- **Fix #2 (Thinking Level):** Added `thinking_config: { thinking_level: "MINIMAL" }` to the WebSocket setup to reduce voice latency.
-- **Fix #3 (Temperature):** Removed all `temperature` settings for Gemini 3 models to prevent documented looping behaviour.
-
-### High Priority (BLOCKING NYE LAUNCH)
-
-1. **WebSocket Connection Fixed** (Phase 27.15 - ✅ COMPLETE)
-   - **Root Cause #1:** Auth parameter mismatch - API keys need `key=` not `access_token=` (Phase 27.9 ✅)
-   - **Root Cause #2:** Geo-blocking - `gemini-2.5-flash` preview is US region-locked (Phase 27.10 ✅)
-   - **Root Cause #3:** Build error - `WebSocketChannel.connect()` doesn't support `headers` parameter (Phase 27.11 ✅)
-   - **Root Cause #4:** Deprecated `-exp` endpoint - experimental endpoints are unstable (Phase 27.13 ✅)
-   - **Root Cause #5:** Gemini 2.0 Live SHUTDOWN - All 2.0 Live endpoints were shut down Dec 9, 2025! (Phase 27.14 ✅)
-   - **Root Cause #6:** TOKEN SCOPE VIOLATION - Edge Function generated tokens for Preview model, app requested GA model (Phase 27.15 ✅)
-   - **Final Fix:** Aligned Edge Function model (`gemini-live-2.5-flash-native-audio`) with Flutter app
-   - **CRITICAL:** After pushing code, MUST deploy Edge Function: `supabase functions deploy get-gemini-ephemeral-token`
-   - **Phase 27.12 "Black Box" Debug Features:** (retained for future debugging)
-     - Phase tracking: IDLE → FETCHING_TOKEN → BUILDING_URL → CONNECTING_SOCKET → SENDING_HANDSHAKE → WAITING_FOR_SERVER_READY → CONNECTED_STABLE
-     - Detailed error messages include: timestamp, phase, close code, close reason, model name, auth method
-     - UI shows debug dialog on error with monospace "screenshot-ready" format
-   - **NEXT STEP:** Deploy Edge Function, rebuild APK, test voice connection
-
-2. **Audio Recording Not Implemented** (Phase 27.8)
-   - Voice interface shows UI but doesn't capture audio yet
-   - Need to implement microphone permissions + audio streaming
-   - **UNBLOCKED:** WebSocket connection should now work
-
-3. **Google Sign-In Configuration** (Phase 27.7)
-   - OAuth setup guide provided (`docs/GOOGLE_OAUTH_SETUP.md`)
-   - Not configured yet - voice works in dev mode without auth
-   - **REQUIRED FOR:** Production voice interface
-
-4. **Manual Onboarding UX** (Phase 27.5)
-   - Form is long and overwhelming
-   - Consider multi-step wizard or collapsing optional fields
-   - **PRIORITY:** Low (voice is the primary path)
-
-### Medium Priority
-
-4. **Error Message Display Bug** (Fixed Phase 27.7)
-   - Was showing literal `${result.error}` instead of actual error
-   - Fixed in settings_screen.dart
-
-5. **Ghost Habits** (Fixed Phase 27.4)
-   - Habits appearing in dashboard but not in database
-   - Fixed by adding null checks and sync validation
-
-### Low Priority
-
-6. **App Icon Automation**
-   - Currently manual PNG replacement
-   - Consider re-enabling `flutter_launcher_icons` package
-
----
-
-## Phase History
-
-| Phase | Name | Status | Key Features |
-|-------|------|--------|--------------|
-| 1-6 | Core Habit Tracking | ✅ Complete | Single habit, graceful consistency, notifications |
-| 7-14 | AI & Analytics | ✅ Complete | Weekly review, pattern detection, analytics |
-| 15-16 | Social & Auth | ✅ Complete | Anonymous auth, habit contracts, witnesses |
-| 17-20 | AI Optimization | ✅ Complete | DeepSeek prompts, intelligent nudges, feedback |
-| 21-24 | Viral Growth | ✅ Complete | Deep linking, web anchor, install referrer |
-| 25 | Gemini Pivot | ⏸️ Paused | Gemini 3 integration (superseded by Phase 27) |
-| **28** | **Gemini 3 Compliance** | ✅ **Complete** | **Thought Signatures, Thinking Level, Temperature Fix** |
-| 26 | The Lab | ⏸️ Paused | A/B testing framework (deferred) |
-| **27.1-27.4** | **Bug Fixes** | ✅ Complete | Ghost habits, DeepSeek routing, branding |
-| **27.5** | **Voice First Pivot** | ✅ Complete | Voice interface, routing logic, new icon |
-| **27.6** | **Developer Tools** | ✅ Complete | Debug overlay, premium toggle, settings access |
-| **27.7** | **Dev Mode Bypass** | ✅ Complete | Voice works without auth in debug builds |
-| **27.8** | **Audio Recording** | 🚧 In Progress | Microphone permissions + audio streaming |
-| **27.9** | **WebSocket Auth Fix** | ✅ Complete | Auth parameter fix (`key=` vs `access_token=`), v1alpha API, SetupComplete handling |
-| **27.10** | **Geo-Blocking Fix** | ✅ Complete | Switched to `gemini-2.0-flash-exp` (globally available), header-based auth |
-| **27.11** | **Build Fix** | ✅ Complete | Reverted to URL parameter auth (Flutter compatibility) |
-
----
-
-## Next Steps (Phase 28)
-
-See **[ROADMAP.md](./ROADMAP.md)** for detailed priorities.
-
-**Immediate (NYE 2025):**
-1. ✅ Voice interface UI (Phase 27.5)
-2. ✅ Dev mode bypass (Phase 27.7)
-3. ✅ WebSocket connection fix (Phase 27.9)
-4. ✅ Geo-blocking fix (Phase 27.10)
-5. 🚧 Audio recording implementation (Phase 27.8)
-6. 🚧 Google OAuth setup (Phase 27.7)
-
-**Short-term (Q1 2026):**
-- Polish voice UX (waveform, transcription)
-- Implement Tier 2 paywall
-- Launch beta testing program
-
-**Long-term (Q2 2026):**
-- Multi-language voice support
-- Voice-based habit check-ins
-- Social voice features (voice notes to witnesses)
-
----
-
-## Commit Message Format
-
-```
-Phase X.Y: Brief Title
-
-- Feature 1
-- Feature 2
-- Bug fix 3
-
-Testing: How to verify changes
+```dart
+headers: {
+  'Host': 'generativelanguage.googleapis.com',
+  'User-Agent': 'Dart/3.5 (flutter); co.thepact.app/6.0.4',
+}
 ```
 
-**Example:**
-```
-Phase 27.7: Dev Mode Voice Bypass + Google OAuth Guide
+### Why LogBuffer?
 
-Voice Interface:
-- DEV MODE BYPASS: Uses Gemini API key directly when not authenticated
-- Works in debug builds without Google Sign-In
-- Falls back to API key if Edge Function fails
+The In-App Log Console provides:
+1. **Visibility** - See exactly what's happening
+2. **Debugging** - Copy logs with one click
+3. **Persistence** - Logs survive navigation
+4. **Real-time** - Updates via ValueNotifier
 
-Documentation:
-- Added docs/GOOGLE_OAUTH_SETUP.md with full setup guide
+### Why Honest User-Agent?
 
-Testing: Build debug APK and voice interface should work without auth
-```
-
----
-
-## Contact & Support
-
-**Repository:** [github.com/lenghurst/atomichabits](https://github.com/lenghurst/atomichabits)  
-**Live App:** [thepact.co](https://thepact.co)  
-**Supabase Project:** `lwzvvaqgvcmsxblcglxo`
+Phase 36 used Python client spoofing (`goog-python-genai/0.1.0`). Phase 37 switched to honest headers because:
+1. Sustainable long-term
+2. Builds trust with WAFs
+3. Professional for production
 
 ---
 
-**Last Session:** Phase 28.1 - Gemini 3 Compliance Fixes  
-**Next Session:** Phase 28.2 - Deploy Edge Function & Build APK
+## Known Issues
+
+| Issue | Status | Workaround |
+|-------|--------|------------|
+| 403 Forbidden on WebSocket | 🔧 Testing | Phases 35-38 fixes applied |
+| Oliver Backdoor in AppState | ⚠️ Tech Debt | Remove post-launch |
+| AppState monolithic | ⚠️ Tech Debt | Strangler pattern in progress |
+
+---
+
+## Documentation Index
+
+### Core Docs
+- `README.md` - Project overview
+- `AI_CONTEXT.md` - This file
+- `ROADMAP.md` - Sprint history, priorities
+- `CHANGELOG.md` - Version history
+
+### Technical Guides
+- `docs/BUILD_PIPELINE.md` - Build commands
+- `docs/VERIFICATION_CHECKLIST.md` - Testing protocol
+- `docs/GOOGLE_OAUTH_SETUP.md` - OAuth configuration
+- `docs/ARCHITECTURE_MIGRATION.md` - Provider architecture
+
+### Gemini Live API
+- `docs/PHASE_38_LOG_CONSOLE.md` - In-App Log Console
+- `docs/PHASE_37_PRODUCTION_READY.md` - Headers fix
+- `docs/PHASE_36_ERROR_ANALYSIS.md` - 403 analysis
+- `docs/GEMINI_LIVE_API_RESEARCH.md` - API research
+
+---
+
+## Quick Commands
+
+### Build Debug APK
+```bash
+flutter build apk --debug --dart-define-from-file=secrets.json
+```
+
+### Run with Verbose Logging
+```bash
+flutter run --verbose --dart-define-from-file=secrets.json
+```
+
+### Check Git Status
+```bash
+git status && git log --oneline -5
+```
+
+### Deploy Edge Function
+```bash
+supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
+```

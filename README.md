@@ -9,66 +9,20 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 ---
 
-## 📊 Status
+## 📊 Current Status
 
-| Component | Status | URL |
-|-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 34.4d - Minimal Setup | _NYE 2025 Target_ |
+| Component | Status | Details |
+|-----------|--------|---------|
+| **Mobile App** | 🟢 Phase 38 | In-App Log Console for debugging |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🔧 Testing | Minimal WebSocket Setup (all invalid fields removed) |
-| **Text AI** | 🔧 Debugging | DeepSeek V3 (API key loading under investigation) |
+| **Voice AI** | 🔧 Testing | Gemini Live WebSocket (Phase 35-38 fixes) |
+| **Text AI** | 🟢 Working | DeepSeek V3 |
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4d - Minimal WebSocket Setup)  
-> **Current Phase:** Phase 34.4d - Minimal WebSocket Setup (thinkingConfig, thinkingBudget, transcription fields removed)  
-> **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
+> **Last Updated:** 25 December 2025  
+> **Current Phase:** Phase 38 - In-App Log Console  
+> **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
-
----
-
-## 🧠 The "Council of Five" Architecture (Phase 34)
-
-We have implemented a comprehensive architectural refactoring based on expert review from the "Council of Five" (Martin Fowler, Eric Evans, Robert C. Martin, Casey Muratori, Remi Rousselet).
-
-### Key Architectural Changes
-
-| Pattern | Implementation | Purpose |
-|---------|---------------|---------|
-| **Repository Pattern** | `lib/data/repositories/` | Decouples persistence from business logic |
-| **Domain Providers** | `lib/data/providers/` | Separated state management by domain |
-| **PsychometricProfile** | `lib/domain/entities/` | Rich domain entity for AI personalisation |
-| **PsychometricEngine** | `lib/domain/services/` | Incremental behavioural analysis |
-
-### New Directory Structure
-
-```
-lib/
-├── data/
-│   ├── repositories/           # Infrastructure Layer (Uncle Bob)
-│   │   ├── settings_repository.dart      (Interface)
-│   │   ├── hive_settings_repository.dart (Implementation)
-│   │   ├── user_repository.dart
-│   │   ├── hive_user_repository.dart
-│   │   ├── habit_repository.dart
-│   │   ├── hive_habit_repository.dart
-│   │   ├── psychometric_repository.dart
-│   │   └── hive_psychometric_repository.dart
-│   │
-│   ├── providers/              # State Management Layer (Rousselet)
-│   │   ├── settings_provider.dart
-│   │   ├── user_provider.dart
-│   │   ├── habit_provider.dart
-│   │   └── psychometric_provider.dart
-│   │
-│   └── app_state.dart          # LEGACY: Being strangled
-│
-├── domain/
-│   ├── entities/               # Pure Domain Models (Fowler)
-│   │   └── psychometric_profile.dart
-│   │
-│   └── services/               # Domain Logic (Evans)
-│       └── psychometric_engine.dart
-```
 
 ---
 
@@ -77,51 +31,144 @@ lib/
 Traditional habit apps fail because they rely on **you**.  
 **The Pact** relies on **us**.
 
-1. **The Contract:** You don't just "set a goal." You sign a **Pact** with a friend (Witness).
-2. **The Wax Seal:** A haptic-heavy, ceremonial UI that makes commitment feel weighty.
-3. **The Witness:** Your friend gets notified when you succeed (or fail).
-4. **Graceful Consistency:** We measure rolling consistency, not fragile streaks.
-5. **Voice First:** Talk to your AI coach like a friend, not a form.
+| Principle | Description |
+|-----------|-------------|
+| **The Contract** | You don't just "set a goal." You sign a **Pact** with a friend (Witness). |
+| **The Wax Seal** | A haptic-heavy, ceremonial UI that makes commitment feel weighty. |
+| **The Witness** | Your friend gets notified when you succeed (or fail). |
+| **Graceful Consistency** | We measure rolling consistency, not fragile streaks. |
+| **Voice First** | Talk to your AI coach like a friend, not a form. |
 
 ---
 
-## 🤖 AI Agent Quick Start
+## 🛠️ Tech Stack
 
-### The "Big Three" Documentation Files
-
-| File | Purpose | When to Update |
-|------|---------|----------------|
-| **README.md** | Project overview, architecture, user-facing docs | On major features |
-| **AI_CONTEXT.md** | Current state checkpoint for AI agents | Every session end |
-| **ROADMAP.md** | Priorities, sprint tracking, technical debt | Every session end |
-
-### Mandatory Session Checklist
-
-**Before Starting:**
-```
-□ 1. Read README.md (project overview, architecture)
-□ 2. Read AI_CONTEXT.md (current state, what's implemented)
-□ 3. Read ROADMAP.md (what's next, priorities)
-□ 4. Read docs/ARCHITECTURE_MIGRATION.md (new provider architecture)
-```
-
-**After Completing:**
-```
-□ 1. SAVE ALL FILES: Ensure no unsaved buffers exist.
-□ 2. COMMIT ALL CHANGES: git commit -am "feat/fix: description"
-□ 3. PUSH TO REMOTE: git push origin main
-□ 4. Update AI_CONTEXT.md with any new features/changes
-□ 5. Update ROADMAP.md if priorities changed
-```
+| Component | Technology | Role |
+|-----------|------------|------|
+| **Mobile** | Flutter 3.38.4 | The Core Experience |
+| **Web** | React + Vite + Tailwind | The Landing Page |
+| **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
+| **AI (Tier 1)** | DeepSeek-V3 | Text reasoning & logic |
+| **AI (Tier 2)** | Gemini 2.5 Flash | Real-time voice coaching |
+| **Voice** | Gemini Live API | WebSocket audio streaming |
+| **Hosting** | Netlify | Web Deployment |
 
 ---
 
-## 🏗️ Architecture: "The Unified Front"
+## 🚀 Quick Start
+
+### Build the App
+
+**Single Command Pipeline:**
+```bash
+git pull origin main && flutter clean && flutter pub get && flutter build apk --debug --dart-define-from-file=secrets.json
+```
+
+**Output:** `build/app/outputs/flutter-apk/app-debug.apk`
+
+### Secrets Configuration
+
+Create `secrets.json` in project root:
+
+```json
+{
+  "SUPABASE_URL": "https://your-project.supabase.co",
+  "SUPABASE_ANON_KEY": "your_supabase_anon_key",
+  "GOOGLE_WEB_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com",
+  "DEEPSEEK_API_KEY": "your_deepseek_key",
+  "GEMINI_API_KEY": "your_gemini_key"
+}
+```
+
+> **Note:** `secrets.json` is in `.gitignore`. Never commit API keys.
+
+---
+
+## 📖 Documentation
+
+### Core Documentation
+
+| File | Purpose |
+|------|---------|
+| **[AI_CONTEXT.md](./AI_CONTEXT.md)** | AI assistant context, architecture, feature matrix |
+| **[ROADMAP.md](./ROADMAP.md)** | Sprint history, priorities, technical debt |
+| **[CHANGELOG.md](./CHANGELOG.md)** | Version history |
+
+### Technical Guides
+
+| Guide | Purpose |
+|-------|---------|
+| **[docs/BUILD_PIPELINE.md](./docs/BUILD_PIPELINE.md)** | Build commands and pipelines |
+| **[docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)** | Testing the Gemini Live connection |
+| **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
+| **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** | Provider architecture guide |
+
+### Gemini Live API
+
+| Document | Purpose |
+|----------|---------|
+| **[docs/PHASE_38_LOG_CONSOLE.md](./docs/PHASE_38_LOG_CONSOLE.md)** | In-App Log Console |
+| **[docs/PHASE_37_PRODUCTION_READY.md](./docs/PHASE_37_PRODUCTION_READY.md)** | Production headers fix |
+| **[docs/PHASE_36_ERROR_ANALYSIS.md](./docs/PHASE_36_ERROR_ANALYSIS.md)** | 403 Forbidden analysis |
+| **[docs/GEMINI_LIVE_API_RESEARCH.md](./docs/GEMINI_LIVE_API_RESEARCH.md)** | API research notes |
+
+---
+
+## 🏗️ Architecture
+
+### Directory Structure
+
+```
+lib/
+├── config/                 # App configuration
+│   └── ai_model_config.dart    # AI model settings
+│
+├── core/                   # Core utilities
+│   └── logging/
+│       └── log_buffer.dart     # Centralized logging (Phase 38)
+│
+├── data/
+│   ├── repositories/       # Infrastructure Layer
+│   │   ├── settings_repository.dart
+│   │   ├── user_repository.dart
+│   │   ├── habit_repository.dart
+│   │   └── psychometric_repository.dart
+│   │
+│   ├── providers/          # State Management
+│   │   ├── settings_provider.dart
+│   │   ├── user_provider.dart
+│   │   ├── habit_provider.dart
+│   │   └── psychometric_provider.dart
+│   │
+│   ├── services/           # External Services
+│   │   ├── gemini_live_service.dart    # Voice AI (Phase 35-38)
+│   │   ├── audio_recording_service.dart
+│   │   └── voice_session_manager.dart
+│   │
+│   └── app_state.dart      # Legacy (being strangled)
+│
+├── domain/
+│   ├── entities/           # Pure Domain Models
+│   │   └── psychometric_profile.dart
+│   │
+│   └── services/           # Domain Logic
+│       └── psychometric_engine.dart
+│
+└── features/
+    ├── dev/                # Developer Tools
+    │   ├── dev_tools_overlay.dart
+    │   └── debug_console_view.dart     # Log viewer (Phase 38)
+    │
+    └── onboarding/         # Onboarding Flow
+        └── voice_coach_screen.dart
+```
 
 ### Voice Architecture
 
 ```
 User → Voice Coach Screen
+         ↓
+     Voice Session Manager
          ↓
      Gemini Live Service
          ↓
@@ -142,115 +189,31 @@ Edge Fn     (Direct API)
    Real-time Voice
 ```
 
-### PsychometricProfile Architecture (NEW)
-
-```
-User Behaviour → PsychometricEngine
-                       ↓
-              PsychometricProfile
-                       ↓
-              toSystemPrompt()
-                       ↓
-              [[USER PSYCHOMETRICS]]
-              CORE DRIVERS:
-              - Values: Health, Mastery
-              - Primary Drive: Become the best version
-              - FEARS: The Lazy Stoner
-              
-              COMMUNICATION PROTOCOL:
-              - Adopt Persona: SUPPORTIVE
-              - Verbosity Level: 3/5
-              
-              BEHAVIORAL RISKS:
-              - High-Risk Drop-off Zones: Weekends
-              - Current Resilience: 70%
-                       ↓
-              Gemini/DeepSeek LLM
-```
-
 ---
 
-## 🛠️ Tech Stack
+## 🔧 Developer Tools
 
-| Component | Technology | Role |
-|-----------|------------|------|
-| **Mobile** | Flutter 3.38.4 | The Core Experience |
-| **Web** | React + Vite + Tailwind | The Landing Page / Redirector |
-| **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
-| **AI (Tier 1)** | DeepSeek-V3 | Text reasoning & logic |
-| **AI (Tier 2)** | Gemini 3 Flash (2.5 Live) | Real-time voice coaching |
-| **Voice** | Gemini Live API | WebSocket audio streaming |
-| **Hosting** | Netlify | Web Deployment |
+### Accessing DevTools
 
----
+**Triple-tap** any screen title to open the Developer Tools overlay.
 
-## 🚀 How to Run
+### Features
 
-### Mobile App (Flutter)
+| Feature | Description |
+|---------|-------------|
+| **Premium Toggle** | Enable/disable Tier 2 (Voice) mode |
+| **View Gemini Logs** | In-App Log Console (Phase 38) |
+| **Copy Debug Info** | Copy diagnostic info to clipboard |
+| **Quick Navigation** | Jump to any screen |
 
-#### Option A: The "Quick AI Test" (Debug APK)
-*Use this to test voice latency and AI response without Supabase Auth (uses direct API key).*
+### Debugging Voice Connection
 
-```bash
-# Get dependencies
-flutter pub get
-
-# Build Debug APK (bypasses auth for AI)
-flutter build apk --debug --dart-define-from-file=secrets.json
-```
-*Output:* `build/app/outputs/flutter-apk/app-debug.apk`
-
-#### Option B: The "Production Reality" (Release APK)
-*Use this to test the full user flow including Supabase Auth and Edge Functions.*
-
-```bash
-# Build Release APK (requires valid Supabase session)
-flutter build apk --release --dart-define-from-file=secrets.json
-```
-*Output:* `build/app/outputs/flutter-apk/app-release.apk`
-
-#### ⚠️ Xiaomi/MIUI Users
-If the app crashes on microphone access or shows "Permission Denied":
-1. Long press App Icon → **App Info**
-2. Go to **Permissions** → **Microphone**
-3. Set to **"Allow only while using the app"**
-
-### Secrets Configuration
-
-Create `secrets.json` in project root:
-
-```json
-{
-  "SUPABASE_URL": "https://your-project.supabase.co",
-  "SUPABASE_ANON_KEY": "your_supabase_anon_key",
-  "GOOGLE_WEB_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com",
-  "DEEPSEEK_API_KEY": "your_deepseek_key",
-  "GEMINI_API_KEY": "your_gemini_key",
-  "OPENAI_API_KEY": "your_openai_key"
-}
-```
-
-**Important Notes:**
-- `GOOGLE_WEB_CLIENT_ID` must be a **Web** Client ID (not Android) from Google Cloud Console
-- The Android Client ID is determined by SHA-1 fingerprint, not this file
-- Ensure keys are named exactly as shown. The file is in `.gitignore`.
-
----
-
-## 📖 Documentation
-
-### Core Docs
-- **[AI_CONTEXT.md](./AI_CONTEXT.md)** - Full feature matrix, architecture deep-dive
-- **[ROADMAP.md](./ROADMAP.md)** - Sprint history, current priorities, technical debt
-- **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** - New provider architecture guide
-
-### Setup Guides
-- **[GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** - Google Sign-In configuration
-- **[VOICE_COACH_VALIDATION.md](./docs/VOICE_COACH_VALIDATION.md)** - Voice Coach smoke test protocol
-- **[APP_ICON_UPDATE_GUIDE.md](./APP_ICON_UPDATE_GUIDE.md)** - Branding update instructions
-
-### Diagnostic Tools
-- **[lib/tool/diagnose_google_signin.dart](./lib/tool/diagnose_google_signin.dart)** - SHA-1 diagnostic Flutter app
+1. Open DevTools (triple-tap)
+2. Enable Premium Mode
+3. Navigate to Voice Coach
+4. Tap microphone to connect
+5. Open "View Gemini Logs" to see connection details
+6. Copy logs for debugging
 
 ---
 
@@ -262,36 +225,30 @@ Create `secrets.json` in project root:
 flutter test
 ```
 
-### Key Test Files
+### Voice Connection Test
 
-- `test/services/ai/deep_seek_service_test.dart` - AI model integration tests
-- `test/services/ai/ai_service_manager_test.dart` - Tier selection logic tests
+See **[docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)** for the full testing protocol.
 
 ---
 
 ## 🚢 Deployment
 
-### Mobile (Flutter)
+### Android
 
 ```bash
-# Android
 flutter build appbundle --release --dart-define-from-file=secrets.json
-
-# iOS
-flutter build ipa --release --dart-define-from-file=secrets.json
 ```
 
-### Web (React)
+### iOS
 
-Auto-deployed via Netlify on push to `main` branch.
+```bash
+flutter build ipa --release --dart-define-from-file=secrets.json
+```
 
 ### Supabase Edge Functions
 
 ```bash
-# Deploy get-gemini-ephemeral-token function
 supabase functions deploy get-gemini-ephemeral-token --project-ref lwzvvaqgvcmsxblcglxo
-
-# Set secrets
 supabase secrets set GEMINI_API_KEY=your_key --project-ref lwzvvaqgvcmsxblcglxo
 ```
 
@@ -299,63 +256,26 @@ supabase secrets set GEMINI_API_KEY=your_key --project-ref lwzvvaqgvcmsxblcglxo
 
 ## 🔧 Troubleshooting
 
-### Voice Interface Not Connecting
+### Voice Not Connecting
 
-1. **Check Dev Mode:** Settings → Developer Settings → Premium (Tier 2) enabled?
+1. **Check DevTools:** Is Premium Mode enabled?
 2. **Check API Key:** Is `GEMINI_API_KEY` in `secrets.json`?
-3. **Check Logs:** Run `flutter run` and watch console for errors
-4. **Copy Debug Info:** Triple-tap screen title → Copy Debug Info → Share with team
-
-### AI Not Responding (DeepSeek/Gemini)
-
-The app now shows **in-app debug diagnostics** when AI fails. Look for:
-
-```
---- DEBUG INFO ---
-API Key Status:
-• DeepSeek: ✗ NOT LOADED
-• Gemini: ✗ NOT LOADED
-```
-
-**If keys show NOT LOADED:**
-1. Verify `secrets.json` exists in project root
-2. Rebuild with: `flutter build apk --debug --dart-define-from-file=secrets.json`
-3. Or pass keys directly:
-   ```bash
-   flutter build apk --debug \
-     --dart-define=DEEPSEEK_API_KEY=your_key \
-     --dart-define=GEMINI_API_KEY=your_key
-   ```
-
-**Verify secrets.json before building:**
-```bash
-cat secrets.json | head -10
-# Should show DEEPSEEK_API_KEY, GEMINI_API_KEY, etc.
-```
+3. **Check Logs:** Open "View Gemini Logs" in DevTools
+4. **Follow Checklist:** See [docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)
 
 ### Google Sign-In Failing
 
-See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setup guide.
+See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for the full setup guide.
 
-**Five-Axis Diagnostic:**
+**Quick Checklist:**
 
-| Axis | Check | Command/Location |
-|------|-------|------------------|
-| 1 | Supabase URL configured | Check `secrets.json` |
-| 2 | Web Client ID configured | Check `GOOGLE_WEB_CLIENT_ID` in `secrets.json` |
-| 3 | Package name matches | Must be `co.thepact.app` |
-| 4 | SHA-1 fingerprint | `cd android && ./gradlew signingReport` |
-| 5 | OAuth consent screen | Add test email in Google Cloud Console |
-
-**Configuration Checklist:**
-
-| Location | Field | Value |
-|----------|-------|-------|
-| **Google Cloud Console** | Web Client redirect URI | `https://your-project.supabase.co/auth/v1/callback` |
-| **Google Cloud Console** | Android Client SHA-1 | Your debug keystore SHA-1 |
-| **Supabase Dashboard** | Client ID | Web Client ID |
-| **Supabase Dashboard** | Client Secret | Web Client Secret |
-| **Supabase Dashboard** | Authorised Client IDs | Android Client ID |
+| Check | Location |
+|-------|----------|
+| Supabase URL | `secrets.json` |
+| Web Client ID | `secrets.json` |
+| Package name | Must be `co.thepact.app` |
+| SHA-1 fingerprint | `cd android && ./gradlew signingReport` |
+| OAuth consent | Add test email in Google Cloud Console |
 
 ---
 
@@ -369,6 +289,6 @@ MIT Licence - See LICENCE file for details
 
 Built with inspiration from James Clear's *Atomic Habits* and the philosophy of social accountability.
 
-**Phase 27 Voice First Pivot** inspired by the success of voice-first apps like Replika and Character.AI.
+**Architecture** guided by the "Council of Five": Martin Fowler, Eric Evans, Robert C. Martin, Casey Muratori, and Remi Rousselet.
 
-**Phase 34 Architecture** guided by the "Council of Five": Martin Fowler, Eric Evans, Robert C. Martin, Casey Muratori, and Remi Rousselet.
+**Voice Integration** powered by Google's Gemini Live API.
