@@ -194,6 +194,18 @@ class GeminiLiveService {
       
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
       
+      // CRITICAL FIX (Phase 34.4h): Wait for WebSocket to be ready!
+      // WebSocketChannel.connect() returns immediately and buffers messages.
+      // We must wait for the connection to be established before sending.
+      _log('Waiting for WebSocket ready signal...');
+      try {
+        await _channel!.ready;
+        _log('✅ WebSocket ready!');
+      } catch (e) {
+        _log('❌ WebSocket ready failed: $e');
+        throw 'WebSocket connection failed: $e';
+      }
+      
       _log('WebSocket channel created, setting up listeners...');
       
       _subscription = _channel!.stream.listen(
