@@ -9,15 +9,15 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 ---
 
-## 📊 Current Status
+## 📊 Current Status (December 2025)
 
 | Component | Status | Details |
 |-----------|--------|---------|
 | **Mobile App** | 🟢 Phase 41.2 | Navigation fully migrated to AppRoutes |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🔧 Testing | Gemini Live WebSocket (Phase 35-38 fixes) |
-| **Text AI** | 🟢 Working | DeepSeek V3 |
+| **Voice AI** | ✅ **WORKING** | Gemini Live API (`gemini-2.5-flash-native-audio-preview-12-2025`) |
+| **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 
 > **Last Updated:** 25 December 2025  
 > **Current Phase:** Phase 41.2 - Navigation Migration Complete  

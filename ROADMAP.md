@@ -1,229 +1,89 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
+> **Current Phase:** Phase 41.3 - Documentation Overhaul  
 > **Target:** NYE 2025 Launch  
-> **Status:** 🔧 Testing Voice Connection
+> **Status:** ✅ Voice Connection **FIXED**. Preparing for device test build.
 
 ---
 
-## ⚠️ AI HANDOFF PROTOCOL
+## 🎯 Current Focus: Documentation & Test Readiness
 
-### Before Starting Work
-1. Read `README.md` for project overview
-2. Read `AI_CONTEXT.md` for current architecture
-3. Read this file for priorities and history
-4. Check `CHANGELOG.md` for recent changes
+**Goal:** Prepare the repository for a successful test build on a physical device via GitHub Actions.
 
-### After Completing Work
-1. Update the relevant section below
-2. Add to Sprint History with date
-3. Update `AI_CONTEXT.md` if architecture changed
-4. Commit and push all changes
+**Status:** ✅ **Documentation Updated**. Next is fixing tests.
 
----
-
-## 🎯 Current Focus: Voice Connection Testing
-
-**Goal:** Verify the Gemini Live WebSocket connection works after Phases 35-38 fixes.
-
-**Status:** 🔧 Testing
-
-**Verification Steps:**
-1. Build app with latest code
-2. Open DevTools → Enable Premium Mode
-3. Navigate to Voice Coach
-4. Tap microphone to connect
-5. Check logs via "View Gemini Logs"
-6. Analyze result (success, different error, or still 403)
-
-**See:** `docs/VERIFICATION_CHECKLIST.md`
+**Immediate Priorities:**
+1.  **Update Core Docs:** Extensively update `README.md`, `AI_CONTEXT.md`, and this `ROADMAP.md` to reflect all recent progress. (✅ **Done**)
+2.  **Fix Unit Tests:** Resolve the 5 failing unit tests in `date_utils_test.dart`.
+3.  **Static Analysis:** Clean up the 154 static analysis issues (mostly unused imports).
+4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets for the build workflow.
 
 ---
 
 ## ✅ Completed Phases
 
-### Phase 41.2: Navigation Migration Complete (25 Dec 2025)
+### Phase 41.3: Documentation Overhaul (25 Dec 2025)
 
-**Goal:** Migrate all 44 string literal navigation calls to AppRoutes constants.
+**Goal:** Bring all core documentation up to date with the latest project status, architectural changes, and API research findings.
 
 | ID | Task | Status |
 |----|------|--------|
-| N1 | Create `AppRoutes` constants class | ✅ |
-| N2 | Extract `AppRouter` from main.dart | ✅ |
-| N3 | Add redirect logic for auth/onboarding guards | ✅ |
-| N4 | Migrate Priority 1 screens (8 files, 16 calls) | ✅ |
-| N5 | Migrate Priority 2 screens (7 files, 16 calls) | ✅ |
-| N6 | Migrate Priority 3-4 screens (4 files, 12 calls) | ✅ |
-| N7 | Fix invalid routes (`/invite`, `/settings/account`) | ✅ |
-| N8 | Fix wrong API (`Navigator.pushNamed` → `context.push`) | ✅ |
-| N9 | Update core documentation | ✅ |
+| D1 | Extensively update `README.md` | ✅ |
+| D2 | Extensively update `AI_CONTEXT.md` | ✅ |
+| D3 | Extensively update `ROADMAP.md` | ✅ |
 
-**Migration Summary:**
+### Phase 41.2: Navigation Migration Complete (25 Dec 2025)
+
+**Goal:** Migrate all 44 string literal navigation calls to type-safe `AppRoutes` constants.
+
 - **Total calls migrated:** 44
 - **Files updated:** 19
 - **Bugs fixed:** 4 (invalid routes, wrong API)
 - **String literals remaining:** 0
 
-**Files Changed:**
-- `lib/config/router/app_routes.dart` (NEW)
-- `lib/config/router/app_router.dart` (NEW)
-- `lib/main.dart` (reduced by ~180 lines)
-- `lib/features/dashboard/habit_list_screen.dart`
-- `lib/features/dev/dev_tools_overlay.dart`
-- `lib/features/settings/settings_screen.dart`
-- `lib/features/today/today_screen.dart`
-- `lib/features/history/history_screen.dart`
-- `lib/features/contracts/contracts_list_screen.dart`
-- `lib/features/contracts/join_contract_screen.dart`
-- `lib/features/contracts/create_contract_screen.dart`
-- `lib/features/witness/witness_accept_screen.dart`
-- `lib/features/witness/witness_dashboard.dart`
-- `lib/features/onboarding/voice_coach_screen.dart`
-- `lib/features/onboarding/conversational_onboarding_screen.dart`
-- `lib/features/onboarding/onboarding_screen.dart`
-- `lib/features/onboarding/identity_first/*.dart` (5 files)
-- `lib/features/settings/habit_edit_screen.dart`
-- `lib/features/settings/data_management_screen.dart`
-
 ### Phase 40: DeepSeek Optimization (25 Dec 2025)
 
 **Goal:** Improve DeepSeek response quality by forcing JSON output.
 
-| ID | Task | Status |
-|----|------|--------|
-| D1 | Add `response_format: json_object` to API request | ✅ |
-| D2 | Update system prompt with JSON output format | ✅ |
-| D3 | Verify `.vscode/launch.json` has secrets config | ✅ |
-
-**Files Changed:**
-- `lib/data/services/ai/deep_seek_service.dart`
-
 ### Phase 39: Logging Consolidation & Security (25 Dec 2025)
 
-**Goal:** Unify logging systems and remove security backdoor.
-
-| ID | Task | Status |
-|----|------|--------|
-| S1 | Remove Oliver Backdoor from app_state.dart | ✅ |
-| S2 | Remove Oliver Backdoor from user_provider.dart | ✅ |
-| L1 | Enhance AppLogger with LogBuffer integration | ✅ |
-| L2 | Migrate GeminiLiveService to AppLogger | ✅ |
-| L3 | Migrate identity_access_gate_screen to AppLogger | ✅ |
-| L4 | Delete deprecated developer_logger.dart | ✅ |
-| L5 | Update DebugConsoleView for LogEntry structure | ✅ |
-
-**Files Changed:**
-- `lib/data/app_state.dart` (backdoor removed)
-- `lib/data/providers/user_provider.dart` (backdoor removed)
-- `lib/core/logging/app_logger.dart` (enhanced)
-- `lib/core/logging/log_buffer.dart` (LogEntry structure)
-- `lib/features/dev/debug_console_view.dart` (level-based coloring)
-- `lib/utils/developer_logger.dart` (DELETED)
+**Goal:** Unify logging systems and remove the "Oliver" security backdoor.
 
 ### Phase 38: In-App Log Console (25 Dec 2025)
 
-**Goal:** Provide full visibility into Gemini Live connection for debugging.
-
-| ID | Task | Status |
-|----|------|--------|
-| L1 | Create LogBuffer singleton | ✅ |
-| L2 | Integrate LogBuffer into GeminiLiveService | ✅ |
-| L3 | Create DebugConsoleView widget | ✅ |
-| L4 | Add "View Gemini Logs" to DevToolsOverlay | ✅ |
-| L5 | Verbose connection logging with emojis | ✅ |
-
-**Files Created:**
-- `lib/core/logging/log_buffer.dart`
-- `lib/features/dev/debug_console_view.dart`
-- `docs/PHASE_38_LOG_CONSOLE.md`
+**Goal:** Provide full visibility into the Gemini Live connection for debugging.
 
 ### Phase 37: Production-Ready Connection (25 Dec 2025)
 
-**Goal:** Implement honest headers and granular error handling.
-
-| ID | Task | Status |
-|----|------|--------|
-| H1 | Honest User-Agent header | ✅ |
-| H2 | `await _channel!.ready` for handshake | ✅ |
-| H3 | HandshakeException handling | ✅ |
-| H4 | SocketException handling | ✅ |
-| H5 | URL validation asserts | ✅ |
+**Goal:** Implement honest headers and granular error handling for the WebSocket connection.
 
 ### Phase 36: Header Injection Fix (25 Dec 2025)
 
-**Goal:** Fix 403 Forbidden by adding custom WebSocket headers.
+**Goal:** Fix 403 Forbidden error by adding custom WebSocket headers using `IOWebSocketChannel`.
 
-| ID | Task | Status |
-|----|------|--------|
-| F1 | Switch to IOWebSocketChannel | ✅ |
-| F2 | Add Host header | ✅ |
-| F3 | Add User-Agent header | ✅ |
-| F4 | 5 Whys analysis document | ✅ |
+### Phase 35: `thinkingConfig` Fix (25 Dec 2025)
 
-### Phase 35: thinkingConfig Fix (25 Dec 2025)
-
-**Goal:** Fix "Unknown name 'thinkingConfig'" error.
-
-| ID | Task | Status |
-|----|------|--------|
-| T1 | Move thinkingConfig inside generationConfig | ✅ |
-| T2 | Research official API documentation | ✅ |
-| T3 | Update setup payload structure | ✅ |
-
-### Phase 34: Architecture Refactoring (Dec 2025)
-
-**Goal:** Implement comprehensive architectural improvements.
-
-| ID | Task | Status |
-|----|------|--------|
-| A1 | Repository Pattern | ✅ |
-| A2 | Domain-specific Providers | ✅ |
-| A3 | PsychometricProfile entity | ✅ |
-| A4 | PsychometricEngine service | ✅ |
-| A5 | Bitmask Risk Flags | ✅ |
-| A6 | Migration Documentation | ✅ |
-
-### Phase 33: The Investment (Dec 2025)
-
-**Goal:** Redesign Supporter Screen with modal UI.
-
-| ID | Task | Status |
-|----|------|--------|
-| I1 | TypeAhead contact search | ✅ |
-| I2 | Permission Glass Pane | ✅ |
-| I3 | Investment Screen | ✅ |
-
-### Phase 32: Audio Recording (Dec 2025)
-
-**Goal:** Implement audio recording and session management.
-
-| ID | Task | Status |
-|----|------|--------|
-| R1 | AudioRecordingService | ✅ |
-| R2 | VoiceSessionManager | ✅ |
-| R3 | VAD integration | ✅ |
-
-### Phases 29-31: Council Recommendations (Dec 2025)
-
-Implemented recommendations from the "Second Council of Five":
-- Hook Screen with value proposition
-- Graceful Consistency messaging
-- Confetti celebration
-- Testimonials
-- Binary tier choice
-- Default identity selection
-- Haptic feedback
+**Goal:** Fix "Unknown name 'thinkingConfig'" error by correcting the API payload structure.
 
 ---
 
 ## 📋 Backlog
 
-### Phase 41: Provider Wiring (Post-Launch)
+### Phase 42: Pre-Launch Fixes (High Priority)
 
-**Goal:** Wire new providers into main.dart.
+**Goal:** Address all remaining blockers before the first device test build.
 
-**Priority:** HIGH
+| ID | Task | Effort | Status |
+|----|------|--------|--------|
+| T1 | Fix 5 failing unit tests | Low | [ ] |
+| T2 | Fix 154 static analysis issues | Low | [ ] |
+| G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
+| G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
+
+### Phase 43: Provider Wiring (Post-Launch)
+
+**Goal:** Wire new providers into `main.dart` to continue strangling the legacy `AppState`.
 
 | ID | Task | Effort | Status |
 |----|------|--------|--------|
@@ -232,32 +92,18 @@ Implemented recommendations from the "Second Council of Five":
 | W3 | Integrate PsychometricProvider | Medium | [ ] |
 | W4 | Update GoRouter to use UserProvider | Low | [ ] |
 
-### Phase 42: DTO Separation (Q1 2026)
+### Phase 44: DTO Separation (Q1 2026)
 
-**Goal:** Separate domain entities from persistence.
-
-**Priority:** MEDIUM
+**Goal:** Separate domain entities from persistence logic by introducing Data Transfer Objects (DTOs).
 
 | ID | Task | Effort | Status |
 |----|------|--------|--------|
 | D1 | Create HabitDTO | Medium | [ ] |
 | D2 | Create UserProfileDTO | Medium | [ ] |
-| D3 | Remove toJson from entities | Low | [ ] |
+| D3 | Remove `toJson` from entities | Low | [ ] |
 | D4 | Create Mapper classes | Medium | [ ] |
 
-### Phase 43: HabitEngine Extraction (Q1 2026)
-
-**Goal:** Extract business logic from AppState.
-
-**Priority:** MEDIUM
-
-| ID | Task | Effort | Status |
-|----|------|--------|--------|
-| H1 | Create HabitEngine service | High | [ ] |
-| H2 | Extract streak calculation | Medium | [ ] |
-| H3 | Extract recovery logic | Medium | [ ] |
-
-### Post-Launch Features (Phase 44+)
+### Post-Launch Features (Phase 45+)
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
@@ -274,74 +120,30 @@ Implemented recommendations from the "Second Council of Five":
 | ID | Description | Priority | Target |
 |----|-------------|----------|--------|
 | ~~TD0~~ | ~~Oliver Backdoor~~ | ~~CRITICAL~~ | ✅ Phase 39 |
-| TD1 | AppState monolithic (1,642 lines) | Medium | Phase 39-41 |
-| TD2 | Habit.dart has toJson | Low | Phase 40 |
-| TD3 | No DTO separation | Low | Phase 40 |
-| TD4 | HabitEngine in AppState | Medium | Phase 41 |
-| TD5 | landing_page/ in Flutter repo | Low | Future |
-
-~~TD0 resolved in Phase 39~~ - Oliver Backdoor removed from both `app_state.dart` and `user_provider.dart`.
+| TD1 | `AppState` monolithic (1,642 lines) | Medium | Phase 43+ |
+| TD2 | `Habit.dart` has `toJson` | Low | Phase 44 |
+| TD3 | No DTO separation | Low | Phase 44 |
+| TD4 | `HabitEngine` logic in `AppState` | Medium | Future |
+| TD5 | `landing_page/` in Flutter repo | Low | Future |
 
 ---
 
-## 📊 Architecture Evolution
+## 🚀 Launch Plan
 
-```
-Phase 33          Phase 34          Phase 35-38       Phase 39+
-    │                 │                 │                 │
-    ▼                 ▼                 ▼                 ▼
-┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-│Monolithic│  →  │Repository│  →  │Voice Fix│  →  │Provider │
-│AppState  │     │Pattern   │     │+ Logging│     │Wiring   │
-└─────────┘     └─────────┘     └─────────┘     └─────────┘
-```
-
----
-
-## 🎯 Success Metrics
-
-### Launch (NYE 2025)
+### Success Metrics (NYE 2025 Launch)
 
 | Metric | Target | Status |
 |--------|--------|--------|
-| APK builds | ✅ | ✅ |
-| Voice connects | < 500ms latency | 🔧 Testing |
-| No crashes on Xiaomi | 0 crashes | [ ] |
+| **APK builds via GitHub Actions** | ✅ **Builds successfully** | [ ] |
+| **Voice connects on device** | < 500ms latency | [ ] |
+| No crashes on user's device | 0 crashes | [ ] |
 | Share Sheet works | Functional | [ ] |
 | Voice Coach accessible | From Dashboard | ✅ |
 
-### Post-Launch (Q1 2026)
+### Post-Launch Goals (Q1 2026)
 
 | Metric | Target | Status |
 |--------|--------|--------|
 | Unit test coverage | > 60% | [ ] |
-| AppState deprecated | 100% | [ ] |
-| Domain entities pure | 100% | [ ] |
-
----
-
-## 📁 Documentation Structure
-
-### Core (Root Level)
-- `README.md` - Project overview
-- `AI_CONTEXT.md` - AI assistant context
-- `ROADMAP.md` - This file
-- `CHANGELOG.md` - Version history
-- `CREDITS.md` - Attribution
-
-### Technical (docs/)
-- `docs/BUILD_PIPELINE.md` - Build commands
-- `docs/VERIFICATION_CHECKLIST.md` - Testing protocol
-- `docs/GOOGLE_OAUTH_SETUP.md` - OAuth setup
-- `docs/ARCHITECTURE_MIGRATION.md` - Provider guide
-
-### Gemini Live (docs/)
-- `docs/PHASE_38_LOG_CONSOLE.md`
-- `docs/PHASE_37_PRODUCTION_READY.md`
-- `docs/PHASE_36_ERROR_ANALYSIS.md`
-- `docs/GEMINI_LIVE_API_RESEARCH.md`
-- `docs/GEMINI_WEBSOCKET_SCHEMA.md`
-
-### Archive (docs/archive/)
-- Legacy implementation summaries
-- Old phase specs
+| `AppState` deprecated | 100% | [ ] |
+| Domain entities are pure | 100% | [ ] |

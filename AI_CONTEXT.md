@@ -58,14 +58,14 @@
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Text AI (DeepSeek)** | ✅ Working | JSON mode enabled (Phase 40) |
-| **Voice AI (Gemini)** | 🔧 Testing | Phases 35-38 fixes applied |
+| **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
+| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` confirmed working |
 | **In-App Log Console** | ✅ New | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
 | **Onboarding Flow** | ✅ Working | Voice-first with fallback |
 | **Dashboard** | ✅ Working | Habit tracking |
 
-### Recent Fixes (Phases 35-40)
+### Recent Fixes (Phases 35-41)
 
 | Phase | Fix | Status |
 |-------|-----|--------|
@@ -201,15 +201,15 @@ GeminiLiveService._addDebugLog()
 
 ### Model Names
 
-| Tier | Model | Use Case |
-|------|-------|----------|
-| **Tier 1** | `deepseek-chat` | Text reasoning (JSON mode) |
-| **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | Voice coaching |
+| Tier | Model | Status | Use Case |
+|------|-------|--------|----------|
+| **Tier 1** | `deepseek-chat` | ⚠️ Needs Funding | Text reasoning (JSON mode) |
+| **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | ✅ **WORKING** | Voice coaching |
 
 ### WebSocket Endpoint
 
 ```
-wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent
+https://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent
 ```
 
 ### Setup Payload Structure
@@ -267,8 +267,6 @@ wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.G
 
 ## Target Niches
 
-The Pact targets these user segments:
-
 | Niche | Identity | Pain Point |
 |-------|----------|------------|
 | **Writers** | "A Writer" | Consistency in daily writing |
@@ -313,7 +311,7 @@ Phase 36 used Python client spoofing (`goog-python-genai/0.1.0`). Phase 37 switc
 
 | Issue | Status | Workaround |
 |-------|--------|------------|
-| 403 Forbidden on WebSocket | 🔧 Testing | Phases 35-38 fixes applied |
+| 403 Forbidden on WebSocket | ✅ **FIXED** | Confirmed working with correct model |
 | Oliver Backdoor | ✅ Removed | Phase 39 |
 | AppState monolithic | ⚠️ Tech Debt | Strangler pattern in progress |
 
