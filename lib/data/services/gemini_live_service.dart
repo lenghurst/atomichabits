@@ -397,15 +397,13 @@ WebSocket URL: $_wsEndpoint''';
       
       final data = jsonDecode(message as String) as Map<String, dynamic>;
 
-      // GEMINI 3 COMPLIANCE: Capture Thought Signature
-      // The thought signature is an encrypted string that stores the model's
-      // reasoning state. It MUST be echoed back in subsequent messages.
-      if (data.containsKey('thoughtSignature')) {
-        _currentThoughtSignature = data['thoughtSignature'] as String?;
-        if (kDebugMode) {
-          debugPrint('GeminiLiveService: 🧠 Thought Signature captured (${_currentThoughtSignature?.length ?? 0} chars)');
-        }
-      }
+     // NOTE: thoughtSignature is NOT supported by native audio model
+      // The gemini-2.5-flash-native-audio-preview-12-2025 model returns:
+      // "Unknown name 'thoughtSignature': Cannot find field."
+      // Keeping capture code commented out for future reference:
+      // if (data.containsKey('thoughtSignature')) {
+      //   _currentThoughtSignature = data['thoughtSignature'] as String?;
+      // }
 
       // HANDSHAKE SUCCESS
       if (data.containsKey('setupComplete')) {
@@ -609,13 +607,16 @@ WebSocket URL: $_wsEndpoint''';
   
   /// Sends audio data to the Gemini Live API.
   /// 
-  /// Phase 28: Gemini 3 Compliance
-  /// - Includes `thoughtSignature` if available to maintain context.
+  /// Phase 34.4g: REMOVED thoughtSignature - NOT supported by native audio model!
+  /// The native audio model (gemini-2.5-flash-native-audio-preview-12-2025) returns:
+  /// "Unknown name 'thoughtSignature': Cannot find field."
+  /// 
+  /// thoughtSignature is only for Gemini 3 Pro/Flash text models, NOT Live API.
   void sendAudio(Uint8List audioData) {
     if (!_isConnected || _channel == null) return;
     
     final base64Audio = base64Encode(audioData);
-    final Map<String, dynamic> message = {
+    final message = {
       'realtimeInput': {
         'mediaChunks': [
           {
@@ -626,10 +627,7 @@ WebSocket URL: $_wsEndpoint''';
       }
     };
     
-    // GEMINI 3 COMPLIANCE: Echo back the thought signature
-    if (_currentThoughtSignature != null) {
-      message['thoughtSignature'] = _currentThoughtSignature;
-    }
+    // NOTE: thoughtSignature REMOVED - not supported by native audio model
     
     try {
       _channel!.sink.add(jsonEncode(message));
@@ -640,12 +638,11 @@ WebSocket URL: $_wsEndpoint''';
   
   /// Sends text input to the Gemini Live API.
   /// 
-  /// Phase 28: Gemini 3 Compliance
-  /// - Includes `thoughtSignature` if available to maintain context.
+  /// Phase 34.4g: REMOVED thoughtSignature - NOT supported by native audio model!
   void sendText(String text, {bool turnComplete = true}) {
     if (!_isConnected || _channel == null) return;
     
-    final Map<String, dynamic> message = {
+    final message = {
       'clientContent': {
         'turns': [
           {
@@ -657,10 +654,7 @@ WebSocket URL: $_wsEndpoint''';
       }
     };
     
-    // GEMINI 3 COMPLIANCE: Echo back the thought signature
-    if (_currentThoughtSignature != null) {
-      message['thoughtSignature'] = _currentThoughtSignature;
-    }
+    // NOTE: thoughtSignature REMOVED - not supported by native audio model
     
     try {
       _channel!.sink.add(jsonEncode(message));
