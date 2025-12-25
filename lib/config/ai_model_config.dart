@@ -56,6 +56,17 @@ class AIModelConfig {
   
   /// Check if any AI is available
   static bool get hasAnyAI => hasDeepSeekKey || hasGeminiKey;
+  
+  /// Debug information about API key status (for error messages)
+  static String get debugKeyStatus {
+    final buffer = StringBuffer();
+    buffer.writeln('DeepSeek Key: ${hasDeepSeekKey ? "✓ Configured" : "✗ Missing"}');
+    buffer.writeln('Gemini Key: ${hasGeminiKey ? "✓ Configured" : "✗ Missing"}');
+    buffer.writeln('OpenAI Key: ${hasOpenAiKey ? "✓ Configured" : "✗ Missing"}');
+    buffer.writeln('Tier 2 Model: $tier2Model');
+    buffer.writeln('Live API Version: $liveApiVersion');
+    return buffer.toString();
+  }
 
   // === MODEL VERSIONS (DECEMBER 2025 - VERIFIED ENDPOINTS) ===
   

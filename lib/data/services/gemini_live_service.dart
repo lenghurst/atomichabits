@@ -62,6 +62,10 @@ class GeminiLiveService {
   final void Function()? onFallbackToTextMode;
   final void Function()? onVoiceModeRestored;
   final void Function(bool)? onVoiceActivityDetected;
+  final void Function()? onDebugLogUpdated;
+  
+  // === DEBUG LOG STATE ===
+  final List<String> _debugLog = [];
   
   GeminiLiveService({
     this.onAudioReceived,
@@ -73,11 +77,31 @@ class GeminiLiveService {
     this.onFallbackToTextMode,
     this.onVoiceModeRestored,
     this.onVoiceActivityDetected,
+    this.onDebugLogUpdated,
   });
 
   // === PUBLIC GETTERS ===
   bool get isConnected => _isConnected;
   bool get isListening => _isListening;
+  
+  /// Get the debug log entries
+  List<String> get debugLog => List.unmodifiable(_debugLog);
+  
+  /// Clear the debug log
+  void clearDebugLog() {
+    _debugLog.clear();
+    onDebugLogUpdated?.call();
+  }
+  
+  /// Add an entry to the debug log
+  void _addDebugLog(String entry) {
+    final timestamp = DateTime.now().toIso8601String().substring(11, 19);
+    _debugLog.add('[$timestamp] $entry');
+    if (_debugLog.length > 100) {
+      _debugLog.removeAt(0); // Keep only last 100 entries
+    }
+    onDebugLogUpdated?.call();
+  }
   String get connectionPhase => _connectionPhase;
   String get lastErrorDetail => _lastErrorDetail;
   
