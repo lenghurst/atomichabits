@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Gemini Model Fix)  
-> **Last Verified:** Phase 34.4 Complete (Gemini Model Fix + Parser Improvements)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Setup Message Fix)  
+> **Last Verified:** Phase 34.4 Complete (WebSocket Setup Fix - thinkingConfig removed)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
 > **Council Verdict:** GREEN LIGHT  
@@ -55,6 +55,7 @@
 | A11 | In-app API key debug diagnostics | Council | ✅ (34.4) |
 | A12 | Gemini model name fix (verified from docs) | Council | ✅ (34.4b) |
 | A13 | AI response parser Markdown sanitizer | Council | ✅ (34.4b) |
+| A14 | WebSocket setup fix (thinkingConfig removed) | Council | ✅ (34.4c) |
 
 ### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
 

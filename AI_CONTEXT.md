@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Gemini Model Fix)  
-> **Last Verified:** Phase 34.4 Complete (Gemini Model Fix + Parser Improvements)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Setup Message Fix)  
+> **Last Verified:** Phase 34.4 Complete (WebSocket Setup Fix - thinkingConfig removed)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
@@ -241,6 +241,32 @@ Critical fix for Voice Coach - the model name was incorrect.
 ```bash
 supabase functions deploy get-gemini-ephemeral-token
 ```
+
+### Phase 34.4c: WebSocket Setup Message Fix (thinkingConfig)
+
+Critical fix for Voice Coach WebSocket connection - invalid field in setup message.
+
+**Error Message:**
+```
+SOCKET_CLOSED
+Code: 1007 | Reason: Invalid JSON payload received.
+Unknown name "thinkingConfig" at 'setup': Cannot find field.
+```
+
+**Root Cause:** The `thinkingConfig` field is NOT valid for raw WebSocket setup messages. Only the Python/JS SDK abstracts this internally.
+
+**Fix Applied:**
+
+| Before (Broken) | After (Fixed) |
+|-----------------|---------------|
+| `'thinkingConfig': { 'thinkingLevel': 'MINIMAL' }` | Removed entirely |
+| N/A | `'thinkingBudget': 0` inside `generationConfig` |
+
+**File Changed:** `lib/data/services/gemini_live_service.dart`
+
+**Reference:** https://ai.google.dev/gemini-api/docs/live-guide
+
+**Analysis Document:** `docs/GEMINI_LIVE_API_FINDINGS.md`
 
 ---
 

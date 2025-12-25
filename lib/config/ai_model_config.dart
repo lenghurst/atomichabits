@@ -94,13 +94,18 @@ class AIModelConfig {
   /// - NOTE: Model name verified from official Google AI docs (Dec 25, 2025)
   /// - CRITICAL: Must match backend LIVE_API_MODEL in get-gemini-ephemeral-token/index.ts
   /// 
-  /// GEMINI 3 COMPLIANCE (Phase 28):
+  /// GEMINI 3 COMPLIANCE (Phase 28 + 34.4c):
   /// - DO NOT use tier2Temperature for Gemini 3 Live API calls.
   /// - Temperature values < 1.0 cause "unexpected behavior, such as looping".
-  /// - Use thinking_level: "MINIMAL" in the setup message instead.
   /// 
-  /// Phase 34.4: Model name corrected from 'gemini-live-2.5-flash-native-audio' 
+  /// Phase 34.4b: Model name corrected from 'gemini-live-2.5-flash-native-audio' 
   /// to official name per https://ai.google.dev/gemini-api/docs/live
+  /// 
+  /// Phase 34.4c: CRITICAL WebSocket setup fix:
+  /// - DO NOT use 'thinkingConfig' in raw WebSocket setup messages (invalid field)
+  /// - Use 'thinkingBudget': 0 inside 'generationConfig' to disable thinking
+  /// - Native audio model has thinking ENABLED by default
+  /// - See: docs/GEMINI_LIVE_API_FINDINGS.md for full analysis
   static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025';
   
   /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
