@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 34.4 - Debug Diagnostics | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 34.4 - Gemini Model Fix | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟢 Ready for Test | Gemini 3 Live API (Oliver Backdoor Active) |
+| **Voice AI** | 🟢 Model Fixed | `gemini-2.5-flash-native-audio-preview-12-2025` |
 | **Text AI** | 🔧 Debugging | DeepSeek V3 (API key loading under investigation) |
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
-> **Current Phase:** Phase 34.4 - Debug Diagnostics + Voice Coach UI  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Gemini Model Fix)  
+> **Current Phase:** Phase 34.4 - Gemini Model Fix + Parser Improvements  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Language:** UK English (Default)
 

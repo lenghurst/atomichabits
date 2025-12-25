@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
-> **Last Verified:** Phase 34.4 Complete (Voice Coach UI + In-App Debug Info)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Gemini Model Fix)  
+> **Last Verified:** Phase 34.4 Complete (Gemini Model Fix + Parser Improvements)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
 > **Council Verdict:** GREEN LIGHT  
@@ -53,6 +53,8 @@
 | A9 | Oliver Backdoor for Tier 2 verification | Council | ✅ (34.3) |
 | A10 | Voice Coach button in Dashboard | Council | ✅ (34.4) |
 | A11 | In-app API key debug diagnostics | Council | ✅ (34.4) |
+| A12 | Gemini model name fix (verified from docs) | Council | ✅ (34.4b) |
+| A13 | AI response parser Markdown sanitizer | Council | ✅ (34.4b) |
 
 ### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
 

@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
-> **Last Verified:** Phase 34.4 Complete (Voice Coach UI + In-App Debug Info)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Gemini Model Fix)  
+> **Last Verified:** Phase 34.4 Complete (Gemini Model Fix + Parser Improvements)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
@@ -211,6 +211,36 @@ Added in-app debug diagnostics to help diagnose API key loading issues on device
    - Shows key presence and first 5 chars in logcat
 
 **Known Issue:** `--dart-define-from-file=secrets.json` may not be loading keys correctly. Alternative is to pass keys directly via `--dart-define`.
+
+### Phase 34.4b: Gemini Model Fix + Parser Improvements
+
+Critical fix for Voice Coach - the model name was incorrect.
+
+**Root Cause:** Model name `gemini-live-2.5-flash-native-audio` does not exist in Google's API.
+
+**Fix Applied:**
+
+| Component | Old Value | New Value |
+|-----------|-----------|----------|
+| Flutter Config | `gemini-live-2.5-flash-native-audio` | `gemini-2.5-flash-native-audio-preview-12-2025` |
+| Backend Edge Function | Same | Same |
+
+**Source:** https://ai.google.dev/gemini-api/docs/live (December 25, 2025)
+
+**Files Changed:**
+1. `lib/config/ai_model_config.dart` - Corrected `tier2Model`
+2. `supabase/functions/get-gemini-ephemeral-token/index.ts` - Matching model
+3. `lib/data/services/onboarding/ai_response_parser.dart` - Added Markdown sanitizer
+
+**Parser Improvements:**
+- Added `sanitizeAndExtractJson()` to handle Markdown code blocks
+- Strips \`\`\`json ... \`\`\` wrappers from Gemini responses
+- Extracts JSON from conversational preamble/trailing text
+
+**IMPORTANT:** After pulling, redeploy the Edge Function:
+```bash
+supabase functions deploy get-gemini-ephemeral-token
+```
 
 ---
 
