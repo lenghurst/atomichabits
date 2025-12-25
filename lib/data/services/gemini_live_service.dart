@@ -229,14 +229,19 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   /// Sends the initial setup message to the Gemini Live API.
   /// 
-  /// Phase 34.4: Fixed setup message format per official docs
-  /// - REMOVED `thinkingConfig` - not a valid field for WebSocket setup message
-  /// - The native audio model (gemini-2.5-flash-native-audio-preview-12-2025) has
-  ///   thinking enabled by default; use `thinkingBudget: 0` in generationConfig to disable
-  /// - Removed `temperature` setting to prevent looping behaviour.
+  /// Phase 34.4d: MINIMAL setup message matching official WebSocket schema
+  /// Reference: https://ai.google.dev/api/live
   /// 
-  /// Reference: https://ai.google.dev/gemini-api/docs/live-guide
+  /// Official generationConfig fields (from API reference):
+  /// - candidateCount, maxOutputTokens, temperature, topP, topK
+  /// - presencePenalty, frequencyPenalty, responseModalities
+  /// - speechConfig, mediaResolution
+  /// 
+  /// NOT valid in raw WebSocket (SDK-only or wrong location):
+  /// - thinkingConfig, thinkingBudget
+  /// - outputAudioTranscription, inputAudioTranscription (may need different location)
   Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
+    // MINIMAL CONFIG - only official fields from https://ai.google.dev/api/live
     final setupConfig = {
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
@@ -249,25 +254,18 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
               }
             }
           },
-          // Phase 34.4: Disable thinking for faster voice response
-          // Native audio model has thinking enabled by default
-          // Set to 0 to disable, or remove for default behaviour
-          'thinkingBudget': 0,
         },
         if (instruction != null) 
           'systemInstruction': {
             'parts': [{'text': instruction}]
           },
-        if (transcribe) ...{
-          'outputAudioTranscription': {},
-          'inputAudioTranscription': {},
-        },
       }
     };
     
     if (kDebugMode) {
-      debugPrint('GeminiLiveService: Sending setup message...');
+      debugPrint('GeminiLiveService: Sending MINIMAL setup message...');
       debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
+      debugPrint('GeminiLiveService: Config: ${jsonEncode(setupConfig)}');
     }
     
     _channel!.sink.add(jsonEncode(setupConfig));
