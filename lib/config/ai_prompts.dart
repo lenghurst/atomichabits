@@ -793,14 +793,16 @@ Ask for EVIDENCE, then give them the DIAGNOSIS to confirm.
   /// Voice session prompt with persona injection
   /// 
   /// Phase 25.9: Variable Rewards - Persona is injected at runtime
+  /// Phase 42: Made persona optional (defaults to stoic) for backwards compatibility
   static String voiceSession({
-    required CoachPersona persona,
+    CoachPersona? persona,
     String? userName,
     String? habitName,
     int? currentStreak,
     bool? completedToday,
   }) {
-    final personaModifier = persona.promptModifier;
+    final effectivePersona = persona ?? CoachPersona.stoic;
+    final personaModifier = effectivePersona.promptModifier;
     final context = StringBuffer();
     
     if (userName != null) {

@@ -286,9 +286,10 @@ class VoiceSessionManager {
   }
   
   /// Get the tools configuration for onboarding (Phase 42)
-  List<Map<String, dynamic>>? _getToolsConfig() {
+  /// Returns a single tool definition map (GeminiLiveService wraps it in an array)
+  Map<String, dynamic>? _getToolsConfig() {
     if (!_shouldEnableTools()) return null;
-    return [AiToolsConfig.psychometricTool];
+    return AiToolsConfig.psychometricTool;
   }
   
   /// Start a new voice session.
