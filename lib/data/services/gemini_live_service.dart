@@ -82,16 +82,38 @@ class GeminiLiveService {
   /// Exposes the current thought signature for debugging purposes.
   String? get currentThoughtSignature => _currentThoughtSignature;
 
+  // === TIMING FOR ROOT CAUSE ANALYSIS ===
+  DateTime? _connectStartTime;
+  final Map<String, Duration> _phaseDurations = {};
+  DateTime? _phaseStartTime;
+  
   Future<bool> connect({
     String? systemInstruction,
     bool enableTranscription = true,
   }) async {
     if (_isConnected) return true;
+    
+    // Start timing
+    _connectStartTime = DateTime.now();
+    _phaseDurations.clear();
+    
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
     
-    // Reset thought signature on new connection
+    // Reset state on new connection
     _currentThoughtSignature = null;
+    _firstMessageReceived = false;
+    
+    if (kDebugMode) {
+      debugPrint('\n' + '='*60);
+      debugPrint('GeminiLiveService: CONNECTION ATTEMPT STARTED');
+      debugPrint('='*60);
+      debugPrint('Timestamp: ${DateTime.now().toIso8601String()}');
+      debugPrint('Model: ${AIModelConfig.tier2Model}');
+      debugPrint('Endpoint URL: $_wsEndpoint');
+      debugPrint('API Version: v1beta');
+      debugPrint('='*60 + '\n');
+    }
     
     try {
       // PHASE 1: TOKEN
@@ -102,27 +124,38 @@ class GeminiLiveService {
       }
       final token = tokenResult.token;
       
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Token obtained (${token!.length} chars)');
+        debugPrint('GeminiLiveService: Token prefix: ${token.substring(0, 10)}...');
+        debugPrint('GeminiLiveService: Auth method: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
+      }
+      
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
       String wsUrl = _wsEndpoint;
       if (_isUsingApiKey) {
         wsUrl += '?key=$token';
-        if (kDebugMode) debugPrint('GeminiLiveService: Using API Key auth (key= param)');
       } else {
         wsUrl += '?access_token=$token';
-        if (kDebugMode) debugPrint('GeminiLiveService: Using OAuth token auth (access_token= param)');
+      }
+      
+      if (kDebugMode) {
+        // Log full URL with masked token for debugging
+        final maskedUrl = wsUrl.replaceAll(RegExp(r'(key=|access_token=)[^&]+'), r'$1***MASKED***');
+        debugPrint('GeminiLiveService: Full WebSocket URL: $maskedUrl');
       }
       
       // PHASE 3: SOCKET CONNECT
       _setPhase("CONNECTING_SOCKET");
       if (kDebugMode) {
-        debugPrint('GeminiLiveService: Connecting to WebSocket...');
-        debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-        debugPrint('GeminiLiveService: Endpoint: v1beta');
-        debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=minimal, thoughtSignature=enabled');
+        debugPrint('GeminiLiveService: Opening WebSocket connection...');
       }
       
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+      
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: WebSocket channel created, setting up listeners...');
+      }
       
       _subscription = _channel!.stream.listen(
         _handleMessage,
@@ -154,8 +187,14 @@ class GeminiLiveService {
       
       // PHASE 4: SEND SETUP
       _setPhase("SENDING_HANDSHAKE");
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Sending setup message to server...');
+      }
       await _sendSetupMessage(systemInstruction, enableTranscription);
-      if (kDebugMode) debugPrint('GeminiLiveService: Setup message sent, waiting for server...');
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Setup message sent, waiting for setupComplete from server...');
+        debugPrint('GeminiLiveService: Timeout: 10 seconds');
+      }
       
       // PHASE 5: WAIT FOR READY
       _setPhase("WAITING_FOR_SERVER_READY");
@@ -173,7 +212,20 @@ class GeminiLiveService {
       _setPhase("CONNECTED_STABLE");
       _isConnected = true;
       _notifyConnectionState(LiveConnectionState.connected);
-      if (kDebugMode) debugPrint('GeminiLiveService: ✅ Handshake successful! Connected to ${AIModelConfig.tier2Model}');
+      
+      if (kDebugMode) {
+        final totalTime = DateTime.now().difference(_connectStartTime!);
+        debugPrint('\n' + '='*60);
+        debugPrint('GeminiLiveService: ✅ CONNECTION SUCCESSFUL');
+        debugPrint('='*60);
+        debugPrint('Total connection time: ${totalTime.inMilliseconds}ms');
+        debugPrint('Model: ${AIModelConfig.tier2Model}');
+        debugPrint('Phase durations:');
+        _phaseDurations.forEach((phase, duration) {
+          debugPrint('  - $phase: ${duration.inMilliseconds}ms');
+        });
+        debugPrint('='*60 + '\n');
+      }
       return true;
       
     } catch (e) {
@@ -186,6 +238,11 @@ class GeminiLiveService {
   // === HELPER METHODS ===
   
   void _setPhase(String phase) {
+    // Track duration of previous phase
+    if (_phaseStartTime != null && _connectionPhase.isNotEmpty) {
+      _phaseDurations[_connectionPhase] = DateTime.now().difference(_phaseStartTime!);
+    }
+    _phaseStartTime = DateTime.now();
     _connectionPhase = phase;
     if (kDebugMode) debugPrint("GeminiLiveService Phase: $phase");
   }
@@ -193,14 +250,32 @@ class GeminiLiveService {
   void _notifyDetailedError(String title, String details) {
     // This creates the "Screenshot Ready" error message
     final timestamp = DateTime.now().toIso8601String().substring(11, 19);
+    final totalTime = _connectStartTime != null 
+        ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
+        : 0;
+    
+    // Build phase timing summary
+    final phaseTimings = _phaseDurations.entries
+        .map((e) => '  ${e.key}: ${e.value.inMilliseconds}ms')
+        .join('\n');
+    
     final fullError = '''
 [$timestamp] $_connectionPhase
 $title
 $details
+
+--- CONNECTION INFO ---
 Model: ${AIModelConfig.tier2Model}
 Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}
 Endpoint: v1beta
-ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
+Total Time: ${totalTime}ms
+
+--- PHASE TIMINGS ---
+$phaseTimings
+
+--- DEBUG ---
+ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}
+WebSocket URL: $_wsEndpoint''';
     
     _lastErrorDetail = fullError;
     onError?.call(fullError);
@@ -271,13 +346,26 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     _channel!.sink.add(jsonEncode(setupConfig));
   }
 
+  bool _firstMessageReceived = false;
+  
   void _handleMessage(dynamic message) {
     try {
       // Log ALL incoming messages in debug mode for visibility
       if (kDebugMode) {
+        if (!_firstMessageReceived) {
+          _firstMessageReceived = true;
+          final timeSinceStart = _connectStartTime != null 
+              ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
+              : 0;
+          debugPrint('\n' + '-'*40);
+          debugPrint('GeminiLiveService: FIRST SERVER RESPONSE');
+          debugPrint('Time since connect start: ${timeSinceStart}ms');
+          debugPrint('-'*40);
+        }
+        
         final preview = message.toString();
-        if (preview.length > 200) {
-          debugPrint('GeminiLiveService RX: ${preview.substring(0, 200)}...');
+        if (preview.length > 500) {
+          debugPrint('GeminiLiveService RX (${preview.length} chars): ${preview.substring(0, 500)}...');
         } else {
           debugPrint('GeminiLiveService RX: $preview');
         }
