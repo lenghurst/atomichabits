@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../../widgets/habit_stack_selector.dart';
@@ -333,7 +334,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                           '${habit.gracefulScore.toInt()}% consistency',
                         ),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/analytics'),
+                        onTap: () => context.push(AppRoutes.analytics),
                       ),
                       const Divider(height: 1),
                       // Remove Stack Button (if stacked)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
+import '../../../config/router/app_routes.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../data/app_state.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
@@ -80,7 +81,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         await _showCelebrationDialog();
         
         await appState.completeOnboarding();
-        if (mounted) context.go('/dashboard');
+        if (mounted) context.go(AppRoutes.dashboard);
       } else {
         setState(() => _isProcessing = false);
       }
@@ -93,7 +94,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
       await appState.completeOnboarding();
       
       if (mounted) {
-        context.go('/dashboard');
+        context.go(AppRoutes.dashboard);
       }
     }
   }

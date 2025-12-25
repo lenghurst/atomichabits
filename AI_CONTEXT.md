@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41 - Navigation Architecture  
+> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -52,7 +52,7 @@
 
 ---
 
-## Current State: Phase 41
+## Current State: Phase 41.2
 
 ### What's Working
 
@@ -76,6 +76,8 @@
 | **39** | Logging consolidation, Oliver backdoor removed | ✅ |
 | **40** | DeepSeek `response_format: json_object` | ✅ |
 | **41** | Router extraction, route constants, redirect logic | ✅ |
+| **41.1** | Priority 1 screens migrated to AppRoutes | ✅ |
+| **41.2** | All 44 navigation calls migrated to AppRoutes | ✅ |
 
 ### Key Files Changed
 

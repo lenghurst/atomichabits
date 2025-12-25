@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
@@ -106,7 +107,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
                 ),
                 const SizedBox(height: 24),
                 OutlinedButton(
-                  onPressed: () => context.go('/dashboard'),
+                  onPressed: () => context.go(AppRoutes.dashboard),
                   child: const Text('Go to Dashboard'),
                 ),
               ],
@@ -196,7 +197,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () => context.go('/settings'),
+              onPressed: () => context.go(AppRoutes.settings),
               child: const Text('Sign in with Email'),
             ),
           ],
@@ -227,7 +228,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
               ),
               const SizedBox(height: 24),
               OutlinedButton(
-                onPressed: () => context.go('/dashboard'),
+                onPressed: () => context.go(AppRoutes.dashboard),
                 child: const Text('Go to Dashboard'),
               ),
             ],
@@ -437,7 +438,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
           
           // Decline
           TextButton(
-            onPressed: () => context.go('/dashboard'),
+            onPressed: () => context.go(AppRoutes.dashboard),
             child: const Text('Not right now'),
           ),
           const SizedBox(height: 24),
@@ -529,7 +530,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
             const Spacer(),
             
             FilledButton(
-              onPressed: () => context.go('/contracts'),
+              onPressed: () => context.go(AppRoutes.contracts),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(56),
               ),
@@ -537,7 +538,7 @@ class _JoinContractScreenState extends State<JoinContractScreen> {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () => context.go('/dashboard'),
+              onPressed: () => context.go(AppRoutes.dashboard),
               child: const Text('Go to Dashboard'),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../config/router/app_routes.dart';
 import '../../../data/app_state.dart';
 import '../../../data/models/user_profile.dart';
 import '../../../data/services/auth_service.dart';
@@ -121,7 +122,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         }
         
         // Navigate to next onboarding screen
-        context.go('/onboarding/witness');
+        context.go(AppRoutes.witnessOnboarding);
       } else {
         setState(() {
           _errorMessage = result.error ?? 'Google sign-in failed';
@@ -185,7 +186,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
           await appState.setUserProfile(profile);
         }
         
-        context.go('/onboarding/witness');
+        context.go(AppRoutes.witnessOnboarding);
       } else {
         setState(() {
           _errorMessage = result.error ?? 'Authentication failed';

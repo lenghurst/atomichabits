@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/models/user_profile.dart';
@@ -413,7 +414,7 @@ class _ConversationalOnboardingScreenState
       if (!mounted) return;
       
       // 4. Navigate to home
-      context.go('/dashboard');
+      context.go(AppRoutes.dashboard);
       
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -424,7 +425,7 @@ class _ConversationalOnboardingScreenState
 
   /// Fallback to manual form
   void _goToManualForm() {
-    context.go('/onboarding/manual');
+    context.go(AppRoutes.manualOnboarding);
   }
 
   void _scrollToBottom() {
@@ -450,7 +451,7 @@ class _ConversationalOnboardingScreenState
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
-            onPressed: () => context.go('/settings'),
+            onPressed: () => context.go(AppRoutes.settings),
           ),
           TextButton(
             onPressed: _goToManualForm,

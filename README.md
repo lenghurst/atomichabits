@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 41 | Navigation architecture refactor |
+| **Mobile App** | 🟢 Phase 41.2 | Navigation fully migrated to AppRoutes |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🔧 Testing | Gemini Live WebSocket (Phase 35-38 fixes) |
 | **Text AI** | 🟢 Working | DeepSeek V3 |
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41 - Navigation Architecture  
+> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
@@ -121,7 +121,10 @@ Create `secrets.json` in project root:
 ```
 lib/
 ├── config/                 # App configuration
-│   └── ai_model_config.dart    # AI model settings
+│   ├── ai_model_config.dart    # AI model settings
+│   └── router/
+│       ├── app_routes.dart     # Route constants (Phase 41)
+│       └── app_router.dart     # GoRouter config (Phase 41)
 │
 ├── core/                   # Core utilities
 │   └── logging/

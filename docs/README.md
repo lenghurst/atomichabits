@@ -19,6 +19,7 @@ docs/
 ├── SUPABASE_SCHEMA.md           # Database schema
 ├── USER_JOURNEY_MAP.md          # UX flows
 ├── VOICE_COACH_VALIDATION.md    # Voice Coach testing
+├── DEV_TOOLS_AUDIT.md           # Developer tools audit
 │
 ├── PHASE_38_LOG_CONSOLE.md      # In-App Log Console
 ├── PHASE_37_PRODUCTION_READY.md # Headers fix
@@ -51,6 +52,7 @@ docs/
 | [ARCHITECTURE_MIGRATION.md](./ARCHITECTURE_MIGRATION.md) | Provider pattern guide |
 | [SUPABASE_SCHEMA.md](./SUPABASE_SCHEMA.md) | Database schema |
 | [USER_JOURNEY_MAP.md](./USER_JOURNEY_MAP.md) | UX flows |
+| [DEV_TOOLS_AUDIT.md](./DEV_TOOLS_AUDIT.md) | Developer tools audit |
 
 ### Gemini Live API
 | Document | Purpose |

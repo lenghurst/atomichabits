@@ -5,6 +5,25 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.8] - 2025-12-25 - Phase 41.2: "Navigation Migration Complete"
+
+### Changed
+- Migrated all 44 remaining navigation calls to `AppRoutes` constants
+- Updated 19 files across onboarding, contracts, settings, and witness features
+- Zero string literal navigation calls remaining in codebase
+
+### Fixed
+- Invalid `/invite?c=` route → `AppRoutes.contractJoin(code)`
+- Missing `/settings/account` route constant added
+- Wrong API `Navigator.pushNamed` → `context.push()` in witness screens
+
+### Documentation
+- Updated README.md with Phase 41.2 status
+- Updated AI_CONTEXT.md with migration summary
+- Updated ROADMAP.md with detailed task breakdown
+
+---
+
 ## [6.0.7] - 2025-12-25 - Phase 41: "Navigation Architecture"
 
 ### Added
@@ -413,5 +432,5 @@ Traditional habit apps rely on long forms. The Pact uses **real-time voice** pow
 ---
 
 **Last Updated:** December 25, 2025  
-**Current Version:** 6.0.7 (Phase 41)  
+**Current Version:** 6.0.8 (Phase 41.2)  
 **Next Version:** 6.1.0 (Phase 27.8 - Audio Recording)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../config/router/app_routes.dart';
 import 'package:intl/intl.dart';
 import '../../data/app_state.dart';
 import '../../data/services/backup_service.dart';
@@ -673,7 +674,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     final appState = context.read<AppState>();
                     appState.reloadFromStorage().then((_) {
                       if (context.mounted) {
-                        context.go('/dashboard');
+                        context.go(AppRoutes.dashboard);
                       }
                     });
                   },

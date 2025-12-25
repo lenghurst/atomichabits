@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:typed_data';
+import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
@@ -352,14 +353,14 @@ Use British English spelling and phrasing.''';
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go('/');
+              context.go(AppRoutes.home);
             },
             child: const Text('Text Chat'),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go('/onboarding/manual');
+              context.go(AppRoutes.manualOnboarding);
             },
             child: const Text('Manual Entry'),
           ),
@@ -381,7 +382,7 @@ Use British English spelling and phrasing.''';
         actions: [
           IconButton(
             icon: const Icon(Icons.keyboard),
-            onPressed: () => context.go('/onboarding/manual'),
+            onPressed: () => context.go(AppRoutes.manualOnboarding),
             tooltip: 'Switch to Manual Entry',
           ),
         ],

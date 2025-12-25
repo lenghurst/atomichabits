@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41 - Navigation Architecture  
+> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
 > **Target:** NYE 2025 Launch  
 > **Status:** 🔧 Testing Voice Connection
 
@@ -43,17 +43,27 @@
 
 ## ✅ Completed Phases
 
-### Phase 41: Navigation Architecture (25 Dec 2025)
+### Phase 41.2: Navigation Migration Complete (25 Dec 2025)
 
-**Goal:** Extract router from main.dart, add route constants, implement redirect logic.
+**Goal:** Migrate all 44 string literal navigation calls to AppRoutes constants.
 
 | ID | Task | Status |
 |----|------|--------|
 | N1 | Create `AppRoutes` constants class | ✅ |
 | N2 | Extract `AppRouter` from main.dart | ✅ |
 | N3 | Add redirect logic for auth/onboarding guards | ✅ |
-| N4 | Update screens to use route constants | ✅ |
-| N5 | Update core documentation | ✅ |
+| N4 | Migrate Priority 1 screens (8 files, 16 calls) | ✅ |
+| N5 | Migrate Priority 2 screens (7 files, 16 calls) | ✅ |
+| N6 | Migrate Priority 3-4 screens (4 files, 12 calls) | ✅ |
+| N7 | Fix invalid routes (`/invite`, `/settings/account`) | ✅ |
+| N8 | Fix wrong API (`Navigator.pushNamed` → `context.push`) | ✅ |
+| N9 | Update core documentation | ✅ |
+
+**Migration Summary:**
+- **Total calls migrated:** 44
+- **Files updated:** 19
+- **Bugs fixed:** 4 (invalid routes, wrong API)
+- **String literals remaining:** 0
 
 **Files Changed:**
 - `lib/config/router/app_routes.dart` (NEW)
@@ -61,6 +71,20 @@
 - `lib/main.dart` (reduced by ~180 lines)
 - `lib/features/dashboard/habit_list_screen.dart`
 - `lib/features/dev/dev_tools_overlay.dart`
+- `lib/features/settings/settings_screen.dart`
+- `lib/features/today/today_screen.dart`
+- `lib/features/history/history_screen.dart`
+- `lib/features/contracts/contracts_list_screen.dart`
+- `lib/features/contracts/join_contract_screen.dart`
+- `lib/features/contracts/create_contract_screen.dart`
+- `lib/features/witness/witness_accept_screen.dart`
+- `lib/features/witness/witness_dashboard.dart`
+- `lib/features/onboarding/voice_coach_screen.dart`
+- `lib/features/onboarding/conversational_onboarding_screen.dart`
+- `lib/features/onboarding/onboarding_screen.dart`
+- `lib/features/onboarding/identity_first/*.dart` (5 files)
+- `lib/features/settings/habit_edit_screen.dart`
+- `lib/features/settings/data_management_screen.dart`
 
 ### Phase 40: DeepSeek Optimization (25 Dec 2025)
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../config/router/app_routes.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -241,7 +242,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
       _inviteWitness(witnessName, witnessContact);
     } else {
       // Navigate to tier selection if no contact info
-      context.go('/onboarding/tier');
+      context.go(AppRoutes.tierOnboarding);
     }
   }
 
@@ -262,7 +263,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     }
     
     // Navigate regardless of success (don't block user)
-    if (mounted) context.go('/onboarding/tier');
+    if (mounted) context.go(AppRoutes.tierOnboarding);
   }
   
   /// Continue without a witness.
@@ -286,7 +287,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go('/onboarding/tier');
+              context.go(AppRoutes.tierOnboarding);
             },
             child: const Text('Continue Solo'),
           ),

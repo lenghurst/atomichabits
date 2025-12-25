@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/habit_contract.dart';
@@ -139,7 +140,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => context.push('/settings'),
+                    onPressed: () => context.push(AppRoutes.settings),
                     icon: const Icon(Icons.settings),
                     label: const Text('More Sign In Options'),
                     style: OutlinedButton.styleFrom(
@@ -577,7 +578,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.go('/dashboard'),
+          onPressed: () => context.go(AppRoutes.dashboard),
         ),
       ),
       body: ListView(
@@ -729,7 +730,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
           
           // Done Button
           OutlinedButton(
-            onPressed: () => context.go('/dashboard'),
+            onPressed: () => context.go(AppRoutes.dashboard),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
             ),
@@ -818,7 +819,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
               action: SnackBarAction(
                 label: 'Settings',
                 textColor: Colors.white,
-                onPressed: () => context.push('/settings'),
+                onPressed: () => context.push(AppRoutes.settings),
               ),
             ),
           );

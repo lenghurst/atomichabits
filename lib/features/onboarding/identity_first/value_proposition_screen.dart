@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../config/router/app_routes.dart';
 
 /// Value Proposition Screen (Hook Screen)
 /// 
@@ -434,7 +435,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
-            onPressed: () => context.go('/onboarding/identity'),
+            onPressed: () => context.go(AppRoutes.identityOnboarding),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF22C55E),
               foregroundColor: Colors.white,

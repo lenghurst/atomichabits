@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
@@ -793,7 +794,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       // Navigate to Today screen
       if (mounted) {
-        context.go('/today');
+        context.go(AppRoutes.today);
       }
     }
   }
@@ -810,7 +811,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
-            onPressed: () => context.go('/settings'),
+            onPressed: () => context.go(AppRoutes.settings),
           ),
         ],
       ),
