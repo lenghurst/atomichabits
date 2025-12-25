@@ -40,6 +40,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   bool _isConnected = false;
   String _connectionStatus = 'Initialising...';
   
+  // Phase 34.4f: In-app debug log
+  List<String> _debugLog = [];
+  bool _showDebugPanel = false;
+  
   // Animation for microphone pulse
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -114,6 +118,7 @@ Use British English spelling and phrasing.''';
       onAISpeakingChanged: _handleAISpeakingChanged,
       onUserSpeakingChanged: _handleUserSpeakingChanged,
       onTurnComplete: _handleTurnComplete,
+      onDebugLogUpdated: _handleDebugLogUpdated,
     );
     
     // Start the session
@@ -219,6 +224,13 @@ Use British English spelling and phrasing.''';
   void _handleTurnComplete() {
     if (_sessionManager?.isActive == true) {
       setState(() => _voiceState = VoiceState.listening);
+    }
+  }
+  
+  /// Handle debug log updates from GeminiLiveService
+  void _handleDebugLogUpdated(List<String> log) {
+    if (mounted) {
+      setState(() => _debugLog = List.from(log));
     }
   }
   
@@ -378,29 +390,122 @@ Use British English spelling and phrasing.''';
         children: [
           Column(
             children: [
-              // Phase 34.4: Connection Status Banner
+              // Phase 34.4f: Connection Status Banner with Debug Toggle
               if (kDebugMode)
+                GestureDetector(
+                  onTap: () => setState(() => _showDebugPanel = !_showDebugPanel),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: _isConnected ? Colors.green.shade900 : Colors.orange.shade900,
+                    child: Row(
+                      children: [
+                        Icon(
+                          _isConnected ? Icons.check_circle : Icons.sync,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _connectionStatus,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Icon(
+                          _showDebugPanel ? Icons.expand_less : Icons.expand_more,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              
+              // Phase 34.4f: Expandable Debug Panel
+              if (kDebugMode && _showDebugPanel)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: _isConnected ? Colors.green.shade900 : Colors.orange.shade900,
-                  child: Row(
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  color: Colors.black87,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        _isConnected ? Icons.check_circle : Icons.sync,
-                        color: Colors.white,
-                        size: 16,
+                      // Header with actions
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          children: [
+                            const Text(
+                              'DEBUG LOG',
+                              style: TextStyle(
+                                color: Colors.greenAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${_debugLog.length} entries',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                _sessionManager?.geminiService?.clearDebugLog();
+                                setState(() => _debugLog = []);
+                              },
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const Divider(color: Colors.grey, height: 1),
+                      // Log entries
                       Expanded(
-                        child: Text(
-                          _connectionStatus,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(8),
+                          itemCount: _debugLog.length,
+                          reverse: true,
+                          itemBuilder: (context, index) {
+                            final entry = _debugLog[_debugLog.length - 1 - index];
+                            Color textColor = Colors.greenAccent;
+                            if (entry.contains('❌') || entry.contains('ERROR')) {
+                              textColor = Colors.redAccent;
+                            } else if (entry.contains('✅')) {
+                              textColor = Colors.lightGreenAccent;
+                            } else if (entry.contains('⚠️') || entry.contains('WARNING')) {
+                              textColor = Colors.orangeAccent;
+                            } else if (entry.contains('📨')) {
+                              textColor = Colors.cyanAccent;
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: Text(
+                                entry,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 10,
+                                  fontFamily: 'monospace',
+                                  height: 1.3,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],

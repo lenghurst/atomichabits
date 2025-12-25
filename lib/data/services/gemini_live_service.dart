@@ -50,6 +50,11 @@ class GeminiLiveService {
   String _connectionPhase = "IDLE"; // Tracks exactly what we were doing
   String _lastErrorDetail = "";     // The raw error for the screenshot
   
+  // === IN-APP DEBUG LOG ===
+  final List<String> _debugLog = [];
+  static const int _maxLogEntries = 100;
+  final void Function(List<String>)? onDebugLogUpdated;
+  
   // === CALLBACKS ===
   final void Function(Uint8List)? onAudioReceived;
   final void Function(String, bool)? onTranscription;
@@ -71,6 +76,7 @@ class GeminiLiveService {
     this.onFallbackToTextMode,
     this.onVoiceModeRestored,
     this.onVoiceActivityDetected,
+    this.onDebugLogUpdated,
   });
 
   // === PUBLIC GETTERS ===
@@ -81,6 +87,53 @@ class GeminiLiveService {
   
   /// Exposes the current thought signature for debugging purposes.
   String? get currentThoughtSignature => _currentThoughtSignature;
+  
+  /// Get the debug log for in-app display
+  List<String> get debugLog => List.unmodifiable(_debugLog);
+  
+  /// Get phase durations for display
+  Map<String, Duration> get phaseDurations => Map.unmodifiable(_phaseDurations);
+  
+  /// Add entry to debug log and notify listeners
+  void _log(String message) {
+    final timestamp = DateTime.now().toIso8601String().substring(11, 23);
+    final entry = '[$timestamp] $message';
+    _debugLog.add(entry);
+    if (_debugLog.length > _maxLogEntries) {
+      _debugLog.removeAt(0);
+    }
+    onDebugLogUpdated?.call(_debugLog);
+    if (kDebugMode) debugPrint('GeminiLiveService: $message');
+  }
+  
+  /// Clear the debug log
+  void clearDebugLog() {
+    _debugLog.clear();
+    onDebugLogUpdated?.call(_debugLog);
+  }
+  
+  /// Get a formatted summary for display
+  String getDebugSummary() {
+    final buffer = StringBuffer();
+    buffer.writeln('=== CONNECTION INFO ===');
+    buffer.writeln('Model: ${AIModelConfig.tier2Model}');
+    buffer.writeln('Endpoint: v1beta');
+    buffer.writeln('WebSocket: $_wsEndpoint');
+    buffer.writeln('');
+    buffer.writeln('=== CURRENT STATE ===');
+    buffer.writeln('Phase: $_connectionPhase');
+    buffer.writeln('Connected: $_isConnected');
+    buffer.writeln('Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
+    buffer.writeln('ThoughtSignature: ${_currentThoughtSignature != null ? "present (${_currentThoughtSignature!.length} chars)" : "none"}');
+    buffer.writeln('');
+    if (_phaseDurations.isNotEmpty) {
+      buffer.writeln('=== PHASE TIMINGS ===');
+      _phaseDurations.forEach((phase, duration) {
+        buffer.writeln('$phase: ${duration.inMilliseconds}ms');
+      });
+    }
+    return buffer.toString();
+  }
 
   // === TIMING FOR ROOT CAUSE ANALYSIS ===
   DateTime? _connectStartTime;
@@ -104,16 +157,10 @@ class GeminiLiveService {
     _currentThoughtSignature = null;
     _firstMessageReceived = false;
     
-    if (kDebugMode) {
-      debugPrint('\n' + '='*60);
-      debugPrint('GeminiLiveService: CONNECTION ATTEMPT STARTED');
-      debugPrint('='*60);
-      debugPrint('Timestamp: ${DateTime.now().toIso8601String()}');
-      debugPrint('Model: ${AIModelConfig.tier2Model}');
-      debugPrint('Endpoint URL: $_wsEndpoint');
-      debugPrint('API Version: v1beta');
-      debugPrint('='*60 + '\n');
-    }
+    _log('========== CONNECTION ATTEMPT ==========');
+    _log('Model: ${AIModelConfig.tier2Model}');
+    _log('Endpoint: v1beta');
+    _log('URL: $_wsEndpoint');
     
     try {
       // PHASE 1: TOKEN
@@ -124,11 +171,9 @@ class GeminiLiveService {
       }
       final token = tokenResult.token;
       
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Token obtained (${token!.length} chars)');
-        debugPrint('GeminiLiveService: Token prefix: ${token.substring(0, 10)}...');
-        debugPrint('GeminiLiveService: Auth method: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
-      }
+      _log('Token obtained (${token!.length} chars)');
+      _log('Token prefix: ${token.substring(0, 10)}...');
+      _log('Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
       
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
@@ -139,29 +184,23 @@ class GeminiLiveService {
         wsUrl += '?access_token=$token';
       }
       
-      if (kDebugMode) {
-        // Log full URL with masked token for debugging
-        final maskedUrl = wsUrl.replaceAll(RegExp(r'(key=|access_token=)[^&]+'), r'$1***MASKED***');
-        debugPrint('GeminiLiveService: Full WebSocket URL: $maskedUrl');
-      }
+      // Log full URL with masked token
+      final maskedUrl = wsUrl.replaceAll(RegExp(r'(key=|access_token=)[^&]+'), r'\$1***MASKED***');
+      _log('WebSocket URL: $maskedUrl');
       
       // PHASE 3: SOCKET CONNECT
       _setPhase("CONNECTING_SOCKET");
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Opening WebSocket connection...');
-      }
+      _log('Opening WebSocket connection...');
       
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
       
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: WebSocket channel created, setting up listeners...');
-      }
+      _log('WebSocket channel created, setting up listeners...');
       
       _subscription = _channel!.stream.listen(
         _handleMessage,
         onError: (e) {
           _setPhase("SOCKET_ERROR");
-          debugPrint('GeminiLiveService: WebSocket error: $e');
+          _log('❌ WebSocket error: $e');
           _notifyDetailedError("Socket Error", e.toString());
           _handleDisconnection(wasError: true);
         },
@@ -170,7 +209,7 @@ class GeminiLiveService {
           _setPhase("SOCKET_CLOSED");
           final code = _channel?.closeCode;
           final reason = _channel?.closeReason ?? 'No reason provided';
-          debugPrint('GeminiLiveService: WebSocket closed. Code: $code, Reason: $reason');
+          _log('WebSocket closed. Code: $code, Reason: $reason');
           
           if (!_isConnected) {
             // If we weren't fully connected yet, this is a connection failure
@@ -187,14 +226,9 @@ class GeminiLiveService {
       
       // PHASE 4: SEND SETUP
       _setPhase("SENDING_HANDSHAKE");
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Sending setup message to server...');
-      }
+      _log('Sending setup message...');
       await _sendSetupMessage(systemInstruction, enableTranscription);
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Setup message sent, waiting for setupComplete from server...');
-        debugPrint('GeminiLiveService: Timeout: 10 seconds');
-      }
+      _log('Setup sent, waiting for setupComplete (timeout: 10s)...');
       
       // PHASE 5: WAIT FOR READY
       _setPhase("WAITING_FOR_SERVER_READY");
@@ -213,19 +247,12 @@ class GeminiLiveService {
       _isConnected = true;
       _notifyConnectionState(LiveConnectionState.connected);
       
-      if (kDebugMode) {
-        final totalTime = DateTime.now().difference(_connectStartTime!);
-        debugPrint('\n' + '='*60);
-        debugPrint('GeminiLiveService: ✅ CONNECTION SUCCESSFUL');
-        debugPrint('='*60);
-        debugPrint('Total connection time: ${totalTime.inMilliseconds}ms');
-        debugPrint('Model: ${AIModelConfig.tier2Model}');
-        debugPrint('Phase durations:');
-        _phaseDurations.forEach((phase, duration) {
-          debugPrint('  - $phase: ${duration.inMilliseconds}ms');
-        });
-        debugPrint('='*60 + '\n');
-      }
+      final totalTime = DateTime.now().difference(_connectStartTime!);
+      _log('✅ CONNECTION SUCCESSFUL');
+      _log('Total time: ${totalTime.inMilliseconds}ms');
+      _phaseDurations.forEach((phase, duration) {
+        _log('  $phase: ${duration.inMilliseconds}ms');
+      });
       return true;
       
     } catch (e) {
@@ -337,10 +364,12 @@ WebSocket URL: $_wsEndpoint''';
       }
     };
     
+    _log('Sending setup config:');
+    _log('  Model: models/${AIModelConfig.tier2Model}');
+    _log('  Voice: Kore');
+    _log('  Modalities: [AUDIO]');
     if (kDebugMode) {
-      debugPrint('GeminiLiveService: Sending MINIMAL setup message...');
-      debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-      debugPrint('GeminiLiveService: Config: ${jsonEncode(setupConfig)}');
+      debugPrint('GeminiLiveService: Full config: ${jsonEncode(setupConfig)}');
     }
     
     _channel!.sink.add(jsonEncode(setupConfig));
@@ -350,25 +379,20 @@ WebSocket URL: $_wsEndpoint''';
   
   void _handleMessage(dynamic message) {
     try {
-      // Log ALL incoming messages in debug mode for visibility
-      if (kDebugMode) {
-        if (!_firstMessageReceived) {
-          _firstMessageReceived = true;
-          final timeSinceStart = _connectStartTime != null 
-              ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
-              : 0;
-          debugPrint('\n' + '-'*40);
-          debugPrint('GeminiLiveService: FIRST SERVER RESPONSE');
-          debugPrint('Time since connect start: ${timeSinceStart}ms');
-          debugPrint('-'*40);
-        }
-        
-        final preview = message.toString();
-        if (preview.length > 500) {
-          debugPrint('GeminiLiveService RX (${preview.length} chars): ${preview.substring(0, 500)}...');
-        } else {
-          debugPrint('GeminiLiveService RX: $preview');
-        }
+      // Log server responses for in-app visibility
+      if (!_firstMessageReceived) {
+        _firstMessageReceived = true;
+        final timeSinceStart = _connectStartTime != null 
+            ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
+            : 0;
+        _log('📨 FIRST SERVER RESPONSE (${timeSinceStart}ms)');
+      }
+      
+      final preview = message.toString();
+      if (preview.length > 200) {
+        _log('RX: ${preview.substring(0, 200)}...');
+      } else {
+        _log('RX: $preview');
       }
       
       final data = jsonDecode(message as String) as Map<String, dynamic>;
@@ -385,7 +409,7 @@ WebSocket URL: $_wsEndpoint''';
 
       // HANDSHAKE SUCCESS
       if (data.containsKey('setupComplete')) {
-        if (kDebugMode) debugPrint('GeminiLiveService: ✅ SetupComplete received from server!');
+        _log('✅ setupComplete received!');
         _setupComplete = true;
         _setupCompleter?.complete();
         return;

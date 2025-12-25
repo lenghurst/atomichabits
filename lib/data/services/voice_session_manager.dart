@@ -41,6 +41,9 @@ class VoiceSessionManager {
   late final AudioRecordingService _audioService;
   late final GeminiLiveService _geminiService;
   
+  /// Expose GeminiLiveService for debug access
+  GeminiLiveService? get geminiService => _geminiService;
+  
   // === STATE ===
   VoiceSessionState _state = VoiceSessionState.idle;
   bool _isUserSpeaking = false;
@@ -71,6 +74,9 @@ class VoiceSessionManager {
   /// Called when the AI completes a turn
   final void Function()? onTurnComplete;
   
+  /// Called when debug log is updated (for in-app display)
+  final void Function(List<String> log)? onDebugLogUpdated;
+  
   VoiceSessionManager({
     this.systemInstruction,
     this.enableTranscription = true,
@@ -82,6 +88,7 @@ class VoiceSessionManager {
     this.onAISpeakingChanged,
     this.onUserSpeakingChanged,
     this.onTurnComplete,
+    this.onDebugLogUpdated,
   }) {
     _initializeServices();
   }
@@ -112,6 +119,7 @@ class VoiceSessionManager {
       onConnectionStateChanged: _handleConnectionStateChanged,
       onError: _handleGeminiError,
       onTurnComplete: _handleTurnComplete,
+      onDebugLogUpdated: onDebugLogUpdated,
     );
   }
   
