@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/app_state.dart';
 import '../../config/ai_model_config.dart';
+import 'debug_console_view.dart';
 
-/// Developer Tools Overlay - Phase 27.6
+/// Developer Tools Overlay - Phase 38 (In-App Log Console)
 /// 
 /// Provides quick access to developer settings and testing tools.
 /// Access via: Triple-tap on any screen title, or long-press version text.
@@ -229,6 +230,32 @@ class DevToolsOverlay extends StatelessWidget {
                     ],
                   ),
                 ),
+              
+              const SizedBox(height: 8),
+              
+              // View Logs button (Phase 38: In-App Log Console)
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(context); // Close dev tools first
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => const SizedBox(
+                      height: 500,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        child: DebugConsoleView(),
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.terminal),
+                label: const Text('View Gemini Logs'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.green.shade700,
+                ),
+              ),
               
               const SizedBox(height: 8),
               

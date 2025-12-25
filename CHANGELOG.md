@@ -5,6 +5,29 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.4] - 2025-12-25 - Phase 38: "In-App Log Console"
+
+### Added
+- **LogBuffer Singleton:** Centralized logging buffer (`lib/core/logging/log_buffer.dart`) that stores last 1000 log entries
+- **DebugConsoleView Widget:** Terminal-like UI for viewing live logs with VS Code dark theme styling
+- **View Gemini Logs Button:** Added to DevToolsOverlay for one-click access to connection logs
+- **Verbose Connection Logging:** GeminiLiveService now logs every step with emojis for easy scanning
+
+### Features
+- Real-time log updates via `ValueListenableBuilder`
+- One-click "Copy All" to clipboard for debugging
+- Clear logs button
+- Error highlighting (red text for failures)
+- Auto-scroll to latest logs
+- Separator lines for new connection attempts
+
+### Technical Details
+- Logs include: Endpoint, Model, Headers, Token status, Handshake result
+- Error logs include diagnostic hints (e.g., "Check: API Key permissions, Billing enabled")
+- Integrates with existing `_addDebugLog()` method for backward compatibility
+
+---
+
 ## [6.0.3] - 2025-12-25 - Phase 37: "Production-Ready Connection"
 
 ### Improved

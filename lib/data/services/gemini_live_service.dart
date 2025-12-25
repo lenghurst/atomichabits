@@ -8,8 +8,9 @@ import 'package:web_socket_channel/io.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
+import '../../core/logging/log_buffer.dart';
 
-/// Gemini Live API Service - Phase 37: Production-Ready Connection
+/// Gemini Live API Service - Phase 38: In-App Log Console
 /// 
 /// Features:
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
@@ -37,6 +38,12 @@ import '../../config/ai_model_config.dart';
 /// - ADDED: await _channel!.ready to ensure handshake completes before proceeding
 /// - ADDED: Granular error handling (HandshakeException vs SocketException)
 /// - ADDED: URL validation assert for defensive programming
+/// 
+/// Phase 38: In-App Log Console
+/// - ADDED: LogBuffer integration for centralized, persistent logging
+/// - ADDED: Verbose connection logging (headers, URL, status codes)
+/// - ADDED: DebugConsoleView widget for DevToolsOverlay
+/// - ADDED: One-click copy for debugging
 /// 
 /// When connection fails, the error message will include:
 /// - [PHASE] Where exactly it failed
@@ -86,6 +93,9 @@ class GeminiLiveService {
   // === DEBUG LOG STATE ===
   final List<String> _debugLog = [];
   
+  // === PHASE 38: CENTRALIZED LOG BUFFER ===
+  final LogBuffer _logBuffer = LogBuffer();
+  
   GeminiLiveService({
     this.onAudioReceived,
     this.onTranscription,
@@ -112,14 +122,17 @@ class GeminiLiveService {
     onDebugLogUpdated?.call(_debugLog);
   }
   
-  /// Add an entry to the debug log
-  void _addDebugLog(String entry) {
+  /// Add an entry to the debug log (also writes to centralized LogBuffer)
+  void _addDebugLog(String entry, {bool isError = false}) {
     final timestamp = DateTime.now().toIso8601String().substring(11, 19);
     _debugLog.add('[$timestamp] $entry');
     if (_debugLog.length > 100) {
       _debugLog.removeAt(0); // Keep only last 100 entries
     }
     onDebugLogUpdated?.call(_debugLog);
+    
+    // PHASE 38: Also write to centralized LogBuffer for In-App Console
+    _logBuffer.add('GeminiLive', entry, isError: isError);
   }
   String get connectionPhase => _connectionPhase;
   String get lastErrorDetail => _lastErrorDetail;
@@ -132,6 +145,11 @@ class GeminiLiveService {
     bool enableTranscription = true,
   }) async {
     if (_isConnected) return true;
+    
+    // PHASE 38: Add separator and start logging
+    _logBuffer.addSeparator('NEW CONNECTION ATTEMPT');
+    _addDebugLog('🚀 Starting connection sequence...');
+    
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
     
@@ -141,14 +159,17 @@ class GeminiLiveService {
     try {
       // PHASE 1: TOKEN
       _setPhase("FETCHING_TOKEN");
+      _addDebugLog('🔑 Fetching authentication token...');
       final tokenResult = await _getEphemeralTokenWithReason();
       if (tokenResult.token == null) {
         throw 'Token is null: ${tokenResult.reason}';
       }
       final token = tokenResult.token;
+      _addDebugLog('✅ Token acquired (${_isUsingApiKey ? "API Key" : "OAuth"})');
       
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
+      _addDebugLog('🔗 Building WebSocket URL...');
       String wsUrl = _wsEndpoint;
       if (_isUsingApiKey) {
         wsUrl += '?key=$token';
@@ -160,6 +181,18 @@ class GeminiLiveService {
       
       // PHASE 3: SOCKET CONNECT
       _setPhase("CONNECTING_SOCKET");
+      
+      // PHASE 38: Verbose logging for debugging
+      final headers = {
+        'Host': 'generativelanguage.googleapis.com',
+        'User-Agent': 'Dart/3.5 (flutter); co.thepact.app/6.0.4', // Honest UA
+      };
+      
+      _addDebugLog('📡 Endpoint: ${_wsEndpoint.split("?")[0]}');
+      _addDebugLog('🎯 Model: ${AIModelConfig.tier2Model}');
+      _addDebugLog('📋 Headers: $headers');
+      _addDebugLog('⏳ Opening WebSocket connection...');
+      
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
@@ -184,10 +217,7 @@ class GeminiLiveService {
       // Format: "Runtime/Version (Framework); PackageID/AppVersion"
       _channel = IOWebSocketChannel.connect(
         Uri.parse(wsUrl),
-        headers: {
-          'Host': 'generativelanguage.googleapis.com',
-          'User-Agent': 'Dart/3.5 (flutter); co.thepact.app/6.0.3', // Honest UA
-        },
+        headers: headers,
       );
       
       // PHASE 37: Wait for WebSocket handshake to complete before proceeding
@@ -199,13 +229,15 @@ class GeminiLiveService {
       } on HandshakeException catch (e) {
         // Server rejected the connection (403, SSL mismatch, etc.)
         _setPhase("HANDSHAKE_REJECTED");
-        _addDebugLog('⛔ Handshake rejected: $e');
+        _addDebugLog('⛔ HANDSHAKE REJECTED: $e', isError: true);
+        _addDebugLog('🔍 Check: API Key permissions, Billing enabled, or Geo-blocking', isError: true);
         _notifyDetailedError("Server Rejected Connection", "HandshakeException: $e");
         rethrow;
       } on SocketException catch (e) {
         // Network failure (DNS, TCP, no internet)
         _setPhase("NETWORK_FAILURE");
-        _addDebugLog('📡 Network failure: $e');
+        _addDebugLog('📡 NETWORK FAILURE: $e', isError: true);
+        _addDebugLog('🔍 Check: Internet connection, DNS, Firewall', isError: true);
         _notifyDetailedError("Network Failure", "SocketException: $e");
         rethrow;
       }
