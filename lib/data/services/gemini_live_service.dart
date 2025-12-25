@@ -13,7 +13,7 @@ import '../../config/ai_model_config.dart';
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
 /// - Detailed Error Reporting (Pastes codes/reasons into error message)
 /// - Universal Auth (URL Parameters: ?key= or ?access_token=)
-/// - Global Model Support (gemini-live-2.5-flash-native-audio via v1alpha)
+/// - Global Model Support (gemini-2.5-flash-native-audio-preview-12-2025 via v1beta)
 /// - **Gemini 3 Compliance:**
 ///   - Thought Signature handling (maintains conversational context)
 ///   - thinking_level: "minimal" (reduces latency for voice interactions)
@@ -118,7 +118,7 @@ class GeminiLiveService {
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-        debugPrint('GeminiLiveService: Endpoint: v1alpha');
+        debugPrint('GeminiLiveService: Endpoint: v1beta');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=minimal, thoughtSignature=enabled');
       }
       
@@ -199,7 +199,7 @@ $title
 $details
 Model: ${AIModelConfig.tier2Model}
 Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}
-Endpoint: v1alpha
+Endpoint: v1beta
 ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     
     _lastErrorDetail = fullError;

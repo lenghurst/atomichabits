@@ -137,7 +137,7 @@ class AIModelConfig {
   // === LIVE API CONFIGURATION ===
   
   /// Live API version required for native audio streaming
-  static const String liveApiVersion = 'v1alpha';
+  static const String liveApiVersion = 'v1beta';
   
   /// Audio input format: 16-bit PCM, 16kHz, mono
   static const String audioInputMimeType = 'audio/pcm;rate=16000';
