@@ -62,7 +62,7 @@ class GeminiLiveService {
   final void Function()? onFallbackToTextMode;
   final void Function()? onVoiceModeRestored;
   final void Function(bool)? onVoiceActivityDetected;
-  final void Function()? onDebugLogUpdated;
+  final void Function(List<String> log)? onDebugLogUpdated;
   
   // === DEBUG LOG STATE ===
   final List<String> _debugLog = [];
@@ -90,7 +90,7 @@ class GeminiLiveService {
   /// Clear the debug log
   void clearDebugLog() {
     _debugLog.clear();
-    onDebugLogUpdated?.call();
+    onDebugLogUpdated?.call(_debugLog);
   }
   
   /// Add an entry to the debug log
@@ -100,7 +100,7 @@ class GeminiLiveService {
     if (_debugLog.length > 100) {
       _debugLog.removeAt(0); // Keep only last 100 entries
     }
-    onDebugLogUpdated?.call();
+    onDebugLogUpdated?.call(_debugLog);
   }
   String get connectionPhase => _connectionPhase;
   String get lastErrorDetail => _lastErrorDetail;
