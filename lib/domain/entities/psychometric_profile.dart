@@ -2,12 +2,34 @@
 /// This is the "System Context" fed to the LLM before every interaction.
 /// 
 /// Satisfies: Fowler (Domain Logic), Uncle Bob (No Infrastructure Dependencies).
+/// 
+/// Phase 42: Added "Holy Trinity" fields for Sherlock Protocol onboarding:
+/// - Anti-Identity (Fear): The named villain they fear becoming
+/// - Failure Archetype (History): The historical reason for quitting
+/// - Resistance Pattern (The Lie): The specific excuse they tell themselves
 class PsychometricProfile {
   // === CORE DRIVERS (The "Why") ===
   final List<String> coreValues;       // e.g., ["Freedom", "Mastery", "Health"]
   final String bigWhy;                 // The singular life goal driving them
   final List<String> antiIdentities;   // Who they fear becoming (e.g., "The Lazy Stoner")
   final List<String> desireFingerprint; // Specific desires (e.g., "Look good naked", "Publish a book")
+
+  // === THE HOLY TRINITY (Sherlock Protocol - Phase 42) ===
+  
+  // 1. Anti-Identity (Fear) - Day 1 Activation
+  final String? antiIdentityLabel;     // e.g., "The Sleepwalker", "The Ghost"
+  final String? antiIdentityContext;   // e.g., "Hits snooze 5 times, hates the mirror"
+  
+  // 2. Failure Archetype (History) - Day 7 Trial Conversion
+  final String? failureArchetype;      // e.g., "PERFECTIONIST", "NOVELTY_SEEKER"
+  final String? failureTriggerContext; // e.g., "Missed 3 days, felt guilty, quit"
+  
+  // 3. Resistance Pattern (The Lie) - Day 30+ Retention
+  final String? resistanceLieLabel;    // e.g., "The Bargain", "The Tomorrow Trap"
+  final String? resistanceLieContext;  // e.g., "I'll do double tomorrow"
+  
+  // === AI-INFERRED DATA ===
+  final List<String> inferredFears;    // e.g., ["Physical Shame", "Career Regret"]
 
   // === COMMUNICATION MATRIX (The "How") ===
   final CoachingStyle coachingStyle;   // The persona they respond to best
@@ -32,6 +54,15 @@ class PsychometricProfile {
     this.bigWhy = '',
     this.antiIdentities = const [],
     this.desireFingerprint = const [],
+    // Holy Trinity fields
+    this.antiIdentityLabel,
+    this.antiIdentityContext,
+    this.failureArchetype,
+    this.failureTriggerContext,
+    this.resistanceLieLabel,
+    this.resistanceLieContext,
+    this.inferredFears = const [],
+    // Communication matrix
     this.coachingStyle = CoachingStyle.supportive,
     this.verbosityPreference = 3,
     this.resonanceWords = const [],
@@ -50,6 +81,33 @@ class PsychometricProfile {
     
     buffer.writeln('[[USER PSYCHOMETRICS]]');
     buffer.writeln('');
+    
+    // === THE HOLY TRINITY (Phase 42) ===
+    if (hasHolyTrinity) {
+      buffer.writeln('USER DOSSIER (Sherlock Protocol):');
+      if (antiIdentityLabel != null) {
+        buffer.writeln('- THE ENEMY (Anti-Identity): "$antiIdentityLabel"');
+        if (antiIdentityContext != null) {
+          buffer.writeln('  Context: $antiIdentityContext');
+        }
+      }
+      if (failureArchetype != null) {
+        buffer.writeln('- FAILURE RISK: $failureArchetype');
+        if (failureTriggerContext != null) {
+          buffer.writeln('  History: $failureTriggerContext');
+        }
+      }
+      if (resistanceLieLabel != null) {
+        buffer.writeln('- THE RESISTANCE LIE: "$resistanceLieLabel"');
+        if (resistanceLieContext != null) {
+          buffer.writeln('  Exact phrase: "$resistanceLieContext"');
+        }
+      }
+      if (inferredFears.isNotEmpty) {
+        buffer.writeln('- INFERRED FEARS: ${inferredFears.join(", ")}');
+      }
+      buffer.writeln('');
+    }
     
     buffer.writeln('CORE DRIVERS:');
     if (coreValues.isNotEmpty) {
@@ -87,6 +145,18 @@ class PsychometricProfile {
     
     return buffer.toString();
   }
+  
+  /// Check if the Holy Trinity has been captured during onboarding
+  bool get hasHolyTrinity => 
+      antiIdentityLabel != null || 
+      failureArchetype != null || 
+      resistanceLieLabel != null;
+  
+  /// Check if onboarding is complete (all 3 traits captured)
+  bool get isOnboardingComplete =>
+      antiIdentityLabel != null &&
+      failureArchetype != null &&
+      resistanceLieLabel != null;
 
   /// Quick O(1) check for weekend risk
   bool get isWeekendRisk => (riskBitmask & RiskFlags.weekend) != 0;
@@ -120,6 +190,15 @@ class PsychometricProfile {
     String? bigWhy,
     List<String>? antiIdentities,
     List<String>? desireFingerprint,
+    // Holy Trinity fields
+    String? antiIdentityLabel,
+    String? antiIdentityContext,
+    String? failureArchetype,
+    String? failureTriggerContext,
+    String? resistanceLieLabel,
+    String? resistanceLieContext,
+    List<String>? inferredFears,
+    // Communication matrix
     CoachingStyle? coachingStyle,
     int? verbosityPreference,
     List<String>? resonanceWords,
@@ -135,6 +214,15 @@ class PsychometricProfile {
       bigWhy: bigWhy ?? this.bigWhy,
       antiIdentities: antiIdentities ?? this.antiIdentities,
       desireFingerprint: desireFingerprint ?? this.desireFingerprint,
+      // Holy Trinity fields
+      antiIdentityLabel: antiIdentityLabel ?? this.antiIdentityLabel,
+      antiIdentityContext: antiIdentityContext ?? this.antiIdentityContext,
+      failureArchetype: failureArchetype ?? this.failureArchetype,
+      failureTriggerContext: failureTriggerContext ?? this.failureTriggerContext,
+      resistanceLieLabel: resistanceLieLabel ?? this.resistanceLieLabel,
+      resistanceLieContext: resistanceLieContext ?? this.resistanceLieContext,
+      inferredFears: inferredFears ?? this.inferredFears,
+      // Communication matrix
       coachingStyle: coachingStyle ?? this.coachingStyle,
       verbosityPreference: verbosityPreference ?? this.verbosityPreference,
       resonanceWords: resonanceWords ?? this.resonanceWords,
@@ -153,6 +241,15 @@ class PsychometricProfile {
       'bigWhy': bigWhy,
       'antiIdentities': antiIdentities,
       'desireFingerprint': desireFingerprint,
+      // Holy Trinity fields (Phase 42)
+      'antiIdentityLabel': antiIdentityLabel,
+      'antiIdentityContext': antiIdentityContext,
+      'failureArchetype': failureArchetype,
+      'failureTriggerContext': failureTriggerContext,
+      'resistanceLieLabel': resistanceLieLabel,
+      'resistanceLieContext': resistanceLieContext,
+      'inferredFears': inferredFears,
+      // Communication matrix
       'coachingStyle': coachingStyle.name,
       'verbosityPreference': verbosityPreference,
       'resonanceWords': resonanceWords,
@@ -171,6 +268,15 @@ class PsychometricProfile {
       bigWhy: json['bigWhy'] ?? '',
       antiIdentities: List<String>.from(json['antiIdentities'] ?? []),
       desireFingerprint: List<String>.from(json['desireFingerprint'] ?? []),
+      // Holy Trinity fields (Phase 42)
+      antiIdentityLabel: json['antiIdentityLabel'] as String?,
+      antiIdentityContext: json['antiIdentityContext'] as String?,
+      failureArchetype: json['failureArchetype'] as String?,
+      failureTriggerContext: json['failureTriggerContext'] as String?,
+      resistanceLieLabel: json['resistanceLieLabel'] as String?,
+      resistanceLieContext: json['resistanceLieContext'] as String?,
+      inferredFears: List<String>.from(json['inferredFears'] ?? []),
+      // Communication matrix
       coachingStyle: CoachingStyle.values.firstWhere(
         (e) => e.name == json['coachingStyle'],
         orElse: () => CoachingStyle.supportive,

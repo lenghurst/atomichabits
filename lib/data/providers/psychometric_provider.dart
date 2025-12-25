@@ -158,4 +158,58 @@ class PsychometricProvider extends ChangeNotifier {
     await _repository.clear();
     notifyListeners();
   }
+  
+  // ============================================================
+  // PHASE 42: TOOL CALL HANDLERS (Sherlock Protocol)
+  // ============================================================
+  
+  /// Update profile from AI tool call arguments.
+  /// 
+  /// This method is called by VoiceSessionManager when the AI invokes
+  /// the `update_user_psychometrics` tool during onboarding.
+  /// 
+  /// IMPORTANT: Saves to Hive IMMEDIATELY (crash recovery per Margaret Hamilton).
+  /// Each trait is saved independently - we don't wait for all 3 traits.
+  /// 
+  /// Arguments use snake_case to match the tool schema.
+  Future<void> updateFromToolCall(Map<String, dynamic> args) async {
+    if (kDebugMode) {
+      debugPrint('PsychometricProvider: Received tool call with args: $args');
+    }
+    
+    // Build the update using only the fields that were provided
+    _profile = _profile.copyWith(
+      // Trait 1: Anti-Identity
+      antiIdentityLabel: args['anti_identity_label'] as String? ?? _profile.antiIdentityLabel,
+      antiIdentityContext: args['anti_identity_context'] as String? ?? _profile.antiIdentityContext,
+      
+      // Trait 2: Failure Archetype
+      failureArchetype: args['failure_archetype'] as String? ?? _profile.failureArchetype,
+      failureTriggerContext: args['failure_trigger_context'] as String? ?? _profile.failureTriggerContext,
+      
+      // Trait 3: Resistance Pattern
+      resistanceLieLabel: args['resistance_lie_label'] as String? ?? _profile.resistanceLieLabel,
+      resistanceLieContext: args['resistance_lie_context'] as String? ?? _profile.resistanceLieContext,
+      
+      // Inferred fears (merge with existing if provided)
+      inferredFears: args['inferred_fears'] != null 
+          ? List<String>.from(args['inferred_fears'] as List)
+          : _profile.inferredFears,
+    );
+    
+    // CRITICAL: Save immediately (crash recovery)
+    await _repository.saveProfile(_profile);
+    
+    if (kDebugMode) {
+      debugPrint('PsychometricProvider: Profile saved. Onboarding complete: ${_profile.isOnboardingComplete}');
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Check if the Holy Trinity has been captured
+  bool get hasHolyTrinity => _profile.hasHolyTrinity;
+  
+  /// Check if onboarding is complete (all 3 traits captured)
+  bool get isOnboardingComplete => _profile.isOnboardingComplete;
 }

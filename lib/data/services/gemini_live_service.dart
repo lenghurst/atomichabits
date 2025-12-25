@@ -79,6 +79,9 @@ class GeminiLiveService {
   String _connectionPhase = "IDLE"; // Tracks exactly what we were doing
   String _lastErrorDetail = "";     // The raw error for the screenshot
   
+  // === PHASE 42: TOOL STATE ===
+  Map<String, dynamic>? _pendingTools; // Tools to inject in setup message
+  
   // === CALLBACKS ===
   final void Function(Uint8List)? onAudioReceived;
   final void Function(String, bool)? onTranscription;
@@ -90,6 +93,11 @@ class GeminiLiveService {
   final void Function()? onVoiceModeRestored;
   final void Function(bool)? onVoiceActivityDetected;
   final void Function(List<String> log)? onDebugLogUpdated;
+  
+  // === PHASE 42: TOOL CALL CALLBACK ===
+  /// Called when the AI invokes a function/tool.
+  /// Parameters: toolName, arguments, callId
+  final void Function(String toolName, Map<String, dynamic> args, String callId)? onToolCall;
   
   // === DEBUG LOG STATE ===
   final List<String> _debugLog = [];
@@ -108,6 +116,7 @@ class GeminiLiveService {
     this.onVoiceModeRestored,
     this.onVoiceActivityDetected,
     this.onDebugLogUpdated,
+    this.onToolCall,
   });
 
   // === PUBLIC GETTERS ===
@@ -145,15 +154,27 @@ class GeminiLiveService {
   /// Exposes the current thought signature for debugging purposes.
   String? get currentThoughtSignature => _currentThoughtSignature;
 
+  /// Connect to the Gemini Live API.
+  /// 
+  /// [systemInstruction] - The system prompt for the AI
+  /// [enableTranscription] - Enable audio transcription
+  /// [tools] - Optional tool definitions for function calling (Phase 42)
   Future<bool> connect({
     String? systemInstruction,
     bool enableTranscription = true,
+    Map<String, dynamic>? tools,
   }) async {
     if (_isConnected) return true;
+    
+    // Store tools for use in setup message
+    _pendingTools = tools;
     
     // PHASE 39: Add separator and start logging
     LogBuffer.instance.addSeparator('NEW CONNECTION ATTEMPT');
     _addDebugLog('🚀 Starting connection sequence...');
+    if (tools != null) {
+      _addDebugLog('🔧 Tools enabled: ${tools['functionDeclarations']?.length ?? 0} function(s)');
+    }
     
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
@@ -277,7 +298,7 @@ class GeminiLiveService {
       
       // PHASE 4: SEND SETUP
       _setPhase("SENDING_HANDSHAKE");
-      await _sendSetupMessage(systemInstruction, enableTranscription);
+      await _sendSetupMessage(systemInstruction, enableTranscription, _pendingTools);
       if (kDebugMode) debugPrint('GeminiLiveService: Setup message sent, waiting for server...');
       
       // PHASE 5: WAIT FOR READY
@@ -357,8 +378,12 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
   /// - The API was returning "Unknown name 'thinkingConfig'" because it was at the wrong level
   /// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
   /// - Removed `temperature` setting to prevent looping behaviour.
-  Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
-    final setupConfig = {
+  /// 
+  /// Phase 42: Tool Injection
+  /// - Added optional [tools] parameter for function calling during onboarding
+  /// - Tools enable the AI to save data in real-time via tool_call events
+  Future<void> _sendSetupMessage(String? instruction, bool transcribe, Map<String, dynamic>? tools) async {
+    final Map<String, dynamic> setupConfig = {
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
@@ -366,7 +391,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
-                'voiceName': 'Kore',
+                'voiceName': 'Puck', // Phase 42: Changed from Kore to Puck (Stoic Coach persona)
               }
             }
           },
@@ -388,6 +413,13 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         },
       }
     };
+    
+    // PHASE 42: Inject tools for function calling
+    if (tools != null) {
+      setupConfig['setup']['tools'] = [tools];
+      _addDebugLog('🔧 Injecting tools into setup message');
+    }
+    
     final payload = jsonEncode(setupConfig);
     
     // PHASE 35: Enhanced debug logging for handshake payload
@@ -396,7 +428,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       debugPrint('GeminiLiveService: Model: models/${AIModelConfig.tier2Model}');
       debugPrint('GeminiLiveService: generationConfig.thinkingConfig.thinkingLevel: MINIMAL (FIXED - now inside generationConfig)');
       debugPrint('GeminiLiveService: responseModalities: [AUDIO]');
-      debugPrint('GeminiLiveService: voiceName: Kore');
+      debugPrint('GeminiLiveService: voiceName: Puck');
+      debugPrint('GeminiLiveService: Tools: ${tools != null ? "enabled" : "none"}');
       debugPrint('GeminiLiveService: Full payload: $payload');
       debugPrint('GeminiLiveService: === END PAYLOAD ===');
     }
@@ -492,6 +525,13 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           onModelSpeakingChanged?.call(false);
           if (kDebugMode) debugPrint('GeminiLiveService: Model interrupted');
         }
+      }
+      
+      // PHASE 42: Handle Tool Calls (Function Calling)
+      // The AI can invoke tools defined in the setup message.
+      // When it does, we receive a toolCall event that we must handle and respond to.
+      if (data.containsKey('toolCall')) {
+        _handleToolCall(data['toolCall'] as Map<String, dynamic>);
       }
       
       // Handle errors from server
@@ -704,6 +744,102 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       if (kDebugMode) debugPrint('GeminiLiveService: Sent interrupt signal');
     } catch (e) {
       debugPrint('GeminiLiveService: Failed to send interrupt: $e');
+    }
+  }
+  
+  // ============================================================
+  // PHASE 42: TOOL CALL HANDLING
+  // ============================================================
+  
+  /// Handle a tool call from the AI.
+  /// 
+  /// Tool calls have the structure:
+  /// ```json
+  /// {
+  ///   "toolCall": {
+  ///     "functionCalls": [
+  ///       {
+  ///         "name": "update_user_psychometrics",
+  ///         "args": { ... },
+  ///         "id": "call_123"
+  ///       }
+  ///     ]
+  ///   }
+  /// }
+  /// ```
+  void _handleToolCall(Map<String, dynamic> toolCallData) {
+    try {
+      final functionCalls = toolCallData['functionCalls'] as List<dynamic>?;
+      if (functionCalls == null || functionCalls.isEmpty) {
+        _addDebugLog('⚠️ Tool call received but no function calls found', isError: true);
+        return;
+      }
+      
+      for (final call in functionCalls) {
+        final callMap = call as Map<String, dynamic>;
+        final name = callMap['name'] as String?;
+        final args = callMap['args'] as Map<String, dynamic>? ?? {};
+        final id = callMap['id'] as String? ?? 'unknown_${DateTime.now().millisecondsSinceEpoch}';
+        
+        if (name == null) {
+          _addDebugLog('⚠️ Tool call missing function name', isError: true);
+          continue;
+        }
+        
+        _addDebugLog('🔧 Tool call received: $name (id: $id)');
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: Tool call - $name with args: $args');
+        }
+        
+        // Notify the callback
+        onToolCall?.call(name, args, id);
+      }
+    } catch (e) {
+      _addDebugLog('❌ Error parsing tool call: $e', isError: true);
+      if (kDebugMode) debugPrint('GeminiLiveService: Error parsing tool call: $e');
+    }
+  }
+  
+  /// Send a tool response back to the AI.
+  /// 
+  /// After processing a tool call, you MUST send a response so the AI knows
+  /// the operation completed and can continue the conversation.
+  /// 
+  /// [functionName] - The name of the function that was called
+  /// [callId] - The ID of the tool call (from the original request)
+  /// [result] - The result of the function execution
+  void sendToolResponse(String functionName, String callId, Map<String, dynamic> result) {
+    if (!_isConnected || _channel == null) {
+      _addDebugLog('⚠️ Cannot send tool response: not connected', isError: true);
+      return;
+    }
+    
+    final Map<String, dynamic> response = {
+      'toolResponse': {
+        'functionResponses': [
+          {
+            'name': functionName,
+            'id': callId,
+            'response': result,
+          }
+        ]
+      }
+    };
+    
+    // GEMINI 3 COMPLIANCE: Echo back the thought signature
+    if (_currentThoughtSignature != null) {
+      response['thoughtSignature'] = _currentThoughtSignature;
+    }
+    
+    try {
+      _channel!.sink.add(jsonEncode(response));
+      _addDebugLog('✅ Tool response sent: $functionName');
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Tool response sent for $functionName');
+      }
+    } catch (e) {
+      _addDebugLog('❌ Failed to send tool response: $e', isError: true);
+      debugPrint('GeminiLiveService: Failed to send tool response: $e');
     }
   }
 

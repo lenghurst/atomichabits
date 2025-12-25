@@ -1,27 +1,43 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
+import '../../config/ai_prompts.dart';
+import '../../config/ai_tools_config.dart';
+import '../../domain/entities/psychometric_profile.dart';
+import '../models/user_profile.dart';
+import '../providers/psychometric_provider.dart';
+import 'ai/prompt_factory.dart';
 import 'audio_recording_service.dart';
 import 'gemini_live_service.dart';
 
 /// Voice Session Manager
 /// 
 /// Phase 32: FEAT-01 - Audio Recording Integration
+/// Phase 42: Soul Capture - Psychometric Engine Integration
 /// 
 /// Orchestrates the full voice conversation flow by integrating:
 /// - AudioRecordingService: Microphone input
 /// - GeminiLiveService: AI communication
+/// - PsychometricProvider: Trait persistence (Phase 42)
+/// - PromptFactory: Dynamic prompt generation (Phase 42)
 /// 
 /// This manager handles:
 /// - Session lifecycle (connect, start, stop, disconnect)
 /// - Audio routing (mic → WebSocket, WebSocket → speaker)
 /// - State synchronisation between services
 /// - Error recovery and graceful degradation
+/// - Tool call routing for psychometric updates (Phase 42)
+/// 
+/// Session Modes (Phase 42):
+/// - Onboarding: Uses Sherlock Protocol prompts with tools enabled
+/// - Coaching: Uses PromptFactory for dynamic prompts based on psychometrics
 /// 
 /// Usage:
 /// ```dart
 /// final manager = VoiceSessionManager(
-///   systemInstruction: 'You are a helpful coach...',
+///   mode: VoiceSessionMode.onboarding,
+///   psychometricProvider: psychometricProvider,
+///   userProfile: userProfile,
 ///   onTranscription: (text, isUser) => updateUI(text, isUser),
 ///   onAudioReceived: (data) => playAudio(data),
 ///   onError: (error) => showError(error),
@@ -31,10 +47,40 @@ import 'gemini_live_service.dart';
 /// // ... conversation happens ...
 /// await manager.endSession();
 /// ```
+
+/// Session modes for the voice coach
+enum VoiceSessionMode {
+  /// Onboarding mode: Sherlock Protocol with tool calls
+  /// Used for initial psychometric profiling
+  onboarding,
+  
+  /// Coaching mode: Standard voice coaching
+  /// Uses PromptFactory with psychometric context
+  coaching,
+  
+  /// Legacy mode: Uses systemInstruction directly
+  /// For backward compatibility
+  legacy,
+}
+
 class VoiceSessionManager {
   // === CONFIGURATION ===
+  /// Session mode determines prompt generation and tool enablement
+  final VoiceSessionMode mode;
+  
+  /// Legacy system instruction (for backward compatibility)
   final String? systemInstruction;
   final bool enableTranscription;
+  
+  // === PROVIDERS (Phase 42) ===
+  /// Provider for psychometric profile updates
+  final PsychometricProvider? psychometricProvider;
+  
+  /// Current user profile for prompt generation
+  final UserProfile? userProfile;
+  
+  /// Current psychometric profile for prompt generation
+  final PsychometricProfile? psychometricProfile;
   
   // === SERVICES ===
   late final AudioRecordingService _audioService;
@@ -76,9 +122,16 @@ class VoiceSessionManager {
   /// Called when debug log is updated (for in-app display)
   final void Function(List<String> log)? onDebugLogUpdated;
   
+  /// Called when a psychometric trait is updated (Phase 42)
+  final void Function(String traitName, dynamic value)? onTraitUpdated;
+  
   VoiceSessionManager({
+    this.mode = VoiceSessionMode.legacy,
     this.systemInstruction,
     this.enableTranscription = true,
+    this.psychometricProvider,
+    this.userProfile,
+    this.psychometricProfile,
     this.onTranscription,
     this.onAudioReceived,
     this.onStateChanged,
@@ -88,8 +141,79 @@ class VoiceSessionManager {
     this.onUserSpeakingChanged,
     this.onTurnComplete,
     this.onDebugLogUpdated,
+    this.onTraitUpdated,
   }) {
     _initializeServices();
+  }
+  
+  /// Factory constructor for onboarding sessions (Phase 42)
+  factory VoiceSessionManager.onboarding({
+    required PsychometricProvider psychometricProvider,
+    UserProfile? userProfile,
+    bool enableTranscription = true,
+    void Function(String text, bool isUser)? onTranscription,
+    void Function(Uint8List audioData)? onAudioReceived,
+    void Function(VoiceSessionState state)? onStateChanged,
+    void Function(String error)? onError,
+    void Function(double level)? onAudioLevelChanged,
+    void Function(bool isSpeaking)? onAISpeakingChanged,
+    void Function(bool isSpeaking)? onUserSpeakingChanged,
+    void Function()? onTurnComplete,
+    void Function(List<String> log)? onDebugLogUpdated,
+    void Function(String traitName, dynamic value)? onTraitUpdated,
+  }) {
+    return VoiceSessionManager(
+      mode: VoiceSessionMode.onboarding,
+      psychometricProvider: psychometricProvider,
+      userProfile: userProfile,
+      enableTranscription: enableTranscription,
+      onTranscription: onTranscription,
+      onAudioReceived: onAudioReceived,
+      onStateChanged: onStateChanged,
+      onError: onError,
+      onAudioLevelChanged: onAudioLevelChanged,
+      onAISpeakingChanged: onAISpeakingChanged,
+      onUserSpeakingChanged: onUserSpeakingChanged,
+      onTurnComplete: onTurnComplete,
+      onDebugLogUpdated: onDebugLogUpdated,
+      onTraitUpdated: onTraitUpdated,
+    );
+  }
+  
+  /// Factory constructor for coaching sessions (Phase 42)
+  factory VoiceSessionManager.coaching({
+    required PsychometricProvider psychometricProvider,
+    required UserProfile userProfile,
+    required PsychometricProfile psychometricProfile,
+    bool enableTranscription = true,
+    void Function(String text, bool isUser)? onTranscription,
+    void Function(Uint8List audioData)? onAudioReceived,
+    void Function(VoiceSessionState state)? onStateChanged,
+    void Function(String error)? onError,
+    void Function(double level)? onAudioLevelChanged,
+    void Function(bool isSpeaking)? onAISpeakingChanged,
+    void Function(bool isSpeaking)? onUserSpeakingChanged,
+    void Function()? onTurnComplete,
+    void Function(List<String> log)? onDebugLogUpdated,
+    void Function(String traitName, dynamic value)? onTraitUpdated,
+  }) {
+    return VoiceSessionManager(
+      mode: VoiceSessionMode.coaching,
+      psychometricProvider: psychometricProvider,
+      userProfile: userProfile,
+      psychometricProfile: psychometricProfile,
+      enableTranscription: enableTranscription,
+      onTranscription: onTranscription,
+      onAudioReceived: onAudioReceived,
+      onStateChanged: onStateChanged,
+      onError: onError,
+      onAudioLevelChanged: onAudioLevelChanged,
+      onAISpeakingChanged: onAISpeakingChanged,
+      onUserSpeakingChanged: onUserSpeakingChanged,
+      onTurnComplete: onTurnComplete,
+      onDebugLogUpdated: onDebugLogUpdated,
+      onTraitUpdated: onTraitUpdated,
+    );
   }
   
   // === PUBLIC GETTERS ===
@@ -119,7 +243,52 @@ class VoiceSessionManager {
       onError: _handleGeminiError,
       onTurnComplete: _handleTurnComplete,
       onDebugLogUpdated: onDebugLogUpdated,
+      onToolCall: _handleToolCall, // Phase 42: Tool call handling
     );
+  }
+  
+  /// Generate the system instruction based on session mode (Phase 42)
+  String _generateSystemInstruction() {
+    switch (mode) {
+      case VoiceSessionMode.onboarding:
+        // Use the Sherlock Protocol prompt for onboarding
+        return AtomicHabitsReasoningPrompts.voiceOnboardingSystemPrompt;
+        
+      case VoiceSessionMode.coaching:
+        // Use PromptFactory for dynamic prompts
+        if (userProfile != null && psychometricProfile != null) {
+          // Check if this is the first session (no anti-identity set)
+          final isFirstSession = psychometricProfile!.antiIdentityLabel == null ||
+              psychometricProfile!.antiIdentityLabel!.isEmpty;
+          
+          return PromptFactory.generateSessionPrompt(
+            user: userProfile!,
+            psychometrics: psychometricProfile!,
+            isFirstSession: isFirstSession,
+          );
+        }
+        // Fallback to basic prompt if profiles not available
+        return AtomicHabitsReasoningPrompts.voiceSession(
+          userName: userProfile?.name,
+        );
+        
+      case VoiceSessionMode.legacy:
+      default:
+        // Use the legacy system instruction
+        return systemInstruction ?? AtomicHabitsReasoningPrompts.voiceSession();
+    }
+  }
+  
+  /// Determine if tools should be enabled for this session (Phase 42)
+  bool _shouldEnableTools() {
+    // Tools are only enabled during onboarding for the Sherlock Protocol
+    return mode == VoiceSessionMode.onboarding;
+  }
+  
+  /// Get the tools configuration for onboarding (Phase 42)
+  List<Map<String, dynamic>>? _getToolsConfig() {
+    if (!_shouldEnableTools()) return null;
+    return [AiToolsConfig.psychometricTool];
   }
   
   /// Start a new voice session.
@@ -139,14 +308,24 @@ class VoiceSessionManager {
     _setState(VoiceSessionState.connecting);
     
     try {
-      // Step 1: Connect to Gemini Live API
+      // Step 1: Generate system instruction based on mode
+      final instruction = _generateSystemInstruction();
+      final tools = _getToolsConfig();
+      
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: Starting session in mode: $mode');
+        debugPrint('VoiceSessionManager: Tools enabled: ${tools != null}');
+      }
+      
+      // Step 2: Connect to Gemini Live API
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Connecting to Gemini Live API...');
       }
       
       final connected = await _geminiService.connect(
-        systemInstruction: systemInstruction,
+        systemInstruction: instruction,
         enableTranscription: enableTranscription,
+        tools: tools,
       );
       
       if (!connected) {
@@ -155,7 +334,7 @@ class VoiceSessionManager {
         return false;
       }
       
-      // Step 2: Initialise audio recording
+      // Step 3: Initialise audio recording
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Initialising audio recording...');
       }
@@ -168,7 +347,7 @@ class VoiceSessionManager {
         return false;
       }
       
-      // Step 3: Start recording
+      // Step 4: Start recording
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Starting audio recording...');
       }
@@ -345,6 +524,107 @@ class VoiceSessionManager {
   /// Handle AI turn completion.
   void _handleTurnComplete() {
     onTurnComplete?.call();
+  }
+  
+  /// Handle tool calls from Gemini (Phase 42: Sherlock Protocol)
+  /// 
+  /// This method processes tool_call events from the AI and:
+  /// 1. Validates the tool name
+  /// 2. Extracts arguments
+  /// 3. Updates the psychometric profile via the provider
+  /// 4. Sends a success response back to the AI
+  Future<void> _handleToolCall(String functionName, Map<String, dynamic> args, String callId) async {
+    if (kDebugMode) {
+      debugPrint('VoiceSessionManager: Tool call received: $functionName');
+      debugPrint('VoiceSessionManager: Args: $args');
+      debugPrint('VoiceSessionManager: Call ID: $callId');
+    }
+    
+    // Only handle the psychometric tool
+    if (functionName != AiToolsConfig.psychometricToolName) {
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: Unknown tool: $functionName');
+      }
+      // Send error response
+      _geminiService.sendToolResponse(
+        functionName,
+        callId,
+        {'error': 'Unknown tool: $functionName'},
+      );
+      return;
+    }
+    
+    // Verify we have the provider
+    if (psychometricProvider == null) {
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: No psychometric provider available');
+      }
+      _geminiService.sendToolResponse(
+        functionName,
+        callId,
+        {'error': 'Psychometric provider not configured'},
+      );
+      return;
+    }
+    
+    try {
+      // Update the psychometric profile via the provider
+      await psychometricProvider!.updateFromToolCall(args);
+      
+      // Notify listeners of trait updates
+      _notifyTraitUpdates(args);
+      
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: Psychometric profile updated successfully');
+      }
+      
+      // Send success response back to the AI
+      _geminiService.sendToolResponse(
+        functionName,
+        callId,
+        {
+          'status': 'success',
+          'message': 'Psychometric profile updated',
+          'updated_fields': args.keys.toList(),
+        },
+      );
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: Failed to update psychometric profile: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      
+      // Send error response
+      _geminiService.sendToolResponse(
+        functionName,
+        callId,
+        {
+          'status': 'error',
+          'message': 'Failed to update profile: $e',
+        },
+      );
+    }
+  }
+  
+  /// Notify listeners about individual trait updates (Phase 42)
+  void _notifyTraitUpdates(Map<String, dynamic> args) {
+    if (onTraitUpdated == null) return;
+    
+    // Map tool argument names to display names
+    final traitDisplayNames = {
+      'anti_identity_label': 'Anti-Identity',
+      'anti_identity_context': 'Anti-Identity Context',
+      'failure_archetype': 'Failure Archetype',
+      'failure_trigger_context': 'Failure Trigger',
+      'resistance_lie_label': 'Resistance Lie',
+      'resistance_lie_context': 'Resistance Context',
+      'inferred_fears': 'Inferred Fears',
+    };
+    
+    for (final entry in args.entries) {
+      final displayName = traitDisplayNames[entry.key] ?? entry.key;
+      onTraitUpdated?.call(displayName, entry.value);
+    }
   }
   
   /// Dispose of all resources.
