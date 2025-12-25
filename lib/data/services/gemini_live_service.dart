@@ -26,7 +26,7 @@ import '../../config/ai_model_config.dart';
 /// - Model Name (to verify correct model is being used)
 class GeminiLiveService {
   // === CONFIGURATION ===
-  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
+  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
   
   // === STATE ===
