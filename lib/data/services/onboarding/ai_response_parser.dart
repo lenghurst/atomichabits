@@ -117,6 +117,16 @@ class AiResponseParser {
     final normal = extractHabitData(response);
     if (normal != null) return normal;
     
+    // Phase 34.4: Try sanitized extraction (handles Markdown pollution)
+    final sanitized = sanitizeAndExtractJson(response);
+    if (sanitized != null) {
+      try {
+        return OnboardingData.fromJson(sanitized);
+      } catch (e) {
+        debugPrint('AiResponseParser: Sanitized JSON conversion failed: $e');
+      }
+    }
+    
     // Try to find any JSON-like object in the response
     try {
       final jsonPattern = RegExp(r'\{[^{}]*"identity"[^{}]*\}', dotAll: true);
@@ -131,5 +141,69 @@ class AiResponseParser {
     }
     
     return null;
+  }
+  
+  /// Phase 34.4: Sanitize raw LLM response and extract JSON
+  /// 
+  /// Handles common Gemini response issues:
+  /// 1. Markdown code blocks (```json ... ```)
+  /// 2. Conversational preamble before JSON
+  /// 3. Trailing text after JSON
+  /// 
+  /// Returns the parsed JSON map or null if extraction fails.
+  static Map<String, dynamic>? sanitizeAndExtractJson(String rawResponse) {
+    try {
+      // 1. Strip Markdown code blocks (```json ... ``` or ``` ... ```)
+      String clean = rawResponse
+          .replaceAll(RegExp(r'```json\s*', caseSensitive: false), '')
+          .replaceAll(RegExp(r'```\s*'), '');
+      
+      // 2. Trim whitespace
+      clean = clean.trim();
+      
+      // 3. Find the first '{' and last '}' to isolate JSON object
+      final startIndex = clean.indexOf('{');
+      final endIndex = clean.lastIndexOf('}');
+      
+      if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+        if (kDebugMode) {
+          debugPrint('🔴 AiResponseParser: No JSON object found in response');
+        }
+        return null;
+      }
+      
+      clean = clean.substring(startIndex, endIndex + 1);
+      
+      // 4. Decode and return
+      final result = jsonDecode(clean) as Map<String, dynamic>;
+      
+      if (kDebugMode) {
+        debugPrint('✅ AiResponseParser: Successfully sanitized and parsed JSON');
+      }
+      
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🔴 AiResponseParser: Sanitize error: $e');
+        debugPrint('🔴 Raw response was: ${rawResponse.substring(0, rawResponse.length > 200 ? 200 : rawResponse.length)}...');
+      }
+      return null;
+    }
+  }
+  
+  /// Phase 34.4: Parse any JSON from response (not just OnboardingData)
+  /// 
+  /// Generic method for parsing JSON from AI responses that may be
+  /// wrapped in Markdown or have conversational text.
+  static Map<String, dynamic>? parseGenericJson(String rawResponse) {
+    // First try direct parse
+    try {
+      return jsonDecode(rawResponse) as Map<String, dynamic>;
+    } catch (_) {
+      // Fall through to sanitized extraction
+    }
+    
+    // Try sanitized extraction
+    return sanitizeAndExtractJson(rawResponse);
   }
 }

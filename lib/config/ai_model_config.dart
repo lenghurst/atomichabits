@@ -83,22 +83,25 @@ class AIModelConfig {
   static const String tier1Model = 'deepseek-chat'; 
   static const double tier1Temperature = 1.0;
   
-  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 27.16 - Live GA Aligned)
+  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 34.4 - Model Name Fix)
   /// - Marketing Name: "Gemini 3 Flash"
-  /// - Technical Endpoint: gemini-live-2.5-flash-native-audio (LIVE GA - Dec 12, 2025)
+  /// - Technical Endpoint: gemini-2.5-flash-native-audio-preview-12-2025
   /// - Native Audio/Video Input & Output (Live API)
   /// - Latency: <500ms (Real-time capable)
   /// - Role: Voice Coach, Visual Accountability
   /// - Protocol: WebSocket bidirectional streaming (NOT REST)
   /// - CRITICAL: Gemini 2.0 Live endpoints were SHUT DOWN on Dec 9, 2025!
-  /// - NOTE: This is the stable GA Live endpoint, available globally (UK included)
+  /// - NOTE: Model name verified from official Google AI docs (Dec 25, 2025)
   /// - CRITICAL: Must match backend LIVE_API_MODEL in get-gemini-ephemeral-token/index.ts
   /// 
   /// GEMINI 3 COMPLIANCE (Phase 28):
   /// - DO NOT use tier2Temperature for Gemini 3 Live API calls.
   /// - Temperature values < 1.0 cause "unexpected behavior, such as looping".
   /// - Use thinking_level: "MINIMAL" in the setup message instead.
-  static const String tier2Model = 'gemini-live-2.5-flash-native-audio'; // Live API GA (Global)
+  /// 
+  /// Phase 34.4: Model name corrected from 'gemini-live-2.5-flash-native-audio' 
+  /// to official name per https://ai.google.dev/gemini-api/docs/live
+  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025';
   
   /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
   /// Gemini 3 documentation warns: "setting temperature < 1.0 causes unexpected

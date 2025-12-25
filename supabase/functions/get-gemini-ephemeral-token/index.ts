@@ -30,8 +30,9 @@ const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com'
 
 // Model configuration (December 2025 verified endpoints)
 // Phase 27.15: CRITICAL - Must match Flutter app's AIModelConfig.tier2Model
-// Phase 28: Using GA Live endpoint (globally available)
-const LIVE_API_MODEL = 'gemini-live-2.5-flash-native-audio'
+// Phase 34.4: Model name corrected per official Google AI docs
+// Source: https://ai.google.dev/gemini-api/docs/live (Dec 25, 2025)
+const LIVE_API_MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025'
 
 interface EphemeralTokenRequest {
   // Optional: Lock token to specific configuration
