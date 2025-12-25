@@ -29,6 +29,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 /// Screenshots are saved to: screenshots/ directory
 
 void main() {
+  // Skip these tests when running in CI/headless mode
+  // They require a real device or emulator with platform channels
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('App Store Screenshots', () {

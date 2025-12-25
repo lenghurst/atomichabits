@@ -45,6 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   
   // AI Magic Wand state
+  // ignore: unused_field - set by callback but UI uses different loading indicator
   bool _isAiLoading = false;
   
   // Phase 12: Break Habit Protocol

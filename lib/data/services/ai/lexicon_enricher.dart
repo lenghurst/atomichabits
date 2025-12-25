@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'ai_service_manager.dart';
 
 class LexiconEnricher {
-  final AiServiceManager _aiServiceManager;
+  final AIServiceManager _aiServiceManager;
 
-  LexiconEnricher(this._aiServiceManager);
+  LexiconEnricher(AIServiceManager aiServiceManager) : _aiServiceManager = aiServiceManager;
 
   Future<Map<String, String>> enrichWord(String word, String identityTag) async {
     final prompt = '''
@@ -25,11 +26,12 @@ Output ONLY valid JSON in this format:
 ''';
 
     // Use the currently selected AI provider (DeepSeek or Gemini)
-    final response = await _aiServiceManager.sendMessage(prompt);
+    final response = await _aiServiceManager.sendMessage(userMessage: prompt);
     
     try {
       // Clean up potential markdown code blocks
-      final jsonString = response.replaceAll('```json', '').replaceAll('```', '').trim();
+      final content = response?.content ?? '';
+      final jsonString = content.replaceAll('```json', '').replaceAll('```', '').trim();
       final Map<String, dynamic> data = jsonDecode(jsonString);
       
       return {

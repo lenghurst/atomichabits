@@ -19,4 +19,4 @@ library;
 
 export 'ai_service_manager.dart';
 export 'deep_seek_service.dart';
-export 'claude_service.dart';
+// export 'claude_service.dart';  // Not implemented yet

@@ -282,7 +282,6 @@ class HabitSummaryCard extends StatelessWidget {
   }
 
   Widget _buildExtraInfoRow(BuildContext context) {
-    final theme = Theme.of(context);
     final chips = <Widget>[];
 
     if (habit.isPrimaryHabit) {

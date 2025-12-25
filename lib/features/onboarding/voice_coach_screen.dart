@@ -33,7 +33,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
   final List<TranscriptMessage> _transcript = [];
+  // ignore: unused_field - stored for potential error display
   String? _errorMessage;
+  // ignore: unused_field - stored for potential audio level visualization
   double _audioLevel = 0.0;
   
   // Phase 34.4: Connection status for UI display

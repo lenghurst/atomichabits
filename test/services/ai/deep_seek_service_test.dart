@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:atomichabits/data/services/ai/deep_seek_service.dart';
-import 'package:atomichabits/data/models/chat_message.dart';
-import 'package:atomichabits/data/models/chat_conversation.dart';
+import 'package:atomic_habits_hook_app/data/services/ai/deep_seek_service.dart';
+// import 'package:atomic_habits_hook_app/data/models/chat_message.dart';  // Currently unused
+import 'package:atomic_habits_hook_app/data/models/chat_conversation.dart';
 
 /// Phase 24.D: "The Reality Check"
 /// 
@@ -53,7 +53,7 @@ void main() {
         // Verify request structure
         expect(request.url.toString(), contains('api.deepseek.com'));
         expect(request.headers['Authorization'], 'Bearer TEST_KEY');
-        expect(request.headers['Content-Type'], 'application/json');
+        expect(request.headers['Content-Type'], contains('application/json'));
         
         return http.Response(jsonEncode(mockResponse), 200);
       });

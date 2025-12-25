@@ -244,7 +244,7 @@ class HabitListScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'stacked ${habit.stackPosition ?? "after"}',
+                                'stacked ${habit.stackPosition}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
                                   fontSize: 11,

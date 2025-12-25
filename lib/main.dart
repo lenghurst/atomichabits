@@ -314,7 +314,7 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        cardTheme: const CardThemeData(
+        cardTheme: const CardTheme(
           elevation: 2,
           margin: EdgeInsets.zero,
         ),
@@ -332,7 +332,7 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
-        cardTheme: const CardThemeData(
+        cardTheme: const CardTheme(
           elevation: 2,
           margin: EdgeInsets.zero,
         ),

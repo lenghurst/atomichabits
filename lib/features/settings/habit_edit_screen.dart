@@ -75,7 +75,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
         
         // Stacking configuration
         _selectedAnchorId = habit.anchorHabitId;
-        _stackPosition = habit.stackPosition ?? 'after';
+        _stackPosition = habit.stackPosition;
         _anchorEvent = habit.anchorEvent;
       });
     }

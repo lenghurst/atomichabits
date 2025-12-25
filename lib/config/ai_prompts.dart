@@ -1,3 +1,5 @@
+library;
+
 import 'dart:math';
 
 /// AI Prompts Configuration for The Pact
@@ -25,7 +27,6 @@ import 'dart:math';
 /// 7. VARIABLE REWARDS: Randomise persona for unpredictable engagement
 /// 
 /// Collaboration: Elon Musk (physics-based systems) + James Clear (Atomic Habits)
-library;
 
 
 // ============================================================

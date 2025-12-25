@@ -101,8 +101,8 @@ class _GuestDataWarningBannerState extends State<GuestDataWarningBanner>
       return const SizedBox.shrink();
     }
     
+    // ignore: unused_local_variable - theme kept for potential future use
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     
     return AnimatedBuilder(
       animation: _pulseAnimation,

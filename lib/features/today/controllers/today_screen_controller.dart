@@ -81,7 +81,7 @@ class TodayScreenController {
     }
     
     // Get completion history from habit
-    final completionHistory = habit.completionHistory ?? [];
+    final completionHistory = habit.completionHistory;
     if (completionHistory.isEmpty) {
       debugPrint('⏰ No completion history for drift analysis');
       return;

@@ -211,7 +211,7 @@ class KeystoneAnalyzer {
     
     final percentageIncrease = avgWithout > 0
         ? ((avgWith - avgWithout) / avgWithout * 100)
-        : (avgWith > 0 ? 100 : 0);
+        : (avgWith > 0 ? 100.0 : 0.0);
     
     return OtherHabitsImpact(
       avgOtherHabitsWithThis: avgWith,

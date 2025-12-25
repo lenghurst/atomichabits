@@ -63,7 +63,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
     setState(() {
       _titleController.text = '$_durationDays-Day ${habit.name} Challenge';
       _commitmentController.text = 
-          'I commit to ${habit.tinyVersion ?? habit.name} daily, becoming ${habit.identity}.';
+          'I commit to ${habit.tinyVersion} daily, becoming ${habit.identity}.';
         });
   }
   

@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:play_install_referrer/play_install_referrer.dart';
+// import 'package:play_install_referrer/play_install_referrer.dart';  // Requires Flutter 3.29+
 import '../../config/deep_link_config.dart';
 
 /// Deep Link Service
@@ -161,75 +160,21 @@ class DeepLinkService extends ChangeNotifier {
   /// Reliability: High (Google Play Services)
   /// Platform: Android only (iOS uses Universal Links)
   Future<String?> _checkInstallReferrer() async {
-    // Only available on Android
-    if (!Platform.isAndroid) {
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: Install Referrer only available on Android');
-      }
-      return null;
+    // NOTE: play_install_referrer requires Flutter 3.29+
+    // This functionality is temporarily disabled until Flutter is upgraded.
+    // See pubspec.yaml for details.
+    if (kDebugMode) {
+      debugPrint('DeepLinkService: Install Referrer disabled (requires Flutter 3.29+)');
     }
+    return null;
     
-    try {
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: Checking Install Referrer...');
-      }
-      
-      final ReferrerDetails referrerDetails = await PlayInstallReferrer.installReferrer;
-      
-      final String? referrer = referrerDetails.installReferrer;
-      
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: Install Referrer raw: $referrer');
-        debugPrint('DeepLinkService: Click timestamp: ${referrerDetails.referrerClickTimestampSeconds}');
-        debugPrint('DeepLinkService: Install timestamp: ${referrerDetails.installBeginTimestampSeconds}');
-      }
-      
-      if (referrer == null || referrer.isEmpty) {
-        if (kDebugMode) {
-          debugPrint('DeepLinkService: No install referrer found');
-        }
-        return null;
-      }
-      
-      // Parse the referrer string for invite_code
-      // Format: invite_code=ABCD1234 or invite_code%3DABCD1234 (URL encoded)
-      final inviteCode = _parseInviteCodeFromReferrer(referrer);
-      
-      if (inviteCode != null) {
-        if (kDebugMode) {
-          debugPrint('DeepLinkService: Found invite code from Install Referrer: $inviteCode');
-        }
-        
-        // Create a DeepLinkData for this invite
-        _pendingDeepLink = DeepLinkData(
-          type: DeepLinkType.contractInvite,
-          inviteCode: inviteCode,
-          originalUri: Uri.parse('atomichabits://c/$inviteCode'),
-        );
-        _inviteFromInstallReferrer = true;
-        _inviteSource = 'install_referrer';
-        notifyListeners();
-        
-        return inviteCode;
-      }
-      
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: No invite code in referrer string');
-      }
-      return null;
-      
-    } on PlatformException catch (e) {
-      // Expected on iOS or if Google Play Services unavailable
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: Install Referrer not available: $e');
-      }
-      return null;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('DeepLinkService: Error checking Install Referrer: $e');
-      }
-      return null;
-    }
+    // Original implementation (commented out):
+    // Only available on Android
+    // if (!Platform.isAndroid) {
+    //   return null;
+    // }
+    // final ReferrerDetails referrerDetails = await PlayInstallReferrer.installReferrer;
+    // ... etc
   }
   
   /// Parse invite code from referrer string

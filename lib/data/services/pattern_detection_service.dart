@@ -201,6 +201,23 @@ class PatternDetectionService {
       );
     }
     
+    // Check for afternoon pattern
+    final afternoonRate = afternoonMisses / total;
+    if (afternoonRate >= config.minPatternRate && afternoonMisses >= config.minOccurrences) {
+      return HabitPattern(
+        type: PatternType.wrongTime,
+        severity: _getSeverity(afternoonMisses),
+        description: 'You tend to miss this habit in the afternoon',
+        suggestion: 'The post-lunch slump is real! Try scheduling before lunch or after 4 PM.',
+        confidence: afternoonRate,
+        occurrences: afternoonMisses,
+        totalOpportunities: total,
+        supportingEvents: withSchedule.where((m) => m.scheduledHour! >= 12 && m.scheduledHour! < 18).toList(),
+        tags: ['☀️ Afternoon Slump'],
+        specificDetail: 'Afternoon (noon - 6 PM)',
+      );
+    }
+    
     return null;
   }
   

@@ -325,7 +325,6 @@ class ConsistencyMetrics {
     final daysShowedUp = completions.length;
     
     // Calculate 7-day average
-    final sevenDaysAgo = today.subtract(const Duration(days: 6));
     int weeklyCompletions = 0;
     for (int i = 0; i < 7; i++) {
       final checkDate = today.subtract(Duration(days: i));
@@ -334,7 +333,6 @@ class ConsistencyMetrics {
     final weeklyAverage = weeklyCompletions / 7;
     
     // Calculate 30-day average
-    final thirtyDaysAgo = today.subtract(const Duration(days: 29));
     int monthlyCompletions = 0;
     for (int i = 0; i < 30; i++) {
       final checkDate = today.subtract(Duration(days: i));

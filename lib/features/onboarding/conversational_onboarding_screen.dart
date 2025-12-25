@@ -44,6 +44,7 @@ class _ConversationalOnboardingScreenState
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String? _errorMessage;
+  // ignore: unused_field - stored for potential future use in onboarding flow
   onboarding.OnboardingData? _extractedData;
   
   // User name (collected first)

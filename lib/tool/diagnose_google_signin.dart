@@ -46,9 +46,12 @@ class DiagnosticScreen extends StatefulWidget {
 }
 
 class _DiagnosticScreenState extends State<DiagnosticScreen> {
+  // ignore: unused_field - placeholder for future keystore diagnostics
   final String _sha1Fingerprint = 'Checking...';
+  // ignore: unused_field - placeholder for future keystore diagnostics
   final String _sha256Fingerprint = 'Checking...';
   String _packageName = 'Checking...';
+  // ignore: unused_field - placeholder for future keystore diagnostics
   String _keystorePath = 'Checking...';
   List<DiagnosticResult> _results = [];
   bool _isLoading = true;

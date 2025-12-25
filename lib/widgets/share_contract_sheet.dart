@@ -182,10 +182,8 @@ class _ShareContractSheetState extends State<ShareContractSheet>
   }
 
   Future<void> _shareToTwitter() async {
-    final twitterUrl = Uri.parse(
-      'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareText)}',
-    );
-    
+    // Note: twitterUrl could be used with url_launcher if added as dependency
+    // For now, we just copy to clipboard
     await Clipboard.setData(ClipboardData(text: _shareText));
     HapticFeedback.lightImpact();
     
@@ -214,7 +212,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -229,7 +227,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.2),
+                color: colorScheme.onSurface.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -255,7 +253,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
                   Text(
                     'Find your accountability partner',
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
                 ],
@@ -267,10 +265,10 @@ class _ShareContractSheetState extends State<ShareContractSheet>
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: colorScheme.primaryContainer.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
+                  color: colorScheme.primary.withOpacity(0.3),
                 ),
               ),
               child: Column(
@@ -281,7 +279,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: colorScheme.primary.withValues(alpha: 0.2),
+                          color: colorScheme.primary.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -306,7 +304,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
                             Text(
                               '${widget.contract.durationDays} days',
                               style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                color: colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                           ],
@@ -320,7 +318,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
                       '"${widget.contract.commitmentStatement}"',
                       style: textTheme.bodyMedium?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: colorScheme.onSurface.withValues(alpha: 0.8),
+                        color: colorScheme.onSurface.withOpacity(0.8),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -347,7 +345,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
                       _inviteUrl,
                       style: textTheme.bodySmall?.copyWith(
                         fontFamily: 'monospace',
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: colorScheme.onSurface.withOpacity(0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -453,7 +451,7 @@ class _ShareContractSheetState extends State<ShareContractSheet>
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                color: colorScheme.secondaryContainer.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -586,7 +584,7 @@ class ContractInvitePreview extends StatelessWidget {
             Text(
               'Someone wants you to be their accountability partner',
               style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.7),
+                color: colorScheme.onSurface.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -618,13 +616,13 @@ class ContractInvitePreview extends StatelessWidget {
                       Icon(
                         Icons.calendar_today_outlined,
                         size: 16,
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: colorScheme.onSurface.withOpacity(0.6),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${contract.durationDays} days',
                         style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -638,7 +636,7 @@ class ContractInvitePreview extends StatelessWidget {
                         color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: colorScheme.outline.withValues(alpha: 0.2),
+                          color: colorScheme.outline.withOpacity(0.2),
                         ),
                       ),
                       child: Text(
@@ -681,7 +679,7 @@ class ContractInvitePreview extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                color: colorScheme.secondaryContainer.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(

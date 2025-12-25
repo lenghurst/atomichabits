@@ -233,7 +233,7 @@ class HomeWidgetService {
   Future<int> getInstalledWidgetCount() async {
     try {
       final widgets = await HomeWidget.getInstalledWidgets();
-      return widgets.length ?? 0;
+      return widgets.length;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error getting installed widgets: $e');

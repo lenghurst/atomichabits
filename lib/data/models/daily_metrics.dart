@@ -324,8 +324,8 @@ class WeeklyMetricsSummary {
   /// Tough days count  
   int get toughDaysCount => dailyMetrics.where((m) => m.isToughDay).length;
   
-  double? _average(Iterable<int?> values) {
-    final nonNull = values.where((v) => v != null).map((v) => v!);
+  double? _average(Iterable<num?> values) {
+    final nonNull = values.where((v) => v != null).map((v) => v!.toDouble());
     if (nonNull.isEmpty) return null;
     return nonNull.reduce((a, b) => a + b) / nonNull.length;
   }

@@ -62,7 +62,8 @@ class GeminiLiveService {
   StreamSubscription? _subscription;
   bool _isConnected = false;
   bool _isListening = false;
-  bool _setupComplete = false; 
+  // ignore: unused_field - used for state tracking, may be needed for debugging
+  bool _setupComplete = false;
   String? _ephemeralToken;
   DateTime? _tokenExpiry;
   Completer<void>? _setupCompleter;
