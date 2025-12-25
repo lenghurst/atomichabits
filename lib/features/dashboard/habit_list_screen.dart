@@ -396,20 +396,37 @@ class HabitListScreen extends StatelessWidget {
   }
 
   void _showAddHabitOptions(BuildContext context) {
+    final appState = context.read<AppState>();
     showModalBottomSheet(
       context: context,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Voice Coach (Premium - Tier 2)
+              ListTile(
+                leading: const Icon(Icons.mic, color: Colors.deepPurple),
+                title: const Text('Voice Coach'),
+                subtitle: Text(
+                  appState.isPremium 
+                    ? 'Speak with your AI coach (Premium)'
+                    : 'Premium feature - Upgrade to unlock',
+                ),
+                enabled: appState.isPremium,
+                onTap: appState.isPremium ? () {
+                  Navigator.pop(sheetContext);
+                  context.push('/onboarding/voice');
+                } : null,
+              ),
+              // Text AI Coach (Tier 1)
               ListTile(
                 leading: const Icon(Icons.auto_awesome),
                 title: const Text('AI Coach'),
                 subtitle: const Text('Let AI guide you through habit creation'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   context.push('/habit/add'); // Conversational onboarding (new habit flow)
                 },
               ),
@@ -418,7 +435,7 @@ class HabitListScreen extends StatelessWidget {
                 title: const Text('Manual Entry'),
                 subtitle: const Text('Fill in the habit details yourself'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   context.go('/onboarding/manual');
                 },
               ),

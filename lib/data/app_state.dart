@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/habit.dart';
@@ -271,7 +272,21 @@ class AppState extends ChangeNotifier {
   
   // ========== Premium Status ==========
   bool _isPremium = false;
-  bool get isPremium => _isPremium;
+  
+  /// Returns true if user has premium access.
+  /// TODO(Phase 35): Remove Oliver Backdoor after NYE verification.
+  bool get isPremium {
+    // Oliver Backdoor: Grant Tier 2 access for verification testing
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser?.email == 'oliver.longhurst@gmail.com') {
+        return true;
+      }
+    } catch (_) {
+      // Supabase not initialized - fall through to stored value
+    }
+    return _isPremium;
+  }
 
   Future<void> setPremiumStatus(bool status) async {
     _isPremium = status;
