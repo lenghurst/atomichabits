@@ -5,6 +5,20 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.6] - 2025-12-25 - Phase 40: "DeepSeek Optimization"
+
+### Changed
+- **DeepSeek JSON Mode:** Added `response_format: {'type': 'json_object'}` to force clean JSON output
+- **System Prompt:** Added `### OUTPUT FORMAT` section requiring JSON responses
+- Reduces Markdown pollution in AI responses
+
+### Technical Details
+- DeepSeek API now returns structured JSON instead of Markdown-wrapped responses
+- System prompt must contain the word "JSON" for `json_object` mode to work
+- Existing `AiResponseParser.sanitizeAndExtractJson()` remains as fallback
+
+---
+
 ## [6.0.5] - 2025-12-25 - Phase 39 & 41: "Logging Consolidation & Security Fix"
 
 ### Security (CRITICAL)

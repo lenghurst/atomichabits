@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 38 - In-App Log Console  
+> **Current Phase:** Phase 40 - DeepSeek Optimization  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -45,27 +45,27 @@
 | **Mobile** | Flutter | 3.38.4 |
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
-| **AI (Tier 1)** | DeepSeek-V3 | Text Chat |
+| **AI (Tier 1)** | DeepSeek-V3 | Text Chat (JSON mode) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
 | **Voice** | Gemini Live API | WebSocket Streaming |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
 
-## Current State: Phase 38
+## Current State: Phase 40
 
 ### What's Working
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Text AI (DeepSeek)** | ✅ Working | Tier 1 fallback |
+| **Text AI (DeepSeek)** | ✅ Working | JSON mode enabled (Phase 40) |
 | **Voice AI (Gemini)** | 🔧 Testing | Phases 35-38 fixes applied |
 | **In-App Log Console** | ✅ New | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
 | **Onboarding Flow** | ✅ Working | Voice-first with fallback |
 | **Dashboard** | ✅ Working | Habit tracking |
 
-### Recent Fixes (Phases 35-38)
+### Recent Fixes (Phases 35-40)
 
 | Phase | Fix | Status |
 |-------|-----|--------|
@@ -73,6 +73,8 @@
 | **36** | `IOWebSocketChannel` with custom headers | ✅ |
 | **37** | Honest User-Agent, `await ready`, granular errors | ✅ |
 | **38** | In-App Log Console for debugging | ✅ |
+| **39** | Logging consolidation, Oliver backdoor removed | ✅ |
+| **40** | DeepSeek `response_format: json_object` | ✅ |
 
 ### Key Files Changed
 
@@ -192,7 +194,7 @@ GeminiLiveService._addDebugLog()
 
 | Tier | Model | Use Case |
 |------|-------|----------|
-| **Tier 1** | `deepseek-chat` | Text reasoning |
+| **Tier 1** | `deepseek-chat` | Text reasoning (JSON mode) |
 | **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | Voice coaching |
 
 ### WebSocket Endpoint
@@ -303,7 +305,7 @@ Phase 36 used Python client spoofing (`goog-python-genai/0.1.0`). Phase 37 switc
 | Issue | Status | Workaround |
 |-------|--------|------------|
 | 403 Forbidden on WebSocket | 🔧 Testing | Phases 35-38 fixes applied |
-| Oliver Backdoor in AppState | ⚠️ Tech Debt | Remove post-launch |
+| Oliver Backdoor | ✅ Removed | Phase 39 |
 | AppState monolithic | ⚠️ Tech Debt | Strangler pattern in progress |
 
 ---

@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 38 | In-App Log Console for debugging |
+| **Mobile App** | 🟢 Phase 40 | DeepSeek JSON optimization |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🔧 Testing | Gemini Live WebSocket (Phase 35-38 fixes) |
 | **Text AI** | 🟢 Working | DeepSeek V3 |
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 38 - In-App Log Console  
+> **Current Phase:** Phase 40 - DeepSeek Optimization  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
@@ -48,7 +48,7 @@ Traditional habit apps fail because they rely on **you**.
 | **Mobile** | Flutter 3.38.4 | The Core Experience |
 | **Web** | React + Vite + Tailwind | The Landing Page |
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
-| **AI (Tier 1)** | DeepSeek-V3 | Text reasoning & logic |
+| **AI (Tier 1)** | DeepSeek-V3 | Text reasoning (JSON mode) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Real-time voice coaching |
 | **Voice** | Gemini Live API | WebSocket audio streaming |
 | **Hosting** | Netlify | Web Deployment |

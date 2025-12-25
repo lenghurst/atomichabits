@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 38 - In-App Log Console  
+> **Current Phase:** Phase 40 - DeepSeek Optimization  
 > **Target:** NYE 2025 Launch  
 > **Status:** 🔧 Testing Voice Connection
 
@@ -42,6 +42,41 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 40: DeepSeek Optimization (25 Dec 2025)
+
+**Goal:** Improve DeepSeek response quality by forcing JSON output.
+
+| ID | Task | Status |
+|----|------|--------|
+| D1 | Add `response_format: json_object` to API request | ✅ |
+| D2 | Update system prompt with JSON output format | ✅ |
+| D3 | Verify `.vscode/launch.json` has secrets config | ✅ |
+
+**Files Changed:**
+- `lib/data/services/ai/deep_seek_service.dart`
+
+### Phase 39: Logging Consolidation & Security (25 Dec 2025)
+
+**Goal:** Unify logging systems and remove security backdoor.
+
+| ID | Task | Status |
+|----|------|--------|
+| S1 | Remove Oliver Backdoor from app_state.dart | ✅ |
+| S2 | Remove Oliver Backdoor from user_provider.dart | ✅ |
+| L1 | Enhance AppLogger with LogBuffer integration | ✅ |
+| L2 | Migrate GeminiLiveService to AppLogger | ✅ |
+| L3 | Migrate identity_access_gate_screen to AppLogger | ✅ |
+| L4 | Delete deprecated developer_logger.dart | ✅ |
+| L5 | Update DebugConsoleView for LogEntry structure | ✅ |
+
+**Files Changed:**
+- `lib/data/app_state.dart` (backdoor removed)
+- `lib/data/providers/user_provider.dart` (backdoor removed)
+- `lib/core/logging/app_logger.dart` (enhanced)
+- `lib/core/logging/log_buffer.dart` (LogEntry structure)
+- `lib/features/dev/debug_console_view.dart` (level-based coloring)
+- `lib/utils/developer_logger.dart` (DELETED)
 
 ### Phase 38: In-App Log Console (25 Dec 2025)
 
@@ -141,7 +176,7 @@ Implemented recommendations from the "Second Council of Five":
 
 ## 📋 Backlog
 
-### Phase 39: Provider Wiring (Post-Launch)
+### Phase 41: Provider Wiring (Post-Launch)
 
 **Goal:** Wire new providers into main.dart.
 
@@ -154,7 +189,7 @@ Implemented recommendations from the "Second Council of Five":
 | W3 | Integrate PsychometricProvider | Medium | [ ] |
 | W4 | Update GoRouter to use UserProvider | Low | [ ] |
 
-### Phase 40: DTO Separation (Q1 2026)
+### Phase 42: DTO Separation (Q1 2026)
 
 **Goal:** Separate domain entities from persistence.
 
@@ -167,7 +202,7 @@ Implemented recommendations from the "Second Council of Five":
 | D3 | Remove toJson from entities | Low | [ ] |
 | D4 | Create Mapper classes | Medium | [ ] |
 
-### Phase 41: HabitEngine Extraction (Q1 2026)
+### Phase 43: HabitEngine Extraction (Q1 2026)
 
 **Goal:** Extract business logic from AppState.
 
@@ -179,7 +214,7 @@ Implemented recommendations from the "Second Council of Five":
 | H2 | Extract streak calculation | Medium | [ ] |
 | H3 | Extract recovery logic | Medium | [ ] |
 
-### Post-Launch Features (Phase 42+)
+### Post-Launch Features (Phase 44+)
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
@@ -195,18 +230,14 @@ Implemented recommendations from the "Second Council of Five":
 
 | ID | Description | Priority | Target |
 |----|-------------|----------|--------|
-| **TD0** | **Oliver Backdoor in AppState.isPremium** | **CRITICAL** | Post-Launch |
+| ~~TD0~~ | ~~Oliver Backdoor~~ | ~~CRITICAL~~ | ✅ Phase 39 |
 | TD1 | AppState monolithic (1,642 lines) | Medium | Phase 39-41 |
 | TD2 | Habit.dart has toJson | Low | Phase 40 |
 | TD3 | No DTO separation | Low | Phase 40 |
 | TD4 | HabitEngine in AppState | Medium | Phase 41 |
 | TD5 | landing_page/ in Flutter repo | Low | Future |
 
-**TD0 Cleanup:**
-```bash
-grep -rn 'oliver.longhurst' lib/
-# Remove the backdoor from isPremium getter
-```
+~~TD0 resolved in Phase 39~~ - Oliver Backdoor removed from both `app_state.dart` and `user_provider.dart`.
 
 ---
 

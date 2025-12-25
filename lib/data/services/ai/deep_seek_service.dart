@@ -8,6 +8,7 @@ import '../../models/chat_conversation.dart';
 /// DeepSeek Service
 /// 
 /// Phase 24: "Brain Surgery 2.0" - AI Tier Refactor
+/// Phase 40: Added response_format: json_object for cleaner output
 /// 
 /// Tier 1: DeepSeek-V3 ("The Architect")
 /// - Reasoning-heavy, distinct personality
@@ -242,6 +243,9 @@ class DeepSeekService extends ChangeNotifier {
           'temperature': temperature,
           'max_tokens': 2048,
           'stream': false,
+          // Phase 40: Force JSON output to reduce Markdown pollution
+          // Note: System prompt MUST contain the word "JSON" for this to work
+          'response_format': {'type': 'json_object'},
         }),
       ).timeout(timeout);
       
@@ -312,6 +316,10 @@ Before EVERY response, reason through:
 - 2-3 sentences max per response
 - Ask ONE question at a time
 - Use "You" not "We"
+
+### OUTPUT FORMAT
+Respond in JSON format with the following structure:
+{"message": "your conversational response", "data": {optional structured data}}
 ''';
   
   /// Get the current conversation
