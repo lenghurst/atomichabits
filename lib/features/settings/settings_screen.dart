@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../config/router/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/app_state.dart';
 import '../../data/models/app_settings.dart';
@@ -37,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
             centerTitle: true,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/dashboard'),
+              onPressed: () => context.go(AppRoutes.dashboard),
             ),
           ),
           body: SafeArea(
@@ -150,7 +151,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Dashboard'),
                         subtitle: const Text('View all habits'),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.go('/dashboard'),
+                        onTap: () => context.go(AppRoutes.dashboard),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -158,7 +159,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('History'),
                         subtitle: const Text('View completion calendar'),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.go('/history'),
+                        onTap: () => context.go(AppRoutes.history),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -166,7 +167,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Contracts'),
                         subtitle: const Text('View accountability contracts'),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.go('/contracts'),
+                        onTap: () => context.go(AppRoutes.contracts),
                       ),
                     ],
                   ),
@@ -184,7 +185,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Backup & Restore'),
                         subtitle: const Text('Export or import your data'),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/data-management'),
+                        onTap: () => context.push(AppRoutes.dataManagement),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -528,7 +529,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pop(context);
               await appState.clearAllData();
               if (context.mounted) {
-                context.go('/');
+                context.go(AppRoutes.home);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('All data has been reset'),

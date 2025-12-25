@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/models/habit_contract.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
@@ -67,7 +68,7 @@ class _ContractsListScreenState extends State<ContractsListScreen>
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: () => context.go('/settings'),
+                  onPressed: () => context.go(AppRoutes.settings),
                   child: const Text('Go to Settings'),
                 ),
               ],
@@ -111,7 +112,7 @@ class _ContractsListScreenState extends State<ContractsListScreen>
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/contracts/create'),
+        onPressed: () => context.go(AppRoutes.contractCreate),
         icon: const Icon(Icons.add),
         label: const Text('New Contract'),
       ),
@@ -127,7 +128,7 @@ class _ContractsListScreenState extends State<ContractsListScreen>
         title: 'No Contracts Yet',
         subtitle: 'Create a contract and invite someone to hold you accountable.',
         actionLabel: 'Create Contract',
-        onAction: () => context.go('/contracts/create'),
+        onAction: () => context.go(AppRoutes.contractCreate),
       );
     }
     
@@ -596,7 +597,7 @@ class _ContractsListScreenState extends State<ContractsListScreen>
               Navigator.pop(context);
               final code = controller.text.trim().toUpperCase();
               if (code.isNotEmpty) {
-                context.go('/invite?c=$code');
+                context.go(AppRoutes.contractJoin(code));
               }
             },
             child: const Text('Join'),

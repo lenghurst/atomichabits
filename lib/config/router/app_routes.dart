@@ -83,6 +83,10 @@ abstract class AppRoutes {
   /// Data Management - Backup & Restore (Phase 11)
   static const String dataManagement = '/data-management';
   
+  /// Account settings section (for guest upgrade prompts)
+  /// Note: Currently redirects to main settings screen
+  static const String settingsAccount = '/settings';
+  
   // ============================================================
   // HABIT ROUTES
   // ============================================================

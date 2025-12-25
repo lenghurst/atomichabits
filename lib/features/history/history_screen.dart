@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../review/weekly_review_dialog.dart';
@@ -74,7 +75,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const Text('No habit selected'),
                   const SizedBox(height: 8),
                   TextButton(
-                    onPressed: () => context.go('/dashboard'),
+                    onPressed: () => context.go(AppRoutes.dashboard),
                     child: const Text('Go to Dashboard'),
                   ),
                 ],
@@ -87,7 +88,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.canPop() ? context.pop() : context.go('/today'),
+              onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.today),
             ),
             title: Text(habit.name),
             centerTitle: true,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/user_profile.dart';
@@ -107,7 +108,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           return Scaffold(
             appBar: _buildAppBar(appState, null),
             body: SafeArea(
-              child: _NoHabitView(onGoToOnboarding: () => context.go('/')),
+              child: _NoHabitView(onGoToOnboarding: () => context.go(AppRoutes.home)),
             ),
           );
         }
@@ -132,7 +133,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ? IconButton(
               icon: const Icon(Icons.grid_view_rounded),
               tooltip: 'Dashboard',
-              onPressed: () => context.go('/dashboard'),
+              onPressed: () => context.go(AppRoutes.dashboard),
             )
           : null,
       title: multipleHabits != null
@@ -144,7 +145,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         IconButton(
           icon: const Icon(Icons.calendar_month_outlined),
           tooltip: 'History',
-          onPressed: () => context.push('/history'),
+          onPressed: () => context.push(AppRoutes.history),
         ),
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
@@ -153,7 +154,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
-          onPressed: () => context.push('/settings'),
+          onPressed: () => context.push(AppRoutes.settings),
         ),
       ],
     );
@@ -283,7 +284,7 @@ class _HabitView extends StatelessWidget {
           // Phase 24: Guest Data Warning Banner
           // Shows for anonymous users with active pacts
           GuestDataWarningBanner(
-            onSignUp: () => context.push('/settings/account'),
+            onSignUp: () => context.push(AppRoutes.settingsAccount),
           ),
           
           // Identity reminder

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/witness_service.dart';
 import '../../data/services/auth_service.dart';
@@ -62,7 +64,7 @@ class _WitnessDashboardState extends State<WitnessDashboard>
           // Phase 24: Guest Data Warning Banner
           // Shows for anonymous users with active pacts
           GuestDataWarningBanner(
-            onSignUp: () => Navigator.of(context).pushNamed('/settings/account'),
+            onSignUp: () => context.push(AppRoutes.settingsAccount),
           ),
           
           // Tab content

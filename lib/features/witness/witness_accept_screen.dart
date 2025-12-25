@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/sound_service.dart';
@@ -256,7 +258,7 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
             onPressed: () {
               Navigator.of(context).pop();
               // Navigate to auth screen
-              Navigator.of(context).pushNamed('/settings/account');
+              context.push(AppRoutes.settingsAccount);
             },
             child: const Text('Sign In'),
           ),

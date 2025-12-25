@@ -429,7 +429,7 @@ class HabitListScreen extends StatelessWidget {
                 subtitle: const Text('Let AI guide you through habit creation'),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  context.push('/habit/add'); // Conversational onboarding (new habit flow)
+                  context.push(AppRoutes.habitAdd); // Conversational onboarding (new habit flow)
                 },
               ),
               ListTile(
