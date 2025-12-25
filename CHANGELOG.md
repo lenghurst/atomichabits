@@ -5,6 +5,27 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.7] - 2025-12-25 - Phase 41: "Navigation Architecture"
+
+### Added
+- **Route Constants:** `lib/config/router/app_routes.dart` with centralised path definitions
+- **Extracted Router:** `lib/config/router/app_router.dart` with GoRouter configuration
+- **Redirect Logic:** Auth and onboarding guards for protected routes
+
+### Changed
+- **main.dart:** Reduced by ~180 lines (routes extracted to AppRouter)
+- **Navigation Calls:** Now use `AppRoutes.dashboard` instead of `'/dashboard'`
+- **habit_list_screen.dart:** Updated to use route constants
+- **dev_tools_overlay.dart:** Updated to use route constants
+
+### Improved
+- Compile-time route validation
+- IDE autocomplete for routes
+- Single source of truth for navigation paths
+- Refactoring safety (change path in one place)
+
+---
+
 ## [6.0.6] - 2025-12-25 - Phase 40: "DeepSeek Optimization"
 
 ### Changed
@@ -391,6 +412,6 @@ Traditional habit apps rely on long forms. The Pact uses **real-time voice** pow
 
 ---
 
-**Last Updated:** December 21, 2025  
-**Current Version:** 6.0.0 (Phase 27.7)  
+**Last Updated:** December 25, 2025  
+**Current Version:** 6.0.7 (Phase 41)  
 **Next Version:** 6.1.0 (Phase 27.8 - Audio Recording)

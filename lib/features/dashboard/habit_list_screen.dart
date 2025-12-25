@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/completion_result.dart';
@@ -65,18 +66,18 @@ class HabitListScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.analytics_outlined),
                   tooltip: 'Analytics',
-                  onPressed: () => context.push('/analytics'),
+                  onPressed: () => context.push(AppRoutes.analytics),
                 ),
               // History button (Phase 5)
               IconButton(
                 icon: const Icon(Icons.calendar_month_outlined),
                 tooltip: 'History',
-                onPressed: () => context.push('/history'),
+                onPressed: () => context.push(AppRoutes.history),
               ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 tooltip: 'Settings',
-                onPressed: () => context.push('/settings'),
+                onPressed: () => context.push(AppRoutes.settings),
               ),
             ],
           ),
@@ -175,7 +176,7 @@ class HabitListScreen extends StatelessWidget {
             const SizedBox(height: 32),
             // Phase 31: More prominent CTA
             FilledButton.icon(
-              onPressed: () => context.push('/habit/add'),
+              onPressed: () => context.push(AppRoutes.habitAdd),
               icon: const Icon(Icons.add_circle_outline),
               label: const Text('Create Your First Habit'),
               style: FilledButton.styleFrom(
@@ -266,10 +267,10 @@ class HabitListScreen extends StatelessWidget {
                           isCompleted: _isCompletedToday(habit),
                           onTap: () {
                             appState.setFocusHabit(habit.id);
-                            context.push('/today');
+                            context.push(AppRoutes.today);
                           },
                           // Phase 13: Long-press to edit habit (stacking config)
-                          onEdit: () => context.push('/habit/${habit.id}/edit'),
+                          onEdit: () => context.push(AppRoutes.habitEdit(habit.id)),
                           onQuickComplete: () async {
                             final result = await appState.completeHabitForToday(habitId: habit.id);
                             if (result != null && result.wasNewCompletion && context.mounted) {
@@ -286,7 +287,7 @@ class HabitListScreen extends StatelessWidget {
                                 // Set focus to the completed habit to show chain reaction dialog
                                 await appState.setFocusHabit(habit.id);
                                 if (context.mounted) {
-                                  context.push('/today');
+                                  context.push(AppRoutes.today);
                                 }
                               }
                             }
@@ -418,7 +419,7 @@ class HabitListScreen extends StatelessWidget {
                 enabled: appState.isPremium,
                 onTap: appState.isPremium ? () {
                   Navigator.pop(sheetContext);
-                  context.push('/onboarding/voice');
+                  context.push(AppRoutes.voiceOnboarding);
                 } : null,
               ),
               // Text AI Coach (Tier 1)
@@ -437,7 +438,7 @@ class HabitListScreen extends StatelessWidget {
                 subtitle: const Text('Fill in the habit details yourself'),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  context.go('/onboarding/manual');
+                  context.go(AppRoutes.manualOnboarding);
                 },
               ),
               // DEBUG: Force Voice Coach (bypasses premium check)
@@ -452,7 +453,7 @@ class HabitListScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(sheetContext);
                     debugPrint('🐞 [Debug] Forcing navigation to Voice Coach');
-                    context.push('/onboarding/voice');
+                    context.push(AppRoutes.voiceOnboarding);
                   },
                 ),
             ],

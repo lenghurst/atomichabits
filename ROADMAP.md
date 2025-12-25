@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 40 - DeepSeek Optimization  
+> **Current Phase:** Phase 41 - Navigation Architecture  
 > **Target:** NYE 2025 Launch  
 > **Status:** 🔧 Testing Voice Connection
 
@@ -42,6 +42,25 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 41: Navigation Architecture (25 Dec 2025)
+
+**Goal:** Extract router from main.dart, add route constants, implement redirect logic.
+
+| ID | Task | Status |
+|----|------|--------|
+| N1 | Create `AppRoutes` constants class | ✅ |
+| N2 | Extract `AppRouter` from main.dart | ✅ |
+| N3 | Add redirect logic for auth/onboarding guards | ✅ |
+| N4 | Update screens to use route constants | ✅ |
+| N5 | Update core documentation | ✅ |
+
+**Files Changed:**
+- `lib/config/router/app_routes.dart` (NEW)
+- `lib/config/router/app_router.dart` (NEW)
+- `lib/main.dart` (reduced by ~180 lines)
+- `lib/features/dashboard/habit_list_screen.dart`
+- `lib/features/dev/dev_tools_overlay.dart`
 
 ### Phase 40: DeepSeek Optimization (25 Dec 2025)
 

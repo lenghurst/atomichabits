@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../config/ai_model_config.dart';
 import 'debug_console_view.dart';
@@ -166,7 +167,7 @@ class DevToolsOverlay extends StatelessWidget {
                     icon: Icons.mic,
                     onTap: () {
                       Navigator.pop(context);
-                      context.go('/onboarding/voice');
+                      context.go(AppRoutes.voiceOnboarding);
                     },
                   ),
                   _NavChip(
@@ -178,7 +179,7 @@ class DevToolsOverlay extends StatelessWidget {
                       appState.updateSettings(
                         settings.copyWith(developerMode: false),
                       );
-                      context.go('/');
+                      context.go(AppRoutes.home);
                     },
                   ),
                   _NavChip(
@@ -186,7 +187,7 @@ class DevToolsOverlay extends StatelessWidget {
                     icon: Icons.edit_note,
                     onTap: () {
                       Navigator.pop(context);
-                      context.go('/onboarding/manual');
+                      context.go(AppRoutes.manualOnboarding);
                     },
                   ),
                   _NavChip(
@@ -194,7 +195,7 @@ class DevToolsOverlay extends StatelessWidget {
                     icon: Icons.dashboard,
                     onTap: () {
                       Navigator.pop(context);
-                      context.go('/dashboard');
+                      context.go(AppRoutes.dashboard);
                     },
                   ),
                   _NavChip(
@@ -202,7 +203,7 @@ class DevToolsOverlay extends StatelessWidget {
                     icon: Icons.settings,
                     onTap: () {
                       Navigator.pop(context);
-                      context.go('/settings');
+                      context.go(AppRoutes.settings);
                     },
                   ),
                 ],
@@ -218,7 +219,7 @@ class DevToolsOverlay extends StatelessWidget {
                     await appState.completeOnboarding();
                     if (context.mounted) {
                       Navigator.pop(context);
-                      context.go('/dashboard');
+                      context.go(AppRoutes.dashboard);
                     }
                   },
                   child: const Row(

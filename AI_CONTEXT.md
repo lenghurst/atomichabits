@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 40 - DeepSeek Optimization  
+> **Current Phase:** Phase 41 - Navigation Architecture  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -52,7 +52,7 @@
 
 ---
 
-## Current State: Phase 40
+## Current State: Phase 41
 
 ### What's Working
 
@@ -75,6 +75,7 @@
 | **38** | In-App Log Console for debugging | ✅ |
 | **39** | Logging consolidation, Oliver backdoor removed | ✅ |
 | **40** | DeepSeek `response_format: json_object` | ✅ |
+| **41** | Router extraction, route constants, redirect logic | ✅ |
 
 ### Key Files Changed
 
@@ -83,7 +84,10 @@
 | `lib/data/services/gemini_live_service.dart` | WebSocket connection with verbose logging |
 | `lib/core/logging/log_buffer.dart` | Centralized log storage (NEW) |
 | `lib/features/dev/debug_console_view.dart` | Log viewer widget (NEW) |
-| `lib/features/dev/dev_tools_overlay.dart` | Added "View Gemini Logs" button |
+| `lib/features/dev/dev_tools_overlay.dart` | Added "View Gemini Logs" button, route constants |
+| `lib/config/router/app_routes.dart` | Centralised route constants (NEW) |
+| `lib/config/router/app_router.dart` | Extracted GoRouter configuration (NEW) |
+| `lib/main.dart` | Reduced by ~180 lines (routes extracted) |
 
 ---
 
@@ -95,7 +99,10 @@
 lib/
 ├── config/                     # Configuration
 │   ├── ai_model_config.dart        # AI model settings
-│   └── niche_config.dart           # Target niches
+│   ├── niche_config.dart           # Target niches
+│   └── router/                     # Navigation (Phase 41)
+│       ├── app_routes.dart             # Route constants
+│       └── app_router.dart             # GoRouter config
 │
 ├── core/                       # Core utilities
 │   └── logging/

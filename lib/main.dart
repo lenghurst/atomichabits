@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+// Phase 41: Centralised Router
+import 'config/router/app_router.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/app_state.dart';
@@ -17,31 +20,14 @@ import 'data/services/voice_session_manager.dart';
 import 'config/ai_model_config.dart';
 import 'config/supabase_config.dart';
 import 'core/error_boundary.dart';
-import 'features/onboarding/onboarding_screen.dart';
-import 'features/onboarding/conversational_onboarding_screen.dart';
-import 'features/onboarding/voice_coach_screen.dart';
-import 'features/onboarding/identity_first/identity_access_gate_screen.dart';
-import 'features/onboarding/identity_first/witness_investment_screen.dart';
-import 'features/onboarding/identity_first/pact_tier_selector_screen.dart';
-import 'features/onboarding/identity_first/value_proposition_screen.dart';
-import 'features/dashboard/habit_list_screen.dart';
-import 'features/today/today_screen.dart';
-import 'features/settings/settings_screen.dart';
-import 'features/history/history_screen.dart';
-import 'features/analytics/analytics_screen.dart';
-import 'features/settings/data_management_screen.dart';
-import 'features/settings/habit_edit_screen.dart';
-import 'features/contracts/create_contract_screen.dart';
-import 'features/contracts/join_contract_screen.dart';
-import 'features/contracts/contracts_list_screen.dart';
+// Phase 41: Screen imports moved to app_router.dart
 import 'data/services/contract_service.dart';
 import 'data/services/sound_service.dart';
 import 'data/services/feedback_service.dart';
 import 'data/services/deep_link_service.dart';
 import 'data/services/witness_service.dart';
 import 'config/niche_config.dart';
-import 'features/witness/witness_accept_screen.dart';
-import 'features/witness/witness_dashboard.dart';
+// Phase 41: Witness screen imports moved to app_router.dart
 
 // Phase 34: Shadow Wiring - New Architecture (Dark Launch)
 // These providers are initialized but not yet consumed by UI
@@ -259,192 +245,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     
-    // Initialize Router ONCE to prevent recreation loops on state changes
-    _router = GoRouter(
-      initialLocation: widget.appState.hasCompletedOnboarding ? '/dashboard' : '/',
-      refreshListenable: widget.appState, // Listen to app state changes for redirects
-      routes: [
-        // Phase 29: Value First Flow (Second Council of Five)
-        // All new users start with the Hook Screen (value proposition)
-        // Then proceed to identity declaration + OAuth
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const ValuePropositionScreen(),
-        ),
-        // Legacy onboarding routes (accessible via Developer Mode or direct navigation)
-        GoRoute(
-          path: '/onboarding/chat',
-          builder: (context, state) => const ConversationalOnboardingScreen(isOnboarding: true),
-        ),
-        // Phase 64: Distinct route for adding habits (avoids onboarding loop)
-        GoRoute(
-          path: '/habit/add',
-          builder: (context, state) => const ConversationalOnboardingScreen(isOnboarding: false),
-        ),
-        // Voice onboarding: Gemini Live API (Phase 27.5)
-        GoRoute(
-          path: '/onboarding/voice',
-          builder: (context, state) => const VoiceCoachScreen(),
-        ),
-        // Manual onboarding: Form UI (Tier 3 fallback)
-        GoRoute(
-          path: '/onboarding/manual',
-          builder: (context, state) => const OnboardingScreen(),
-        ),
-        
-        // ========== Identity First Onboarding (Phase 27.17) ==========
-        // New onboarding flow based on Figma designs
-        GoRoute(
-          path: '/onboarding/identity',
-          builder: (context, state) => const IdentityAccessGateScreen(),
-        ),
-        GoRoute(
-          path: '/onboarding/witness',
-          builder: (context, state) => WitnessInvestmentScreen(
-            voiceSessionManager: context.read<VoiceSessionManager>(),
-          ),
-        ),
-        GoRoute(
-          path: '/onboarding/tier',
-          builder: (context, state) => const PactTierSelectorScreen(),
-        ),
-        
-        // ========== Phase 19: Side Door Landing Pages ==========
-        // Phase 28.4 (Musk): Route consolidation with preset identities
-        // Each niche gets its own "front door" with pre-filled identity
-        // Eliminates the old ConversationalOnboardingScreen entirely
-        
-        // Developer door: r/programming, HackerNews
-        GoRoute(
-          path: '/devs',
-          builder: (context, state) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<OnboardingOrchestrator>().setNicheFromUrl('/devs');
-            });
-            return const IdentityAccessGateScreen(
-              presetIdentity: 'A World-Class Developer',
-            );
-          },
-        ),
-        // Writer door: r/writing, Medium
-        GoRoute(
-          path: '/writers',
-          builder: (context, state) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<OnboardingOrchestrator>().setNicheFromUrl('/writers');
-            });
-            return const IdentityAccessGateScreen(
-              presetIdentity: 'A Best-Selling Author',
-            );
-          },
-        ),
-        // Scholar door: r/GradSchool, academic Twitter
-        GoRoute(
-          path: '/scholars',
-          builder: (context, state) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<OnboardingOrchestrator>().setNicheFromUrl('/scholars');
-            });
-            return const IdentityAccessGateScreen(
-              presetIdentity: 'A Distinguished Scholar',
-            );
-          },
-        ),
-        // Language learner door: Duolingo refugees
-        GoRoute(
-          path: '/languages',
-          builder: (context, state) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<OnboardingOrchestrator>().setNicheFromUrl('/languages');
-            });
-            return const IdentityAccessGateScreen(
-              presetIdentity: 'A Fluent Polyglot',
-            );
-          },
-        ),
-        // Indie maker door: IndieHackers
-        GoRoute(
-          path: '/makers',
-          builder: (context, state) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<OnboardingOrchestrator>().setNicheFromUrl('/makers');
-            });
-            return const IdentityAccessGateScreen(
-              presetIdentity: 'A Prolific Maker',
-            );
-          },
-        ),
-        // Dashboard: Multi-habit list (Phase 4)
-        GoRoute(
-          path: '/dashboard',
-          builder: (context, state) => const HabitListScreen(),
-        ),
-        // Today: Focus mode for single habit (Phase 4 updated)
-        GoRoute(
-          path: '/today',
-          builder: (context, state) => const TodayScreen(),
-        ),
-        GoRoute(
-          path: '/settings',
-          builder: (context, state) => const SettingsScreen(),
-        ),
-        // History: Calendar view (Phase 5)
-        GoRoute(
-          path: '/history',
-          builder: (context, state) => const HistoryScreen(),
-        ),
-        // Analytics: Dashboard with charts (Phase 10)
-        GoRoute(
-          path: '/analytics',
-          builder: (context, state) => const AnalyticsScreen(),
-        ),
-        // Data Management: Backup & Restore (Phase 11)
-        GoRoute(
-          path: '/data-management',
-          builder: (context, state) => const DataManagementScreen(),
-        ),
-        // Habit Edit: Edit habit properties + stacking (Phase 13)
-        GoRoute(
-          path: '/habit/:habitId/edit',
-          builder: (context, state) {
-            final habitId = state.pathParameters['habitId'] ?? '';
-            return HabitEditScreen(habitId: habitId);
-          },
-        ),
-        // Phase 16.2: Contracts routes
-        GoRoute(
-          path: '/contracts',
-          builder: (context, state) => const ContractsListScreen(),
-        ),
-        GoRoute(
-          path: '/contracts/create',
-          builder: (context, state) {
-            final habitId = state.uri.queryParameters['habitId'];
-            return CreateContractScreen(habitId: habitId);
-          },
-        ),
-        // Phase 16.4: Deep Link for contract join
-        GoRoute(
-          path: '/contracts/join/:inviteCode',
-          builder: (context, state) {
-            final inviteCode = state.pathParameters['inviteCode'] ?? '';
-            return JoinContractScreen(inviteCode: inviteCode);
-          },
-        ),
-        // Phase 22: Witness routes (The Accountability Loop)
-        GoRoute(
-          path: '/witness',
-          builder: (context, state) => const WitnessDashboard(),
-        ),
-        GoRoute(
-          path: '/witness/accept/:inviteCode',
-          builder: (context, state) {
-            final inviteCode = state.pathParameters['inviteCode'] ?? '';
-            return WitnessAcceptScreen(inviteCode: inviteCode);
-          },
-        ),
-      ],
-    );
+    // Phase 41: Use centralised AppRouter instead of inline routes
+    // This reduces main.dart by ~180 lines and enables:
+    // - Route constants (AppRoutes.dashboard)
+    // - Redirect logic (auth/onboarding guards)
+    // - Single source of truth for navigation
+    _router = AppRouter.createRouter(widget.appState);
     
     // Phase 21.1: Initialize deep link service with router
     widget.deepLinkService.setRouter(_router);
