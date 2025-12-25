@@ -276,15 +276,28 @@ class AppState extends ChangeNotifier {
   /// Returns true if user has premium access.
   /// TODO(Phase 35): Remove Oliver Backdoor after NYE verification.
   bool get isPremium {
-    // Oliver Backdoor: Grant Tier 2 access for verification testing
+    // 1. Developer Mode Override (for testing)
+    if (_settings.developerMode && kDebugMode) {
+      // Uncomment to force global premium in debug mode:
+      // return true;
+    }
+    
+    // 2. Oliver Backdoor: Grant Tier 2 access for verification testing
+    // ROBUST: Case-insensitive and trimmed to handle email variations
     try {
       final currentUser = Supabase.instance.client.auth.currentUser;
-      if (currentUser?.email == 'oliver.longhurst@gmail.com') {
+      final email = currentUser?.email?.trim().toLowerCase() ?? '';
+      if (email == 'oliver.longhurst@gmail.com') {
+        if (kDebugMode) {
+          debugPrint('🔓 [AppState] Oliver Backdoor: ACCESS GRANTED for $email');
+        }
         return true;
       }
     } catch (_) {
       // Supabase not initialized - fall through to stored value
     }
+    
+    // 3. Standard Premium Check
     return _isPremium;
   }
 

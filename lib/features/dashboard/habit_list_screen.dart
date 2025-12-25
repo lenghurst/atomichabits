@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -439,6 +440,21 @@ class HabitListScreen extends StatelessWidget {
                   context.go('/onboarding/manual');
                 },
               ),
+              // DEBUG: Force Voice Coach (bypasses premium check)
+              if (kDebugMode || appState.settings.developerMode)
+                ListTile(
+                  leading: const Icon(Icons.bug_report, color: Colors.redAccent),
+                  title: const Text(
+                    'DEBUG: Force Voice Coach',
+                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text('Bypass premium check for testing'),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    debugPrint('🐞 [Debug] Forcing navigation to Voice Coach');
+                    context.push('/onboarding/voice');
+                  },
+                ),
             ],
           ),
         ),

@@ -217,8 +217,16 @@ class DeepSeekService extends ChangeNotifier {
   /// 
   /// Phase 24.D: Uses injected _client for testability
   Future<String> _makeApiRequest(List<Map<String, dynamic>> messages) async {
+    // Phase 34.4: Validate API key before making request
+    if (apiKey.isEmpty) {
+      debugPrint('❌ DeepSeekService: API Key is MISSING!');
+      debugPrint('❌ Build with: flutter build apk --debug --dart-define-from-file=secrets.json');
+      throw DeepSeekException('API key not configured. Check secrets.json and rebuild.');
+    }
+    
     if (kDebugMode) {
       debugPrint('DeepSeekService: Sending request with ${messages.length} messages');
+      debugPrint('DeepSeekService: API key starts with: ${apiKey.substring(0, apiKey.length > 5 ? 5 : apiKey.length)}...');
     }
     
     try {
