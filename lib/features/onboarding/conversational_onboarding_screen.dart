@@ -10,6 +10,7 @@ import '../../data/models/onboarding_data.dart' as onboarding;
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
 import '../../data/services/experimentation_service.dart';
+import '../../config/ai_model_config.dart';
 import 'widgets/chat_message_bubble.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -250,9 +251,12 @@ class _ConversationalOnboardingScreenState
 
   /// Add an error message to the chat
   void _addErrorMessage(String error) {
+    // Include API key debug info in debug builds
+    final debugInfo = AIModelConfig.debugKeyStatus;
+    
     setState(() {
       _messages.add(ChatMessage.assistant(
-        content: "I'm having trouble connecting. Would you like to try again, or switch to manual entry?\n\nError: $error",
+        content: "I'm having trouble connecting. Would you like to try again, or switch to manual entry?\n\nError: $error\n\n--- DEBUG INFO ---\n$debugInfo",
         status: MessageStatus.error,
       ));
     });

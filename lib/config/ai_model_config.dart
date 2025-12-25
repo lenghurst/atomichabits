@@ -56,6 +56,22 @@ class AIModelConfig {
   
   /// Check if any AI is available
   static bool get hasAnyAI => hasDeepSeekKey || hasGeminiKey;
+  
+  /// Debug: Get a user-visible diagnostic string for API key status
+  /// This shows in the app UI to help diagnose configuration issues
+  static String get debugKeyStatus {
+    final lines = <String>[];
+    lines.add('API Key Status:');
+    lines.add('• DeepSeek: ${hasDeepSeekKey ? "✓ Loaded (${deepSeekApiKey.substring(0, 5)}...)" : "✗ NOT LOADED"}');
+    lines.add('• Gemini: ${hasGeminiKey ? "✓ Loaded (${geminiApiKey.substring(0, 5)}...)" : "✗ NOT LOADED"}');
+    lines.add('• OpenAI: ${hasOpenAiKey ? "✓ Loaded" : "✗ NOT LOADED"}');
+    if (!hasAnyAI) {
+      lines.add('');
+      lines.add('⚠️ No AI keys loaded!');
+      lines.add('Build with: flutter build apk --debug --dart-define-from-file=secrets.json');
+    }
+    return lines.join('\n');
+  }
 
   // === MODEL VERSIONS (DECEMBER 2025 - VERIFIED ENDPOINTS) ===
   
