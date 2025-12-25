@@ -1,3 +1,25 @@
+## [6.1.0] - 2025-12-25 - Phase 42: "Soul Capture Onboarding"
+
+### Added
+- **Sherlock Protocol:** AI extracts psychological traits through deduction, not direct questioning
+- **Tool Schema:** `lib/config/ai_tools_config.dart` - `update_user_psychometrics` function declaration
+- **Holy Trinity Fields:** `antiIdentityLabel`, `failureArchetype`, `resistanceLieLabel` + contexts in `PsychometricProfile`
+- **Dynamic Prompts:** `lib/data/services/ai/prompt_factory.dart` - Injects user psychology into AI context
+- **Session Modes:** `VoiceSessionMode.onboarding` and `VoiceSessionMode.coaching` in VoiceSessionManager
+
+### Changed
+- **GeminiLiveService:** Now supports tool calling via `onToolCall` callback and `sendToolResponse()` method
+- **VoiceSessionManager:** Orchestrates onboarding with tools enabled, routes tool_call to PsychometricProvider
+- **PsychometricProvider:** Added `updateFromToolCall()` for real-time Hive persistence
+- **ai_prompts.dart:** Added `voiceOnboardingSystemPrompt` (Sherlock Protocol conversation flow)
+
+### Technical Details
+- Tool calls are saved **immediately** (Margaret Hamilton's crash recovery principle)
+- Holy Trinity maps to user retention funnel: Day 1 (Anti-Identity), Day 7 (Failure Archetype), Day 30+ (Resistance Lie)
+- AI uses 3-phase conversation: Describe → Deduce → Confirm & Save
+
+---
+
 ## [6.0.9] - 2025-12-25 - Phase 41.3: "Documentation Overhaul"
 
 ### Documentation

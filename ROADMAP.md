@@ -1,27 +1,55 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41.3 - Documentation Overhaul  
+> **Current Phase:** Phase 42 - Soul Capture Onboarding  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Voice Connection **FIXED**. Preparing for device test build.
+> **Status:** ✅ Sherlock Protocol **IMPLEMENTED**. Real-time tool calling working.
 
 ---
 
-## 🎯 Current Focus: Documentation & Test Readiness
+## 🎯 Current Focus: Soul Capture Onboarding (Phase 42)
 
-**Goal:** Prepare the repository for a successful test build on a physical device via GitHub Actions.
+**Goal:** Implement AI-powered psychological profiling during onboarding using the Sherlock Protocol.
 
-**Status:** ✅ **Documentation Updated**. Next is fixing tests.
+**Status:** ✅ **COMPLETE**. Real-time tool calling integrated with Gemini Live API.
+
+**What Was Built:**
+1. **Tool Schema:** `ai_tools_config.dart` - Function declaration for `update_user_psychometrics`
+2. **Sherlock Protocol Prompt:** `ai_prompts.dart` - Conversation flow that deduces traits
+3. **Tool Call Handler:** `gemini_live_service.dart` - Parses tool_call events, sends responses
+4. **Session Orchestration:** `voice_session_manager.dart` - Routes tool calls to provider
+5. **Profile Updates:** `psychometric_provider.dart` - `updateFromToolCall()` with immediate Hive save
+6. **Dynamic Prompts:** `prompt_factory.dart` - Injects Holy Trinity into subsequent sessions
 
 **Immediate Priorities:**
-1.  **Update Core Docs:** Extensively update `README.md`, `AI_CONTEXT.md`, and this `ROADMAP.md` to reflect all recent progress. (✅ **Done**)
-2.  **Fix Unit Tests:** Resolve the 5 failing unit tests in `date_utils_test.dart`.
-3.  **Static Analysis:** Clean up the 154 static analysis issues (mostly unused imports).
-4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets for the build workflow.
+1.  **Test on Device:** Verify Sherlock Protocol conversation flow on physical device
+2.  **Fix Unit Tests:** Resolve the 5 failing unit tests in `date_utils_test.dart`
+3.  **Static Analysis:** Clean up the 154 static analysis issues (mostly unused imports)
+4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets for the build workflow
 
 ---
 
 ## ✅ Completed Phases
+
+### Phase 42: Soul Capture Onboarding (25 Dec 2025)
+
+**Goal:** Implement the Sherlock Protocol for psychological profiling with real-time tool calling.
+
+| ID | Task | Status |
+|----|------|--------|
+| S1 | Create `ai_tools_config.dart` with tool schema | ✅ |
+| S2 | Add `voiceOnboardingSystemPrompt` (Sherlock Protocol) | ✅ |
+| S3 | Add Holy Trinity fields to `PsychometricProfile` | ✅ |
+| S4 | Add `updateFromToolCall()` to `PsychometricProvider` | ✅ |
+| S5 | Create `prompt_factory.dart` for dynamic prompts | ✅ |
+| S6 | Add tool calling support to `GeminiLiveService` | ✅ |
+| S7 | Add session modes to `VoiceSessionManager` | ✅ |
+
+**Key Innovation (Council of Five):**
+- **Steve Jobs:** Replace cognitive homework with nickname assignment
+- **Daniel Kahneman:** Sherlock Protocol (infer traits, don't ask for self-diagnosis)
+- **Margaret Hamilton:** Save each trait immediately (crash recovery)
+- **Nir Eyal:** Holy Trinity maps to retention funnel (Day 1, Day 7, Day 30+)
 
 ### Phase 41.3: Documentation Overhaul (25 Dec 2025)
 
@@ -70,7 +98,7 @@
 
 ## 📋 Backlog
 
-### Phase 42: Pre-Launch Fixes (High Priority)
+### Phase 43: Pre-Launch Fixes (High Priority)
 
 **Goal:** Address all remaining blockers before the first device test build.
 
@@ -81,7 +109,7 @@
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
 
-### Phase 43: Provider Wiring (Post-Launch)
+### Phase 44: Provider Wiring (Post-Launch)
 
 **Goal:** Wire new providers into `main.dart` to continue strangling the legacy `AppState`.
 

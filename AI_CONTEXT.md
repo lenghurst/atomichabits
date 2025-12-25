@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
+> **Current Phase:** Phase 42 - Soul Capture Onboarding  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -52,20 +52,21 @@
 
 ---
 
-## Current State: Phase 41.2
+## Current State: Phase 42
 
 ### What's Working
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
-| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` confirmed working |
-| **In-App Log Console** | ✅ New | DevTools → View Gemini Logs |
+| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with tool calling |
+| **Soul Capture Onboarding** | ✅ **NEW** | Sherlock Protocol with real-time tool calls |
+| **In-App Log Console** | ✅ Working | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
 | **Onboarding Flow** | ✅ Working | Voice-first with fallback |
 | **Dashboard** | ✅ Working | Habit tracking |
 
-### Recent Fixes (Phases 35-41)
+### Recent Fixes (Phases 35-42)
 
 | Phase | Fix | Status |
 |-------|-----|--------|
@@ -76,20 +77,20 @@
 | **39** | Logging consolidation, Oliver backdoor removed | ✅ |
 | **40** | DeepSeek `response_format: json_object` | ✅ |
 | **41** | Router extraction, route constants, redirect logic | ✅ |
-| **41.1** | Priority 1 screens migrated to AppRoutes | ✅ |
 | **41.2** | All 44 navigation calls migrated to AppRoutes | ✅ |
+| **42** | Soul Capture Onboarding with Sherlock Protocol | ✅ |
 
-### Key Files Changed
+### Key Files Changed (Phase 42)
 
 | File | Changes |
 |------|---------|
-| `lib/data/services/gemini_live_service.dart` | WebSocket connection with verbose logging |
-| `lib/core/logging/log_buffer.dart` | Centralized log storage (NEW) |
-| `lib/features/dev/debug_console_view.dart` | Log viewer widget (NEW) |
-| `lib/features/dev/dev_tools_overlay.dart` | Added "View Gemini Logs" button, route constants |
-| `lib/config/router/app_routes.dart` | Centralised route constants (NEW) |
-| `lib/config/router/app_router.dart` | Extracted GoRouter configuration (NEW) |
-| `lib/main.dart` | Reduced by ~180 lines (routes extracted) |
+| `lib/config/ai_tools_config.dart` | Tool schema for `update_user_psychometrics` (NEW) |
+| `lib/config/ai_prompts.dart` | Sherlock Protocol prompt (voiceOnboardingSystemPrompt) |
+| `lib/domain/entities/psychometric_profile.dart` | Holy Trinity fields added |
+| `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` method |
+| `lib/data/services/ai/prompt_factory.dart` | Dynamic prompt generation (NEW) |
+| `lib/data/services/gemini_live_service.dart` | Tool calling support, `sendToolResponse()` |
+| `lib/data/services/voice_session_manager.dart` | `VoiceSessionMode`, orchestration |
 
 ---
 
@@ -101,6 +102,8 @@
 lib/
 ├── config/                     # Configuration
 │   ├── ai_model_config.dart        # AI model settings
+│   ├── ai_prompts.dart             # Sherlock Protocol prompts (Phase 42)
+│   ├── ai_tools_config.dart        # Tool schemas (Phase 42)
 │   ├── niche_config.dart           # Target niches
 │   └── router/                     # Navigation (Phase 41)
 │       ├── app_routes.dart             # Route constants
@@ -125,10 +128,12 @@ lib/
 │   │   └── psychometric_provider.dart
 │   │
 │   ├── services/               # External Services
-│   │   ├── gemini_live_service.dart    # Voice AI WebSocket
+│   │   ├── gemini_live_service.dart    # Voice AI + Tool Calling (Phase 42)
 │   │   ├── audio_recording_service.dart
-│   │   ├── voice_session_manager.dart
-│   │   └── ai_service_manager.dart
+│   │   ├── voice_session_manager.dart  # Session Orchestration (Phase 42)
+│   │   ├── ai_service_manager.dart
+│   │   └── ai/
+│   │       └── prompt_factory.dart     # Dynamic Prompts (Phase 42)
 │   │
 │   └── app_state.dart          # Legacy (being strangled)
 │
@@ -152,16 +157,16 @@ lib/
         └── habit_list_screen.dart
 ```
 
-### Voice Architecture
+### Voice Architecture (Phase 42: Tool Calling)
 
 ```
 User → Voice Coach Screen
          ↓
      Voice Session Manager
+     (mode: onboarding / coaching)
          ↓
      Gemini Live Service
-         ↓
-     [Auth Check]
+     (tools: AiToolsConfig.psychometricTool)
          ↓
    ┌─────┴─────┐
    │           │
@@ -170,16 +175,36 @@ Edge Fn     (Direct API)
    │           │
    └─────┬─────┘
          ↓
-   Ephemeral Token
-         ↓
    IOWebSocketChannel.connect()
    + Custom Headers (Phase 37)
          ↓
-   Gemini Live API
-   (wss://generativelanguage.googleapis.com/ws/...)
+   Gemini Live API (WebSocket)
          ↓
-   Real-time Voice
+   ┌─────┴─────────────────┐
+   │                       │
+Audio/Transcription    tool_call event
+   │                       │
+   │              PsychometricProvider
+   │              .updateFromToolCall()
+   │                       │
+   │              Hive (immediate save)
+   │                       │
+   └─────┬─────────────────┘
+         ↓
+   sendToolResponse() → AI continues
 ```
+
+### The Sherlock Protocol (Phase 42)
+
+AI extracts 3 psychological traits through deduction:
+
+| Trait | Purpose | Example |
+|-------|---------|---------|
+| **Anti-Identity** | The villain they fear becoming | "The Sleepwalker" |
+| **Failure Archetype** | Why their past habits died | PERFECTIONIST, NOVELTY_SEEKER |
+| **Resistance Lie** | The excuse they tell themselves | "The Bargain" |
+
+Each trait is saved **immediately** via tool call (crash recovery).
 
 ### Logging Architecture (Phase 38)
 

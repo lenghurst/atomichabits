@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 41.2 | Navigation fully migrated to AppRoutes |
+| **Mobile App** | 🟢 Phase 42 | Soul Capture Onboarding with Sherlock Protocol |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **WORKING** | Gemini Live API (`gemini-2.5-flash-native-audio-preview-12-2025`) |
+| **Voice AI** | ✅ **WORKING** | Gemini Live API with Real-time Tool Calling |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 
 > **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 41.2 - Navigation Migration Complete  
+> **Current Phase:** Phase 42 - Soul Capture Onboarding  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
@@ -122,6 +122,8 @@ Create `secrets.json` in project root:
 lib/
 ├── config/                 # App configuration
 │   ├── ai_model_config.dart    # AI model settings
+│   ├── ai_prompts.dart         # Phase 42: Sherlock Protocol prompts
+│   ├── ai_tools_config.dart    # Phase 42: Tool schemas for function calling
 │   └── router/
 │       ├── app_routes.dart     # Route constants (Phase 41)
 │       └── app_router.dart     # GoRouter config (Phase 41)
@@ -144,9 +146,11 @@ lib/
 │   │   └── psychometric_provider.dart
 │   │
 │   ├── services/           # External Services
-│   │   ├── gemini_live_service.dart    # Voice AI (Phase 35-38)
+│   │   ├── gemini_live_service.dart     # Phase 42: Tool calling support
 │   │   ├── audio_recording_service.dart
-│   │   └── voice_session_manager.dart
+│   │   ├── voice_session_manager.dart   # Phase 42: Orchestration
+│   │   └── ai/
+│   │       └── prompt_factory.dart      # Phase 42: Dynamic prompts
 │   │
 │   └── app_state.dart      # Legacy (being strangled)
 │
@@ -166,16 +170,16 @@ lib/
         └── voice_coach_screen.dart
 ```
 
-### Voice Architecture
+### Voice Architecture (Phase 42: Tool Calling)
 
 ```
 User → Voice Coach Screen
          ↓
      Voice Session Manager
+     (mode: onboarding/coaching)
          ↓
      Gemini Live Service
-         ↓
-     [Auth Check]
+     (tools: psychometricTool)
          ↓
    ┌─────┴─────┐
    │           │
@@ -184,12 +188,19 @@ Edge Fn     (Direct API)
    │           │
    └─────┬─────┘
          ↓
-   Ephemeral Token
+   Gemini Live API (WebSocket)
+   + Tool Calling Support
          ↓
-   Gemini Live API
-   (WebSocket)
+   ┌─────┴─────┐
+   │           │
+Audio     tool_call event
+   │           │
+   │     PsychometricProvider
+   │     → Hive (immediate save)
+   │           │
+   └─────┬─────┘
          ↓
-   Real-time Voice
+   tool_response → AI continues
 ```
 
 ---
