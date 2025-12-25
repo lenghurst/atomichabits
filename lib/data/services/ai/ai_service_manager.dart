@@ -49,6 +49,15 @@ class AIServiceManager extends ChangeNotifier {
   }
   
   void _initializeServices() {
+    // Debug: Log API key status
+    if (kDebugMode) {
+      debugPrint('AIServiceManager: DeepSeek key present: ${AIModelConfig.hasDeepSeekKey}');
+      debugPrint('AIServiceManager: Gemini key present: ${AIModelConfig.hasGeminiKey}');
+      if (AIModelConfig.deepSeekApiKey.isNotEmpty) {
+        debugPrint('AIServiceManager: DeepSeek key starts with: ${AIModelConfig.deepSeekApiKey.substring(0, 5)}...');
+      }
+    }
+    
     // Initialize DeepSeek if key available (Tier 1)
     if (AIModelConfig.hasDeepSeekKey) {
       _deepSeekService = DeepSeekService(
