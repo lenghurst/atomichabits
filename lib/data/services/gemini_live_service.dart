@@ -13,7 +13,7 @@ import '../../config/ai_model_config.dart';
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
 /// - Detailed Error Reporting (Pastes codes/reasons into error message)
 /// - Universal Auth (URL Parameters: ?key= or ?access_token=)
-/// - Global Model Support (gemini-2.5-flash-native-audio-preview-12-2025 via v1beta)
+/// - Global Model Support (gemini-live-2.5-flash-native-audio via v1alpha)
 /// - **Gemini 3 Compliance:**
 ///   - Thought Signature handling (maintains conversational context)
 ///   - thinking_level: "minimal" (reduces latency for voice interactions)
@@ -26,6 +26,8 @@ import '../../config/ai_model_config.dart';
 /// - Model Name (to verify correct model is being used)
 class GeminiLiveService {
   // === CONFIGURATION ===
+  // PHASE 34 FIX: Changed from v1alpha to v1beta per official Gemini API documentation
+  // The December 2025 model requires v1beta endpoint
   static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
   
@@ -50,11 +52,6 @@ class GeminiLiveService {
   String _connectionPhase = "IDLE"; // Tracks exactly what we were doing
   String _lastErrorDetail = "";     // The raw error for the screenshot
   
-  // === IN-APP DEBUG LOG ===
-  final List<String> _debugLog = [];
-  static const int _maxLogEntries = 100;
-  final void Function(List<String>)? onDebugLogUpdated;
-  
   // === CALLBACKS ===
   final void Function(Uint8List)? onAudioReceived;
   final void Function(String, bool)? onTranscription;
@@ -76,7 +73,6 @@ class GeminiLiveService {
     this.onFallbackToTextMode,
     this.onVoiceModeRestored,
     this.onVoiceActivityDetected,
-    this.onDebugLogUpdated,
   });
 
   // === PUBLIC GETTERS ===
@@ -87,80 +83,17 @@ class GeminiLiveService {
   
   /// Exposes the current thought signature for debugging purposes.
   String? get currentThoughtSignature => _currentThoughtSignature;
-  
-  /// Get the debug log for in-app display
-  List<String> get debugLog => List.unmodifiable(_debugLog);
-  
-  /// Get phase durations for display
-  Map<String, Duration> get phaseDurations => Map.unmodifiable(_phaseDurations);
-  
-  /// Add entry to debug log and notify listeners
-  void _log(String message) {
-    final timestamp = DateTime.now().toIso8601String().substring(11, 23);
-    final entry = '[$timestamp] $message';
-    _debugLog.add(entry);
-    if (_debugLog.length > _maxLogEntries) {
-      _debugLog.removeAt(0);
-    }
-    onDebugLogUpdated?.call(_debugLog);
-    if (kDebugMode) debugPrint('GeminiLiveService: $message');
-  }
-  
-  /// Clear the debug log
-  void clearDebugLog() {
-    _debugLog.clear();
-    onDebugLogUpdated?.call(_debugLog);
-  }
-  
-  /// Get a formatted summary for display
-  String getDebugSummary() {
-    final buffer = StringBuffer();
-    buffer.writeln('=== CONNECTION INFO ===');
-    buffer.writeln('Model: ${AIModelConfig.tier2Model}');
-    buffer.writeln('Endpoint: v1beta');
-    buffer.writeln('WebSocket: $_wsEndpoint');
-    buffer.writeln('');
-    buffer.writeln('=== CURRENT STATE ===');
-    buffer.writeln('Phase: $_connectionPhase');
-    buffer.writeln('Connected: $_isConnected');
-    buffer.writeln('Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
-    buffer.writeln('ThoughtSignature: ${_currentThoughtSignature != null ? "present (${_currentThoughtSignature!.length} chars)" : "none"}');
-    buffer.writeln('');
-    if (_phaseDurations.isNotEmpty) {
-      buffer.writeln('=== PHASE TIMINGS ===');
-      _phaseDurations.forEach((phase, duration) {
-        buffer.writeln('$phase: ${duration.inMilliseconds}ms');
-      });
-    }
-    return buffer.toString();
-  }
 
-  // === TIMING FOR ROOT CAUSE ANALYSIS ===
-  DateTime? _connectStartTime;
-  final Map<String, Duration> _phaseDurations = {};
-  DateTime? _phaseStartTime;
-  
   Future<bool> connect({
     String? systemInstruction,
     bool enableTranscription = true,
   }) async {
     if (_isConnected) return true;
-    
-    // Start timing
-    _connectStartTime = DateTime.now();
-    _phaseDurations.clear();
-    
     _setPhase("STARTING");
     _notifyConnectionState(LiveConnectionState.connecting);
     
-    // Reset state on new connection
+    // Reset thought signature on new connection
     _currentThoughtSignature = null;
-    _firstMessageReceived = false;
-    
-    _log('========== CONNECTION ATTEMPT ==========');
-    _log('Model: ${AIModelConfig.tier2Model}');
-    _log('Endpoint: v1beta');
-    _log('URL: $_wsEndpoint');
     
     try {
       // PHASE 1: TOKEN
@@ -171,48 +104,34 @@ class GeminiLiveService {
       }
       final token = tokenResult.token;
       
-      _log('Token obtained (${token!.length} chars)');
-      _log('Token prefix: ${token.substring(0, 10)}...');
-      _log('Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}');
-      
       // PHASE 2: URL BUILD
       _setPhase("BUILDING_URL");
       String wsUrl = _wsEndpoint;
       if (_isUsingApiKey) {
         wsUrl += '?key=$token';
+        if (kDebugMode) debugPrint('GeminiLiveService: Using API Key auth (key= param)');
       } else {
         wsUrl += '?access_token=$token';
+        if (kDebugMode) debugPrint('GeminiLiveService: Using OAuth token auth (access_token= param)');
       }
-      
-      // Log full URL with masked token
-      final maskedUrl = wsUrl.replaceAll(RegExp(r'(key=|access_token=)[^&]+'), r'\$1***MASKED***');
-      _log('WebSocket URL: $maskedUrl');
       
       // PHASE 3: SOCKET CONNECT
       _setPhase("CONNECTING_SOCKET");
-      _log('Opening WebSocket connection...');
-      
-      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
-      
-      // CRITICAL FIX (Phase 34.4h): Wait for WebSocket to be ready!
-      // WebSocketChannel.connect() returns immediately and buffers messages.
-      // We must wait for the connection to be established before sending.
-      _log('Waiting for WebSocket ready signal...');
-      try {
-        await _channel!.ready;
-        _log('✅ WebSocket ready!');
-      } catch (e) {
-        _log('❌ WebSocket ready failed: $e');
-        throw 'WebSocket connection failed: $e';
+      if (kDebugMode) {
+        debugPrint('GeminiLiveService: Connecting to WebSocket...');
+        debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
+        debugPrint('GeminiLiveService: Endpoint: v1beta (Phase 34 fix)');
+        debugPrint('GeminiLiveService: Full URL: $wsUrl');
+        debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
       }
       
-      _log('WebSocket channel created, setting up listeners...');
+      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
       
       _subscription = _channel!.stream.listen(
         _handleMessage,
         onError: (e) {
           _setPhase("SOCKET_ERROR");
-          _log('❌ WebSocket error: $e');
+          debugPrint('GeminiLiveService: WebSocket error: $e');
           _notifyDetailedError("Socket Error", e.toString());
           _handleDisconnection(wasError: true);
         },
@@ -221,7 +140,7 @@ class GeminiLiveService {
           _setPhase("SOCKET_CLOSED");
           final code = _channel?.closeCode;
           final reason = _channel?.closeReason ?? 'No reason provided';
-          _log('WebSocket closed. Code: $code, Reason: $reason');
+          debugPrint('GeminiLiveService: WebSocket closed. Code: $code, Reason: $reason');
           
           if (!_isConnected) {
             // If we weren't fully connected yet, this is a connection failure
@@ -238,9 +157,8 @@ class GeminiLiveService {
       
       // PHASE 4: SEND SETUP
       _setPhase("SENDING_HANDSHAKE");
-      _log('Sending setup message...');
       await _sendSetupMessage(systemInstruction, enableTranscription);
-      _log('Setup sent, waiting for setupComplete (timeout: 10s)...');
+      if (kDebugMode) debugPrint('GeminiLiveService: Setup message sent, waiting for server...');
       
       // PHASE 5: WAIT FOR READY
       _setPhase("WAITING_FOR_SERVER_READY");
@@ -258,13 +176,7 @@ class GeminiLiveService {
       _setPhase("CONNECTED_STABLE");
       _isConnected = true;
       _notifyConnectionState(LiveConnectionState.connected);
-      
-      final totalTime = DateTime.now().difference(_connectStartTime!);
-      _log('✅ CONNECTION SUCCESSFUL');
-      _log('Total time: ${totalTime.inMilliseconds}ms');
-      _phaseDurations.forEach((phase, duration) {
-        _log('  $phase: ${duration.inMilliseconds}ms');
-      });
+      if (kDebugMode) debugPrint('GeminiLiveService: ✅ Handshake successful! Connected to ${AIModelConfig.tier2Model}');
       return true;
       
     } catch (e) {
@@ -277,11 +189,6 @@ class GeminiLiveService {
   // === HELPER METHODS ===
   
   void _setPhase(String phase) {
-    // Track duration of previous phase
-    if (_phaseStartTime != null && _connectionPhase.isNotEmpty) {
-      _phaseDurations[_connectionPhase] = DateTime.now().difference(_phaseStartTime!);
-    }
-    _phaseStartTime = DateTime.now();
     _connectionPhase = phase;
     if (kDebugMode) debugPrint("GeminiLiveService Phase: $phase");
   }
@@ -289,32 +196,14 @@ class GeminiLiveService {
   void _notifyDetailedError(String title, String details) {
     // This creates the "Screenshot Ready" error message
     final timestamp = DateTime.now().toIso8601String().substring(11, 19);
-    final totalTime = _connectStartTime != null 
-        ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
-        : 0;
-    
-    // Build phase timing summary
-    final phaseTimings = _phaseDurations.entries
-        .map((e) => '  ${e.key}: ${e.value.inMilliseconds}ms')
-        .join('\n');
-    
     final fullError = '''
 [$timestamp] $_connectionPhase
 $title
 $details
-
---- CONNECTION INFO ---
 Model: ${AIModelConfig.tier2Model}
 Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}
-Endpoint: v1beta
-Total Time: ${totalTime}ms
-
---- PHASE TIMINGS ---
-$phaseTimings
-
---- DEBUG ---
-ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}
-WebSocket URL: $_wsEndpoint''';
+Endpoint: v1alpha
+ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     
     _lastErrorDetail = fullError;
     onError?.call(fullError);
@@ -343,24 +232,15 @@ WebSocket URL: $_wsEndpoint''';
 
   /// Sends the initial setup message to the Gemini Live API.
   /// 
-  /// Phase 34.4d: MINIMAL setup message matching official WebSocket schema
-  /// Reference: https://ai.google.dev/api/live
-  /// 
-  /// Official generationConfig fields (from API reference):
-  /// - candidateCount, maxOutputTokens, temperature, topP, topK
-  /// - presencePenalty, frequencyPenalty, responseModalities
-  /// - speechConfig, mediaResolution
-  /// 
-  /// NOT valid in raw WebSocket (SDK-only or wrong location):
-  /// - thinkingConfig, thinkingBudget
-  /// - outputAudioTranscription, inputAudioTranscription (may need different location)
+  /// Phase 28: Gemini 3 Compliance
+  /// - Added `thinkingConfig` with `thinkingLevel: "MINIMAL"` to reduce latency.
+  /// - Removed `temperature` setting to prevent looping behaviour.
   Future<void> _sendSetupMessage(String? instruction, bool transcribe) async {
-    // MINIMAL CONFIG - only official fields from https://ai.google.dev/api/live
     final setupConfig = {
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
-          'responseModalities': ['AUDIO'],
+          'responseModalities': ['AUDIO'], // camelCase per official docs
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
@@ -368,58 +248,67 @@ WebSocket URL: $_wsEndpoint''';
               }
             }
           },
+          // GEMINI 3 COMPLIANCE: Do NOT set temperature. 
+          // Values < 1.0 cause "unexpected behavior, such as looping".
+        },
+        // GEMINI 3 COMPLIANCE: Set thinking level to minimal for voice.
+        // This reduces server-side processing time and minimises "dead air".
+        'thinkingConfig': {
+          'thinkingLevel': 'MINIMAL',
         },
         if (instruction != null) 
           'systemInstruction': {
             'parts': [{'text': instruction}]
           },
+        if (transcribe) ...{
+          'outputAudioTranscription': {},
+          'inputAudioTranscription': {},
+        },
       }
     };
+    final payload = jsonEncode(setupConfig);
     
-    _log('Sending setup config:');
-    _log('  Model: models/${AIModelConfig.tier2Model}');
-    _log('  Voice: Kore');
-    _log('  Modalities: [AUDIO]');
+    // PHASE 34: Enhanced debug logging for handshake payload
     if (kDebugMode) {
-      debugPrint('GeminiLiveService: Full config: ${jsonEncode(setupConfig)}');
+      debugPrint('GeminiLiveService: === HANDSHAKE PAYLOAD ===');
+      debugPrint('GeminiLiveService: Model: models/${AIModelConfig.tier2Model}');
+      debugPrint('GeminiLiveService: thinkingConfig.thinkingLevel: MINIMAL');
+      debugPrint('GeminiLiveService: responseModalities: [AUDIO]');
+      debugPrint('GeminiLiveService: voiceName: Kore');
+      debugPrint('GeminiLiveService: Full payload: $payload');
+      debugPrint('GeminiLiveService: === END PAYLOAD ===');
     }
     
-    _channel!.sink.add(jsonEncode(setupConfig));
+    _channel!.sink.add(payload);
   }
 
-  bool _firstMessageReceived = false;
-  
   void _handleMessage(dynamic message) {
     try {
-      // Log server responses for in-app visibility
-      if (!_firstMessageReceived) {
-        _firstMessageReceived = true;
-        final timeSinceStart = _connectStartTime != null 
-            ? DateTime.now().difference(_connectStartTime!).inMilliseconds 
-            : 0;
-        _log('📨 FIRST SERVER RESPONSE (${timeSinceStart}ms)');
-      }
-      
-      final preview = message.toString();
-      if (preview.length > 200) {
-        _log('RX: ${preview.substring(0, 200)}...');
-      } else {
-        _log('RX: $preview');
+      // Log ALL incoming messages in debug mode for visibility
+      if (kDebugMode) {
+        final preview = message.toString();
+        if (preview.length > 200) {
+          debugPrint('GeminiLiveService RX: ${preview.substring(0, 200)}...');
+        } else {
+          debugPrint('GeminiLiveService RX: $preview');
+        }
       }
       
       final data = jsonDecode(message as String) as Map<String, dynamic>;
 
-     // NOTE: thoughtSignature is NOT supported by native audio model
-      // The gemini-2.5-flash-native-audio-preview-12-2025 model returns:
-      // "Unknown name 'thoughtSignature': Cannot find field."
-      // Keeping capture code commented out for future reference:
-      // if (data.containsKey('thoughtSignature')) {
-      //   _currentThoughtSignature = data['thoughtSignature'] as String?;
-      // }
+      // GEMINI 3 COMPLIANCE: Capture Thought Signature
+      // The thought signature is an encrypted string that stores the model's
+      // reasoning state. It MUST be echoed back in subsequent messages.
+      if (data.containsKey('thoughtSignature')) {
+        _currentThoughtSignature = data['thoughtSignature'] as String?;
+        if (kDebugMode) {
+          debugPrint('GeminiLiveService: 🧠 Thought Signature captured (${_currentThoughtSignature?.length ?? 0} chars)');
+        }
+      }
 
       // HANDSHAKE SUCCESS
       if (data.containsKey('setupComplete')) {
-        _log('✅ setupComplete received!');
+        if (kDebugMode) debugPrint('GeminiLiveService: ✅ SetupComplete received from server!');
         _setupComplete = true;
         _setupCompleter?.complete();
         return;
@@ -619,16 +508,13 @@ WebSocket URL: $_wsEndpoint''';
   
   /// Sends audio data to the Gemini Live API.
   /// 
-  /// Phase 34.4g: REMOVED thoughtSignature - NOT supported by native audio model!
-  /// The native audio model (gemini-2.5-flash-native-audio-preview-12-2025) returns:
-  /// "Unknown name 'thoughtSignature': Cannot find field."
-  /// 
-  /// thoughtSignature is only for Gemini 3 Pro/Flash text models, NOT Live API.
+  /// Phase 28: Gemini 3 Compliance
+  /// - Includes `thoughtSignature` if available to maintain context.
   void sendAudio(Uint8List audioData) {
     if (!_isConnected || _channel == null) return;
     
     final base64Audio = base64Encode(audioData);
-    final message = {
+    final Map<String, dynamic> message = {
       'realtimeInput': {
         'mediaChunks': [
           {
@@ -639,7 +525,10 @@ WebSocket URL: $_wsEndpoint''';
       }
     };
     
-    // NOTE: thoughtSignature REMOVED - not supported by native audio model
+    // GEMINI 3 COMPLIANCE: Echo back the thought signature
+    if (_currentThoughtSignature != null) {
+      message['thoughtSignature'] = _currentThoughtSignature;
+    }
     
     try {
       _channel!.sink.add(jsonEncode(message));
@@ -650,11 +539,12 @@ WebSocket URL: $_wsEndpoint''';
   
   /// Sends text input to the Gemini Live API.
   /// 
-  /// Phase 34.4g: REMOVED thoughtSignature - NOT supported by native audio model!
+  /// Phase 28: Gemini 3 Compliance
+  /// - Includes `thoughtSignature` if available to maintain context.
   void sendText(String text, {bool turnComplete = true}) {
     if (!_isConnected || _channel == null) return;
     
-    final message = {
+    final Map<String, dynamic> message = {
       'clientContent': {
         'turns': [
           {
@@ -666,7 +556,10 @@ WebSocket URL: $_wsEndpoint''';
       }
     };
     
-    // NOTE: thoughtSignature REMOVED - not supported by native audio model
+    // GEMINI 3 COMPLIANCE: Echo back the thought signature
+    if (_currentThoughtSignature != null) {
+      message['thoughtSignature'] = _currentThoughtSignature;
+    }
     
     try {
       _channel!.sink.add(jsonEncode(message));

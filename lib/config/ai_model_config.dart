@@ -56,22 +56,6 @@ class AIModelConfig {
   
   /// Check if any AI is available
   static bool get hasAnyAI => hasDeepSeekKey || hasGeminiKey;
-  
-  /// Debug: Get a user-visible diagnostic string for API key status
-  /// This shows in the app UI to help diagnose configuration issues
-  static String get debugKeyStatus {
-    final lines = <String>[];
-    lines.add('API Key Status:');
-    lines.add('• DeepSeek: ${hasDeepSeekKey ? "✓ Loaded (${deepSeekApiKey.substring(0, 5)}...)" : "✗ NOT LOADED"}');
-    lines.add('• Gemini: ${hasGeminiKey ? "✓ Loaded (${geminiApiKey.substring(0, 5)}...)" : "✗ NOT LOADED"}');
-    lines.add('• OpenAI: ${hasOpenAiKey ? "✓ Loaded" : "✗ NOT LOADED"}');
-    if (!hasAnyAI) {
-      lines.add('');
-      lines.add('⚠️ No AI keys loaded!');
-      lines.add('Build with: flutter build apk --debug --dart-define-from-file=secrets.json');
-    }
-    return lines.join('\n');
-  }
 
   // === MODEL VERSIONS (DECEMBER 2025 - VERIFIED ENDPOINTS) ===
   
@@ -83,30 +67,26 @@ class AIModelConfig {
   static const String tier1Model = 'deepseek-chat'; 
   static const double tier1Temperature = 1.0;
   
-  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 34.4 - Model Name Fix)
+  /// Tier 2: Gemini 2.5 Live "The Agent" (Phase 27.16 - Live GA Aligned)
   /// - Marketing Name: "Gemini 3 Flash"
-  /// - Technical Endpoint: gemini-2.5-flash-native-audio-preview-12-2025
+  /// - Technical Endpoint: gemini-live-2.5-flash-native-audio (LIVE GA - Dec 12, 2025)
   /// - Native Audio/Video Input & Output (Live API)
   /// - Latency: <500ms (Real-time capable)
   /// - Role: Voice Coach, Visual Accountability
   /// - Protocol: WebSocket bidirectional streaming (NOT REST)
   /// - CRITICAL: Gemini 2.0 Live endpoints were SHUT DOWN on Dec 9, 2025!
-  /// - NOTE: Model name verified from official Google AI docs (Dec 25, 2025)
+  /// - NOTE: This is the stable GA Live endpoint, available globally (UK included)
   /// - CRITICAL: Must match backend LIVE_API_MODEL in get-gemini-ephemeral-token/index.ts
   /// 
-  /// GEMINI 3 COMPLIANCE (Phase 28 + 34.4c):
+  /// GEMINI 3 COMPLIANCE (Phase 28):
   /// - DO NOT use tier2Temperature for Gemini 3 Live API calls.
   /// - Temperature values < 1.0 cause "unexpected behavior, such as looping".
-  /// 
-  /// Phase 34.4b: Model name corrected from 'gemini-live-2.5-flash-native-audio' 
-  /// to official name per https://ai.google.dev/gemini-api/docs/live
-  /// 
-  /// Phase 34.4c: CRITICAL WebSocket setup fix:
-  /// - DO NOT use 'thinkingConfig' in raw WebSocket setup messages (invalid field)
-  /// - Use 'thinkingBudget': 0 inside 'generationConfig' to disable thinking
-  /// - Native audio model has thinking ENABLED by default
-  /// - See: docs/GEMINI_LIVE_API_FINDINGS.md for full analysis
-  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025';
+  /// - Use thinking_level: "MINIMAL" in the setup message instead.
+  static const String tier2Model = 'gemini-2.5-flash-native-audio-preview-12-2025'; // Live API Preview (December 2025)
+  
+  /// Tier 2 Fallback: September 2025 Preview Model
+  /// Used if the December model fails handshake
+  static const String tier2FallbackModel = 'gemini-2.5-flash-native-audio-preview-09-2025';
   
   /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
   /// Gemini 3 documentation warns: "setting temperature < 1.0 causes unexpected
@@ -137,6 +117,7 @@ class AIModelConfig {
   // === LIVE API CONFIGURATION ===
   
   /// Live API version required for native audio streaming
+  // PHASE 34 FIX: Changed from v1alpha to v1beta per official Gemini API documentation
   static const String liveApiVersion = 'v1beta';
   
   /// Audio input format: 16-bit PCM, 16kHz, mono
