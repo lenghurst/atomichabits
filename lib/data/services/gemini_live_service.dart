@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io'; // Required for HandshakeException, SocketException
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -8,7 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
 
-/// Gemini Live API Service - Phase 36: Header Injection Fix
+/// Gemini Live API Service - Phase 37: Production-Ready Connection
 /// 
 /// Features:
 /// - "Black Box" Phase Tracking (Records exactly where it fails)
@@ -30,6 +31,12 @@ import '../../config/ai_model_config.dart';
 /// - Uses IOWebSocketChannel.connect() with explicit Host and User-Agent headers
 /// - Root cause: Dart's default WebSocket client lacks headers that GFE expects
 /// - See: docs/PHASE_36_ERROR_ANALYSIS.md
+/// 
+/// Phase 37 Fix (Genspark Feedback):
+/// - IMPROVED: Honest User-Agent header (Dart/3.x (flutter); co.thepact.app/x.x.x)
+/// - ADDED: await _channel!.ready to ensure handshake completes before proceeding
+/// - ADDED: Granular error handling (HandshakeException vs SocketException)
+/// - ADDED: URL validation assert for defensive programming
 /// 
 /// When connection fails, the error message will include:
 /// - [PHASE] Where exactly it failed
@@ -157,21 +164,51 @@ class GeminiLiveService {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
         debugPrint('GeminiLiveService: Endpoint: v1beta (Phase 34 fix)');
-        debugPrint('GeminiLiveService: Headers: Host + User-Agent (Phase 36 fix)');
+        debugPrint('GeminiLiveService: Headers: Honest UA (Phase 37 fix)');
         debugPrint('GeminiLiveService: Full URL: $wsUrl');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
       }
       
-      // PHASE 36 FIX: Use IOWebSocketChannel with custom headers to mimic Python client
-      // This fixes 403 Forbidden errors caused by GFE (Google Front End) rejecting
-      // connections that don't have the expected Host and User-Agent headers.
+      // PHASE 37: Defensive URL validation (catches config errors early)
+      assert(
+        wsUrl.contains('key=') || wsUrl.contains('access_token='),
+        '❌ Invalid WebSocket URL: Missing authentication parameter',
+      );
+      assert(
+        wsUrl.startsWith('wss://'),
+        '❌ Invalid WebSocket URL: Must use secure WebSocket (wss://)',
+      );
+      
+      // PHASE 37: Use IOWebSocketChannel with HONEST headers (not spoofing)
+      // This builds trust with WAFs (Web Application Firewalls) and is sustainable.
+      // Format: "Runtime/Version (Framework); PackageID/AppVersion"
       _channel = IOWebSocketChannel.connect(
         Uri.parse(wsUrl),
         headers: {
           'Host': 'generativelanguage.googleapis.com',
-          'User-Agent': 'goog-python-genai/0.1.0', // Mimic the working Python client
+          'User-Agent': 'Dart/3.5 (flutter); co.thepact.app/6.0.3', // Honest UA
         },
       );
+      
+      // PHASE 37: Wait for WebSocket handshake to complete before proceeding
+      // This ensures TCP + TLS + WebSocket upgrade are all successful.
+      try {
+        await _channel!.ready;
+        _addDebugLog('✅ WebSocket handshake successful');
+        if (kDebugMode) debugPrint('GeminiLiveService: ✅ WebSocket handshake successful. Protocol upgraded.');
+      } on HandshakeException catch (e) {
+        // Server rejected the connection (403, SSL mismatch, etc.)
+        _setPhase("HANDSHAKE_REJECTED");
+        _addDebugLog('⛔ Handshake rejected: $e');
+        _notifyDetailedError("Server Rejected Connection", "HandshakeException: $e");
+        rethrow;
+      } on SocketException catch (e) {
+        // Network failure (DNS, TCP, no internet)
+        _setPhase("NETWORK_FAILURE");
+        _addDebugLog('📡 Network failure: $e');
+        _notifyDetailedError("Network Failure", "SocketException: $e");
+        rethrow;
+      }
       
       _subscription = _channel!.stream.listen(
         _handleMessage,
