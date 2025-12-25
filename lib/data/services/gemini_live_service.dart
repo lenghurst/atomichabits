@@ -8,6 +8,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/ai_model_config.dart';
+import '../../core/logging/app_logger.dart';
 import '../../core/logging/log_buffer.dart';
 
 /// Gemini Live API Service - Phase 38: In-App Log Console
@@ -93,8 +94,8 @@ class GeminiLiveService {
   // === DEBUG LOG STATE ===
   final List<String> _debugLog = [];
   
-  // === PHASE 38: CENTRALIZED LOG BUFFER ===
-  final LogBuffer _logBuffer = LogBuffer();
+  // === PHASE 39: UNIFIED LOGGING ===
+  static const _logger = AppLogger('GeminiLive');
   
   GeminiLiveService({
     this.onAudioReceived,
@@ -122,7 +123,7 @@ class GeminiLiveService {
     onDebugLogUpdated?.call(_debugLog);
   }
   
-  /// Add an entry to the debug log (also writes to centralized LogBuffer)
+  /// Add an entry to the debug log (also writes to centralized LogBuffer via AppLogger)
   void _addDebugLog(String entry, {bool isError = false}) {
     final timestamp = DateTime.now().toIso8601String().substring(11, 19);
     _debugLog.add('[$timestamp] $entry');
@@ -131,8 +132,12 @@ class GeminiLiveService {
     }
     onDebugLogUpdated?.call(_debugLog);
     
-    // PHASE 38: Also write to centralized LogBuffer for In-App Console
-    _logBuffer.add('GeminiLive', entry, isError: isError);
+    // PHASE 39: Use unified AppLogger (which writes to LogBuffer automatically)
+    if (isError) {
+      _logger.error(entry);
+    } else {
+      _logger.info(entry);
+    }
   }
   String get connectionPhase => _connectionPhase;
   String get lastErrorDetail => _lastErrorDetail;
@@ -146,8 +151,8 @@ class GeminiLiveService {
   }) async {
     if (_isConnected) return true;
     
-    // PHASE 38: Add separator and start logging
-    _logBuffer.addSeparator('NEW CONNECTION ATTEMPT');
+    // PHASE 39: Add separator and start logging
+    LogBuffer.instance.addSeparator('NEW CONNECTION ATTEMPT');
     _addDebugLog('🚀 Starting connection sequence...');
     
     _setPhase("STARTING");

@@ -5,6 +5,30 @@ All notable changes to The Pact will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.5] - 2025-12-25 - Phase 39 & 41: "Logging Consolidation & Security Fix"
+
+### Security (CRITICAL)
+- **REMOVED** Oliver Backdoor from `app_state.dart` and `user_provider.dart`
+- Premium status now determined solely by stored value
+- No more hardcoded email privileges
+
+### Changed
+- **Unified logging system**: All logs now go through `AppLogger`
+- `AppLogger` automatically writes to `LogBuffer` for in-app console
+- `LogBuffer` now uses structured `LogEntry` with severity levels
+- `DebugConsoleView` shows level-based coloring (debug=grey, info=green, warning=orange, error=red)
+
+### Removed
+- **Deleted** `lib/utils/developer_logger.dart` (replaced by `AppLogger`)
+- Removed all `DevLog` usages across the codebase
+
+### Migration
+- `DevLog.voice()` → `_logger.info()`
+- `DevLog.error()` → `_logger.error()`
+- `DevLog.setEnabled()` → `AppLogger.globalEnabled = `
+
+---
+
 ## [6.0.4] - 2025-12-25 - Phase 38: "In-App Log Console"
 
 ### Added

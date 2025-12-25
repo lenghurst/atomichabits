@@ -13,7 +13,7 @@ import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
-import '../utils/developer_logger.dart';
+import '../core/logging/app_logger.dart';
 
 /// Enum for haptic feedback types
 enum HapticFeedbackType {
@@ -282,22 +282,7 @@ class AppState extends ChangeNotifier {
       // return true;
     }
     
-    // 2. Oliver Backdoor: Grant Tier 2 access for verification testing
-    // ROBUST: Case-insensitive and trimmed to handle email variations
-    try {
-      final currentUser = Supabase.instance.client.auth.currentUser;
-      final email = currentUser?.email?.trim().toLowerCase() ?? '';
-      if (email == 'oliver.longhurst@gmail.com') {
-        if (kDebugMode) {
-          debugPrint('🔓 [AppState] Oliver Backdoor: ACCESS GRANTED for $email');
-        }
-        return true;
-      }
-    } catch (_) {
-      // Supabase not initialized - fall through to stored value
-    }
-    
-    // 3. Standard Premium Check
+    // 2. Standard Premium Check (Oliver Backdoor REMOVED - Phase 41 Security Fix)
     return _isPremium;
   }
 
@@ -404,8 +389,8 @@ class AppState extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('⚙️ Loaded settings: $_settings');
       }
-      // Phase 27.17: Initialize developer logging based on saved settings
-      DevLog.setEnabled(_settings.developerMode && _settings.developerLogging);
+      // Phase 39: Initialize unified logging based on saved settings
+      AppLogger.globalEnabled = _settings.developerMode && _settings.developerLogging;
     }
 
     // Load user profile
@@ -1068,9 +1053,9 @@ class AppState extends ChangeNotifier {
     _settings = newSettings;
     await _saveToStorage();
     
-    // Phase 27.17: Update developer logging state
+    // Phase 39: Update unified logging state
     if (developerLoggingChanged || newSettings.developerMode != _settings.developerMode) {
-      DevLog.setEnabled(newSettings.developerMode && newSettings.developerLogging);
+      AppLogger.globalEnabled = newSettings.developerMode && newSettings.developerLogging;
     }
     
     // Handle notification changes

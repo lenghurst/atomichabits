@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/app_state.dart';
 import '../../../data/models/user_profile.dart';
 import '../../../data/services/auth_service.dart';
-import '../../../utils/developer_logger.dart';
+import '../../../core/logging/app_logger.dart';
 
 /// Identity Access Gate Screen
 /// 
@@ -43,6 +43,9 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
   final _identityController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
+  // Phase 39: Unified logging
+  static const _logger = AppLogger('Auth');
   
   bool _showEmailAuth = false;
   bool _isSignUp = true;
@@ -95,14 +98,14 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
       _errorMessage = null;
     });
 
-    DevLog.voice('User initiated Google Sign-In');
+    _logger.info('User initiated Google Sign-In');
 
     try {
       final authService = context.read<AuthService>();
       final result = await authService.signInWithGoogle();
 
       if (result.success && mounted) {
-        DevLog.voice('✅ Google Sign-In successful');
+        _logger.info('✅ Google Sign-In successful');
         // Save identity to user profile
         if (_identityController.text.isNotEmpty) {
           final appState = context.read<AppState>();
@@ -123,13 +126,13 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         setState(() {
           _errorMessage = result.error ?? 'Google sign-in failed';
         });
-        DevLog.error('❌ Google Sign-In failed: ${result.error}');
+        _logger.error('❌ Google Sign-In failed', result.error);
       }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
       });
-      DevLog.error('❌ Google Sign-In error: $e');
+      _logger.error('❌ Google Sign-In error', e);
     } finally {
       if (mounted) {
         setState(() {
@@ -152,7 +155,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
       _errorMessage = null;
     });
 
-    DevLog.voice('User initiated Email Auth (${_isSignUp ? "Sign Up" : "Sign In"})');
+    _logger.info('User initiated Email Auth (${_isSignUp ? "Sign Up" : "Sign In"})');
 
     try {
       final authService = context.read<AuthService>();
@@ -167,7 +170,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             );
 
       if (result.success && mounted) {
-        DevLog.voice('✅ Email Auth successful');
+        _logger.info('✅ Email Auth successful');
         // Save identity
         if (_identityController.text.isNotEmpty) {
           final appState = context.read<AppState>();
@@ -187,13 +190,13 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         setState(() {
           _errorMessage = result.error ?? 'Authentication failed';
         });
-        DevLog.error('❌ Email Auth failed: ${result.error}');
+        _logger.error('❌ Email Auth failed', result.error);
       }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
       });
-      DevLog.error('❌ Email Auth error: $e');
+      _logger.error('❌ Email Auth error', e);
     } finally {
       if (mounted) {
         setState(() {

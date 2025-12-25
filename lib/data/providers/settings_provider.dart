@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/app_settings.dart';
 import '../repositories/settings_repository.dart';
-import '../../utils/developer_logger.dart';
+import '../../core/logging/app_logger.dart';
 
 /// Enum for haptic feedback types
 enum HapticFeedbackType {
@@ -41,8 +41,8 @@ class SettingsProvider extends ChangeNotifier {
       final loadedSettings = await _repository.getSettings();
       if (loadedSettings != null) {
         _settings = loadedSettings;
-        // Initialize dev logging based on settings
-        DevLog.setEnabled(_settings.developerMode && _settings.developerLogging);
+        // Phase 39: Initialize unified logging based on settings
+        AppLogger.globalEnabled = _settings.developerMode && _settings.developerLogging;
       }
       _isLoading = false;
       notifyListeners();
@@ -62,7 +62,7 @@ class SettingsProvider extends ChangeNotifier {
     await _repository.saveSettings(_settings);
 
     if (developerLoggingChanged || developerModeChanged) {
-      DevLog.setEnabled(newSettings.developerMode && newSettings.developerLogging);
+      AppLogger.globalEnabled = newSettings.developerMode && newSettings.developerLogging;
     }
     notifyListeners();
   }
@@ -106,14 +106,14 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setDeveloperMode(bool enabled) async {
     _settings = _settings.copyWith(developerMode: enabled);
     await _repository.saveSettings(_settings);
-    DevLog.setEnabled(enabled && _settings.developerLogging);
+    AppLogger.globalEnabled = enabled && _settings.developerLogging;
     notifyListeners();
   }
 
   Future<void> setDeveloperLogging(bool enabled) async {
     _settings = _settings.copyWith(developerLogging: enabled);
     await _repository.saveSettings(_settings);
-    DevLog.setEnabled(_settings.developerMode && enabled);
+    AppLogger.globalEnabled = _settings.developerMode && enabled;
     notifyListeners();
   }
 

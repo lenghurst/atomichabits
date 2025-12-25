@@ -1,116 +1,106 @@
+// lib/core/logging/app_logger.dart
+// Phase 39: Logging Consolidation - Unified AppLogger
+//
+// This is the PRIMARY logging system for The Pact.
+// All logs go through AppLogger, which writes to:
+// 1. LogBuffer (for in-app debug console)
+// 2. Dart developer.log (for DevTools)
+// 3. Console print (in debug mode)
+
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
+import 'log_buffer.dart';
 
 /// Structured Logging Service for The Pact
 /// 
-/// Phase 32: Robustness Implementation
+/// Phase 39: Logging Consolidation
 /// 
 /// Provides severity-tagged logging with structured output for:
-/// - Production debugging
-/// - Error tracking
-/// - Performance monitoring
+/// - In-app debug console (LogBuffer)
+/// - DevTools (developer.log)
+/// - Console output (debugPrint)
 /// 
 /// Usage:
 /// ```dart
 /// final logger = AppLogger('AuthService');
 /// logger.info('User signed in', {'userId': '123'});
 /// logger.warning('Token expiring soon', {'expiresIn': '5m'});
-/// logger.error('Sign-in failed', {'error': e.toString()}, stackTrace);
+/// logger.error('Sign-in failed', e, stackTrace, {'userId': '123'});
 /// ```
 class AppLogger {
   final String tag;
   
+  /// Global flag to enable/disable all logging
+  static bool globalEnabled = true;
+
   /// Creates a logger instance with a specific tag (usually the class name).
-  AppLogger(this.tag);
-  
-  /// Log levels for structured logging.
-  static const String _levelDebug = 'DEBUG';
-  static const String _levelInfo = 'INFO';
-  static const String _levelWarning = 'WARNING';
-  static const String _levelError = 'ERROR';
-  
+  const AppLogger(this.tag);
+
   /// Debug-level logging. Only shown in debug builds.
   void debug(String message, [Map<String, dynamic>? context]) {
-    if (kDebugMode) {
-      _log(_levelDebug, message, context);
-    }
+    _log(LogLevel.debug, message, context);
   }
-  
+
   /// Info-level logging. General operational information.
   void info(String message, [Map<String, dynamic>? context]) {
-    _log(_levelInfo, message, context);
+    _log(LogLevel.info, message, context);
   }
-  
+
   /// Warning-level logging. Potential issues that don't break functionality.
   void warning(String message, [Map<String, dynamic>? context]) {
-    _log(_levelWarning, message, context);
+    _log(LogLevel.warning, message, context);
   }
-  
+
   /// Error-level logging. Failures that need attention.
   /// 
   /// Automatically captures and formats stack traces.
-  void error(String message, [Map<String, dynamic>? context, StackTrace? stackTrace]) {
-    _log(_levelError, message, context, stackTrace);
-  }
-  
-  /// Internal logging method that formats and outputs the log entry.
-  void _log(String level, String message, [Map<String, dynamic>? context, StackTrace? stackTrace]) {
-    final timestamp = DateTime.now().toIso8601String();
-    final contextStr = context != null ? ' | ${_formatContext(context)}' : '';
-    final logMessage = '[$timestamp] [$level] [$tag] $message$contextStr';
+  void error(String message, [dynamic error, StackTrace? stackTrace, Map<String, dynamic>? context]) {
+    final mergedContext = Map<String, dynamic>.from(context ?? {});
+    if (error != null) mergedContext['error'] = error.toString();
     
-    // Use developer.log for structured output in DevTools
+    _log(LogLevel.error, message, mergedContext, stackTrace);
+  }
+
+  /// Internal logging method that formats and outputs the log entry.
+  void _log(LogLevel level, String message, [Map<String, dynamic>? context, StackTrace? stackTrace]) {
+    // Check if logging is enabled
+    if (!globalEnabled && !kDebugMode) return;
+
+    // 1. Send to In-App Console (LogBuffer)
+    LogBuffer.instance.add(
+      tag, 
+      message, 
+      level: level, 
+      context: context,
+    );
+
+    // 2. Send to System Console (Dart Developer Log)
     developer.log(
-      logMessage,
+      message,
       name: tag,
       level: _levelToInt(level),
+      error: context?['error'],
       stackTrace: stackTrace,
+      time: DateTime.now(),
     );
-    
-    // Also print to console in debug mode for visibility
-    if (kDebugMode) {
-      final emoji = _levelToEmoji(level);
-      debugPrint('$emoji $logMessage');
-      if (stackTrace != null) {
-        debugPrint('Stack trace:\n$stackTrace');
-      }
+
+    // 3. Print stack trace in debug mode if present
+    if (stackTrace != null && kDebugMode) {
+      debugPrint('Stack trace:\n$stackTrace');
     }
   }
-  
-  /// Formats context map into a readable string.
-  String _formatContext(Map<String, dynamic> context) {
-    return context.entries.map((e) => '${e.key}=${e.value}').join(', ');
-  }
-  
+
   /// Converts log level to an integer for developer.log.
-  int _levelToInt(String level) {
+  int _levelToInt(LogLevel level) {
     switch (level) {
-      case _levelDebug:
+      case LogLevel.debug:
         return 500;
-      case _levelInfo:
+      case LogLevel.info:
         return 800;
-      case _levelWarning:
+      case LogLevel.warning:
         return 900;
-      case _levelError:
+      case LogLevel.error:
         return 1000;
-      default:
-        return 800;
-    }
-  }
-  
-  /// Returns an emoji for visual distinction in console output.
-  String _levelToEmoji(String level) {
-    switch (level) {
-      case _levelDebug:
-        return '🔍';
-      case _levelInfo:
-        return 'ℹ️';
-      case _levelWarning:
-        return '⚠️';
-      case _levelError:
-        return '❌';
-      default:
-        return '📝';
     }
   }
 }
@@ -151,10 +141,9 @@ Future<T> timeAsync<T>(String operationName, Future<T> Function() operation, [Ap
     return result;
   } catch (e, stackTrace) {
     stopwatch.stop();
-    log.error('$operationName failed', {
+    log.error('$operationName failed', e, stackTrace, {
       'duration': '${stopwatch.elapsedMilliseconds}ms',
-      'error': e.toString(),
-    }, stackTrace);
+    });
     rethrow;
   }
 }
@@ -171,10 +160,9 @@ T timeSync<T>(String operationName, T Function() operation, [AppLogger? logger])
     return result;
   } catch (e, stackTrace) {
     stopwatch.stop();
-    log.error('$operationName failed', {
+    log.error('$operationName failed', e, stackTrace, {
       'duration': '${stopwatch.elapsedMilliseconds}ms',
-      'error': e.toString(),
-    }, stackTrace);
+    });
     rethrow;
   }
 }

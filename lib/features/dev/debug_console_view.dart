@@ -1,12 +1,12 @@
 // lib/features/dev/debug_console_view.dart
-// Phase 38: In-App Log Console - The "Black Box" Viewer
+// Phase 39: Logging Consolidation - Enhanced Debug Console
 //
 // This widget displays the centralized log buffer in a terminal-like UI.
 // Features:
 // - Real-time log updates via ValueListenableBuilder
+// - Level-based coloring (debug, info, warning, error)
 // - One-click copy to clipboard
 // - Clear logs button
-// - Error highlighting (red text)
 // - Auto-scroll to latest logs
 
 import 'package:flutter/material.dart';
@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import '../../core/logging/log_buffer.dart';
 
 /// A terminal-like debug console for viewing live logs.
+/// 
+/// Phase 39: Now uses structured LogEntry with level-based coloring.
 /// 
 /// Usage:
 /// ```dart
@@ -61,7 +63,7 @@ class DebugConsoleView extends StatelessWidget {
           
           // Title
           const Text(
-            'GEMINI LIVE LOGS',
+            'DEBUG CONSOLE',
             style: TextStyle(
               color: Colors.greenAccent,
               fontWeight: FontWeight.bold,
@@ -74,21 +76,44 @@ class DebugConsoleView extends StatelessWidget {
           
           // Log count badge
           ValueListenableBuilder<int>(
-            valueListenable: LogBuffer().notifyListeners,
+            valueListenable: LogBuffer.instance.notifyListeners,
             builder: (context, _, __) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade800,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${LogBuffer().length} logs',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
+              final errorCount = LogBuffer.instance.errors.length;
+              return Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade800,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${LogBuffer.instance.length} logs',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
-                ),
+                  if (errorCount > 0) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade900,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$errorCount errors',
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               );
             },
           ),
@@ -100,7 +125,7 @@ class DebugConsoleView extends StatelessWidget {
             icon: const Icon(Icons.copy, color: Colors.white70, size: 20),
             tooltip: 'Copy All Logs',
             onPressed: () {
-              final logs = LogBuffer().allLogs;
+              final logs = LogBuffer.instance.allLogs;
               if (logs.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('No logs to copy')),
@@ -122,7 +147,7 @@ class DebugConsoleView extends StatelessWidget {
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
             tooltip: 'Clear Logs',
             onPressed: () {
-              LogBuffer().clear();
+              LogBuffer.instance.clear();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Logs cleared')),
               );
@@ -135,11 +160,11 @@ class DebugConsoleView extends StatelessWidget {
 
   Widget _buildLogList() {
     return ValueListenableBuilder<int>(
-      valueListenable: LogBuffer().notifyListeners,
+      valueListenable: LogBuffer.instance.notifyListeners,
       builder: (context, _, __) {
-        final logs = LogBuffer().logs;
+        final entries = LogBuffer.instance.entries;
         
-        if (logs.isEmpty) {
+        if (entries.isEmpty) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -152,7 +177,7 @@ class DebugConsoleView extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'Connect to Gemini Live to see logs',
+                  'Logs will appear here automatically',
                   style: TextStyle(color: Colors.white24, fontSize: 12),
                 ),
               ],
@@ -161,20 +186,20 @@ class DebugConsoleView extends StatelessWidget {
         }
 
         return ListView.builder(
-          itemCount: logs.length,
+          itemCount: entries.length,
           reverse: true, // Show newest at bottom, auto-scroll
           padding: const EdgeInsets.all(8),
           itemBuilder: (context, index) {
             // Reverse index to show newest at bottom
-            final log = logs[logs.length - 1 - index];
-            final isError = log.contains('❌') || log.contains('⛔') || log.contains('FAILURE') || log.contains('REJECTED');
-            final isSeparator = log.startsWith('═');
+            final entry = entries[entries.length - 1 - index];
+            final displayText = entry.toDisplayString();
             
-            if (isSeparator) {
+            // Check if it's a separator
+            if (entry.tag == 'SYSTEM' && displayText.contains('═')) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
-                  log,
+                  entry.message,
                   style: const TextStyle(
                     color: Colors.amber,
                     fontFamily: 'monospace',
@@ -188,9 +213,9 @@ class DebugConsoleView extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: SelectableText(
-                log,
+                displayText,
                 style: TextStyle(
-                  color: isError ? Colors.redAccent : Colors.greenAccent.shade100,
+                  color: _getColorForLevel(entry.level),
                   fontFamily: 'monospace',
                   fontSize: 11,
                   height: 1.4,
@@ -201,5 +226,19 @@ class DebugConsoleView extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Get the appropriate color for a log level
+  Color _getColorForLevel(LogLevel level) {
+    switch (level) {
+      case LogLevel.debug:
+        return Colors.grey.shade500;
+      case LogLevel.info:
+        return Colors.greenAccent.shade100;
+      case LogLevel.warning:
+        return Colors.orange.shade300;
+      case LogLevel.error:
+        return Colors.redAccent;
+    }
   }
 }
