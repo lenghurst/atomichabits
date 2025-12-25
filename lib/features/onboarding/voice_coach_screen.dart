@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:typed_data';
+import '../../config/ai_model_config.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -34,6 +35,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   final List<TranscriptMessage> _transcript = [];
   String? _errorMessage;
   double _audioLevel = 0.0;
+  
+  // Phase 34.4: Connection status for UI display
+  bool _isConnected = false;
+  String _connectionStatus = 'Initialising...';
   
   // Animation for microphone pulse
   late AnimationController _pulseController;
@@ -118,11 +123,17 @@ Use British English spelling and phrasing.''';
       setState(() {
         _voiceState = VoiceState.error;
         _errorMessage = 'Failed to start voice session';
+        _isConnected = false;
+        _connectionStatus = 'Connection failed';
       });
       _showFallbackDialog();
     } else {
-      setState(() => _voiceState = VoiceState.idle);
-      _addSystemMessage('Voice coach connected. Start speaking to begin.');
+      setState(() {
+        _voiceState = VoiceState.idle;
+        _isConnected = true;
+        _connectionStatus = '✅ Connected to ${AIModelConfig.tier2Model}';
+      });
+      _addSystemMessage('Voice coach connected. Tap the mic to start speaking.');
     }
   }
   
@@ -367,6 +378,34 @@ Use British English spelling and phrasing.''';
         children: [
           Column(
             children: [
+              // Phase 34.4: Connection Status Banner
+              if (kDebugMode)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: _isConnected ? Colors.green.shade900 : Colors.orange.shade900,
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isConnected ? Icons.check_circle : Icons.sync,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _connectionStatus,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Transcript Area
               Expanded(
                 child: ListView.builder(
