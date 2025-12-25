@@ -45,10 +45,12 @@ lib/
 
 Rather than a big-bang replacement, we use the "Strangler Fig" pattern:
 
-1. **Phase 1** (Current): Create new providers alongside AppState
-2. **Phase 2**: Wire new providers into main.dart with ProxyProvider
-3. **Phase 3**: Gradually migrate screens to use new providers
-4. **Phase 4**: Deprecate and remove AppState
+1. **Phase 1** ✅ COMPLETE: Create new providers alongside AppState
+2. **Phase 2** ✅ COMPLETE (Shadow Wiring): Providers initialised in main.dart but not consumed
+3. **Phase 3** (Post-NYE): Wire providers with ProxyProvider, migrate screens
+4. **Phase 4** (Q1 2026): Deprecate AppState entirely
+
+> **Current Status (Phase 34.4):** New providers are shadow-wired in main.dart. UI still consumes AppState. Oliver Backdoor is in AppState.isPremium (not UserProvider) because UI reads from AppState.
 
 ## Phase 2: Updated main.dart
 

@@ -1,10 +1,11 @@
 # Voice Coach Validation Protocol
 
 > **Created:** 24 December 2025  
-> **Updated:** 25 December 2025 (Oliver Backdoor implemented)  
+> **Updated:** 25 December 2025 (Phase 34.4 - Voice Coach UI + Debug Diagnostics)  
 > **Purpose:** End-to-end validation of Voice Coach (Tier 2) feature  
 > **Target User:** oliver.longhurst@gmail.com  
-> **Oliver Backdoor:** ✅ ACTIVE (auto-grants Tier 2 access)  
+> **Oliver Backdoor:** ✅ ACTIVE (auto-grants Tier 2 access via AppState.isPremium)  
+> **Voice Coach Access:** Dashboard → + Button → Voice Coach  
 > **Language:** UK English
 
 ---
@@ -91,7 +92,7 @@ Triple-tap on any screen title to open the Dev Tools overlay.
 
 ### Option C: Oliver Backdoor (✅ ALREADY IMPLEMENTED)
 
-The Oliver Backdoor is **already active** in `lib/data/providers/user_provider.dart`:
+The Oliver Backdoor is **already active** in `lib/data/app_state.dart`:
 
 ```dart
 // Phase 34.3: Oliver Backdoor for Tier 2 Verification
@@ -105,6 +106,8 @@ bool get isPremium {
   return _isPremium;
 }
 ```
+
+**Note:** The backdoor is in `AppState.isPremium` (not `UserProvider`) because the UI currently consumes `AppState`. The new `UserProvider` is shadow-wired but not yet consumed.
 
 **⚠️ TODO: REMOVE BEFORE PRODUCTION DEPLOYMENT**
 
@@ -141,11 +144,15 @@ Select an Identity (e.g., "Athlete").
 - **CRITICAL:** If you applied the Dev Tools toggle, the app might auto-detect you as Premium
 - If not, tap **"Restore Purchase"** or use the Dev Tools toggle
 
-### 3.5 Access Voice Coach
+### 3.5 Access Voice Coach (Phase 34.4 Update)
 
-1. Navigate to the **Voice Coach Screen** (Microphone Icon)
-2. **Verification:** If the screen loads and you see the "Listening" orb/UI, Tier 2 is active
-3. **Failure Mode:** If you see a "Locked" or "Upgrade to Access" banner, the VIP Pass (Step 2) failed
+**NEW: Voice Coach is now accessible from the Dashboard!**
+
+1. Go to **Dashboard** (main habits screen)
+2. Tap the **+ button** (Add Habit)
+3. In the bottom sheet, tap **"Voice Coach"** (purple mic icon)
+4. **Verification:** If the screen loads and you see the "Listening" orb/UI, Tier 2 is active
+5. **Failure Mode:** If you don't see the Voice Coach option, the Oliver Backdoor isn't working
 
 ---
 
@@ -154,10 +161,12 @@ Select an Identity (e.g., "Athlete").
 | Test | Expected Result | Status |
 |------|-----------------|--------|
 | Google Sign-In | Successful authentication | ☐ |
-| Tier 2 Access | Voice Coach screen loads | ☐ |
+| Tier 2 Access | Voice Coach option visible in + menu | ☐ |
+| Voice Coach Loads | Voice Coach screen opens | ☐ |
 | Voice Latency | Response < 500ms | ☐ |
 | Context Memory | AI remembers previous conversation | ☐ |
 | Background Security | Audio stops when app backgrounded | ☐ |
+| DeepSeek API | Text AI responds (check debug info) | ☐ |
 
 ---
 
@@ -185,14 +194,37 @@ Once Oliver has verified the flow:
 3. Copy to Google Cloud Console → OAuth Client
 4. Rebuild app
 
-### Voice Coach Shows "Locked"
+### Voice Coach Shows "Locked" or Not Visible
 
-**Cause:** Premium/Tier 2 status not set
+**Cause:** Premium/Tier 2 status not set or backdoor not working
 
 **Solution:**
-1. Open Dev Tools (triple-tap or Settings)
-2. Toggle "Premium Mode (Tier 2)" ON
-3. Navigate to Voice Coach again
+1. Verify you're signed in as `oliver.longhurst@gmail.com`
+2. If not working, open Dev Tools (triple-tap or Settings)
+3. Toggle "Premium Mode (Tier 2)" ON
+4. Navigate to Dashboard → + button → Voice Coach
+
+### AI Not Responding (DeepSeek/Gemini)
+
+**Cause:** API keys not loaded via `--dart-define-from-file`
+
+**Diagnosis:** The app now shows in-app debug info when AI fails:
+```
+--- DEBUG INFO ---
+API Key Status:
+• DeepSeek: ✗ NOT LOADED
+• Gemini: ✗ NOT LOADED
+```
+
+**Solution:**
+1. Verify `secrets.json` exists: `cat secrets.json | head -10`
+2. Rebuild with: `flutter build apk --debug --dart-define-from-file=secrets.json`
+3. Or pass keys directly:
+   ```bash
+   flutter build apk --debug \
+     --dart-define=DEEPSEEK_API_KEY=your_key \
+     --dart-define=GEMINI_API_KEY=your_key
+   ```
 
 ### Audio Not Working
 

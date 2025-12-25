@@ -13,13 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 34.3 - Shadow Wiring Complete | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 34.4 - Debug Diagnostics | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟢 Ready for Test | Gemini 3 Live API (Oliver Backdoor Active) |
+| **Text AI** | 🔧 Debugging | DeepSeek V3 (API key loading under investigation) |
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
-> **Current Phase:** Phase 34.3 - Shadow Wiring + Oliver Backdoor  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
+> **Current Phase:** Phase 34.4 - Debug Diagnostics + Voice Coach UI  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Language:** UK English (Default)
 
@@ -173,7 +174,7 @@ User Behaviour → PsychometricEngine
 
 | Component | Technology | Role |
 |-----------|------------|------|
-| **Mobile** | Flutter 3.35.4 | The Core Experience |
+| **Mobile** | Flutter 3.38.4 | The Core Experience |
 | **Web** | React + Vite + Tailwind | The Landing Page / Redirector |
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
 | **AI (Tier 1)** | DeepSeek-V3 | Text reasoning & logic |
@@ -304,6 +305,33 @@ supabase secrets set GEMINI_API_KEY=your_key --project-ref lwzvvaqgvcmsxblcglxo
 2. **Check API Key:** Is `GEMINI_API_KEY` in `secrets.json`?
 3. **Check Logs:** Run `flutter run` and watch console for errors
 4. **Copy Debug Info:** Triple-tap screen title → Copy Debug Info → Share with team
+
+### AI Not Responding (DeepSeek/Gemini)
+
+The app now shows **in-app debug diagnostics** when AI fails. Look for:
+
+```
+--- DEBUG INFO ---
+API Key Status:
+• DeepSeek: ✗ NOT LOADED
+• Gemini: ✗ NOT LOADED
+```
+
+**If keys show NOT LOADED:**
+1. Verify `secrets.json` exists in project root
+2. Rebuild with: `flutter build apk --debug --dart-define-from-file=secrets.json`
+3. Or pass keys directly:
+   ```bash
+   flutter build apk --debug \
+     --dart-define=DEEPSEEK_API_KEY=your_key \
+     --dart-define=GEMINI_API_KEY=your_key
+   ```
+
+**Verify secrets.json before building:**
+```bash
+cat secrets.json | head -10
+# Should show DEEPSEEK_API_KEY, GEMINI_API_KEY, etc.
+```
 
 ### Google Sign-In Failing
 

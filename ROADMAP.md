@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
-> **Last Verified:** Phase 34.3 Complete (Shadow Wiring + Oliver Backdoor)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
+> **Last Verified:** Phase 34.4 Complete (Voice Coach UI + In-App Debug Info)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
 > **Council Verdict:** GREEN LIGHT  
@@ -51,6 +51,8 @@
 | A7 | Isolate wrapper for recalibrateRisks | Muratori | ✅ (34.1) |
 | A8 | Shadow Wiring in main.dart | Rousselet | ✅ (34.2) |
 | A9 | Oliver Backdoor for Tier 2 verification | Council | ✅ (34.3) |
+| A10 | Voice Coach button in Dashboard | Council | ✅ (34.4) |
+| A11 | In-app API key debug diagnostics | Council | ✅ (34.4) |
 
 ### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
 
@@ -137,6 +139,13 @@
 
 ## ✅ Sprint History
 
+### Completed (Phase 34.4) - Debug Diagnostics + Voice Coach UI
+- [x] **Voice Coach Button:** Added "Voice Coach" option to Dashboard Add Habit bottom sheet.
+- [x] **Oliver Backdoor Fix:** Moved backdoor from UserProvider to AppState.isPremium (which UI actually uses).
+- [x] **In-App Debug Info:** Added `debugKeyStatus` to AIModelConfig showing key load status.
+- [x] **Error Message Enhancement:** AI connection errors now show which keys are loaded/missing.
+- [x] **Console Logging:** Added debug logging to AIServiceManager for logcat diagnosis.
+
 ### Completed (Phase 34.3) - Oliver Backdoor
 - [x] **Oliver Backdoor:** Added temporary `isPremium` bypass for `oliver.longhurst@gmail.com`.
 - [x] **Supabase Integration:** Backdoor uses `Supabase.instance.client.auth.currentUser?.email`.
@@ -212,7 +221,8 @@
 
 | ID | Description | Priority | Phase |
 |----|-------------|----------|-------|
-| **TD0** | **⚠️ Oliver Backdoor in UserProvider** | **CRITICAL** | **Post-NYE** |
+| **TD0** | **⚠️ Oliver Backdoor in AppState.isPremium** | **CRITICAL** | **Post-NYE** |
+| **TD-1** | Debug diagnostics in production builds | Low | Post-NYE |
 | TD1 | AppState is monolithic (1,642 lines) | Medium | 35-37 |
 | TD2 | Habit.dart has toJson (violates Clean Architecture) | Low | 36 |
 | TD3 | No DTO separation for persistence | Low | 36 |
@@ -246,10 +256,12 @@ Phase 33 (Dec 2025)     Phase 34 (Dec 2025)     Phase 35 (Jan 2026)     Phase 36
 ## 🎯 Success Metrics
 
 ### Launch (NYE 2025)
-- [ ] APK builds successfully
+- [x] APK builds successfully (74s build time)
 - [ ] Voice latency < 500ms
 - [ ] No crashes on Xiaomi/MIUI
 - [ ] Share Sheet works correctly
+- [ ] Voice Coach accessible from Dashboard
+- [ ] DeepSeek API connection working
 
 ### Post-Launch (Q1 2026)
 - [ ] Unit test coverage > 60%

@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
-> **Last Verified:** Phase 34.3 Complete (Shadow Wiring + Oliver Backdoor)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.4 - Debug Diagnostics)  
+> **Last Verified:** Phase 34.4 Complete (Voice Coach UI + In-App Debug Info)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
@@ -52,7 +52,7 @@ AI agents (Claude, Codex, etc.) working on this codebase have historically:
 **Tech Stack:**
 | Component | Technology | Version |
 |-----------|------------|---------|
-| **Mobile** | Flutter | 3.35.4 |
+| **Mobile** | Flutter | 3.38.4 |
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **AI (Tier 1)** | DeepSeek-V3 | Text Chat |
@@ -156,7 +156,7 @@ A temporary backdoor to allow `oliver.longhurst@gmail.com` to access Tier 2 (Voi
 
 **Implementation:**
 ```dart
-// In lib/data/providers/user_provider.dart
+// In lib/data/app_state.dart (isPremium getter)
 bool get isPremium {
   try {
     final currentUser = Supabase.instance.client.auth.currentUser;
@@ -171,12 +171,46 @@ bool get isPremium {
 **Why This Approach:**
 1. More reliable than Dev Tools toggle (persists across app restarts)
 2. Doesn't require knowing the 'secret handshake' (7 taps)
-3. Isolated to UserProvider - easy to find and remove
+3. Uses AppState.isPremium which is consumed by UI (not UserProvider which isn't wired yet)
 
 **Cleanup Command:**
 ```bash
 grep -rn 'oliver.longhurst' lib/
 ```
+
+### Phase 34.4: Debug Diagnostics + Voice Coach UI
+
+Added in-app debug diagnostics to help diagnose API key loading issues on device.
+
+**Changes:**
+
+1. **Voice Coach Button Added to Dashboard:**
+   - File: `lib/features/dashboard/habit_list_screen.dart`
+   - Added "Voice Coach" option to the Add Habit bottom sheet
+   - Purple mic icon, navigates to `/onboarding/voice`
+   - Only visible for Premium users (Oliver Backdoor)
+
+2. **In-App API Key Debug Info:**
+   - File: `lib/config/ai_model_config.dart`
+   - Added `debugKeyStatus` getter that returns human-readable key status
+   - Shows which keys are loaded/missing with first 5 chars preview
+
+3. **Error Messages Include Debug Info:**
+   - File: `lib/features/onboarding/conversational_onboarding_screen.dart`
+   - When AI connection fails, error message now includes:
+     ```
+     --- DEBUG INFO ---
+     API Key Status:
+     • DeepSeek: ✗ NOT LOADED
+     • Gemini: ✗ NOT LOADED
+     ```
+
+4. **Console Logging:**
+   - File: `lib/data/services/ai/ai_service_manager.dart`
+   - Added debug logging on service initialisation
+   - Shows key presence and first 5 chars in logcat
+
+**Known Issue:** `--dart-define-from-file=secrets.json` may not be loading keys correctly. Alternative is to pass keys directly via `--dart-define`.
 
 ---
 
