@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 34.1 - Council Approval + Muratori Fix)  
-> **Last Verified:** Phase 34.1 Complete (Isolate wrapper for recalibrateRisks)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
+> **Last Verified:** Phase 34.3 Complete (Shadow Wiring + Oliver Backdoor)  
 > **Current Focus:** NYE 2025 LAUNCH  
 > **Status:** 🟢 COUNCIL APPROVED - Ready for Launch  
 > **Council Verdict:** GREEN LIGHT  
@@ -38,7 +38,7 @@
 
 **Goal:** Implement comprehensive architectural improvements based on expert review.
 
-**Status:** 🟢 COMPLETE
+**Status:** 🟢 COMPLETE (Phase 34.3)
 
 | ID | Recommendation | Expert | Status |
 |----|----------------|--------|--------|
@@ -48,6 +48,9 @@
 | A4 | PsychometricEngine (Incremental Updates) | Muratori | ✅ |
 | A5 | Bitmask Risk Flags (O(1) checks) | Muratori | ✅ |
 | A6 | Migration Documentation | Evans | ✅ |
+| A7 | Isolate wrapper for recalibrateRisks | Muratori | ✅ (34.1) |
+| A8 | Shadow Wiring in main.dart | Rousselet | ✅ (34.2) |
+| A9 | Oliver Backdoor for Tier 2 verification | Council | ✅ (34.3) |
 
 ### Phase 33: Brain Surgery 2.5 (The "Pact" Polish)
 
@@ -134,6 +137,20 @@
 
 ## ✅ Sprint History
 
+### Completed (Phase 34.3) - Oliver Backdoor
+- [x] **Oliver Backdoor:** Added temporary `isPremium` bypass for `oliver.longhurst@gmail.com`.
+- [x] **Supabase Integration:** Backdoor uses `Supabase.instance.client.auth.currentUser?.email`.
+- [x] **Documentation:** Updated all docs with Google Sign-In configuration details.
+- [x] **Diagnostic Tool:** Created `lib/tool/diagnose_google_signin.dart` for SHA-1 verification.
+- [x] **Validation Protocol:** Created `docs/VOICE_COACH_VALIDATION.md` for smoke test.
+
+### Completed (Phase 34.2) - Shadow Wiring (Dark Launch)
+- [x] **Repository Initialisation:** Added Hive repository instances to main.dart.
+- [x] **Provider Injection:** Created providers with repository dependencies.
+- [x] **MultiProvider Update:** Added new providers to app's provider tree.
+- [x] **Debug Output:** Added console logging to confirm shadow wiring on startup.
+- [x] **Strangler Pattern:** Legacy AppState coexists with new providers.
+
 ### Completed (Phase 34.1) - Council Approval + Muratori Fix
 - [x] **Council Review:** Received GREEN LIGHT from all 5 experts.
 - [x] **Muratori Caveat:** Implemented `recalibrateRisksAsync` with Isolate wrapper.
@@ -195,12 +212,19 @@
 
 | ID | Description | Priority | Phase |
 |----|-------------|----------|-------|
+| **TD0** | **⚠️ Oliver Backdoor in UserProvider** | **CRITICAL** | **Post-NYE** |
 | TD1 | AppState is monolithic (1,642 lines) | Medium | 35-37 |
 | TD2 | Habit.dart has toJson (violates Clean Architecture) | Low | 36 |
 | TD3 | No DTO separation for persistence | Low | 36 |
 | TD4 | HabitEngine logic embedded in AppState | Medium | 37 |
 | TD5 | ConsistencyMetrics calculated on every access | Low | 37 |
 | TD6 | landing_page/ React app in Flutter repo | Low | Future |
+
+**TD0 Cleanup Command:**
+```bash
+grep -rn 'oliver.longhurst' lib/
+# Remove the backdoor block from isPremium getter in user_provider.dart
+```
 
 ---
 

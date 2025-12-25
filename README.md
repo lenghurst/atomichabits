@@ -13,14 +13,14 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Mobile App** | 🟢 Phase 34 - Architecture Refactor | _NYE 2025 Target_ |
+| **Mobile App** | 🟢 Phase 34.3 - Shadow Wiring Complete | _NYE 2025 Target_ |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | 🟡 Pending Test | Gemini 3 Live API (Awaiting Final Smoke Test) |
+| **Voice AI** | 🟢 Ready for Test | Gemini 3 Live API (Oliver Backdoor Active) |
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 34.1 - Council Approval)  
-> **Current Phase:** Phase 34.1 - Council Approved for Launch  
-> **Council Status:** 🟢 GREEN LIGHT  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
+> **Current Phase:** Phase 34.3 - Shadow Wiring + Oliver Backdoor  
+> **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Language:** UK English (Default)
 
 ---
@@ -220,15 +220,19 @@ Create `secrets.json` in project root:
 
 ```json
 {
-  "SUPABASE_URL": "your_supabase_url",
+  "SUPABASE_URL": "https://your-project.supabase.co",
   "SUPABASE_ANON_KEY": "your_supabase_anon_key",
+  "GOOGLE_WEB_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com",
   "DEEPSEEK_API_KEY": "your_deepseek_key",
   "GEMINI_API_KEY": "your_gemini_key",
   "OPENAI_API_KEY": "your_openai_key"
 }
 ```
 
-**Note:** Ensure keys are named exactly as shown. The file is in `.gitignore`.
+**Important Notes:**
+- `GOOGLE_WEB_CLIENT_ID` must be a **Web** Client ID (not Android) from Google Cloud Console
+- The Android Client ID is determined by SHA-1 fingerprint, not this file
+- Ensure keys are named exactly as shown. The file is in `.gitignore`.
 
 ---
 
@@ -241,7 +245,11 @@ Create `secrets.json` in project root:
 
 ### Setup Guides
 - **[GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** - Google Sign-In configuration
+- **[VOICE_COACH_VALIDATION.md](./docs/VOICE_COACH_VALIDATION.md)** - Voice Coach smoke test protocol
 - **[APP_ICON_UPDATE_GUIDE.md](./APP_ICON_UPDATE_GUIDE.md)** - Branding update instructions
+
+### Diagnostic Tools
+- **[lib/tool/diagnose_google_signin.dart](./lib/tool/diagnose_google_signin.dart)** - SHA-1 diagnostic Flutter app
 
 ---
 
@@ -301,10 +309,25 @@ supabase secrets set GEMINI_API_KEY=your_key --project-ref lwzvvaqgvcmsxblcglxo
 
 See **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** for full setup guide.
 
-**Quick check:**
-- SHA-1 fingerprint matches? Run `cd android && ./gradlew signingReport`
-- Google OAuth client configured in Supabase?
-- Package name is `co.thepact.app`?
+**Five-Axis Diagnostic:**
+
+| Axis | Check | Command/Location |
+|------|-------|------------------|
+| 1 | Supabase URL configured | Check `secrets.json` |
+| 2 | Web Client ID configured | Check `GOOGLE_WEB_CLIENT_ID` in `secrets.json` |
+| 3 | Package name matches | Must be `co.thepact.app` |
+| 4 | SHA-1 fingerprint | `cd android && ./gradlew signingReport` |
+| 5 | OAuth consent screen | Add test email in Google Cloud Console |
+
+**Configuration Checklist:**
+
+| Location | Field | Value |
+|----------|-------|-------|
+| **Google Cloud Console** | Web Client redirect URI | `https://your-project.supabase.co/auth/v1/callback` |
+| **Google Cloud Console** | Android Client SHA-1 | Your debug keystore SHA-1 |
+| **Supabase Dashboard** | Client ID | Web Client ID |
+| **Supabase Dashboard** | Client Secret | Web Client Secret |
+| **Supabase Dashboard** | Authorised Client IDs | Android Client ID |
 
 ---
 

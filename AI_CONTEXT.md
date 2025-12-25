@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 24 December 2025 (Commit: Phase 34.1 - Council Approval + Muratori Fix)  
-> **Last Verified:** Phase 34.1 Complete (Isolate wrapper for recalibrateRisks)  
+> **Last Updated:** 25 December 2025 (Commit: Phase 34.3 - Oliver Backdoor)  
+> **Last Verified:** Phase 34.3 Complete (Shadow Wiring + Oliver Backdoor)  
 > **Council Status:** 🟢 GREEN LIGHT FOR LAUNCH  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
@@ -125,6 +125,58 @@ A comprehensive architectural overhaul based on expert review from five software
 
 **Documentation:**
 - `docs/ARCHITECTURE_MIGRATION.md`
+
+### Phase 34.2: Shadow Wiring (Dark Launch)
+
+The new providers are now "shadow wired" into `main.dart` - initialised and available but not yet consumed by UI screens. This enables gradual migration using the "Strangler Fig" pattern.
+
+**Changes to main.dart:**
+- Added imports for all new repositories and providers
+- Initialised repositories with Hive box references
+- Created provider instances with repository injection
+- Added providers to MultiProvider list
+- Debug output confirms shadow wiring on app start
+
+**Architecture Status:**
+```
+main.dart
+├── AppState (Legacy)          → UI screens consume this
+└── Shadow Providers (New)     → Initialised, available, unused
+    ├── SettingsProvider
+    ├── UserProvider
+    ├── HabitProvider
+    └── PsychometricProvider
+```
+
+### Phase 34.3: Oliver Backdoor (Tier 2 Verification)
+
+⚠️ **TODO: REMOVE BEFORE PRODUCTION DEPLOYMENT**
+
+A temporary backdoor to allow `oliver.longhurst@gmail.com` to access Tier 2 (Voice Coach) features without going through the payment flow.
+
+**Implementation:**
+```dart
+// In lib/data/providers/user_provider.dart
+bool get isPremium {
+  try {
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser?.email == 'oliver.longhurst@gmail.com') {
+      return true;
+    }
+  } catch (_) {}
+  return _isPremium;
+}
+```
+
+**Why This Approach:**
+1. More reliable than Dev Tools toggle (persists across app restarts)
+2. Doesn't require knowing the 'secret handshake' (7 taps)
+3. Isolated to UserProvider - easy to find and remove
+
+**Cleanup Command:**
+```bash
+grep -rn 'oliver.longhurst' lib/
+```
 
 ---
 
@@ -343,13 +395,25 @@ class AIModelConfig {
 ### Smoke Test (Pre-Launch)
 
 ```
-□ 1. Voice Coach latency < 500ms
-□ 2. Context memory persists across sessions
-□ 3. Background security (session pauses when backgrounded)
-□ 4. Contract Card displays correctly
-□ 5. Share Sheet opens with correct invite link
-□ 6. Google Auth requests email/profile scopes
+□ 1. Google Sign-In works (oliver.longhurst@gmail.com)
+□ 2. Oliver Backdoor grants Tier 2 access
+□ 3. Voice Coach latency < 500ms
+□ 4. Context memory persists across sessions
+□ 5. Background security (session pauses when backgrounded)
+□ 6. Contract Card displays correctly
+□ 7. Share Sheet opens with correct invite link
 ```
+
+### Google Sign-In Configuration
+
+| Location | Field | Value |
+|----------|-------|-------|
+| **secrets.json** | GOOGLE_WEB_CLIENT_ID | Web Client ID from Google Cloud |
+| **Google Cloud** | Web Client redirect URI | `https://lwzvvaqgvcmsxblcglxo.supabase.co/auth/v1/callback` |
+| **Google Cloud** | Android Client SHA-1 | Debug keystore SHA-1 |
+| **Supabase** | Client ID | Web Client ID |
+| **Supabase** | Client Secret | Web Client Secret |
+| **Supabase** | Authorised Client IDs | Android Client ID |
 
 ### Architecture Test (Post-Launch)
 

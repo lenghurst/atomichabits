@@ -1,8 +1,10 @@
 # Voice Coach Validation Protocol
 
 > **Created:** 24 December 2025  
+> **Updated:** 25 December 2025 (Oliver Backdoor implemented)  
 > **Purpose:** End-to-end validation of Voice Coach (Tier 2) feature  
 > **Target User:** oliver.longhurst@gmail.com  
+> **Oliver Backdoor:** ✅ ACTIVE (auto-grants Tier 2 access)  
 > **Language:** UK English
 
 ---
@@ -49,10 +51,24 @@ The tool will guide you through:
 
 Ensure the SHA-1 fingerprint exists in:
 
-- **Supabase Dashboard:** Settings → Auth → Google Auth configuration
+- **Supabase Dashboard:** Authentication → Providers → Google
 - **Google Cloud Console:** APIs & Services → Credentials → OAuth 2.0 Client IDs
 
 If they don't match, the user will fail to log in with `PlatformException(sign_in_failed)`.
+
+### Google Sign-In Configuration Checklist
+
+| Location | Field | Value |
+|----------|-------|-------|
+| **secrets.json** | GOOGLE_WEB_CLIENT_ID | Web Client ID from Google Cloud |
+| **Google Cloud** | Web Client redirect URI | `https://lwzvvaqgvcmsxblcglxo.supabase.co/auth/v1/callback` |
+| **Google Cloud** | Android Client package name | `co.thepact.app` |
+| **Google Cloud** | Android Client SHA-1 | Your debug keystore SHA-1 |
+| **Supabase** | Client ID | Web Client ID (not Android!) |
+| **Supabase** | Client Secret | Web Client Secret |
+| **Supabase** | Authorised Client IDs | Android Client ID |
+
+**Important:** The Supabase "Client ID" field takes the **Web** Client ID. The "Authorised Client IDs" field takes the **Android** Client ID.
 
 ---
 
@@ -73,19 +89,29 @@ You are in a "Chicken and Egg" situation: You want to test the Voice Coach (Tier
 
 Triple-tap on any screen title to open the Dev Tools overlay.
 
-### Option C: Hard-Code Bypass (Emergency Only)
+### Option C: Oliver Backdoor (✅ ALREADY IMPLEMENTED)
 
-If Dev Tools fails, open `lib/data/providers/user_provider.dart` and modify:
+The Oliver Backdoor is **already active** in `lib/data/providers/user_provider.dart`:
 
 ```dart
-// Temporary bypass for Oliver
+// Phase 34.3: Oliver Backdoor for Tier 2 Verification
 bool get isPremium {
-  if (_userProfile?.email == 'oliver.longhurst@gmail.com') return true; 
-  return _isPremium; // The real value
+  try {
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser?.email == 'oliver.longhurst@gmail.com') {
+      return true;
+    }
+  } catch (_) {}
+  return _isPremium;
 }
 ```
 
-**⚠️ WARNING:** Revert this change before committing. Never commit personal email logic to main.
+**⚠️ TODO: REMOVE BEFORE PRODUCTION DEPLOYMENT**
+
+**Cleanup Command:**
+```bash
+grep -rn 'oliver.longhurst' lib/
+```
 
 ---
 
