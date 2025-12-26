@@ -343,6 +343,47 @@ class PsychometricEngine {
     final endHour = (peakHour + 2) % 24;
     return '${peakHour.toString().padLeft(2, '0')}:00 - ${endHour.toString().padLeft(2, '0')}:00';
   }
+
+  /// Constructs a prompt for the "Sherlock Report" (Deep Psychometric Analysis).
+  /// 
+  /// Synthesizes sensor data into a narrative request for the AI.
+  /// Used by PactRevealScreen.
+  String constructSherlockPrompt(PsychometricProfile profile, String identity) {
+    final sb = StringBuffer();
+    sb.writeln("You are Sherlock Holmes, analyzing a new subject.");
+    sb.writeln("Generate a ruthless but accurate 'Kill List' of bad habits based on this sensor data:");
+    sb.writeln("");
+    sb.writeln("SUBJECT IDENTITY: $identity");
+    sb.writeln("MOTIVATION: ${profile.bigWhy}");
+    sb.writeln("");
+    sb.writeln("SENSOR DATA:");
+    
+    if (profile.lastNightSleepMinutes != null) {
+       final hours = (profile.lastNightSleepMinutes! / 60).toStringAsFixed(1);
+       sb.writeln("- Sleep: $hours hours (Biology)");
+    } else {
+       sb.writeln("- Sleep: Unknown (Subject hiding data)");
+    }
+    
+    if (profile.distractionMinutes != null) {
+       sb.writeln("- App Usage: ${profile.distractionMinutes} mins on social/entertainment apps today (Dopamine)");
+    } else {
+       sb.writeln("- App Usage: Unknown (Subject denied access)");
+    }
+    
+    if (profile.declinedPermissions.isNotEmpty) {
+      sb.writeln("- Secrets: Subject refused access to ${profile.declinedPermissions.join(', ')}");
+    }
+    
+    sb.writeln("");
+    sb.writeln("Based on this, what 3 micro-habits should they KILL immediately to become their Identity?");
+    sb.writeln("Format: Just the list. No preamble.");
+    sb.writeln("1. KILL [Action]");
+    sb.writeln("2. KILL [Action]");
+    sb.writeln("3. CREATE [Action]");
+    
+    return sb.toString();
+  }
 }
 
 /// Payload for Isolate communication (must be serialisable).

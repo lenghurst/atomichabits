@@ -507,7 +507,7 @@ Use British English spelling and phrasing.''';
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                _sessionManager?.geminiService?.clearDebugLog();
+                                _sessionManager?.voiceService?.clearDebugLog();
                                 setState(() => _debugLog = []);
                               },
                               child: const Icon(

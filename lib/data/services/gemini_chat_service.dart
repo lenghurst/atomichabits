@@ -699,6 +699,24 @@ class GeminiChatService {
     }
   }
 
+  /// Generate Sherlock Deep Analysis (Phase 48)
+  /// 
+  /// Synthesizes sensor data into a "Kill List" / Psychometric Report.
+  Future<String?> generateSherlockReport(String prompt) async {
+    if (!await isOnline()) return null;
+    if (_model == null) return null;
+
+    try {
+      final response = await _model!.generateContent([
+        Content.text(prompt),
+      ]);
+      return response.text?.trim();
+    } catch (e) {
+      debugPrint('Sherlock Analysis Error: $e');
+      return null;
+    }
+  }
+
   /// Create a habit from onboarding data
   Habit? createHabitFromOnboarding(ChatConversation conversation) {
     final data = conversation.onboardingData;

@@ -19,12 +19,14 @@ import '../../../domain/entities/psychometric_profile_extensions.dart';
 /// that respects the physical laws of card manipulation.
 class PactIdentityCard extends StatefulWidget {
   final PsychometricProfile profile;
+  final String? sherlockReport; // Phase 48 override
   final bool autoFlip;
   final Duration autoFlipDelay;
   
   const PactIdentityCard({
     super.key, 
     required this.profile,
+    this.sherlockReport,
     this.autoFlip = false,
     this.autoFlipDelay = const Duration(seconds: 2),
   });
@@ -187,6 +189,28 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
   Widget _buildBack() {
     final color = widget.profile.archetypeColor;
     
+    // Phase 48: Parse Sherlock Report if available
+    String antiIdentityText = widget.profile.antiIdentityDisplay;
+    String ruleText = widget.profile.ruleStatement;
+    String archetypeDesc = widget.profile.archetypeDescription;
+    
+    if (widget.sherlockReport != null) {
+      // Simple parsing of "KILL [X]... CREATE [Y]"
+      final lines = widget.sherlockReport!.split('\n');
+      final killLines = lines.where((l) => l.trim().toUpperCase().contains('KILL')).take(2).toList();
+      final createLines = lines.where((l) => l.trim().toUpperCase().contains('CREATE')).toList();
+      
+      if (killLines.isNotEmpty) {
+        // Better formatting: just the content
+        antiIdentityText = killLines.map((l) => l.replaceAll(RegExp(r'^\d+\.\s*KILL\s*', caseSensitive: false), '')).join(" & ");
+      }
+      
+      if (createLines.isNotEmpty) {
+        ruleText = createLines.first.replaceAll(RegExp(r'^\d+\.\s*CREATE\s*', caseSensitive: false), '');
+        archetypeDesc = "Verified via Sherlock Biometrics";
+      }
+    }
+    
     return Container(
       width: 320,
       height: 480,
@@ -274,7 +298,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
           ),
           const SizedBox(height: 6),
           Text(
-            widget.profile.antiIdentityDisplay,
+            antiIdentityText,
             style: const TextStyle(
               color: Color(0xFFFF5252), 
               fontSize: 20, 
@@ -285,8 +309,8 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
             ),
           ),
           
-          // Context (if available)
-          if (widget.profile.antiIdentityContext != null) ...[
+          // Original Context (hide if overridden to avoid clutter)
+          if (widget.sherlockReport == null && widget.profile.antiIdentityContext != null) ...[
             const SizedBox(height: 4),
             Text(
               '"${widget.profile.antiIdentityContext}"',
@@ -331,7 +355,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  widget.profile.ruleStatement,
+                  ruleText,
                   style: const TextStyle(
                     color: Colors.white, 
                     fontSize: 14, 
@@ -340,7 +364,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  widget.profile.archetypeDescription,
+                  archetypeDesc,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.5), 
                     fontSize: 10, 

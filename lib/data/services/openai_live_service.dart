@@ -46,6 +46,7 @@ class OpenAILiveService implements VoiceApiService {
   bool get isConnected => _isConnected;
 
   @override
+  @override
   bool get isListening => _isListening;
 
   void _addDebugLog(String entry, {bool isError = false}) {
@@ -54,6 +55,12 @@ class OpenAILiveService implements VoiceApiService {
     if (_debugLog.length > 100) _debugLog.removeAt(0);
     onDebugLogUpdated?.call(_debugLog);
     if (isError) AppLogger.error(entry); else AppLogger.info(entry);
+  }
+
+  @override
+  void clearDebugLog() {
+    _debugLog.clear();
+    onDebugLogUpdated?.call(_debugLog);
   }
 
   @override

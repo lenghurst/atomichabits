@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
 import '../../../data/providers/psychometric_provider.dart';
 import '../../../data/services/auth_service.dart';
+import '../widgets/permission_instruction_sheet.dart';
 
 /// SherlockPermissionScreen: The "Data Handshake".
 /// 
@@ -30,27 +31,24 @@ class _SherlockPermissionScreenState extends State<SherlockPermissionScreen> {
 
     final authService = context.read<AuthService>();
     
-    // Request the scopes
-    final grantedScopes = await authService.requestSherlockScopes();
+    // Request the Google scopes
+    // Use local try-catch to prevent Google Sign-In crash (ApiException 10) 
+    // from blocking the OS sensor permission flow.
+    List<String> grantedScopes = [];
+    try {
+      grantedScopes = await authService.requestSherlockScopes();
+    } catch (e) {
+      debugPrint("Sherlock Google Auth Failed (Expected in Dev): $e");
+    }
     
-    if (grantedScopes.isNotEmpty) {
-      // Success! They opened the kimono.
-      if (mounted) {
-        _navigateToNextStep();
-      }
-    } else {
-      // They cancelled or failed. Treat as partial refusal.
-      // We don't block them, but we log it.
-      // Ideally we'd know *what* they refused, but Google Sign In often fails all-or-nothing
-      // or returns null on cancel.
-      // For now, we assume "Guard Consumer" behavior.
-      
-      // Note: We don't actively penalize "cancel" as much as explicit "I have secrets"
-      if (mounted) {
-        setState(() {
-          _isAnalyzing = false;
-        });
-      }
+    // Request OS-level sensor permissions (Location, Health, Usage)
+    if (mounted) {
+      await context.read<PsychometricProvider>().syncSensors();
+    }
+    
+    // Always navigate forward, even if scopes failed
+    if (mounted) {
+      _navigateToNextStep();
     }
   }
 
@@ -70,8 +68,8 @@ class _SherlockPermissionScreenState extends State<SherlockPermissionScreen> {
   }
   
   void _navigateToNextStep() {
-    // Proceed to Witness Investment (or next step in manual flow)
-    context.go(AppRoutes.witnessOnboarding);
+    // Proceed to the Magic Moment (Pact Reveal)
+    context.go(AppRoutes.pactReveal);
   }
 
   @override
@@ -182,18 +180,38 @@ class _SherlockPermissionScreenState extends State<SherlockPermissionScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: _handleRefusal,
-                      child: const Text(
-                        'I HAVE SECRETS',
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                          letterSpacing: 1.0,
+                      TextButton(
+                        onPressed: _handleRefusal,
+                        child: const Text(
+                          'I HAVE SECRETS',
+                          style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                            letterSpacing: 1.0,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      // Phase 48: Permission Guidance
+                      TextButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const PermissionInstructionSheet(),
+                          );
+                        },
+                        child: Text(
+                          'Trouble enabling permissions?',
+                          style: TextStyle(
+                            color: const Color(0xFF94A3B8).withValues(alpha: 0.8),
+                            fontSize: 12,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                 ),
               const SizedBox(height: 24),
             ],

@@ -6,6 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/providers/psychometric_provider.dart';
 import '../../data/providers/user_provider.dart';
+import '../../data/services/gemini_chat_service.dart';
+import '../../domain/services/psychometric_engine.dart';
 import '../../data/app_state.dart';
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/entities/psychometric_profile_extensions.dart';
@@ -39,7 +41,8 @@ class PactRevealScreen extends StatefulWidget {
 class _PactRevealScreenState extends State<PactRevealScreen> 
     with SingleTickerProviderStateMixin {
   bool _showCard = false;
-  String _loadingText = "ANALYSING VOICE PATTERNS...";
+  String? _sherlockReport; // Phase 48: AI-generated analysis
+  String _loadingText = "ANALYSING SENSOR DATA...";
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
   
@@ -78,15 +81,44 @@ class _PactRevealScreenState extends State<PactRevealScreen>
   }
 
   void _startRevealSequence() async {
-    // Stage 1: Analysis (2s)
-    await Future.delayed(const Duration(seconds: 2));
+    // Stage 1: Analysis & Generation (Minimum 2s)
+    await Future.delayed(const Duration(milliseconds: 500)); // Brief pause for UI stability
     if (!mounted) return;
-    setState(() => _loadingText = "CONSTRUCTING PSYCHOMETRIC PROFILE...");
+
+    try {
+      // Phase 48: Deep Sensor Analysis
+      final provider = context.read<PsychometricProvider>();
+      final userProvider = context.read<UserProvider>();
+      final gemini = context.read<GeminiChatService>();
+      
+      // Ensure local sensors are synced first (optional, usually done in Permission screen)
+      // await provider.syncSensors(); 
+      
+      final engine = PsychometricEngine();
+      final prompt = engine.constructSherlockPrompt(
+        provider.profile, 
+        userProvider.identity,
+      );
+      
+      // Run generation in parallel with minimum delay for tension
+      final apiFuture = gemini.generateSherlockReport(prompt);
+      final delayFuture = Future.delayed(const Duration(seconds: 2));
+      
+      final results = await Future.wait([apiFuture, delayFuture]);
+      _sherlockReport = results[0] as String?;
+      
+    } catch (e) {
+      debugPrint("Sherlock Analysis Failed: $e");
+      // Fallback: Just wait out the delay
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    if (!mounted) return;
+    setState(() => _loadingText = "LOCKING IDENTITY PROTOCOL...");
     
     // Stage 2: Finalising (2s)
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-    setState(() => _loadingText = "LOCKING IDENTITY PROTOCOL...");
     
     // Stage 3: Final pause before reveal
     await Future.delayed(const Duration(milliseconds: 1500));
@@ -295,6 +327,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
         // The Card (Auto-flips after 2 seconds)
         PactIdentityCard(
           profile: profile,
+          sherlockReport: _sherlockReport,
           autoFlip: true,
           autoFlipDelay: const Duration(seconds: 2),
         ),

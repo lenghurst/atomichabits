@@ -80,9 +80,8 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         _confettiController.play();
         await _showCelebrationDialog();
         
-        // Navigate to the Magic Moment (Pact Reveal)
-        // Note: We don't complete onboarding here anymore, PactRevealScreen handles it
-        if (mounted) context.go(AppRoutes.pactReveal);
+        // Navigate to the Sherlock Protocol (Data Handshake)
+        if (mounted) context.go(AppRoutes.sherlockPermissions);
       } else {
         setState(() => _isProcessing = false);
       }
@@ -92,10 +91,9 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
       _confettiController.play();
       await _showCelebrationDialog();
       
-      // Navigate to the Magic Moment (Pact Reveal)
-      // Note: We don't complete onboarding here anymore, PactRevealScreen handles it
+      // Navigate to the Sherlock Protocol (Data Handshake)
       if (mounted) {
-        context.go(AppRoutes.pactReveal);
+        context.go(AppRoutes.sherlockPermissions);
       }
     }
   }

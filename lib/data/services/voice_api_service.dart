@@ -35,6 +35,9 @@ abstract class VoiceApiService {
   /// Disconnect the session
   Future<void> disconnect();
 
+  /// Clear the debug log
+  void clearDebugLog();
+
   /// Dispose resources
   void dispose();
 }

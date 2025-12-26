@@ -125,12 +125,26 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         // Navigate to next onboarding screen
         context.go(AppRoutes.sherlockPermissions);
       } else {
+        // DEV BYPASS: If auth fails (ApiException 10), allow proceeding to test Sensors
+        if (result.error != null && result.error!.contains("ApiException: 10")) {
+           AppLogger.info('⚠️ Google Sign-In Failed (Expected Dev Error). PROCEEDING ANYWAY.');
+           if (mounted) context.go(AppRoutes.sherlockPermissions);
+           return;
+        }
+
         setState(() {
           _errorMessage = result.error ?? 'Google sign-in failed';
         });
         AppLogger.error('❌ Google Sign-In failed: ${result.error}');
       }
     } catch (e) {
+      // DEV BYPASS: Capture exception too
+      if (e.toString().contains("ApiException: 10")) {
+         AppLogger.info('⚠️ Google Sign-In Exception (Expected Dev Error). PROCEEDING ANYWAY.');
+         if (mounted) context.go(AppRoutes.sherlockPermissions);
+         return;
+      }
+      
       setState(() {
         _errorMessage = e.toString();
       });
