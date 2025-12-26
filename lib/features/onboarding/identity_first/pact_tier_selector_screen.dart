@@ -165,10 +165,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withOpacity(0.1),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: const Color(0xFF22C55E).withOpacity(0.3),
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                 ),
               ),
               child: const Row(
@@ -284,10 +284,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.1),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: const Color(0xFFF59E0B).withOpacity(0.3),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
                 ),
               ),
               child: const Row(
@@ -368,11 +368,11 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
               width: 320,
               height: 320,
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withOpacity(0.05),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.05),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF22C55E).withOpacity(0.05),
+                    color: const Color(0xFF22C55E).withValues(alpha: 0.05),
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -387,11 +387,11 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
               width: 256,
               height: 256,
               decoration: BoxDecoration(
-                color: const Color(0xFF06B6D4).withOpacity(0.05),
+                color: const Color(0xFF06B6D4).withValues(alpha: 0.05),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF06B6D4).withOpacity(0.05),
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.05),
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -497,7 +497,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.white12),
                         ),
@@ -695,14 +695,14 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         gradient: LinearGradient(
           colors: [
             const Color(0xFF1E293B),
-            const Color(0xFF1E293B).withOpacity(0.8),
+            const Color(0xFF1E293B).withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withOpacity(0.3),
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -745,7 +745,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                       'Premium Feature',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -797,7 +797,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     height: 1.5,
                   ),
                 ),
@@ -807,14 +807,14 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                     Icon(
                       Icons.graphic_eq,
                       size: 16,
-                      color: const Color(0xFF22C55E).withOpacity(0.7),
+                      color: const Color(0xFF22C55E).withValues(alpha: 0.7),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '15 sec sample',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -836,7 +836,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF22C55E).withOpacity(0.3),
+          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -849,7 +849,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E).withOpacity(0.1),
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -1028,7 +1028,7 @@ class _TierCard extends StatelessWidget {
             boxShadow: tier.isPopular
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF22C55E).withOpacity(0.3),
+                      color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                       blurRadius: 24,
                       spreadRadius: 0,
                     ),

@@ -153,7 +153,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
                     center: Alignment.center,
                     radius: 1.5,
                     colors: [
-                      archetypeColor.withOpacity(_glowAnimation.value),
+                      archetypeColor.withValues(alpha: _glowAnimation.value),
                       Colors.black,
                     ],
                   ),
@@ -186,7 +186,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
                 child: Text(
                   "SKIP",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 12,
                     letterSpacing: 2,
                   ),
@@ -209,7 +209,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: accentColor.withOpacity(0.3), width: 2),
+            border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 2),
           ),
           child: Center(
             child: SizedBox(
@@ -252,7 +252,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
               height: 6,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
             );
           }),
@@ -270,7 +270,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            border: Border.all(color: accentColor.withOpacity(0.5)),
+            border: Border.all(color: accentColor.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -314,7 +314,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
         Text(
           "TAP CARD TO FLIP",
           style: TextStyle(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             fontSize: 10,
             letterSpacing: 2,
           ),
@@ -385,7 +385,7 @@ Join the pact at thepact.co
             borderRadius: BorderRadius.circular(30),
             gradient: LinearGradient(
               colors: [
-                accentColor.withOpacity(0.1),
+                accentColor.withValues(alpha: 0.1),
                 Colors.transparent,
               ],
             ),

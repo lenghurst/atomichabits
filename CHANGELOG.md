@@ -1,4 +1,16 @@
+## [6.4.1] - 2025-12-26 - Phase 46: "Audit Remediation & Cleanup"
+
+### Fixed
+- **Deprecation Cleanup:** Replaced all instances of `Color.withOpacity` with the modern `Color.withValues(alpha: ...)` across `PactRevealScreen` and `PactTierSelectorScreen`.
+- **Real-Time Diagnostics:** Upgraded `VoiceProviderSelector` diagnostics from placeholder logic to real network latency testing (HEAD requests to OpenAI/Gemini gateways).
+
+### Architecture
+- **Robustness:** Added network timeout (5s) to voice provider pings to prevent UI hangs during diagnostics.
+
+---
+
 ## [6.4.0] - 2025-12-26 - Phase 46: "Voice Architecture Simplification"
+
 
 ### Architecture
 - **Simplified Voice Stack:** Removed Supabase Edge Function dependency for voice tokens; defaulting to direct API key usage for launch.
