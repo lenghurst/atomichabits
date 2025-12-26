@@ -7,6 +7,7 @@ import '../../data/app_state.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart' as onboarding;
+import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
 import '../../data/services/experimentation_service.dart';
@@ -406,7 +407,13 @@ class _ConversationalOnboardingScreenState
       final appState = context.read<AppState>();
       await appState.createHabit(habit);
       
-      // 3. Mark onboarding complete (only if in onboarding mode)
+      // 3. Persist Sherlock Intelligence (Holy Trinity)
+      // Phase 42: Capture the deep insights for the Pact Reveal
+      // This ensures the "Magic Moment" uses real data, not fallbacks.
+      final psychometricProvider = context.read<PsychometricProvider>();
+      await psychometricProvider.updateFromOnboardingData(data);
+      
+      // 4. Mark onboarding complete (only if in onboarding mode)
       // Phase 43: Defer completion to PactRevealScreen
       // if (widget.isOnboarding) {
       //   await appState.completeOnboarding();
@@ -414,7 +421,7 @@ class _ConversationalOnboardingScreenState
       
       if (!mounted) return;
       
-      // 4. Navigate to the Magic Moment (Pact Reveal)
+      // 5. Navigate to the Magic Moment (Pact Reveal)
       context.go(AppRoutes.pactReveal);
       
     } catch (e) {

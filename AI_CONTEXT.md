@@ -87,6 +87,7 @@
 | **45.1** | User Data Unification (`isPremium` → `UserProfile`) | ✅ |
 | **45.2** | Cloud Sync Prep (`isSynced` flag for Psychometrics) | ✅ |
 | **46** | Voice simplification & OpenAI Integration | ✅ |
+| **46.1** | Audit Remediation (Voice Diagnostics + Deprecations) | ✅ |
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 
 ### Key Files Changed (Phase 42-45)

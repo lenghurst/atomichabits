@@ -42,6 +42,11 @@ class OnboardingData {
   final String? entrySource;        // Landing page or referral source
   final bool isStreakRefugee;       // Came from streak-based app burnout
 
+  // === SHERLOCK PROTOCOL (Phase 42: Holy Trinity) ===
+  final String? antiIdentityLabel;  // "The Sleepwalker"
+  final String? failureArchetype;   // "PERFECTIONIST"
+  final String? resistanceLieLabel; // "The Tomorrow Trap"
+
   const OnboardingData({
     this.identity,
     this.name,
@@ -63,6 +68,10 @@ class OnboardingData {
     this.userNiche = UserNiche.general,
     this.entrySource,
     this.isStreakRefugee = false,
+    // Holy Trinity
+    this.antiIdentityLabel,
+    this.failureArchetype,
+    this.resistanceLieLabel,
   });
 
   /// Create from JSON (handles AI output aliases)
@@ -88,6 +97,10 @@ class OnboardingData {
       userNiche: _parseUserNiche(json['userNiche']),
       entrySource: json['entrySource'] as String?,
       isStreakRefugee: json['isStreakRefugee'] == true,
+      // Holy Trinity extraction
+      antiIdentityLabel: json['antiIdentityLabel'] as String?,
+      failureArchetype: json['failureArchetype'] as String?,
+      resistanceLieLabel: json['resistanceLieLabel'] as String?,
     );
   }
   
@@ -124,6 +137,10 @@ class OnboardingData {
     'userNiche': userNiche.name,
     'entrySource': entrySource,
     'isStreakRefugee': isStreakRefugee,
+    // Holy Trinity
+    'antiIdentityLabel': antiIdentityLabel,
+    'failureArchetype': failureArchetype,
+    'resistanceLieLabel': resistanceLieLabel,
   };
 
   /// Check if minimum required fields are present
@@ -160,6 +177,10 @@ class OnboardingData {
     UserNiche? userNiche,
     String? entrySource,
     bool? isStreakRefugee,
+    // Holy Trinity
+    String? antiIdentityLabel,
+    String? failureArchetype,
+    String? resistanceLieLabel,
   }) {
     return OnboardingData(
       identity: identity ?? this.identity,
@@ -182,6 +203,10 @@ class OnboardingData {
       userNiche: userNiche ?? this.userNiche,
       entrySource: entrySource ?? this.entrySource,
       isStreakRefugee: isStreakRefugee ?? this.isStreakRefugee,
+      // Holy Trinity
+      antiIdentityLabel: antiIdentityLabel ?? this.antiIdentityLabel,
+      failureArchetype: failureArchetype ?? this.failureArchetype,
+      resistanceLieLabel: resistanceLieLabel ?? this.resistanceLieLabel,
     );
   }
 

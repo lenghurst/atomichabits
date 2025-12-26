@@ -4,6 +4,7 @@ import '../../domain/entities/psychometric_profile_extensions.dart';
 import '../../domain/services/psychometric_engine.dart';
 import '../repositories/psychometric_repository.dart';
 import '../models/habit.dart';
+import '../models/onboarding_data.dart' as onboarding;
 
 /// PsychometricProvider: Manages the user's psychological profile for LLM context.
 /// 
@@ -246,6 +247,17 @@ class PsychometricProvider extends ChangeNotifier {
       debugPrint('PsychometricProvider: Profile saved. Onboarding complete: ${_profile.isOnboardingComplete}');
     }
     
+    notifyListeners();
+  }
+  
+  /// Update profile from OnboardingData (Text Chat flow)
+  Future<void> updateFromOnboardingData(onboarding.OnboardingData data) async {
+    _profile = _profile.copyWith(
+      antiIdentityLabel: data.antiIdentityLabel ?? _profile.antiIdentityLabel,
+      failureArchetype: data.failureArchetype ?? _profile.failureArchetype,
+      resistanceLieLabel: data.resistanceLieLabel ?? _profile.resistanceLieLabel,
+    );
+    await _repository.saveProfile(_profile);
     notifyListeners();
   }
   

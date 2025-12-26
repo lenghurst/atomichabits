@@ -591,7 +591,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                           icon: Icons.shield_outlined,
                           features: const [
                             'Create 1 active pact',
-                            'Basic commitment tracking',
+                            'Text Chat Sherlock Screening', // Changed from Basic tracking
                             'Solo accountability mode',
                             '7-day streak monitoring',
                           ],
@@ -614,7 +614,7 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
                           icon: Icons.bolt,
                           features: const [
                             'Unlimited active pacts',
-                            'AI Voice Coach (Gemini)',
+                            'Voice Flow (AI Voice Coach)', // Changed from AI Voice Coach (Gemini)
                             'Social accountability partners',
                             'Advanced analytics & insights',
                             'Priority support',
