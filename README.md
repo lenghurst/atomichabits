@@ -208,11 +208,16 @@ Audio     tool_call event
 
 ### Features
 
-| Feature | Description |
-|---------|-------------|
+| Feature | Status | Notes |
+| :--- | :---: | :--- |
 | **Premium Toggle** | Enable/disable Tier 2 (Voice) mode |
 | **View Logs** | In-App Voice Log Console |
 | **Connection Test** | Pings real servers for latency (Phase 46) |
+| **B2C MVP** | 🟢 | **Stable** (iOS/Android) |
+| **Sherlock (Voice)** | 🟢 | **Active** (Gemini Live v1beta) |
+| **Audio Response** | 🟢 | **Fixed** (Universal Parser) |
+| **Psychometrics** | 🟡 | Data Layer Ready, Logic in Progress |
+| **Orchestrator** | 🔴 | Planned (Q1 2026) |
 | **Quick Navigation** | Jump to any screen |
 
 ### Debugging Voice Connection

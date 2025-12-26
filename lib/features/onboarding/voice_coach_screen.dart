@@ -62,14 +62,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     );
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _pulseController.dispose();
-    _audioPlayer.dispose();
-    _sessionManager?.dispose();
-    super.dispose();
-  }
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -115,6 +108,16 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     }
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _pulseController.dispose();
+    _audioPlayer.stop(); // Stop immediately
+    _audioPlayer.dispose();
+    _sessionManager?.dispose();
+    super.dispose();
+  }
+
   // --- Audio Handling ---
 
   void _handleAudioReceived(Uint8List audioData) {
@@ -142,22 +145,40 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
     try {
       final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
+      if (kDebugMode) debugPrint('VoiceCoachScreen: 🎵 WAV created (${wavBytes.length} bytes), feeding to player...');
       await _audioPlayer.play(BytesSource(wavBytes));
+      if (kDebugMode) debugPrint('VoiceCoachScreen: ✅ Player accepted source');
       
+      // Wait for player to finish with timeout to prevent hanging
       try {
         await _audioPlayer.onPlayerComplete.first.timeout(
-          Duration(milliseconds: (chunk.length / 48).round() + 1000),
-          onTimeout: () => debugPrint('Audio timeout'),
+          Duration(milliseconds: (chunk.length / 48).round() + 1000), // ~24kHz 16bit mono = 48 bytes/ms
+          onTimeout: () {
+            if (kDebugMode) debugPrint('VoiceCoachScreen: ⚠️ Audio chunk timeout (playback took too long)');
+            return;
+          },
         );
-      } catch (_) {}
+      } catch (_) {
+        // Timeout or other error during wait - proceed to next chunk
+      }
+      
+      // CRITICAL: Check if user left screen during playback
+      if (!mounted) {
+        if (kDebugMode) debugPrint('VoiceCoachScreen: 🛑 Context lost, aborting playback loop');
+        return; 
+      }
 
+      if (kDebugMode) debugPrint('VoiceCoachScreen: 🏁 Chunk finished/timeout');
+      
+      // Recursive call to play next chunk if available
       if (_audioBuffer.isNotEmpty) {
         _playBufferedAudio();
       } else {
         _isPlaying = false;
+        if (kDebugMode) debugPrint('VoiceCoachScreen: ⏹️ Buffer empty, stopping playback loop');
       }
     } catch (e) {
-      debugPrint('Audio Playback Error: $e');
+      debugPrint('VoiceCoachScreen: ❌ Audio Playback Error: $e');
       _isPlaying = false;
     }
   }
@@ -261,6 +282,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
+      
+      // Stop current playback immediately
+      _audioBuffer.clear(); // Wipe pending audio
+      await _audioPlayer.stop(); // Kill current audio
+      _isPlaying = false;
+      
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {

@@ -294,6 +294,25 @@ https://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta
 | **Copy Debug Info** | Copy diagnostic info |
 | **Quick Navigation** | Jump to any screen |
 
+### 4.3 Audio Playback & Buffering
+**Phase 39 (Audio Fix via Universal Parser)**:
+- **Universal Parsing**: `GeminiLiveService` now robustly handles both `camelCase` (standard) and `snake_case` (beta legacy) JSON keys from the server.
+  - Keys checked: `serverContent`/`server_content`, `inlineData`/`inline_data`, `modelTurn`/`model_turn`.
+  - Diagnostics: `kDebugMode` logs now dump root keys (`data.keys`) to identify structure mismatches immediately.
+- **Buffering Strategy**:
+  - `VoiceCoachScreen` uses a **24,000 byte threshold** (~0.5s of audio) before starting playback.
+  - This prevents "stuttering" where playback catches up to the network stream.
+  - **Recursive Playback Loop**: `_playBufferedAudio` recursively calls itself until the buffer is empty.
+  - **Async Safety**: `if (!mounted) return` checks are placed after every `await` to prevent crashes if the user leaves the screen.
+- **Format**: WAV header is prepended to raw PCM (24kHz, 16-bit, Mono) chunks before feeding to `audioplayers`.
+
+### 4.4 Connection & Security
+- **Endpoints**: Uses `v1beta` (required for 2025 preview models).
+- **Headers**:
+  - `User-Agent`: `Dart/3.0 (flutter); co.thepact.app/1.0.0` (Essential to bypass Google Frontend firewalls).
+  - `Host`: `generativelanguage.googleapis.com`.
+- **Auth**: Ephemeral Token via Supabase Edge Function (Primary) -> API Key (Dev Fallback).
+
 ### Log Console Usage
 
 1. Open DevTools (triple-tap)

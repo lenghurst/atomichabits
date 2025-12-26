@@ -215,7 +215,7 @@ class GeminiLiveService implements VoiceApiService {
       
       // PHASE 38: Verbose logging for debugging
       final headers = <String, dynamic>{
-        // 'Authorization': 'Bearer $token', // Alternative if query param fails, but standard is access_token
+        'User-Agent': 'Dart/3.0 (flutter); co.thepact.app/1.0.0', // Honest UA to bypass GFE blocks
       };
       
       _addDebugLog('📡 Endpoint: ${_wsEndpoint.split("?")[0]}');
@@ -227,7 +227,7 @@ class GeminiLiveService implements VoiceApiService {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
         debugPrint('GeminiLiveService: Endpoint: v1alpha (Phase 45 fix)');
-        debugPrint('GeminiLiveService: Headers: Honest UA (Phase 37 fix)');
+        debugPrint('GeminiLiveService: Headers: $headers');
         debugPrint('GeminiLiveService: Full URL: $wsUrl');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
       }
@@ -247,7 +247,7 @@ class GeminiLiveService implements VoiceApiService {
       // Format: "Runtime/Version (Framework); PackageID/AppVersion"
       _channel = IOWebSocketChannel.connect(
         Uri.parse(wsUrl),
-        headers: headers, // Pass the headers map, even if empty or minimal
+        headers: headers, // Pass the headers map
       );
       
       // PHASE 37: Wait for WebSocket handshake to complete before proceeding
@@ -433,17 +433,14 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
-          'responseModalities': ['AUDIO', 'TEXT'], // User Fix: Must include both for proper audio response
+          'responseModalities': ['AUDIO'], // Reverting to strictly AUDIO to fix Handshake Timeout
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
-                'voiceName': 'Kore', // Keeping Kore per user preference (User snippet suggested Puck but didn't mandate it)
+                'voiceName': 'Kore', 
               }
             }
           },
-          // REMOVED: thinkingConfig
-          // User specs for 'gemini-2.5-flash-native-audio-preview-12-2025' do not include thinkingConfig.
-          // This is likely only for Pro/Reasoning models, and might be causing issues here.
         },
         if (instruction != null) 
           'systemInstruction': {
@@ -468,9 +465,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     if (kDebugMode) {
       debugPrint('GeminiLiveService: === HANDSHAKE PAYLOAD ===');
       debugPrint('GeminiLiveService: Model: models/${AIModelConfig.tier2Model}');
-      debugPrint('GeminiLiveService: generationConfig.thinkingConfig.thinkingLevel: MINIMAL (FIXED - now inside generationConfig)');
       debugPrint('GeminiLiveService: responseModalities: [AUDIO]');
-      debugPrint('GeminiLiveService: voiceName: Puck');
+      debugPrint('GeminiLiveService: voiceName: Kore');
       debugPrint('GeminiLiveService: Tools: ${tools != null ? "enabled" : "none"}');
       debugPrint('GeminiLiveService: Full payload: $payload');
       debugPrint('GeminiLiveService: === END PAYLOAD ===');
@@ -481,91 +477,78 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   void _handleServerMessage(Map<String, dynamic> data) {
     try {
-      // GEMINI 3 COMPLIANCE: Capture Thought Signature
-      // The thought signature is an encrypted string that stores the model's
-      // reasoning state. It MUST be echoed back in subsequent messages.
-      if (data.containsKey('thoughtSignature')) {
-        _currentThoughtSignature = data['thoughtSignature'] as String?;
-        if (kDebugMode) {
-          debugPrint('GeminiLiveService: 🧠 Thought Signature captured (${_currentThoughtSignature?.length ?? 0} chars)');
-        }
+      // --- DIAGNOSTIC LOGGING ---
+      if (kDebugMode) {
+        // Log top-level keys to see if we have 'serverContent', 'server_content', etc.
+        debugPrint('🔍 DIAGNOSTIC: Root keys: ${data.keys.toList()}');
       }
 
-      // HANDSHAKE SUCCESS
+      // GEMINI 3 COMPLIANCE: Capture Thought Signature
+      if (data.containsKey('thoughtSignature')) {
+        _currentThoughtSignature = data['thoughtSignature'] as String?;
+      }
+
+      // 1. SETUP COMPLETE
       if (data.containsKey('setupComplete')) {
-        if (kDebugMode) debugPrint('GeminiLiveService: ✅ SetupComplete received from server!');
+        if (kDebugMode) debugPrint('GeminiLiveService: ✅ SetupComplete received!');
         _setupComplete = true;
         _setupCompleter?.complete();
         return;
       }
+
+      // 2. SERVER CONTENT (The Audio/Text)
+      // Check for both camelCase (standard) and snake_case (sometimes used in beta)
+      final content = data['serverContent'] ?? data['server_content'];
       
-      // Handle Server Content (Audio/Text)
-      if (data.containsKey('serverContent')) {
-        final serverContent = data['serverContent'] as Map<String, dynamic>;
-        
-        // Handle model turn (audio output)
-        if (serverContent.containsKey('modelTurn')) {
-          final modelTurn = serverContent['modelTurn'] as Map<String, dynamic>;
+      if (content is Map<String, dynamic>) {
+        if (kDebugMode) debugPrint('🔍 DIAGNOSTIC: Content keys: ${content.keys.toList()}');
+
+        // Handle Interruption
+        if (content['interrupted'] == true) {
+          if (kDebugMode) debugPrint('GeminiLiveService: 🛑 Model interrupted by server VAD');
+          onModelSpeakingChanged?.call(false);
+          return;
+        }
+
+        // Handle Turn Complete
+        if (content['turnComplete'] == true) {
+          if (kDebugMode) debugPrint('GeminiLiveService: 🏁 Turn complete');
+          onModelSpeakingChanged?.call(false);
+          onTurnComplete?.call();
+        }
+
+        // Handle Model Turn (Audio)
+        final modelTurn = content['modelTurn'] ?? content['model_turn'];
+        if (modelTurn is Map<String, dynamic>) {
           final parts = modelTurn['parts'] as List<dynamic>?;
           
-          if (parts != null) {
+          if (parts != null && parts.isNotEmpty) {
             for (final part in parts) {
-              final partMap = part as Map<String, dynamic>;
-              if (partMap.containsKey('inlineData')) {
-                final inlineData = partMap['inlineData'] as Map<String, dynamic>;
-                final mimeType = inlineData['mimeType'] as String?;
+              final p = part as Map<String, dynamic>;
+              
+              // CHECK 1: Audio Data (inlineData or inline_data)
+              final inlineData = p['inlineData'] ?? p['inline_data'];
+              if (inlineData is Map<String, dynamic>) {
                 final base64Data = inlineData['data'] as String?;
-                
-                if (kDebugMode) {
-                  debugPrint('GeminiLiveService: 📦 Rx Part: Mime=$mimeType, DataLen=${base64Data?.length}');
-                }
-
                 if (base64Data != null) {
-                  // Relaxed mimeType check for debugging
                   final audioBytes = base64Decode(base64Data);
+                  if (kDebugMode) debugPrint('GeminiLiveService: 🔊 Audio Chunk: ${audioBytes.length} bytes');
                   onAudioReceived?.call(Uint8List.fromList(audioBytes));
                   onModelSpeakingChanged?.call(true);
-                  if (kDebugMode) debugPrint('GeminiLiveService: 🔊 Audio chunk dispatched (${audioBytes.length} bytes)');
                 }
+              } 
+              // CHECK 2: Text Data (Safety Refusals?)
+              else if (p.containsKey('text')) {
+                 final text = p['text'] as String?;
+                 if (kDebugMode) debugPrint('GeminiLiveService: 📝 Text Response: $text');
+                 // If we get text but no audio, the model might be refusing to speak
               }
             }
           }
         }
-        
-        // Handle output transcription
-        if (serverContent.containsKey('outputTranscription')) {
-          final transcription = serverContent['outputTranscription'] as Map<String, dynamic>;
-          final text = transcription['text'] as String?;
-          if (text != null && text.isNotEmpty) {
-            onTranscription?.call(text, false);
-          }
-        }
-        
-        // Handle input transcription
-        if (serverContent.containsKey('inputTranscription')) {
-          final transcription = serverContent['inputTranscription'] as Map<String, dynamic>;
-          final text = transcription['text'] as String?;
-          if (text != null && text.isNotEmpty) {
-            onTranscription?.call(text, true);
-          }
-        }
-        
-        // Handle turn complete
-        if (serverContent['turnComplete'] == true) {
-          onModelSpeakingChanged?.call(false);
-          onTurnComplete?.call();
-        }
-        
-        // Handle interruption
-        if (serverContent['interrupted'] == true) {
-          onModelSpeakingChanged?.call(false);
-          if (kDebugMode) debugPrint('GeminiLiveService: Model interrupted');
-        }
       }
-      
-      // PHASE 42: Handle Tool Calls (Function Calling)
-      // The AI can invoke tools defined in the setup message.
-      // When it does, we receive a toolCall event that we must handle and respond to.
+
+      // 3. TOOL CALLS
       if (data.containsKey('toolCall')) {
         _handleToolCall(data['toolCall'] as Map<String, dynamic>);
       }
@@ -578,8 +561,9 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         _notifyDetailedError("Server Error", "Code: $errorCode | $errorMessage");
       }
       
-    } catch (e) {
-      debugPrint('GeminiLiveService: Parse error: $e');
+    } catch (e, stack) {
+      debugPrint('GeminiLiveService: ❌ Parse error: $e');
+      debugPrint('Stack: $stack');
     }
   }
 
