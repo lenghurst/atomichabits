@@ -613,7 +613,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           _isUsingApiKey = true;
           return _TokenResult(_ephemeralToken, 'Dev fallback after Edge Function error ($status)');
         }
-        return _TokenResult(null, 'Edge Function Error ($status): ${e.reason} - $errorBody');
+        return _TokenResult(null, 'Edge Function Error ($status): $errorBody');
       } catch (e) {
         // Network or other errors
         AppLogger.error('❌ [GeminiLive] Token invocation failed: $e');
