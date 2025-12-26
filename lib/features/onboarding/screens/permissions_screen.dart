@@ -22,13 +22,24 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
     await Permission.notification.request();
     
     // 2. Microphone (Critical for Voice Coach)
-    // We request this early to reduce friction later
     await Permission.microphone.request();
 
-    // 3. Contacts (Optional, for Witness) 
-    // Maybe defer this to when they actually add a witness?
-    // prompt says "Auth Permissions Accept", implying a bulk request or specific auth scopes.
-    // For now, let's stick to system permissions.
+    // 3. Health & Activity (Biometric Layer)
+    // Used to calculate resilience score
+    await Permission.activityRecognition.request();
+    await Permission.sensors.request();
+
+    // 4. Calendar (Environmental Layer)
+    // Used to find free slots for habits
+    await Permission.calendarFullAccess.request();
+
+    // 5. App Usage (Digital Truth Layer)
+    // Used to detect dopamine loops (doomscrolling)
+    // Note: Android requires special intent, basic permission might not suffice but we request what we can
+    // permission_handler doesn't wrap AppUsage strictly, but we can try requestInstallPackages or ignore for MVP UI
+    // For now, we mainly inform the user.
+    
+    // 6. Demographics (Age/Context) are handled via Google Sign-In scopes
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -50,51 +61,93 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
               const Spacer(),
               
               // Eye Icon
-              Icon(
-                Icons.visibility,
-                size: 48,
-                color: Colors.white,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.visibility_outlined,
+                  size: 40,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 24),
               
               // Heading
-              Text(
+              const Text(
                 'I need to see\neverything.',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   height: 1.1,
+                  fontFamily: 'Roboto', // Ensure premium font feels
+                  letterSpacing: -1.0,
                 ),
               ),
               
               const SizedBox(height: 32),
               
               // Explanation
-              Text(
+              const Text(
                 'To verify your word, The Pact requires access to your digital environment.',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   color: Colors.white70,
                   height: 1.5,
                 ),
               ),
               
+              const SizedBox(height: 32),
+              
+              // Scrollable list if small screen, but likely fits
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildPermissionItem(
+                        icon: Icons.notifications_active_outlined,
+                        title: 'Notifications',
+                        subtitle: 'To remind you of your promises.',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPermissionItem(
+                        icon: Icons.mic_none_outlined,
+                        title: 'Microphone',
+                        subtitle: 'To speak with your Coach.',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPermissionItem(
+                        icon: Icons.monitor_heart_outlined,
+                        title: 'Health & Activity',
+                        subtitle: 'biometric_resilience_score',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPermissionItem(
+                        icon: Icons.calendar_today_outlined,
+                        title: 'Calendar',
+                        subtitle: 'temporal_context_awareness',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPermissionItem(
+                        icon: Icons.history_outlined,
+                        title: 'Digital Truth',
+                        subtitle: 'app_usage_dopamine_loops',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildPermissionItem(
+                        icon: Icons.cake_outlined,
+                        title: 'Demographics',
+                        subtitle: 'age_context_profiling',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
               const SizedBox(height: 24),
-              
-              _buildPermissionItem(
-                icon: Icons.notifications_active,
-                title: 'Notifications',
-                subtitle: 'To remind you of your promises.',
-              ),
-              const SizedBox(height: 16),
-               _buildPermissionItem(
-                icon: Icons.mic,
-                title: 'Microphone',
-                subtitle: 'To speak with your Coach.',
-              ),
-              
-              const Spacer(),
               
               // Button
               SizedBox(
@@ -115,7 +168,7 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                         width: 24, 
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(
+                    : const Text(
                         'Grant Access',
                         style: TextStyle(
                           fontSize: 18,

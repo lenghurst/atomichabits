@@ -437,7 +437,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
-                'voiceName': 'Puck', // Phase 42: Changed from Kore to Puck (Stoic Coach persona)
+                'voiceName': 'Kore', // Reverted to Kore (Firm) per user request
               }
             }
           },
