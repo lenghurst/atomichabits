@@ -40,7 +40,7 @@ class TierSelectionScreen extends StatelessWidget {
                 color: Colors.blueGrey.shade800,
                 onTap: () {
                   // Tier 1 Logic
-                   context.push(AppRoutes.home); // Or wherever Tier 1 goes
+                   context.push(AppRoutes.manualOnboarding);
                 },
               ),
               const SizedBox(height: 16),
