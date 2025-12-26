@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import '../../config/env.dart';
 
 /// AI-powered suggestion service for Atomic Habits principles
 /// 
@@ -19,7 +20,7 @@ import 'package:flutter/foundation.dart';
 class AiSuggestionService {
   // Remote LLM endpoint configuration
   // TODO: Replace with your actual LLM proxy endpoint
-  static const String _remoteLlmEndpoint = 'https://example.com/api/habit-suggestions';
+  static const String _remoteLlmEndpoint = Env.aiProxyEndpoint;
   static const Duration _remoteTimeout = Duration(seconds: 5);
   
   /// Returns 3 temptation bundling suggestions (async with remote LLM + local fallback)

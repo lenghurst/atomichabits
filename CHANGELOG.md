@@ -1,3 +1,12 @@
+## [6.4.2] - 2025-12-26 - Phase 46.2: "iOS Platform Alignment"
+
+### Fixed
+- **iOS Build Failure:** Restored missing `ios/Podfile` with critical `permission_handler` macros (`PERMISSION_MICROPHONE=1`, `PERMISSION_CONTACTS=1`).
+- **Privacy Crash:** Added missing `NSMicrophoneUsageDescription` to `Info.plist`, preventing immediate crash on voice recording attempt.
+- **Dependency Parity:** Aligned iOS native configuration with Android's feature set (Audio, Contacts, Deep Links).
+
+---
+
 ## [6.4.1] - 2025-12-26 - Phase 46: "Audit Remediation & Cleanup"
 
 ### Fixed

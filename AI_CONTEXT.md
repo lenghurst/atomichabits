@@ -89,6 +89,7 @@
 | **46** | Voice simplification & OpenAI Integration | ✅ |
 | **46.1** | Audit Remediation (Voice Diagnostics + Deprecations) | ✅ |
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
+| **46.2** | iOS Platform Alignment (Podfile & Permissions) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 

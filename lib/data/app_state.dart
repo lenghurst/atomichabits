@@ -273,7 +273,7 @@ class AppState extends ChangeNotifier {
   bool _isPremium = false;
   
   /// Returns true if user has premium access.
-  /// TODO(Phase 35): Remove Oliver Backdoor after NYE verification.
+  /// Phase 41: Unified into UserProfile. Backdoor removed.
   bool get isPremium {
     // 1. Developer Mode Override (for testing)
     if (_settings.developerMode && kDebugMode) {

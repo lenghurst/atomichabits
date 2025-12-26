@@ -147,6 +147,17 @@
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
 
+### Phase 46.1: Security & Clean Code (Technical Debt Remediation)
+
+**Goal:** Secure API keys and remove deprecated code paths before release.
+
+| ID | Task | Effort | Status |
+|----|------|--------|--------|
+| S1 | Create `Env` class for secure configuration | Low | [ ] |
+| S2 | Remove hardcoded keys in `GeminiChatService` | Low | [ ] |
+| S3 | Inject endpoints in `AiSuggestionService` | Low | [ ] |
+| S4 | Remove legacy "Backdoor" comments | Low | [ ] |
+
 
 ### Phase 46: Provider Wiring (Post-Launch)
 

@@ -7,6 +7,7 @@ import '../models/chat_message.dart';
 import '../models/chat_conversation.dart';
 import '../models/habit.dart';
 import '../../config/ai_model_config.dart';
+import '../../config/env.dart';
 
 /// System prompts for different conversation contexts
 /// 
@@ -240,9 +241,8 @@ If not, that's likely the problem. Make it smaller first.
 /// - UI displays: "Gemini 3 Flash"
 /// - API calls: "gemini-2.5-flash"
 class GeminiChatService {
-  // TODO: Replace with your actual API key (use environment variables in production)
-  // For development, you can get a free API key at https://makersuite.google.com/app/apikey
-  static const String _defaultApiKey = 'AIzaSyB6BVpzg6lXxY_AAi3rPcSuGpcjV89H8dE';
+  // Phase 46.1: Use secure Env variable
+  static const String _defaultApiKey = Env.geminiApiKey;
 
   final String apiKey;
   GenerativeModel? _model;
