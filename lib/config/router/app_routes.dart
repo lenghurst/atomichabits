@@ -46,6 +46,18 @@ abstract class AppRoutes {
   /// Shows the Pact Identity Card after Sherlock Protocol completes
   static const String pactReveal = '/onboarding/pact-reveal';
 
+  /// Permissions request screen
+  static const String onboardingPermissions = '/onboarding/permissions';
+  
+  /// Loading/Parsing Insights screen
+  static const String onboardingLoading = '/onboarding/loading';
+  
+  /// Tier Selection screen
+  static const String onboardingTierSelection = '/onboarding/tier-selection';
+
+  /// Sherlock Screening Questions (Voice)
+  static const String onboardingSherlock = '/onboarding/sherlock';
+  
   /// Sherlock Permission Screen (The Data Handshake)
   /// Requests sensitive scopes (Calendar, YouTube) progressively
   static const String sherlockPermissions = '/onboarding/sherlock-permissions';

@@ -1,10 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
-import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -98,18 +99,22 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
     
-    // System instruction for onboarding coach
-    const systemInstruction = '''You are The Pact's voice coach helping users create their first habit.
+    // System instruction for HABIT FORMATION (post-Sherlock)
+    const systemInstruction = '''You are The Pact's habit architect.
+Your Goal: Help the user design a "Tiny Habit" based on their profile.
 
-Your role:
-1. Greet them warmly and ask for their name
-2. Ask about their identity: "I want to be the type of person who..."
-3. Help them design a tiny habit using James Clear's principles
-4. Extract: habit name, frequency, time, location, trigger
+You already know their psychological profile (Anti-Identity, etc.).
+Do NOT ask them for deep psychological introspection again.
+Focus purely on the MECHANICS:
+1. WHAT: The specific habit (e.g. "Do 1 pushup").
+2. WHEN: The Trigger (e.g. "After I pour my coffee").
+3. WHERE: The Location.
 
-Keep responses SHORT (1-2 sentences). This is voice, not text.
-Be warm, encouraging, and conversational.
-Use British English spelling and phrasing.''';
+Keep it practical, tiny, and specific.
+If they suggest a big habit, cut it down.
+"Make it so easy you can't say no."
+
+Keep responses SHORT (1-2 sentences).''';
     
     _sessionManager = VoiceSessionManager(
       systemInstruction: systemInstruction,
@@ -158,10 +163,96 @@ Use British English spelling and phrasing.''';
     });
   }
   
-  /// Handle audio received from AI (for future audio playback)
+  // Audio Playback Queue
+  final List<Uint8List> _audioQueue = [];
+  bool _isPlaying = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  /// Handle audio received from AI
   void _handleAudioReceived(Uint8List audioData) {
-    // TODO: Implement audio playback
-    // For now, audio is handled by the device's default audio output
+    if (!mounted) return;
+    
+    // Add to queue
+    _audioQueue.add(audioData);
+    
+    // Start processing if not already playing
+    if (!_isPlaying) {
+      _processAudioQueue();
+    }
+  }
+
+  /// Process the audio queue sequentially
+  Future<void> _processAudioQueue() async {
+    if (_audioQueue.isEmpty) {
+      _isPlaying = false;
+      return;
+    }
+
+    _isPlaying = true;
+    final chunk = _audioQueue.removeAt(0);
+
+    try {
+      // Gemini sends raw PCM (24kHz, 1 channel, 16-bit).
+      // AudioPlayers BytesSource often needs a container format (WAV).
+      final wavBytes = _addWavHeader(chunk);
+      
+      await _audioPlayer.play(BytesSource(wavBytes));
+      
+      // Wait for playback to finish before playing next chunk
+      // We can use onPlayerComplete stream, but for simplicity in this loop:
+      await _audioPlayer.onPlayerComplete.first;
+      
+      // Continue queue
+      _processAudioQueue();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('VoiceCoachScreen: Audio playback error: $e');
+      }
+      // Skip bad chunk and continue
+      _processAudioQueue();
+    }
+  }
+
+  /// Wraps raw PCM data with a WAV header
+  /// Gemini WebSockets usually send 24kHz, 16-bit, Mono PCM.
+  Uint8List _addWavHeader(Uint8List pcmData) {
+    // 24kHz sample rate, 16-bit depth, 1 channel
+    const int sampleRate = 24000;
+    const int numChannels = 1;
+    const int bitsPerSample = 16;
+    
+    final int byteRate = sampleRate * numChannels * bitsPerSample ~/ 8;
+    final int blockAlign = numChannels * bitsPerSample ~/ 8;
+    final int dataSize = pcmData.length;
+    final int fileSize = 36 + dataSize;
+
+    final header = Uint8List(44);
+    final view = ByteData.view(header.buffer);
+
+    // RIFF chunk
+    header.setRange(0, 4, ascii.encode('RIFF'));
+    view.setUint32(4, fileSize, Endian.little);
+    header.setRange(8, 12, ascii.encode('WAVE'));
+
+    // fmt chunk
+    header.setRange(12, 16, ascii.encode('fmt '));
+    view.setUint32(16, 16, Endian.little); // Chunk size
+    view.setUint16(20, 1, Endian.little); // Audio format (1 = PCM)
+    view.setUint16(22, numChannels, Endian.little);
+    view.setUint32(24, sampleRate, Endian.little);
+    view.setUint32(28, byteRate, Endian.little);
+    view.setUint16(32, blockAlign, Endian.little);
+    view.setUint16(34, bitsPerSample, Endian.little);
+
+    // data chunk
+    header.setRange(36, 4, ascii.encode('data'));
+    view.setUint32(40, dataSize, Endian.little);
+
+    final wavFile = Uint8List(44 + dataSize);
+    wavFile.setRange(0, 44, header);
+    wavFile.setRange(44, 44 + dataSize, pcmData);
+    
+    return wavFile;
   }
   
   /// Handle session state changes
@@ -391,25 +482,11 @@ Use British English spelling and phrasing.''';
     
     if (!mounted) return;
     
-    // Check if we captured valid psychometric data
-    final profile = context.read<PsychometricProvider>().profile;
-    final hasData = profile.antiIdentityLabel != null ||
-                    profile.failureArchetype != null ||
-                    profile.resistanceLieLabel != null;
-    
-    if (hasData) {
-      // Navigate to the Magic Moment (Pact Reveal)
-      if (kDebugMode) {
-        debugPrint('VoiceCoachScreen: Navigating to Pact Reveal (data captured)');
-      }
-      context.go(AppRoutes.pactReveal);
-    } else {
-      // No data captured, go straight to dashboard
-      if (kDebugMode) {
-        debugPrint('VoiceCoachScreen: Navigating to Dashboard (no data captured)');
-      }
-      context.go(AppRoutes.dashboard);
+    // Navigate to Dashboard (Habit Set)
+    if (kDebugMode) {
+      debugPrint('VoiceCoachScreen: Session complete. Navigating to Dashboard.');
     }
+    context.go(AppRoutes.dashboard);
   }
   
   @override

@@ -159,8 +159,11 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     
     if (!mounted) return;
     
-    // 4. Navigate to Dashboard (new identity unlocked!)
-    context.go(AppRoutes.dashboard);
+    // 4. Navigate to Habit Formation (Voice Coach - Step 2)
+    // "Now let's build your first habit."
+    if (mounted) {
+      context.go(AppRoutes.voiceOnboarding);
+    }
   }
 
   @override

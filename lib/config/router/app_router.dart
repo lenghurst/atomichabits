@@ -22,10 +22,15 @@ import '../../data/services/voice_session_manager.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/onboarding/conversational_onboarding_screen.dart';
 import '../../features/onboarding/voice_coach_screen.dart';
+import '../../features/onboarding/sherlock_screen.dart';
 import '../../features/onboarding/identity_first/identity_access_gate_screen.dart';
 import '../../features/onboarding/identity_first/witness_investment_screen.dart';
 import '../../features/onboarding/identity_first/pact_tier_selector_screen.dart';
-import '../../features/onboarding/identity_first/value_proposition_screen.dart';
+
+import '../../features/onboarding/screens/value_prop_screen.dart';
+import '../../features/onboarding/screens/permissions_screen.dart';
+import '../../features/onboarding/screens/loading_insights_screen.dart';
+import '../../features/onboarding/screens/tier_selection_screen.dart';
 import '../../features/dashboard/habit_list_screen.dart';
 import '../../features/today/today_screen.dart';
 import '../../features/settings/settings_screen.dart';
@@ -115,7 +120,27 @@ class AppRouter {
       // Phase 29: Value First Flow (Hook Screen)
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const ValuePropositionScreen(),
+        builder: (context, state) => const ValuePropScreen(),
+      ),
+      
+      GoRoute(
+        path: AppRoutes.onboardingPermissions,
+        builder: (context, state) => const PermissionsScreen(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.onboardingLoading,
+        builder: (context, state) => const LoadingInsightsScreen(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.onboardingTierSelection,
+        builder: (context, state) => const TierSelectionScreen(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.onboardingSherlock,
+        builder: (context, state) => const SherlockScreen(), // Dedicated profiling screen
       ),
       
       // Text chat onboarding

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
@@ -76,6 +78,54 @@ class HabitListScreen extends StatelessWidget {
                 icon: const Icon(Icons.settings_outlined),
                 tooltip: 'Settings',
                 onPressed: () => context.push(AppRoutes.settings),
+              ),
+              // DEBUG: Factory Reset Button
+              IconButton(
+                icon: const Icon(Icons.delete_forever, color: Colors.red),
+                tooltip: 'Factory Reset (Debug)',
+                onPressed: () async {
+                  // Confirm dialog first
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Factory Reset?'),
+                      content: const Text(
+                        'This will wipe ALL data, sign out, and restart onboarding.\n\n'
+                        'Only for testing purposes.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                          child: const Text('NUKE IT ☢️'),
+                        ),
+                      ],
+                    ),
+                  ) ?? false;
+
+                  if (confirmed && context.mounted) {
+                    debugPrint('☢️ MANUAL NUCLEAR RESET INITIATED');
+                    // 1. Sign out
+                    try {
+                      // ignore: undefined_prefixed_name
+                      await Supabase.instance.client.auth.signOut();
+                    } catch (e) { /* ignore */ }
+                    
+                    // 2. Clear Hive
+                    await Hive.deleteBoxFromDisk('habit_data');
+                    await Hive.deleteBoxFromDisk('settings');
+                    await Hive.deleteBoxFromDisk('user_data');
+                    
+                    // 3. Force Navigation
+                    if (context.mounted) {
+                      context.go(AppRoutes.home);
+                    }
+                  }
+                },
               ),
             ],
           ),

@@ -126,6 +126,14 @@ void main() async {
   final weeklyReviewService = WeeklyReviewService(aiServiceManager);
   final onboardingOrchestrator = OnboardingOrchestrator(aiServiceManager: aiServiceManager);
   
+  // Phase 47: Link AppState to OnboardingOrchestrator (Fix for Dev Mode Toggle)
+  // Ensure the orchestrator knows about premium status changes immediately
+  appState.addListener(() {
+    onboardingOrchestrator.setPremiumUser(appState.settings.developerMode);
+  });
+  // Initialize with current state
+  onboardingOrchestrator.setPremiumUser(appState.settings.developerMode);
+  
   // ========== Phase 34: Shadow Wiring (Dark Launch) ==========
   // Initialize new architecture providers alongside AppState
   // These share the same Hive box - no conflict, just different access patterns
