@@ -24,11 +24,35 @@ class HiveUserRepository implements UserRepository {
   @override
   Future<UserProfile?> getProfile() async {
     if (_dataBox == null) return null;
+    
+    // === MIGRATION LOGIC Phase 35 START ===
+    // Check for legacy isPremium key
+    final bool? legacyIsPremium = _dataBox!.get(_premiumKey);
     final profileJson = _dataBox!.get(_profileKey);
+    
+    UserProfile? profile;
     if (profileJson != null) {
-      return UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
+      profile = UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
+      
+      // If legacy key exists, we need to migrate
+      if (legacyIsPremium != null) {
+        if (kDebugMode) debugPrint('HiveUserRepository: Migrating legacy isPremium ($legacyIsPremium) to UserProfile');
+        
+        // 1. Update profile with legacy value
+        profile = profile.copyWith(isPremium: legacyIsPremium);
+        
+        // 2. Save updated profile
+        await _dataBox!.put(_profileKey, profile.toJson());
+        
+        // 3. Delete legacy key
+        await _dataBox!.delete(_premiumKey);
+        
+        if (kDebugMode) debugPrint('HiveUserRepository: Migration complete. Legacy key deleted.');
+      }
     }
-    return null;
+    // === MIGRATION LOGIC END ===
+    
+    return profile;
   }
   
   @override
@@ -51,14 +75,20 @@ class HiveUserRepository implements UserRepository {
   
   @override
   Future<bool> isPremium() async {
-    if (_dataBox == null) return false;
-    return _dataBox!.get(_premiumKey, defaultValue: false);
+    // Phase 35: Read from UserProfile instead of separate key
+    // We call getProfile() which handles the migration if needed
+    final profile = await getProfile();
+    return profile?.isPremium ?? false;
   }
   
   @override
   Future<void> setPremiumStatus(bool status) async {
-    if (_dataBox == null) return;
-    await _dataBox!.put(_premiumKey, status);
+    // Phase 35: Update UserProfile instead of separate key
+    final profile = await getProfile();
+    if (profile != null) {
+      final updatedProfile = profile.copyWith(isPremium: status);
+      await saveProfile(updatedProfile);
+    }
   }
   
   @override
@@ -66,6 +96,6 @@ class HiveUserRepository implements UserRepository {
     if (_dataBox == null) return;
     await _dataBox!.delete(_profileKey);
     await _dataBox!.delete(_onboardingKey);
-    await _dataBox!.delete(_premiumKey);
+    // _premiumKey is deleted during migration or not used anymore
   }
 }

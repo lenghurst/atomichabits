@@ -6,6 +6,7 @@ class UserProfile {
   final String? witnessName; // Added for Phase 33
   final String? witnessContact; // Added for Phase 33
   final DateTime createdAt;
+  final bool isPremium; // Added for Phase 35 (Data Unification)
 
   UserProfile({
     required this.identity,
@@ -13,6 +14,7 @@ class UserProfile {
     this.witnessName,
     this.witnessContact,
     required this.createdAt,
+    this.isPremium = false,
   });
 
   /// Converts profile to JSON for storage
@@ -23,6 +25,7 @@ class UserProfile {
       'witnessName': witnessName, // Persist witness name
       'witnessContact': witnessContact,
       'createdAt': createdAt.toIso8601String(),
+      'isPremium': isPremium,
     };
   }
 
@@ -34,6 +37,7 @@ class UserProfile {
       witnessName: json['witnessName'] as String?, // Load witness name
       witnessContact: json['witnessContact'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      isPremium: json['isPremium'] as bool? ?? false,
     );
   }
 
@@ -43,6 +47,7 @@ class UserProfile {
     String? name,
     String? witnessName,
     String? witnessContact,
+    bool? isPremium,
   }) {
     return UserProfile(
       identity: identity ?? this.identity,
@@ -50,6 +55,7 @@ class UserProfile {
       witnessName: witnessName ?? this.witnessName,
       witnessContact: witnessContact ?? this.witnessContact,
       createdAt: createdAt,
+      isPremium: isPremium ?? this.isPremium,
     );
   }
 }

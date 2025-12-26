@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 44 - The Investment  
+> **Current Phase:** Phase 45 - Pre-Launch Fixes  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -68,7 +68,7 @@
 | **Onboarding Flow** | ✅ Working | Voice → Reveal → Dashboard |
 | **Dashboard** | ✅ Working | Habit tracking |
 
-### Recent Fixes (Phases 35-42)
+### Recent Fixes (Phases 35-45)
 
 | Phase | Fix | Status |
 |-------|-----|--------|
@@ -83,15 +83,19 @@
 | **42** | Soul Capture Onboarding with Sherlock Protocol | ✅ |
 | **43** | Pact Identity Card (Variable Reward) | ✅ |
 | **44** | The Investment - Profile persistence to Hive | ✅ |
+| **45.1** | User Data Unification (`isPremium` → `UserProfile`) | ✅ |
+| **45.2** | Cloud Sync Prep (`isSynced` flag for Psychometrics) | ✅ |
 
-### Key Files Changed (Phase 42-44)
+### Key Files Changed (Phase 42-45)
 
 | File | Changes |
 |------|---------|
+| `lib/data/models/user_profile.dart` | Added `isPremium` field (Data Unification) |
+| `lib/data/repositories/hive_user_repository.dart` | Migration logic for unified user data |
 | `lib/config/ai_tools_config.dart` | Tool schema for `update_user_psychometrics` (NEW) |
 | `lib/config/ai_prompts.dart` | Sherlock Protocol prompt (voiceOnboardingSystemPrompt) |
-| `lib/domain/entities/psychometric_profile.dart` | Holy Trinity fields added |
-| `lib/domain/entities/psychometric_profile_extensions.dart` | Display formatting (NEW) |
+| `lib/domain/entities/psychometric_profile.dart` | Added `isSynced` & `lastUpdated` (Phase 45.2) |
+| `lib/data/repositories/psychometric_repository.dart` | Added `markAsSynced()` interface |
 | `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` + `finalizeOnboarding()` |
 | `lib/data/providers/user_provider.dart` | `completeOnboarding()` for state flag |
 | `lib/data/services/ai/prompt_factory.dart` | Dynamic prompt generation (NEW) |

@@ -1,40 +1,23 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 44 - The Investment  
+> **Current Phase:** Phase 45 - Pre-Launch Fixes  
 > **Target:** NYE 2025 Launch  
 > **Status:** ✅ Full Hook Model **COMPLETE**. Identity persisted to Hive.
 
 ---
 
-## 🎯 Current Focus: The Investment (Phase 44)
+## 🎯 Current Focus: Pre-Launch Fixes (Phase 45)
 
-**Goal:** Lock the user's identity by persisting PsychometricProfile to Hive and completing onboarding.
+**Goal:** Address critical blockers (tests, static analysis, build pipeline) before the first device test build and fix data fragmentation issues.
 
-**Status:** ✅ **COMPLETE**. Nir Eyal's Hook Model fully implemented end-to-end.
-
-**What Was Built (Phase 44):**
-1. **finalizeOnboarding():** Method in `PsychometricProvider` to persist profile and confirm storage
-2. **CTA Wiring:** "ENTER THE PACT" button calls `finalizeOnboarding()` + `completeOnboarding()`
-3. **Heavy Haptic:** Lock moment with `HapticFeedback.heavyImpact()` on identity commit
-4. **State Bridge:** Both `UserProvider` AND legacy `AppState` updated for router compatibility
-
-**The Complete Hook Model (Nir Eyal):**
-- **Trigger:** User starts voice onboarding
-- **Action:** Sherlock Protocol conversation with Puck
-- **Variable Reward:** Pact Identity Card (screenshot-worthy)
-- **Investment:** ✅ Profile persisted to Hive → triggers next cycle
-
-**Flow Architecture:**
-```
-VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
-                                                       ↓
-                              PsychometricProvider.finalizeOnboarding()
-                              UserProvider.completeOnboarding()
-                              AppState.completeOnboarding()
-                                                       ↓
-                                                  Dashboard
-```
+**Status:** ✅ **COMPLETE**. Critical blockers and data fragmentation resolved.
+ 
+**What Was Built (Phase 45):**
+1. **User Data Unification:** Migrated `isPremium` from standalone Hive key to `UserProfile` model
+2. **Cloud Sync Preparation:** Added `isSynced` and `lastUpdated` to `PsychometricProfile`
+3. **Migration Engine:** Automatic legacy data migration for User data on app launch
+4. **Verification Tests:** Unit tests for both User migration and Psychometric sync logic
 
 **Immediate Priorities:**
 1.  **Test on Device:** Verify complete onboarding → reveal → dashboard flow
@@ -57,6 +40,7 @@ VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
 | I3 | Call `UserProvider.completeOnboarding()` | ✅ |
 | I4 | Call `AppState.completeOnboarding()` for router guard | ✅ |
 | I5 | Heavy haptic on identity commit | ✅ |
+| I6 | Unify `isPremium` into `UserProfile` (Hive Migration) | ✅ |
 
 **Why This Matters:**
 - User has invested time + psychological insight → stored value → higher retention
@@ -147,17 +131,6 @@ VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
 ---
 
 ## 📋 Backlog
-
-### Phase 45: Pre-Launch Fixes (High Priority)
-
-**Goal:** Address all remaining blockers before the first device test build.
-
-| ID | Task | Effort | Status |
-|----|------|--------|--------|
-| T1 | Fix 5 failing unit tests | Low | [ ] |
-| T2 | Fix 154 static analysis issues | Low | [ ] |
-| G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
-| G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
 
 ### Phase 46: Provider Wiring (Post-Launch)
 

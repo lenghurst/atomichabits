@@ -15,7 +15,7 @@ class PsychometricProvider extends ChangeNotifier {
   final PsychometricRepository _repository;
   final PsychometricEngine _engine;
   
-  PsychometricProfile _profile = const PsychometricProfile();
+  PsychometricProfile _profile = PsychometricProfile();
   bool _isLoading = true;
 
   PsychometricProvider(this._repository, this._engine);
@@ -58,6 +58,9 @@ class PsychometricProvider extends ChangeNotifier {
       motivation: motivation,
       bigWhy: bigWhy,
       fears: fears,
+    ).copyWith(
+      isSynced: false,
+      lastUpdated: DateTime.now(),
     );
     await _repository.saveProfile(_profile);
     notifyListeners();
@@ -65,63 +68,97 @@ class PsychometricProvider extends ChangeNotifier {
 
   /// Record a habit miss (updates resilience)
   Future<void> recordMiss() async {
-    _profile = _engine.onHabitMiss(_profile);
+    _profile = _engine.onHabitMiss(_profile).copyWith(
+      isSynced: false, 
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Record a habit completion (updates resilience)
   Future<void> recordCompletion({bool wasRecovery = false}) async {
-    _profile = _engine.onHabitComplete(_profile, wasRecovery: wasRecovery);
+    _profile = _engine.onHabitComplete(_profile, wasRecovery: wasRecovery).copyWith(
+      isSynced: false, 
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update coaching style preference
   Future<void> setCoachingStyle(CoachingStyle style) async {
-    _profile = _profile.copyWith(coachingStyle: style);
+    _profile = _profile.copyWith(
+      coachingStyle: style,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update verbosity preference
   Future<void> setVerbosityPreference(int level) async {
-    _profile = _profile.copyWith(verbosityPreference: level.clamp(1, 5));
+    _profile = _profile.copyWith(
+      verbosityPreference: level.clamp(1, 5),
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update core values
   Future<void> setCoreValues(List<String> values) async {
-    _profile = _profile.copyWith(coreValues: values);
+    _profile = _profile.copyWith(
+      coreValues: values,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update anti-identities (fears)
   Future<void> setAntiIdentities(List<String> fears) async {
-    _profile = _profile.copyWith(antiIdentities: fears);
+    _profile = _profile.copyWith(
+      antiIdentities: fears,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update the big why
   Future<void> setBigWhy(String bigWhy) async {
-    _profile = _profile.copyWith(bigWhy: bigWhy);
+    _profile = _profile.copyWith(
+      bigWhy: bigWhy,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update resonance words (words that motivate)
   Future<void> setResonanceWords(List<String> words) async {
-    _profile = _profile.copyWith(resonanceWords: words);
+    _profile = _profile.copyWith(
+      resonanceWords: words,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
 
   /// Update avoid words (words that cause resistance)
   Future<void> setAvoidWords(List<String> words) async {
-    _profile = _profile.copyWith(avoidWords: words);
+    _profile = _profile.copyWith(
+      avoidWords: words,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
@@ -133,7 +170,11 @@ class PsychometricProvider extends ChangeNotifier {
     
     // Also update peak energy window
     final peakWindow = await _engine.calculatePeakEnergyWindowAsync(habits);
-    _profile = _profile.copyWith(peakEnergyWindow: peakWindow);
+    _profile = _profile.copyWith(
+      peakEnergyWindow: peakWindow,
+      isSynced: false,
+      lastUpdated: DateTime.now(),
+    );
     
     await _repository.saveProfile(_profile);
     notifyListeners();
@@ -155,7 +196,7 @@ class PsychometricProvider extends ChangeNotifier {
 
   /// Clear all psychometric data
   Future<void> clear() async {
-    _profile = const PsychometricProfile();
+    _profile = PsychometricProfile();
     await _repository.clear();
     notifyListeners();
   }

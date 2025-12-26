@@ -45,7 +45,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
   
   /// Fallback profile for resilience (Priority 3 from exec review)
   /// Used if AI analysis fails or times out
-  static const _fallbackProfile = PsychometricProfile(
+  static final _fallbackProfile = PsychometricProfile(
     antiIdentityLabel: "The Drifter",
     antiIdentityContext: "Goes with the flow, never commits",
     failureArchetype: "NOVELTY_SEEKER",

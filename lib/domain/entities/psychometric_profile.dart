@@ -46,10 +46,14 @@ class PsychometricProfile {
   // === EMOTIONAL BASELINE ===
   final String baselineSentiment;      // e.g., "Anxious", "Determined", "Skeptical"
 
+  // === SYNC STATE (Phase 45: Cloud Prep) ===
+  final bool isSynced;                 // True if pushed to cloud
+  final DateTime lastUpdated;          // Last local modification time
+
   // === BEHAVIORAL RISK BITMASK (Performance Optimization per Muratori) ===
   final int riskBitmask;               // Bitmask for O(1) risk checks
 
-  const PsychometricProfile({
+  PsychometricProfile({
     this.coreValues = const [],
     this.bigWhy = '',
     this.antiIdentities = const [],
@@ -72,7 +76,9 @@ class PsychometricProfile {
     this.resilienceScore = 0.5,
     this.baselineSentiment = 'Neutral',
     this.riskBitmask = 0,
-  });
+    this.isSynced = false,
+    DateTime? lastUpdated,
+  }) : lastUpdated = lastUpdated ?? DateTime.now();
 
   /// Generates the "System Prompt" block for the LLM.
   /// This is the key method that transforms structured data into AI context.
@@ -208,6 +214,8 @@ class PsychometricProfile {
     double? resilienceScore,
     String? baselineSentiment,
     int? riskBitmask,
+    bool? isSynced,
+    DateTime? lastUpdated,
   }) {
     return PsychometricProfile(
       coreValues: coreValues ?? this.coreValues,
@@ -232,6 +240,8 @@ class PsychometricProfile {
       resilienceScore: resilienceScore ?? this.resilienceScore,
       baselineSentiment: baselineSentiment ?? this.baselineSentiment,
       riskBitmask: riskBitmask ?? this.riskBitmask,
+      isSynced: isSynced ?? this.isSynced,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -259,6 +269,8 @@ class PsychometricProfile {
       'resilienceScore': resilienceScore,
       'baselineSentiment': baselineSentiment,
       'riskBitmask': riskBitmask,
+      'isSynced': isSynced,
+      'lastUpdated': lastUpdated.toIso8601String(),
     };
   }
 
@@ -289,6 +301,10 @@ class PsychometricProfile {
       resilienceScore: (json['resilienceScore'] ?? 0.5).toDouble(),
       baselineSentiment: json['baselineSentiment'] ?? 'Neutral',
       riskBitmask: json['riskBitmask'] ?? 0,
+      isSynced: json['isSynced'] ?? false,
+      lastUpdated: json['lastUpdated'] != null 
+          ? DateTime.parse(json['lastUpdated'])
+          : DateTime.now(),
     );
   }
 }

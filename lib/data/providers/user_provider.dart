@@ -11,7 +11,7 @@ class UserProvider extends ChangeNotifier {
   
   UserProfile? _userProfile;
   bool _hasCompletedOnboarding = false;
-  bool _isPremium = false;
+  // bool _isPremium = false; // Phase 35: Removed
   bool _isLoading = true;
 
   UserProvider(this._repository);
@@ -21,10 +21,9 @@ class UserProvider extends ChangeNotifier {
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   bool get isLoading => _isLoading;
   
-  /// Premium status with verification backdoor
-  /// Phase 41 Security Fix: Oliver Backdoor REMOVED
-  /// Premium status is now determined solely by stored value.
-  bool get isPremium => _isPremium;
+  /// Premium status
+  /// Phase 35: Now unified in UserProfile
+  bool get isPremium => _userProfile?.isPremium ?? false;
   
   /// Convenience getters for common profile fields
   String get userName => _userProfile?.name ?? '';
@@ -35,7 +34,7 @@ class UserProvider extends ChangeNotifier {
     try {
       _userProfile = await _repository.getProfile();
       _hasCompletedOnboarding = await _repository.hasCompletedOnboarding();
-      _isPremium = await _repository.isPremium();
+      // _isPremium is now part of _userProfile
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -83,16 +82,17 @@ class UserProvider extends ChangeNotifier {
 
   /// Set premium status
   Future<void> setPremiumStatus(bool status) async {
-    _isPremium = status;
-    await _repository.setPremiumStatus(status);
-    notifyListeners();
+    if (_userProfile != null) {
+      _userProfile = _userProfile!.copyWith(isPremium: status);
+      await _repository.setPremiumStatus(status); // This also updates remote/hive
+      notifyListeners();
+    }
   }
 
   /// Clear all user data (for account reset)
   Future<void> clearUserData() async {
     _userProfile = null;
     _hasCompletedOnboarding = false;
-    _isPremium = false;
     await _repository.clear();
     notifyListeners();
   }

@@ -35,6 +35,20 @@ class HivePsychometricRepository implements PsychometricRepository {
   }
   
   @override
+  Future<void> markAsSynced() async {
+    if (_dataBox == null) return;
+    
+    // Read current profile
+    final profile = await getProfile();
+    if (profile != null) {
+      // Update isSynced flag ONLY (preserve lastUpdated)
+      final updatedProfile = profile.copyWith(isSynced: true);
+      // Save back to Hive
+      await _dataBox!.put(_profileKey, updatedProfile.toJson());
+    }
+  }
+  
+  @override
   Future<void> clear() async {
     if (_dataBox == null) return;
     await _dataBox!.delete(_profileKey);

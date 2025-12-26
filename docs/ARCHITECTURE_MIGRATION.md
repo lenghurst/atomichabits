@@ -50,7 +50,7 @@ Rather than a big-bang replacement, we use the "Strangler Fig" pattern:
 3. **Phase 3** (Post-NYE): Wire providers with ProxyProvider, migrate screens
 4. **Phase 4** (Q1 2026): Deprecate AppState entirely
 
-> **Current Status (Phase 34.4):** New providers are shadow-wired in main.dart. UI still consumes AppState. Oliver Backdoor is in AppState.isPremium (not UserProvider) because UI reads from AppState.
+> **Current Status (Phase 45.2):** Cloud Sync Preparation complete. `PsychometricProfile` tracks `isSynced` state. `UserProfile` unification done in 45.1. New providers are shadow-wired in main.dart. UI still consumes AppState, but `UserProvider` has the correct source of truth.
 
 ## Phase 2: Updated main.dart
 
@@ -213,6 +213,7 @@ test('SettingsProvider loads from repository', () async {
 |-------|-------------|--------|
 | 1 | Create repository layer | ✅ Complete |
 | 2 | Create domain providers | ✅ Complete |
+| 2.5 | Unify User Data (isPremium) | ✅ Complete |
 | 3 | Create PsychometricProfile | ✅ Complete |
 | 4 | Wire into main.dart | 🔄 Ready (post-NYE) |
 | 5 | Migrate screens | 📋 Planned |

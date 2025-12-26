@@ -1,3 +1,39 @@
+## [6.3.4] - 2025-12-26 - Phase 45: "Cloud Sync Preparation"
+
+### Architecture
+- **Sync-Ready Psychometrics:** `PsychometricProfile` now tracks its own sync state to prepare for upcoming Supabase integration
+- **Dirty State Management:** `PsychometricProvider` automatically marks profiles as "not synced" whenever modifications occur (via tools or user input)
+
+### Added
+- **PsychometricProfile:** Added `isSynced` (bool) and `lastUpdated` (DateTime) fields
+- **PsychometricRepository:** Added `markAsSynced()` method to interface and Hive implementation
+- **Unit Tests:** Created `psychometric_sync_test.dart` to verify state transitions
+
+### Changed
+- **PsychometricProfile:** Removed `const` constructor to support `DateTime.now()` as default `lastUpdated` timestamp
+- **PactRevealScreen:** Updated fallback profile to use `static final` instead of `const`
+
+---
+
+## [6.3.3] - 2025-12-26 - Phase 45: "User Data Unification"
+
+### Architecture
+- **Unified User Data:** `isPremium` status moved from standalone Hive key to `UserProfile` model
+- **Migration Engine:** `HiveUserRepository` automatically migrates legacy data on next launch
+- **Source of Truth:** `UserProvider` now relies solely on `UserProfile` for premium status
+
+### Changed
+- **UserProfile:** Added `isPremium` field (defaults to false)
+- **UserProvider:** Removed `_isPremium` state, now derived from profile
+- **HiveUserRepository:** Added migration logic in `getProfile()`
+
+### Technical Details (The Strangler Pattern)
+- Simplifies state management by having a single source of truth for user identity
+- Resolves data fragmentation between Identity and Subscription status
+- Prepares for eventual removal of legacy `AppState`
+
+---
+
 ## [6.3.2] - 2025-12-26 - Phase 45: "X-Ray Debugging"
 
 ### Added

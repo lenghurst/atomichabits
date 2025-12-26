@@ -11,6 +11,9 @@ abstract class PsychometricRepository {
   /// Save the psychometric profile
   Future<void> saveProfile(PsychometricProfile profile);
   
+  /// Mark the profile as synced to cloud
+  Future<void> markAsSynced();
+  
   /// Clear the profile
   Future<void> clear();
 }
