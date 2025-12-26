@@ -73,8 +73,8 @@
 |----|------|--------|
 | S1 | Create `ai_tools_config.dart` with tool schema | ✅ |
 | S2 | Add `voiceOnboardingSystemPrompt` (Sherlock Protocol) | ✅ |
-| S3 | Add Holy Trinity fields to `PsychometricProfile` | ✅ |
-| S4 | Add `updateFromToolCall()` to `PsychometricProvider` | ✅ |
+| S3 | Add Holy Trinity fields to `OnboardingData` & `PsychometricProfile` | ✅ |
+| S4 | Add `updateFromToolCall()` & `updateFromOnboardingData()` | ✅ |
 | S5 | Create `prompt_factory.dart` for dynamic prompts | ✅ |
 | S6 | Add tool calling support to `GeminiLiveService` | ✅ |
 | S7 | Add session modes to `VoiceSessionManager` | ✅ |
@@ -142,6 +142,7 @@
 | T1 | Fix 5 failing unit tests | Low | [ ] |
 | T2 | Fix static analysis issues (withOpacity) | Low | ✅ |
 | F1 | Fix onboarding route gap (PactRevealScreen) | Low | ✅ |
+| F2 | Integrate Sherlock Profiling for Text Chat | Low | ✅ |
 | A1 | Perform Engineering Audit & Remediation | Low | ✅ |
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |

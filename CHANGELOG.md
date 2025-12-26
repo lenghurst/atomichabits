@@ -2,10 +2,12 @@
 
 ### Fixed
 - **Deprecation Cleanup:** Replaced all instances of `Color.withOpacity` with the modern `Color.withValues(alpha: ...)` across `PactRevealScreen` and `PactTierSelectorScreen`.
-- **Real-Time Diagnostics:** Upgraded `VoiceProviderSelector` diagnostics from placeholder logic to real network latency testing (HEAD requests to OpenAI/Gemini gateways).
+- **Real-Time Diagnostics:** Upgraded `VoiceProviderSelector` diagnostics from real network latency testing.
+- **Sherlock Intelligence:** `PactRevealScreen` now displays *real* psychometric traits (Anti-Identity, Archetype, Lie) parsed from Text Chat conversations, replacing the fallback data.
 
 ### Architecture
-- **Robustness:** Added network timeout (5s) to voice provider pings to prevent UI hangs during diagnostics.
+- **Robustness:** Added network timeout (5s) to voice provider pings to prevent UI hangs.
+- **Data Plumbing:** Added "Holy Trinity" fields to `OnboardingData` and wired `PsychometricProvider` to ingest them from standard onboarding flows.
 
 ---
 

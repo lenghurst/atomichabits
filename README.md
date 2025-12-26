@@ -13,7 +13,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 46 | Voice Architecture Simplification & OpenAI Integration |
+| **Mobile App** | 🟢 Phase 46.1 | Audit, Voice Diagnostics, Sherlock Integration |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | ✅ **WORKING** | Gemini & OpenAI (Direct WebSocket) |
