@@ -172,7 +172,7 @@ class GeminiLiveService {
     _pendingTools = tools;
     
     // PHASE 39: Add separator and start logging
-    LogBuffer.instance.addSeparator('NEW CONNECTION ATTEMPT');
+    LogBuffer.instance.addLog('════ NEW CONNECTION ATTEMPT ════');
     _addDebugLog('🚀 Starting connection sequence...');
     if (tools != null) {
       _addDebugLog('🔧 Tools enabled: ${tools['functionDeclarations']?.length ?? 0} function(s)');
