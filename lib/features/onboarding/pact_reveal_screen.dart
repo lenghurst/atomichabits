@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/providers/psychometric_provider.dart';
+import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/entities/psychometric_profile_extensions.dart';
 import 'widgets/pact_identity_card.dart';
 
@@ -38,6 +40,17 @@ class _PactRevealScreenState extends State<PactRevealScreen>
   String _loadingText = "ANALYSING VOICE PATTERNS...";
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
+  
+  /// Fallback profile for resilience (Priority 3 from exec review)
+  /// Used if AI analysis fails or times out
+  static const _fallbackProfile = PsychometricProfile(
+    antiIdentityLabel: "The Drifter",
+    antiIdentityContext: "Goes with the flow, never commits",
+    failureArchetype: "NOVELTY_SEEKER",
+    failureTriggerContext: "Got bored and moved on",
+    resistanceLieLabel: "The Tomorrow Trap",
+    resistanceLieContext: "I'll start fresh next week",
+  );
 
   @override
   void initState() {
@@ -89,7 +102,10 @@ class _PactRevealScreenState extends State<PactRevealScreen>
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<PsychometricProvider>().profile;
+    final rawProfile = context.watch<PsychometricProvider>().profile;
+    
+    // Priority 3: Use fallback if no data was captured (resilience)
+    final profile = rawProfile.hasDisplayableData ? rawProfile : _fallbackProfile;
     final archetypeColor = profile.archetypeColor;
 
     return Scaffold(
@@ -251,12 +267,17 @@ class _PactRevealScreenState extends State<PactRevealScreen>
           autoFlip: true,
           autoFlipDelay: const Duration(seconds: 2),
         ),
-        const SizedBox(height: 50),
+        const SizedBox(height: 40),
+        
+        // Priority 1: Share button for viral growth (Spotify Wrapped effect)
+        _buildShareButton(profile, accentColor),
+        
+        const SizedBox(height: 16),
         
         // The "Continue" CTA
         _buildContinueButton(accentColor),
         
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         
         // Subtle hint
         Text(
@@ -268,6 +289,55 @@ class _PactRevealScreenState extends State<PactRevealScreen>
           ),
         ),
       ],
+    );
+  }
+  
+  /// Priority 1: Share Pact button for viral growth
+  /// 
+  /// Creates a shareable text that captures the user's identity.
+  /// This is the "Spotify Wrapped" moment - identity content is the 
+  /// most shared type of content (MBTI, Astrology, etc.)
+  Widget _buildShareButton(PsychometricProfile profile, Color accentColor) {
+    return TextButton.icon(
+      onPressed: () => _sharePact(profile),
+      icon: Icon(Icons.share, color: accentColor, size: 18),
+      label: Text(
+        "SHARE MY PACT",
+        style: TextStyle(
+          color: accentColor,
+          letterSpacing: 2,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+  
+  /// Generate and share the Pact identity text
+  void _sharePact(PsychometricProfile profile) {
+    HapticFeedback.lightImpact();
+    
+    final shareText = '''
+🔒 THE PACT 🔒
+
+I AM BECOMING:
+${profile.identityStatement}
+
+I AM BURYING:
+❌ ${profile.antiIdentityDisplay} ❌
+
+MY RULE:
+${profile.ruleStatement}
+
+${profile.archetypeDescription}
+
+Join the pact at thepact.co
+#ThePact #IdentityFirst #NeverMissTwice
+''';
+    
+    Share.share(
+      shareText.trim(),
+      subject: 'My Pact Identity',
     );
   }
 
