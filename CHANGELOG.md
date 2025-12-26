@@ -1,3 +1,21 @@
+## [6.3.2] - 2025-12-26 - Phase 45: "X-Ray Debugging"
+
+### Added
+- **X-Ray Logging:** `GeminiLiveService` now logs binary audio frame sizes ("Rx BINARY AUDIO") to debug silence issues
+- **Truncated JSON Logs:** Large JSON payloads are truncated in logs to keep the console readable
+- **Clean Console:** `DebugConsoleView` simplified to a single "Copy All" button with terminal-like styling
+
+### Changed
+- **Unified Logging:** Refactored `AppLogger` and `LogBuffer` to be simpler and thread-safe
+- **GeminiLiveService:** Connection logic now handles binary vs text frames explicitly for better debugging
+
+### Technical Details
+- `DebugConsoleView` auto-scrolls to bottom like a real terminal
+- Long-press any log line to copy just that line
+- "Copy All" formats the entire log buffer for easy sharing
+
+---
+
 ## [6.3.1] - 2025-12-26 - Phase 44: Build Fixes & Final Wiring
 
 ### Fixed

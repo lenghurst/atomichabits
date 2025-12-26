@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io'; // Required for HandshakeException, SocketException
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -54,7 +55,7 @@ class GeminiLiveService {
   // === CONFIGURATION ===
   // PHASE 34 FIX: Changed from v1alpha to v1beta per official Gemini API documentation
   // The December 2025 model requires v1beta endpoint
-  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
+  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
   
   // === STATE ===
@@ -103,7 +104,8 @@ class GeminiLiveService {
   final List<String> _debugLog = [];
   
   // === PHASE 39: UNIFIED LOGGING ===
-  static const _logger = AppLogger('GeminiLive');
+  // static const _logger = AppLogger('GeminiLive');
+
   
   GeminiLiveService({
     this.onAudioReceived,
@@ -143,9 +145,9 @@ class GeminiLiveService {
     
     // PHASE 39: Use unified AppLogger (which writes to LogBuffer automatically)
     if (isError) {
-      _logger.error(entry);
+      AppLogger.error(entry);
     } else {
-      _logger.info(entry);
+      AppLogger.info(entry);
     }
   }
   String get connectionPhase => _connectionPhase;
@@ -222,7 +224,7 @@ class GeminiLiveService {
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-        debugPrint('GeminiLiveService: Endpoint: v1beta (Phase 34 fix)');
+        debugPrint('GeminiLiveService: Endpoint: v1alpha (Phase 45 fix)');
         debugPrint('GeminiLiveService: Headers: Honest UA (Phase 37 fix)');
         debugPrint('GeminiLiveService: Full URL: $wsUrl');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
@@ -269,7 +271,27 @@ class GeminiLiveService {
       }
       
       _subscription = _channel!.stream.listen(
-        _handleMessage,
+        (message) {
+          if (message is String) {
+            // Log JSON messages clearly
+            try {
+              final json = jsonDecode(message);
+              // Don't log full audio payloads in JSON if they exist
+              if (json.toString().length > 500) {
+                 AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx JSON (truncated): ${json.toString().substring(0, 500)}...');
+              } else {
+                 AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx JSON: $message');
+              }
+              _handleServerMessage(json);
+            } catch (e) {
+              AppLogger.warning('⚠️ [GeminiLive] Rx Non-JSON text: $message');
+            }
+          } else if (message is List<int>) {
+            // CRITICAL: Log that we received binary audio data
+            AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY AUDIO: ${message.length} bytes');
+            _handleAudioData(Uint8List.fromList(message));
+          }
+        },
         onError: (e) {
           _setPhase("SOCKET_ERROR");
           debugPrint('GeminiLiveService: WebSocket error: $e');
@@ -325,6 +347,14 @@ class GeminiLiveService {
       _notifyConnectionState(LiveConnectionState.disconnected);
       return false;
     }
+  }
+
+  /// Handles incoming audio binary data
+  void _handleAudioData(Uint8List data) {
+    // This is for future native audio support if the API sends raw PCM
+    // Currently, Gemini v1beta sends base64 in JSON, handled in _handleServerMessage
+    onAudioReceived?.call(data);
+    onModelSpeakingChanged?.call(true);
   }
 
   // === HELPER METHODS ===
@@ -437,20 +467,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     _channel!.sink.add(payload);
   }
 
-  void _handleMessage(dynamic message) {
+  void _handleServerMessage(Map<String, dynamic> data) {
     try {
-      // Log ALL incoming messages in debug mode for visibility
-      if (kDebugMode) {
-        final preview = message.toString();
-        if (preview.length > 200) {
-          debugPrint('GeminiLiveService RX: ${preview.substring(0, 200)}...');
-        } else {
-          debugPrint('GeminiLiveService RX: $preview');
-        }
-      }
-      
-      final data = jsonDecode(message as String) as Map<String, dynamic>;
-
       // GEMINI 3 COMPLIANCE: Capture Thought Signature
       // The thought signature is an encrypted string that stores the model's
       // reasoning state. It MUST be echoed back in subsequent messages.
@@ -692,11 +710,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       message['thoughtSignature'] = _currentThoughtSignature;
     }
     
-    try {
-      _channel!.sink.add(jsonEncode(message));
-    } catch (e) {
-      debugPrint('GeminiLiveService: Failed to send audio: $e');
-    }
+    sendJsonMessage(message);
   }
   
   /// Sends text input to the Gemini Live API.
@@ -723,10 +737,26 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       message['thoughtSignature'] = _currentThoughtSignature;
     }
     
+    sendJsonMessage(message);
+  }
+  
+  /// Helper to send JSON messages with logging
+  void sendJsonMessage(Map<String, dynamic> data) {
+    if (_channel == null) return;
+    
     try {
-      _channel!.sink.add(jsonEncode(message));
+      final jsonString = jsonEncode(data);
+      if (kDebugMode) {
+        // Truncate long logs (like audio chunks)
+        if (jsonString.length > 500) {
+          AppLogger.debug('ℹ️ [GeminiLive] 📤 Tx JSON (truncated): ${jsonString.substring(0, 500)}...');
+        } else {
+          AppLogger.debug('ℹ️ [GeminiLive] 📤 Tx JSON: $jsonString');
+        }
+      }
+      _channel!.sink.add(jsonString);
     } catch (e) {
-      debugPrint('GeminiLiveService: Failed to send text: $e');
+      AppLogger.error('❌ [GeminiLive] Failed to send JSON: $e');
     }
   }
   
