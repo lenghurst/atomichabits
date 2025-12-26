@@ -61,8 +61,38 @@ class _SherlockScreenState extends State<SherlockScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // 1. Initial Speaker Enforcement
+    _enforceSpeakerOutput();
+    
     _initializePulseAnimation();
     _initializeVoiceSession();
+  }
+
+  /// CRITICAL: Helper to force audio to speaker, even if mic is on
+  Future<void> _enforceSpeakerOutput() async {
+    if (kDebugMode) debugPrint('SherlockScreen: 🔊 Enforcing Speaker Output...');
+    
+    await _audioPlayer.setVolume(1.0); // Ensure volume is max
+    
+    await AudioPlayer.global.setAudioContext(AudioContext(
+      android: const AudioContextAndroid(
+        isSpeakerphoneOn: true,
+        stayAwake: true,
+        contentType: AndroidContentType.speech,
+        usageType: AndroidUsageType.assistant,
+        audioFocus: AndroidAudioFocus.gain,
+      ),
+      iOS: AudioContextIOS(
+        // 'playAndRecord' is required to hear audio while mic is active
+        category: AVAudioSessionCategory.playAndRecord, 
+        options: {
+          AVAudioSessionOptions.defaultToSpeaker, 
+          AVAudioSessionOptions.allowBluetooth,
+          AVAudioSessionOptions.allowAirPlay
+        },
+      ),
+    ));
   }
   
   void _initializePulseAnimation() {
@@ -131,6 +161,9 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     );
     
     final success = await _sessionManager!.startSession();
+    
+    // 2. CRITICAL FIX: Re-enforce speaker AFTER recording starts
+    await _enforceSpeakerOutput();
     
     if (!success) {
       setState(() {
