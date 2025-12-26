@@ -1,68 +1,52 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-// Using the REST API directly instead of the SDK to avoid npm dependency issues in Deno environment if not fully configured
-// This aligns with the existing implementation style but simplifies the logic as requested
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { GoogleGenAI } from "npm:@google/genai@0.1.1";
 
-// CORS headers for Flutter web support
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // 1. Get MASTER API key from env
-    const apiKey = Deno.env.get('GEMINI_API_KEY')
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
-        return new Response(
-            JSON.stringify({ error: 'Missing GEMINI_API_KEY environment variable' }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        )
+      console.error("Missing GEMINI_API_KEY");
+      return new Response(
+        JSON.stringify({ error: 'Missing GEMINI_API_KEY environment variable' }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // 2. Generate Ephemeral Token using Google REST API
-    // https://ai.google.dev/api/tokens
-    const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1alpha/authTokens?key=${apiKey}`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                config: {
-                    uses: 1, // Token works for one session only
-                    expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
-                    httpOptions: { apiVersion: 'v1alpha' } // REQUIRED for Live API
-                }
-            })
-        }
+    const client = new GoogleGenAI({ apiKey: apiKey });
+
+    // Generate Ephemeral Token
+    // Using the official SDK handles the correct endpoint resolution
+    const response = await client.authTokens.create({
+      config: {
+        httpOptions: { apiVersion: 'v1alpha' } // SDK requires this for ephemeral tokens currently
+      }
+    });
+
+    // The SDK returns the token object directly
+    // The format is { name: "authTokens/..." }
+    const tokenName = response.name;
+
+    console.log("Token generated successfully");
+
+    return new Response(
+      JSON.stringify({ token: tokenName }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        return new Response(
-            JSON.stringify({ error: `Failed to create token: ${errorText}` }),
-            { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        )
-    }
-
-    const data = await response.json();
-
-    // 3. Return the token to the Flutter app
-    // The API returns { name: "authTokens/..." }
-    return new Response(
-      JSON.stringify({ token: data.name }), 
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    )
   } catch (error) {
+    console.error("Token generation failed:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    )
+      JSON.stringify({ error: error.message || "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
-})
+});

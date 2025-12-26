@@ -55,7 +55,7 @@ class GeminiLiveService {
   // === CONFIGURATION ===
   // PHASE 34 FIX: Changed from v1alpha to v1beta per official Gemini API documentation
   // The December 2025 model requires v1beta endpoint
-  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent';
+  static const String _wsEndpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
   static const String _tokenEndpoint = 'get-gemini-ephemeral-token';
   
   // === STATE ===
@@ -592,14 +592,46 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       }
 
       // Try to get ephemeral token from Supabase Edge Function
-      final response = await supabase.functions.invoke(
-        _tokenEndpoint,
-        body: {'lockToConfig': true},
-      );
+      FunctionResponse response;
+      try {
+        response = await supabase.functions.invoke(
+          _tokenEndpoint,
+          body: {'lockToConfig': true},
+        );
+      } on FunctionException catch (e) {
+        final errorBody = e.details;
+        final status = e.status;
+        final errorMsg = 'Edge Function Error ($status): $errorBody';
+        AppLogger.error('❌ [GeminiLive] $errorMsg');
+        _addDebugLog('❌ Token fetch failed: $status', isError: true);
+
+        // DEV MODE FALLBACK
+        if (kDebugMode && AIModelConfig.hasGeminiKey) {
+           debugPrint('GeminiLiveService: DEV MODE FALLBACK - Edge function failed ($status), using API key');
+          _ephemeralToken = AIModelConfig.geminiApiKey;
+          _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+          _isUsingApiKey = true;
+          return _TokenResult(_ephemeralToken, 'Dev fallback after Edge Function error ($status)');
+        }
+        return _TokenResult(null, 'Edge Function Error ($status): ${e.reason} - $errorBody');
+      } catch (e) {
+        // Network or other errors
+        AppLogger.error('❌ [GeminiLive] Token invocation failed: $e');
+        _addDebugLog('❌ Token fetch exception: $e', isError: true);
+         if (kDebugMode && AIModelConfig.hasGeminiKey) {
+          debugPrint('GeminiLiveService: DEV MODE FALLBACK - Network error, using API key');
+          _ephemeralToken = AIModelConfig.geminiApiKey;
+          _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+          _isUsingApiKey = true;
+          return _TokenResult(_ephemeralToken, 'Dev fallback after network error');
+        }
+        return _TokenResult(null, 'Token invocation failed: $e');
+      }
 
       if (response.status != 200) {
-        final errorMsg = 'Edge function returned status ${response.status}';
+        final errorMsg = 'Edge function returned status ${response.status}. Body: ${response.data}';
         debugPrint('GeminiLiveService: $errorMsg');
+        _addDebugLog('❌ Backend returned ${response.status}', isError: true);
 
         // Fallback to API key in dev mode
         if (kDebugMode && AIModelConfig.hasGeminiKey) {
