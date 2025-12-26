@@ -961,6 +961,16 @@ class AppState extends ChangeNotifier {
 
   /// Clear all data (useful for testing/reset)
   Future<void> clearAllData() async {
+    // Force sign out from Supabase (Cloud) to ensure clean slate
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (e) {
+      // Ignore errors if already signed out
+      if (kDebugMode && !e.toString().contains("AuthSessionMissingError")) { 
+         debugPrint("Error signing out during reset: $e");
+      }
+    }
+
     if (_dataBox != null) {
       await _dataBox!.clear();
     }

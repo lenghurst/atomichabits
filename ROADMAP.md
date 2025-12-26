@@ -143,6 +143,8 @@
 | T2 | Fix static analysis issues (withOpacity) | Low | ✅ |
 | F1 | Fix onboarding route gap (PactRevealScreen) | Low | ✅ |
 | F2 | Integrate Sherlock Profiling for Text Chat | Low | ✅ |
+| F3 | Fix Google Sign-In Bypass (Identity Gate Loop) | Low | ✅ |
+| F4 | Fix Factory Reset (Added Supabase SignOut) | Low | ✅ |
 | A1 | Perform Engineering Audit & Remediation | Low | ✅ |
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |

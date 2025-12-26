@@ -90,11 +90,15 @@
 | **46.1** | Audit Remediation (Voice Diagnostics + Deprecations) | ✅ |
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 | **46.2** | iOS Platform Alignment (Podfile & Permissions) | ✅ |
+| **45.4** | Onboarding Persistence (Google Sign-In & Factory Reset) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 
 | File | Changes |
 |------|---------|
+| `lib/features/onboarding/identity_first/identity_access_gate_screen.dart` | Fixed Google Sign-In redirect target |
+| `lib/data/app_state.dart` | Added Supabase signOut to `clearAllData` |
+| `lib/features/onboarding/screens/tier_selection_screen.dart` | Fixed Standard Protocol navigation loop |
 | `lib/data/models/user_profile.dart` | Added `isPremium` field (Data Unification) |
 | `lib/data/repositories/hive_user_repository.dart` | Migration logic for unified user data |
 | `lib/config/ai_tools_config.dart` | Tool schema for `update_user_psychometrics` (NEW) |

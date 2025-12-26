@@ -18,7 +18,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | ✅ **WORKING** | Gemini & OpenAI (Direct WebSocket) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
-| **Cloud Sync** | 🚧 Prep Stage | `isSynced` data layer preparation |
+| **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
 > **Last Updated:** 26 December 2025  
 > **Current Phase:** Phase 45 - Pre-Launch Fixes  

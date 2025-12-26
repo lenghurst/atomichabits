@@ -1,3 +1,12 @@
+## [6.4.6] - 2025-12-26 - Phase 45.4: "Onboarding & Persistence Fixes"
+
+### Fixed
+- **Google Sign-In Bypass:** Corrected the redirect in `IdentityAccessGateScreen` to target `AppRoutes.onboardingPermissions` instead of `sherlockPermissions`, ensuring users enter the full onboarding pipeline.
+- **Factory Reset Persistence:** Enhanced `AppState.clearAllData()` to explicitly sign out of the Supabase cloud session, preventing "zombie" authenticated states after a reset.
+- **Tier Selection Loop:** Fixed the "Standard Protocol" button in `TierSelectionScreen` to route to `AppRoutes.manualOnboarding` instead of `home`, preventing infinite onboarding loops.
+
+---
+
 ## [6.4.3] - 2025-12-26 - Phase 46.1: "Security & Clean Code"
 
 ### Security
