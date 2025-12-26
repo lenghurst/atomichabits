@@ -65,7 +65,7 @@
 | **Identity Persistence** | ✅ **NEW** | Phase 44 - Profile locked to Hive on "ENTER THE PACT" |
 | **In-App Log Console** | ✅ Working | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
-| **Onboarding Flow** | ✅ Working | Voice → Reveal → Dashboard |
+| **Onboarding Flow** | ✅ Working | Unified: Voice/Manual/Chat → Reveal → Dashboard |
 | **Dashboard** | ✅ Working | Habit tracking |
 
 ### Recent Fixes (Phases 35-45)
@@ -85,6 +85,7 @@
 | **44** | The Investment - Profile persistence to Hive | ✅ |
 | **45.1** | User Data Unification (`isPremium` → `UserProfile`) | ✅ |
 | **45.2** | Cloud Sync Prep (`isSynced` flag for Psychometrics) | ✅ |
+| **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 

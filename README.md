@@ -13,10 +13,10 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 45 | User Data Unification & Cloud Sync Preparation |
+| **Mobile App** | 🟢 Phase 46 | Voice Architecture Simplification & OpenAI Integration |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **WORKING** | Gemini Live API with Real-time Tool Calling |
+| **Voice AI** | ✅ **WORKING** | Gemini & OpenAI (Direct WebSocket) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🚧 Prep Stage | `isSynced` data layer preparation |
 
@@ -51,7 +51,8 @@ Traditional habit apps fail because they rely on **you**.
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
 | **AI (Tier 1)** | DeepSeek-V3 | Text reasoning (JSON mode) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Real-time voice coaching |
-| **Voice** | Gemini Live API | WebSocket audio streaming |
+| **Voice** | OpenAI Realtime | Alternative voice provider |
+| **Voice Protocol** | WebSocket (Direct) | Removed Edge Function dependency |
 | **Hosting** | Netlify | Web Deployment |
 
 ---
@@ -156,11 +157,9 @@ lib/
 │   └── app_state.dart      # Legacy (being strangled)
 │
 ├── domain/
-│   ├── entities/           # Pure Domain Models
-│   │   └── psychometric_profile.dart
-│   │
 │   └── services/           # Domain Logic
-│       └── psychometric_engine.dart
+│       ├── psychometric_engine.dart
+│       └── voice_provider_selector.dart # Diagnostics tool (Phase 46)
 │
 └── features/
     ├── dev/                # Developer Tools
@@ -213,8 +212,8 @@ Audio     tool_call event
 | Feature | Description |
 |---------|-------------|
 | **Premium Toggle** | Enable/disable Tier 2 (Voice) mode |
-| **View Gemini Logs** | In-App Log Console (Phase 38) |
-| **Copy Debug Info** | Copy diagnostic info to clipboard |
+| **View Logs** | In-App Voice Log Console |
+| **Connection Test** | Pings real servers for latency (Phase 46) |
 | **Quick Navigation** | Jump to any screen |
 
 ### Debugging Voice Connection
