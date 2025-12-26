@@ -1,3 +1,14 @@
+## [6.3.3] - 2025-12-26 - Phase 45: Onboarding Flow Fix
+
+### Fixed
+- **Onboarding Route Gap:** `PactRevealScreen` (the "Magic Moment") was disconnected from the manual onboarding flow.
+- **Navigation Loop:** Both `PactTierSelectorScreen` (manual flow) and `ConversationalOnboardingScreen` (chat flow) now correctly route to `PactRevealScreen` before entering the Dashboard.
+
+### Changed
+- **Registration Deferral:** `AppState.completeOnboarding()` is now solely handled by `PactRevealScreen`, ensuring the variable reward is always seen.
+
+---
+
 ## [6.3.2] - 2025-12-26 - Phase 45: "X-Ray Debugging"
 
 ### Added

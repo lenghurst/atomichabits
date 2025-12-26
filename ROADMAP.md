@@ -156,6 +156,7 @@ VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
 |----|------|--------|--------|
 | T1 | Fix 5 failing unit tests | Low | [ ] |
 | T2 | Fix 154 static analysis issues | Low | [ ] |
+| F1 | Fix onboarding route gap (PactRevealScreen) | Low | ✅ |
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
 
