@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 43 - The Variable Reward  
+> **Last Updated:** 26 December 2025  
+> **Current Phase:** Phase 44 - The Investment  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -52,7 +52,7 @@
 
 ---
 
-## Current State: Phase 43
+## Current State: Phase 44
 
 ### What's Working
 
@@ -61,7 +61,8 @@
 | **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
 | **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with tool calling |
 | **Soul Capture Onboarding** | ✅ **WORKING** | Sherlock Protocol with real-time tool calls |
-| **Pact Identity Card** | ✅ **NEW** | Variable Reward - flip card reveal |
+| **Pact Identity Card** | ✅ **WORKING** | Variable Reward - flip card reveal |
+| **Identity Persistence** | ✅ **NEW** | Phase 44 - Profile locked to Hive on "ENTER THE PACT" |
 | **In-App Log Console** | ✅ Working | DevTools → View Gemini Logs |
 | **Google Sign-In** | ✅ Working | OAuth configured |
 | **Onboarding Flow** | ✅ Working | Voice → Reveal → Dashboard |
@@ -81,8 +82,9 @@
 | **41.2** | All 44 navigation calls migrated to AppRoutes | ✅ |
 | **42** | Soul Capture Onboarding with Sherlock Protocol | ✅ |
 | **43** | Pact Identity Card (Variable Reward) | ✅ |
+| **44** | The Investment - Profile persistence to Hive | ✅ |
 
-### Key Files Changed (Phase 42-43)
+### Key Files Changed (Phase 42-44)
 
 | File | Changes |
 |------|---------|
@@ -90,12 +92,13 @@
 | `lib/config/ai_prompts.dart` | Sherlock Protocol prompt (voiceOnboardingSystemPrompt) |
 | `lib/domain/entities/psychometric_profile.dart` | Holy Trinity fields added |
 | `lib/domain/entities/psychometric_profile_extensions.dart` | Display formatting (NEW) |
-| `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` method |
+| `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` + `finalizeOnboarding()` |
+| `lib/data/providers/user_provider.dart` | `completeOnboarding()` for state flag |
 | `lib/data/services/ai/prompt_factory.dart` | Dynamic prompt generation (NEW) |
 | `lib/data/services/gemini_live_service.dart` | Tool calling support, `sendToolResponse()` |
 | `lib/data/services/voice_session_manager.dart` | `VoiceSessionMode`, orchestration |
 | `lib/features/onboarding/widgets/pact_identity_card.dart` | 3D flip card (NEW) |
-| `lib/features/onboarding/pact_reveal_screen.dart` | Reveal sequence (NEW) |
+| `lib/features/onboarding/pact_reveal_screen.dart` | Reveal sequence + Investment wiring |
 | `lib/features/onboarding/voice_coach_screen.dart` | "DONE" button, reveal navigation |
 
 ---

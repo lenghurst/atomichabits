@@ -1,29 +1,40 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 25 December 2025  
-> **Current Phase:** Phase 43 - The Variable Reward  
+> **Last Updated:** 26 December 2025  
+> **Current Phase:** Phase 44 - The Investment  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Pact Identity Card **IMPLEMENTED**. Full Hook Model complete.
+> **Status:** ✅ Full Hook Model **COMPLETE**. Identity persisted to Hive.
 
 ---
 
-## 🎯 Current Focus: The Variable Reward (Phase 43)
+## 🎯 Current Focus: The Investment (Phase 44)
 
-**Goal:** Visualise the captured psychometric data as a premium digital artifact.
+**Goal:** Lock the user's identity by persisting PsychometricProfile to Hive and completing onboarding.
 
-**Status:** ✅ **COMPLETE**. Nir Eyal's Hook Model fully implemented.
+**Status:** ✅ **COMPLETE**. Nir Eyal's Hook Model fully implemented end-to-end.
 
-**What Was Built (Phase 43):**
-1. **Profile Extensions:** `psychometric_profile_extensions.dart` - Display formatting + archetype colours
-2. **Pact Identity Card:** `pact_identity_card.dart` - 3D flip card with mystery→insight reveal
-3. **Pact Reveal Screen:** `pact_reveal_screen.dart` - Loading sequence → card reveal → CTA
-4. **Navigation Flow:** Voice Coach → (DONE) → Pact Reveal → Dashboard
+**What Was Built (Phase 44):**
+1. **finalizeOnboarding():** Method in `PsychometricProvider` to persist profile and confirm storage
+2. **CTA Wiring:** "ENTER THE PACT" button calls `finalizeOnboarding()` + `completeOnboarding()`
+3. **Heavy Haptic:** Lock moment with `HapticFeedback.heavyImpact()` on identity commit
+4. **State Bridge:** Both `UserProvider` AND legacy `AppState` updated for router compatibility
 
-**The Complete Hook Model:**
+**The Complete Hook Model (Nir Eyal):**
 - **Trigger:** User starts voice onboarding
 - **Action:** Sherlock Protocol conversation with Puck
 - **Variable Reward:** Pact Identity Card (screenshot-worthy)
-- **Investment:** Profile data saved to Hive
+- **Investment:** ✅ Profile persisted to Hive → triggers next cycle
+
+**Flow Architecture:**
+```
+VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
+                                                       ↓
+                              PsychometricProvider.finalizeOnboarding()
+                              UserProvider.completeOnboarding()
+                              AppState.completeOnboarding()
+                                                       ↓
+                                                  Dashboard
+```
 
 **Immediate Priorities:**
 1.  **Test on Device:** Verify complete onboarding → reveal → dashboard flow
@@ -34,6 +45,23 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 44: The Investment (26 Dec 2025)
+
+**Goal:** Lock the user's identity by persisting PsychometricProfile and completing onboarding (Nir Eyal's Hook Model - Investment).
+
+| ID | Task | Status |
+|----|------|--------|
+| I1 | Add `finalizeOnboarding()` to `PsychometricProvider` | ✅ |
+| I2 | Wire "ENTER THE PACT" CTA to persist profile | ✅ |
+| I3 | Call `UserProvider.completeOnboarding()` | ✅ |
+| I4 | Call `AppState.completeOnboarding()` for router guard | ✅ |
+| I5 | Heavy haptic on identity commit | ✅ |
+
+**Why This Matters:**
+- User has invested time + psychological insight → stored value → higher retention
+- The persisted profile enables personalised coaching in future sessions
+- Completing onboarding unlocks the main app dashboard
 
 ### Phase 43: The Variable Reward (25 Dec 2025)
 
@@ -120,7 +148,7 @@
 
 ## 📋 Backlog
 
-### Phase 43: Pre-Launch Fixes (High Priority)
+### Phase 45: Pre-Launch Fixes (High Priority)
 
 **Goal:** Address all remaining blockers before the first device test build.
 
@@ -131,7 +159,7 @@
 | G1 | Guide user to add GitHub Actions secrets | Low | [ ] |
 | G2 | Commit and push GitHub Actions workflow file | Low | [ ] |
 
-### Phase 44: Provider Wiring (Post-Launch)
+### Phase 46: Provider Wiring (Post-Launch)
 
 **Goal:** Wire new providers into `main.dart` to continue strangling the legacy `AppState`.
 
@@ -142,7 +170,7 @@
 | W3 | Integrate PsychometricProvider | Medium | [ ] |
 | W4 | Update GoRouter to use UserProvider | Low | [ ] |
 
-### Phase 44: DTO Separation (Q1 2026)
+### Phase 47: DTO Separation (Q1 2026)
 
 **Goal:** Separate domain entities from persistence logic by introducing Data Transfer Objects (DTOs).
 

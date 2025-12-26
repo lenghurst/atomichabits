@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/providers/psychometric_provider.dart';
+import '../../data/providers/user_provider.dart';
+import '../../data/app_state.dart';
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/entities/psychometric_profile_extensions.dart';
 import 'widgets/pact_identity_card.dart';
@@ -95,8 +97,37 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     setState(() => _showCard = true);
   }
 
-  void _navigateToDashboard() {
-    HapticFeedback.lightImpact();
+  /// Phase 44: The Investment
+  /// 
+  /// Finalize onboarding by:
+  /// 1. Persisting PsychometricProfile to Hive (already saved per-trait, but ensure final)
+  /// 2. Mark onboarding complete in UserProvider AND AppState
+  /// 3. Navigate to Dashboard
+  /// 
+  /// The "Investment" in Nir Eyal's Hook Model:
+  /// User has invested time + psychological insight → stored value → higher retention
+  Future<void> _navigateToDashboard() async {
+    // Heavy haptic for the "lock" moment
+    HapticFeedback.heavyImpact();
+    
+    if (!mounted) return;
+    
+    // 1. Finalize psychometric profile (ensure persisted)
+    final psychometricProvider = context.read<PsychometricProvider>();
+    await psychometricProvider.finalizeOnboarding();
+    
+    // 2. Mark onboarding complete (new architecture)
+    final userProvider = context.read<UserProvider>();
+    await userProvider.completeOnboarding();
+    
+    // 3. Mark onboarding complete (legacy AppState - for router guard)
+    // This is the "bridge" during Phase 34 Shadow Wiring
+    final appState = context.read<AppState>();
+    await appState.completeOnboarding();
+    
+    if (!mounted) return;
+    
+    // 4. Navigate to Dashboard (new identity unlocked!)
     context.go(AppRoutes.dashboard);
   }
 

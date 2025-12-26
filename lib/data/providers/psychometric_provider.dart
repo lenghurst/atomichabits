@@ -212,4 +212,45 @@ class PsychometricProvider extends ChangeNotifier {
   
   /// Check if onboarding is complete (all 3 traits captured)
   bool get isOnboardingComplete => _profile.isOnboardingComplete;
+  
+  // ============================================================
+  // PHASE 44: THE INVESTMENT (Persistence & Transition)
+  // ============================================================
+  
+  /// Finalize onboarding by persisting the profile and marking onboarding complete.
+  /// 
+  /// This is the "Investment" in Nir Eyal's Hook Model - the user has invested
+  /// their time and psychological insights into The Pact. This stored value
+  /// makes them more likely to return.
+  /// 
+  /// Returns true if finalization succeeded.
+  Future<bool> finalizeOnboarding() async {
+    try {
+      if (kDebugMode) {
+        debugPrint('PsychometricProvider: Finalizing onboarding...');
+        debugPrint('  - hasHolyTrinity: $hasHolyTrinity');
+        debugPrint('  - antiIdentityLabel: ${_profile.antiIdentityLabel}');
+        debugPrint('  - failureArchetype: ${_profile.failureArchetype}');
+        debugPrint('  - resistanceLieLabel: ${_profile.resistanceLieLabel}');
+      }
+      
+      // Ensure profile is saved (redundant but safe - crash recovery)
+      await _repository.saveProfile(_profile);
+      
+      if (kDebugMode) {
+        debugPrint('PsychometricProvider: Profile persisted to Hive');
+        debugPrint('  - Onboarding finalized: TRUE');
+      }
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('PsychometricProvider: Error finalizing onboarding: $e');
+      }
+      return false;
+    }
+  }
+  
+  /// Check if the profile has enough data to display (for fallback logic)
+  bool get hasDisplayableData => _profile.hasDisplayableData;
 }

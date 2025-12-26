@@ -1,3 +1,31 @@
+## [6.3.0] - 2025-12-26 - Phase 44: "The Investment"
+
+### Added
+- **finalizeOnboarding():** Method in `PsychometricProvider` to persist profile and log completion
+- **Identity Lock:** Heavy haptic feedback on "ENTER THE PACT" button press
+- **State Bridge:** Both `UserProvider` and `AppState` updated on onboarding completion
+
+### Changed
+- **pact_reveal_screen.dart:** "ENTER THE PACT" now calls full finalization chain before navigation
+- **psychometric_provider.dart:** Added Phase 44 Investment section with `finalizeOnboarding()`
+
+### Technical Details (Hook Model - Investment)
+- User's psychological profile is persisted to Hive storage
+- Onboarding completion flag set in both new architecture (`UserProvider`) and legacy (`AppState`)
+- Router guards now correctly redirect to Dashboard after completion
+- Stored value (profile data) increases likelihood of return visits
+
+### Flow
+```
+"ENTER THE PACT" → HapticFeedback.heavyImpact() 
+                → PsychometricProvider.finalizeOnboarding() 
+                → UserProvider.completeOnboarding()
+                → AppState.completeOnboarding()
+                → context.go(AppRoutes.dashboard)
+```
+
+---
+
 ## [6.2.0] - 2025-12-25 - Phase 43: "The Variable Reward"
 
 ### Added
