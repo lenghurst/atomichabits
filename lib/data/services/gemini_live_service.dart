@@ -520,10 +520,16 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
                 final mimeType = inlineData['mimeType'] as String?;
                 final base64Data = inlineData['data'] as String?;
                 
-                if (mimeType?.startsWith('audio/') == true && base64Data != null) {
+                if (kDebugMode) {
+                  debugPrint('GeminiLiveService: 📦 Rx Part: Mime=$mimeType, DataLen=${base64Data?.length}');
+                }
+
+                if (base64Data != null) {
+                  // Relaxed mimeType check for debugging
                   final audioBytes = base64Decode(base64Data);
                   onAudioReceived?.call(Uint8List.fromList(audioBytes));
                   onModelSpeakingChanged?.call(true);
+                  if (kDebugMode) debugPrint('GeminiLiveService: 🔊 Audio chunk dispatched (${audioBytes.length} bytes)');
                 }
               }
             }

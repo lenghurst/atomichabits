@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
-import '../../config/ai_model_config.dart';
+
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -119,9 +119,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
   void _handleAudioReceived(Uint8List audioData) {
     if (!mounted) return;
+    if (kDebugMode) debugPrint('VoiceCoachScreen: 📥 Rx Audio Chunk: ${audioData.length} bytes. Buffer: ${_audioBuffer.length}');
     _audioBuffer.addAll(audioData);
     
     if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
+      if (kDebugMode) debugPrint('VoiceCoachScreen: ▶️ Threshold reached (${_audioBuffer.length} >= $_bufferingThreshold), starting playback');
       _playBufferedAudio();
     }
   }
@@ -135,6 +137,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     _isPlaying = true;
     final List<int> chunk = List.from(_audioBuffer);
     _audioBuffer.clear();
+    
+    if (kDebugMode) debugPrint('VoiceCoachScreen: 🔊 Playing chunk: ${chunk.length} bytes');
 
     try {
       final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
@@ -411,30 +415,33 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                            blur = 40;
                         }
 
-                        return Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: orbColor.withOpacity(0.2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: orbColor.withOpacity(0.6),
-                                blurRadius: blur,
-                                spreadRadius: blur / 2,
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: orbColor.withOpacity(0.2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: orbColor.withOpacity(0.6),
+                                  blurRadius: blur,
+                                  spreadRadius: blur / 2,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.9),
+                                  blurRadius: 10,
+                                  spreadRadius: -50,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                _getButtonIcon(),
+                                color: Colors.white,
+                                size: 48,
                               ),
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.9),
-                                blurRadius: 10,
-                                spreadRadius: -50,
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Icon(
-                              _getButtonIcon(),
-                              color: Colors.white,
-                              size: 48,
                             ),
                           ),
                         );
