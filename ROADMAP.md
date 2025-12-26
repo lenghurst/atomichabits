@@ -46,6 +46,16 @@ VoiceCoachScreen → [DONE] → PactRevealScreen → [ENTER THE PACT]
 
 ## ✅ Completed Phases
 
+### Phase 44.5: Invite Code (26 Dec 2025)
+
+**Goal:** Implement UI for entering invite codes to bypass standard onboarding or join specific pacts.
+
+| ID | Task | Status |
+|----|------|--------|
+| I1 | Create `InviteCodeDialog` widget | ✅ |
+| I2 | Integrate dialog into `ValuePropositionScreen` | ✅ |
+| I3 | Add placeholder validation and success feedback | ✅ |
+
 ### Phase 44: The Investment (26 Dec 2025)
 
 **Goal:** Lock the user's identity by persisting PsychometricProfile and completing onboarding (Nir Eyal's Hook Model - Investment).
