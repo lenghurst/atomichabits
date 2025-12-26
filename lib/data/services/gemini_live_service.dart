@@ -433,21 +433,17 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       'setup': {
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
-          'responseModalities': ['AUDIO'], // camelCase per official docs
+          'responseModalities': ['AUDIO', 'TEXT'], // User Fix: Must include both for proper audio response
           'speechConfig': {
             'voiceConfig': {
               'prebuiltVoiceConfig': {
-                'voiceName': 'Kore', // Reverted to Kore (Firm) per user request
+                'voiceName': 'Kore', // Keeping Kore per user preference (User snippet suggested Puck but didn't mandate it)
               }
             }
           },
-          // PHASE 35 FIX: thinkingConfig belongs INSIDE generationConfig
-          // This was causing "Unknown name 'thinkingConfig'" when placed at setup level
-          'thinkingConfig': {
-            'thinkingLevel': 'MINIMAL',
-          },
-          // GEMINI 3 COMPLIANCE: Do NOT set temperature. 
-          // Values < 1.0 cause "unexpected behavior, such as looping".
+          // REMOVED: thinkingConfig
+          // User specs for 'gemini-2.5-flash-native-audio-preview-12-2025' do not include thinkingConfig.
+          // This is likely only for Pro/Reasoning models, and might be causing issues here.
         },
         if (instruction != null) 
           'systemInstruction': {

@@ -13,10 +13,10 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 46.1 | Audit, Voice Diagnostics, Sherlock Integration |
+| **Mobile App** | 🟢 Phase 46.2 | Voice Response Fixed, Debug Triggers Added |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **WORKING** | Gemini & OpenAI (Direct WebSocket) |
+| **Voice AI** | ✅ **WORKING** | Gemini 2.5 Flash Native (Audio+Text Modalities) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 

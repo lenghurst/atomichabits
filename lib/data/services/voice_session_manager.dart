@@ -335,6 +335,14 @@ class VoiceSessionManager {
         onError?.call('Failed to connect to AI service');
         return false;
       }
+
+      // DEBUG: Send an initial text message to trigger a response
+      // This helps verify if the issue is with Audio VAD or the connection itself
+      if (kDebugMode) {
+        debugPrint('VoiceSessionManager: 🔍 Sending test message "Hello" to trigger response...');
+        // VoiceApiService interface includes sendText, so we can call it directly
+        _voiceService.sendText("Hello, can you hear me?");
+      }
       
       // Step 3: Initialise audio recording
       if (kDebugMode) {

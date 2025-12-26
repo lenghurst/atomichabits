@@ -260,17 +260,15 @@ https://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta
   "setup": {
     "model": "models/gemini-2.5-flash-native-audio-preview-12-2025",
     "generationConfig": {
-      "responseModalities": ["AUDIO"],
+      "responseModalities": ["AUDIO", "TEXT"],
       "speechConfig": {
         "voiceConfig": {
           "prebuiltVoiceConfig": {
-            "voiceName": "Aoede"
+            "voiceName": "Kore"
           }
         }
-      },
-      "thinkingConfig": {
-        "thinkingLevel": "MINIMAL"
       }
+      // REMOVED: thinkingConfig (Not supported in Flash Native 12-2025)
     },
     "systemInstruction": {
       "parts": [{ "text": "..." }]
