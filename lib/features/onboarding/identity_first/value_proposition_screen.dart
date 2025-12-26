@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
+import 'widgets/invite_code_dialog.dart';
 
 /// Value Proposition Screen (Hook Screen)
 /// 
@@ -461,14 +462,22 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
           width: double.infinity,
           height: 48,
           child: TextButton(
-            onPressed: () {
-              // TODO: Show a dialog to enter invite code
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Enter your invite link in the browser'),
-                  duration: Duration(seconds: 2),
-                ),
+            onPressed: () async {
+              final code = await showDialog<String>(
+                context: context,
+                builder: (context) => const InviteCodeDialog(),
               );
+
+              if (code != null && mounted) {
+                // TODO: Validate invite code with backend
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Invite code verified: $code'),
+                    backgroundColor: const Color(0xFF22C55E),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.white.withOpacity(0.7),

@@ -1,3 +1,9 @@
+## [6.3.3] - 2025-12-26 - Phase 44.5: "Invite Code"
+
+### Added
+- **Invite Code Dialog:** `InviteCodeDialog` widget for entering invite codes
+- **Integration:** "I have an invite" button on `ValuePropositionScreen` now opens the dialog
+
 ## [6.3.2] - 2025-12-26 - Phase 45: "X-Ray Debugging"
 
 ### Added

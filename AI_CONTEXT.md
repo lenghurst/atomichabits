@@ -161,6 +161,9 @@ lib/
     ├── onboarding/             # Onboarding Flow
     │   ├── voice_coach_screen.dart
     │   └── identity_first/
+    │       ├── value_proposition_screen.dart
+    │       └── widgets/
+    │           └── invite_code_dialog.dart
     │
     └── dashboard/              # Main Dashboard
         └── habit_list_screen.dart
