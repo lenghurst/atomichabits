@@ -33,6 +33,9 @@ abstract class AppRoutes {
   /// Manual form-based onboarding (Tier 4 fallback)
   static const String manualOnboarding = '/onboarding/manual';
   
+  /// Pre-Flight Screening (Mission, Enemy, Vibe)
+  static const String onboardingScreening = '/onboarding/screening';
+
   /// Identity declaration screen (Phase 27.17)
   static const String identityOnboarding = '/onboarding/identity';
   
@@ -151,6 +154,7 @@ abstract class AppRoutes {
     voiceOnboarding,
     chatOnboarding,
     manualOnboarding,
+    onboardingScreening,
     identityOnboarding,
     witnessOnboarding,
     tierOnboarding,

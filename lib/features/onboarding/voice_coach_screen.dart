@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
+import '../../data/models/user_profile.dart';
 import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
@@ -24,7 +25,12 @@ import '../dev/dev_tools_overlay.dart';
 /// - Live transcription display
 /// - Graceful fallback to manual entry
 class VoiceCoachScreen extends StatefulWidget {
-  const VoiceCoachScreen({super.key});
+  final Map<String, String>? screeningData;
+
+  const VoiceCoachScreen({
+    super.key,
+    this.screeningData,
+  });
 
   @override
   State<VoiceCoachScreen> createState() => _VoiceCoachScreenState();
@@ -98,21 +104,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
     
-    // System instruction for onboarding coach
-    const systemInstruction = '''You are The Pact's voice coach helping users create their first habit.
-
-Your role:
-1. Greet them warmly and ask for their name
-2. Ask about their identity: "I want to be the type of person who..."
-3. Help them design a tiny habit using James Clear's principles
-4. Extract: habit name, frequency, time, location, trigger
-
-Keep responses SHORT (1-2 sentences). This is voice, not text.
-Be warm, encouraging, and conversational.
-Use British English spelling and phrasing.''';
-    
     _sessionManager = VoiceSessionManager(
-      systemInstruction: systemInstruction,
+      // Pass the screening data (Mission, Enemy, Vibe) to the manager
+      // The manager will construct the appropriate system prompt
+      screeningData: widget.screeningData,
+      mode: VoiceSessionMode.onboarding,
       enableTranscription: true,
       onTranscription: _handleTranscription,
       onAudioReceived: _handleAudioReceived,
@@ -123,6 +119,8 @@ Use British English spelling and phrasing.''';
       onUserSpeakingChanged: _handleUserSpeakingChanged,
       onTurnComplete: _handleTurnComplete,
       onDebugLogUpdated: _handleDebugLogUpdated,
+      psychometricProvider: context.read<PsychometricProvider>(),
+      userProfile: context.read<UserProfile?>(),
     );
     
     // Start the session
