@@ -338,11 +338,45 @@ class AppState extends ChangeNotifier {
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
 
-      // TEMPORARY: Clear data for fresh onboarding testing as requested by user
+      // ============================================================
+      // 🏭 FACTORY RESET (DEBUG ONLY)
+      // Must run BEFORE loading any data or checking auth state
+      // ============================================================
       if (kDebugMode) {
-        await _dataBox!.clear();
-        debugPrint('⚠️ FACTORY RESET: Cleared all Hive data for testing');
+        debugPrint('🏭 FACTORY RESET: Checking for reset request...');
+        // Force reset every time for now as per user request
+        final shouldReset = true; 
+        
+        if (shouldReset) {
+          debugPrint('⚠️ FACTORY RESET: Wiping all data...');
+          
+          // 1. Sign out of Supabase (Clear persistant session)
+          try {
+            await Supabase.instance.client.auth.signOut();
+            debugPrint('  - Supabase session cleared');
+          } catch (e) {
+             // Ignore if already signed out
+          }
+
+          // 2. Clear Hive Boxes
+          if (Hive.isBoxOpen('habit_data')) await Hive.box('habit_data').close();
+          await Hive.deleteBoxFromDisk('habit_data');
+          await Hive.deleteBoxFromDisk('settings');
+          await Hive.deleteBoxFromDisk('user_data');
+          debugPrint('  - Hive boxes deleted');
+          
+          // 3. Reset internal state variables
+          _hasCompletedOnboarding = false;
+          _userProfile = null;
+          _habits = [];
+          
+          debugPrint('✅ FACTORY RESET COMPLETE: App is clean.');
+        }
       }
+      // ============================================================
+
+      // Open Hive box (like opening a database table)
+      _dataBox = await Hive.openBox('habit_data');
       
       // Load saved data from Hive
       await _loadFromStorage();
