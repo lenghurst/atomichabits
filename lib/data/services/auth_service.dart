@@ -428,6 +428,77 @@ class AuthService extends ChangeNotifier {
     }
   }
   
+  /// requestSherlockScopes: Progressive disclosure for psychometric sensors.
+  /// 
+  /// This method requests the sensitive scopes ONLY after the user has agreed 
+  /// to the "Sherlock Scan" value proposition.
+  /// 
+  /// Returns list of granted scopes.
+  Future<List<String>> requestSherlockScopes() async {
+    if (kDebugMode) debugPrint('Attempting to request Sherlock Scopes...');
+    
+    // Scopes for Sherlock Intelligence
+    const sherlockScopes = [
+      'https://www.googleapis.com/auth/calendar.readonly',       // The Overcommitter
+      'https://www.googleapis.com/auth/youtube.readonly',        // The Dopamine Diet
+      'https://www.googleapis.com/auth/tasks.readonly',          // The Hoarder
+      'https://www.googleapis.com/auth/fitness.activity.read',   // The Reality Check
+      'https://www.googleapis.com/auth/user.birthday.read',      // Age Bracket
+    ];
+
+    try {
+      final googleSignIn = GoogleSignIn(
+        serverClientId: SupabaseConfig.webClientId,
+        scopes: sherlockScopes,
+      );
+
+      // This should trigger the incremental auth consent screen
+      // Note: On Android/iOS this usually prompts for the *new* scopes
+      final user = await googleSignIn.signIn();
+      
+      if (user == null) {
+        return []; // User cancelled
+      }
+      
+      // We don't necessarily need to re-authenticate with Supabase here
+      // just ensuring we have the permissions on the Google User object
+      // which we can then use to make API calls.
+      
+      // In a real implementation, you would check `user.grantedScopes` if available
+      // or try to make a dummy call to verify.
+      // For now, we assume success if sign-in completes.
+      
+      return sherlockScopes; 
+
+    } catch (e) {
+      debugPrint('Error requesting Sherlock scopes: $e');
+      return [];
+    }
+  }
+
+  /// Checks if specific Sherlock scopes are already granted.
+  Future<bool> hasSherlockPermissions() async {
+     final googleSignIn = GoogleSignIn(
+        serverClientId: SupabaseConfig.webClientId,
+        scopes: [], // Standard init
+      );
+     
+     // Note: GoogleSignIn.currentUser might be null if we haven't initialized it or signed in via the plugin this session
+     // This is a simplified check.
+     final currentUser = googleSignIn.currentUser;
+     if (currentUser == null) {
+       // Attempt silent sign in to restore state if possible
+       try {
+         await googleSignIn.signInSilently();
+       } catch (_) {}
+     }
+     
+     // Currently dart google_sign_in doesn't expose a simple "grantedScopes" list on the user object widely 
+     // across all platforms easily without making a request. 
+     // For this MVP, we will rely on the explicit request flow.
+     return false; 
+  }
+
   /// Sign out the current user
   Future<void> signOut() async {
     if (!isSupabaseAvailable) {

@@ -7,6 +7,27 @@
 
 ---
 
+## [6.4.5] - 2025-12-26 - Phase 47: "Sherlock Expansion (God View)"
+
+### Added
+- **Environmental Layer:** Introduced `EnvironmentalSensor` using `geolocator` for contextual awareness (e.g., Gym, Bar).
+- **Biometric Layer:** Integrated `BiometricSensor` using `health` to monitor Sleep and HRV (Heart Rate Variability).
+- **Digital Truth Layer:** Implemented `DigitalTruthSensor` (Android) using `app_usage` to detect high-dopamine app usage ("Doomscrolling").
+- **Psychometric Engine Upgrade:** Engine now ingests physiological data (Sleep < 6h, Low HRV, High Digital Distraction) to dynamically adjust `Resilience Score` and `Coaching Persona`.
+
+### Changed
+- **Permissions:** Updated `Info.plist` (iOS) and `AndroidManifest.xml` (Android) with Location, Health, and Usage Stats permissions.
+
+---
+
+## [6.4.4] - 2025-12-26 - Phase 46.3: "Sherlock Sensors"
+
+### Added
+- **Psychometric Profiling Scopes:** Extended Google Sign-In to request `calendar.readonly`, `youtube.readonly`, `tasks.readonly`, `fitness.activity.read`, and `user.birthday.read`.
+- **Purpose:** Enables the "Sherlock Protocol" to detect behavioral patterns (Overcommitting, Dopamine Addiction, Hoarding) directly from user data.
+
+---
+
 ## [6.4.2] - 2025-12-26 - Phase 46.2: "iOS Platform Alignment"
 
 ### Fixed

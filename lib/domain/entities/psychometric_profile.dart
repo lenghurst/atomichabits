@@ -30,6 +30,7 @@ class PsychometricProfile {
   
   // === AI-INFERRED DATA ===
   final List<String> inferredFears;    // e.g., ["Physical Shame", "Career Regret"]
+  final List<String> declinedPermissions; // e.g. ["calendar.readonly", "youtube.readonly"]
 
   // === COMMUNICATION MATRIX (The "How") ===
   final CoachingStyle coachingStyle;   // The persona they respond to best
@@ -45,6 +46,11 @@ class PsychometricProfile {
   
   // === EMOTIONAL BASELINE ===
   final String baselineSentiment;      // e.g., "Anxious", "Determined", "Skeptical"
+
+  // === REAL-TIME SENSOR DATA (Sherlock Expansion) ===
+  final int? lastNightSleepMinutes;    // e.g., 350
+  final double? currentHRV;            // e.g., 45.0 (SDNN)
+  final int? distractionMinutes;       // e.g., 120 (TikTok + IG)
 
   // === SYNC STATE (Phase 45: Cloud Prep) ===
   final bool isSynced;                 // True if pushed to cloud
@@ -66,6 +72,7 @@ class PsychometricProfile {
     this.resistanceLieLabel,
     this.resistanceLieContext,
     this.inferredFears = const [],
+    this.declinedPermissions = const [],
     // Communication matrix
     this.coachingStyle = CoachingStyle.supportive,
     this.verbosityPreference = 3,
@@ -75,6 +82,11 @@ class PsychometricProfile {
     this.peakEnergyWindow = '09:00',
     this.resilienceScore = 0.5,
     this.baselineSentiment = 'Neutral',
+    // Sensor Data
+    this.lastNightSleepMinutes,
+    this.currentHRV,
+    this.distractionMinutes,
+    
     this.riskBitmask = 0,
     this.isSynced = false,
     DateTime? lastUpdated,
@@ -115,6 +127,14 @@ class PsychometricProfile {
       buffer.writeln('');
     }
     
+    // Log declined permissions as context (neutral facts)
+    if (declinedPermissions.isNotEmpty) {
+      buffer.writeln('PRIVACY BOUNDARIES (Declined Permissions):');
+      buffer.writeln('- The user declined access to: ${declinedPermissions.join(", ")}');
+      buffer.writeln('  (Respect this boundary but infer potential blind spots)');
+      buffer.writeln('');
+    }
+    
     buffer.writeln('CORE DRIVERS:');
     if (coreValues.isNotEmpty) {
       buffer.writeln('- Values: ${coreValues.join(", ")}');
@@ -146,13 +166,33 @@ class PsychometricProfile {
       buffer.writeln('- High-Risk Drop-off Zones: ${dropOffZones.join(", ")}');
     }
     buffer.writeln('- Best Energy Window: $peakEnergyWindow');
-    buffer.writeln('- Current Resilience: ${(resilienceScore * 100).toStringAsFixed(0)}%');
+    // Enhanced resilience reporting from sensors
+    final resiliencePercent = (resilienceScore * 100).toStringAsFixed(0);
+    String resilienceContext = "";
+    if (lastNightSleepMinutes != null && lastNightSleepMinutes! < 360) {
+      resilienceContext = " (COMPROMISED: Low Sleep)";
+    }
+    buffer.writeln('- Current Resilience: $resiliencePercent%$resilienceContext');
     buffer.writeln('- Baseline Mood: $baselineSentiment');
+    
+    // === SENSOR DATA EXPOSURE ===
+    if (lastNightSleepMinutes != null || currentHRV != null || distractionMinutes != null) {
+      buffer.writeln('\nPHYSIOLOGICAL INTELLIGENCE (Sherlock Sensors):');
+      if (lastNightSleepMinutes != null) {
+        buffer.writeln('- Sleep: ${lastNightSleepMinutes! ~/ 60}h ${lastNightSleepMinutes! % 60}m');
+      }
+      if (currentHRV != null) {
+        buffer.writeln('- HRV (Stress): $currentHRV ms');
+      }
+      if (distractionMinutes != null) {
+        buffer.writeln('- Digital Distraction: ${distractionMinutes}m (Dopamine Burn)');
+      }
+    }
     
     return buffer.toString();
   }
   
-  /// Check if the Holy Trinity has been captured during onboarding
+  /// Check if the holy trinity is captured
   bool get hasHolyTrinity => 
       antiIdentityLabel != null || 
       failureArchetype != null || 
@@ -204,6 +244,7 @@ class PsychometricProfile {
     String? resistanceLieLabel,
     String? resistanceLieContext,
     List<String>? inferredFears,
+    List<String>? declinedPermissions,
     // Communication matrix
     CoachingStyle? coachingStyle,
     int? verbosityPreference,
@@ -213,6 +254,11 @@ class PsychometricProfile {
     String? peakEnergyWindow,
     double? resilienceScore,
     String? baselineSentiment,
+    // Sensor Data (Phase 47)
+    int? lastNightSleepMinutes,
+    double? currentHRV,
+    int? distractionMinutes,
+    
     int? riskBitmask,
     bool? isSynced,
     DateTime? lastUpdated,
@@ -230,6 +276,7 @@ class PsychometricProfile {
       resistanceLieLabel: resistanceLieLabel ?? this.resistanceLieLabel,
       resistanceLieContext: resistanceLieContext ?? this.resistanceLieContext,
       inferredFears: inferredFears ?? this.inferredFears,
+      declinedPermissions: declinedPermissions ?? this.declinedPermissions,
       // Communication matrix
       coachingStyle: coachingStyle ?? this.coachingStyle,
       verbosityPreference: verbosityPreference ?? this.verbosityPreference,
@@ -239,6 +286,12 @@ class PsychometricProfile {
       peakEnergyWindow: peakEnergyWindow ?? this.peakEnergyWindow,
       resilienceScore: resilienceScore ?? this.resilienceScore,
       baselineSentiment: baselineSentiment ?? this.baselineSentiment,
+      
+      // Sensor Data
+      lastNightSleepMinutes: lastNightSleepMinutes ?? this.lastNightSleepMinutes,
+      currentHRV: currentHRV ?? this.currentHRV,
+      distractionMinutes: distractionMinutes ?? this.distractionMinutes,
+      
       riskBitmask: riskBitmask ?? this.riskBitmask,
       isSynced: isSynced ?? this.isSynced,
       lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -259,6 +312,7 @@ class PsychometricProfile {
       'resistanceLieLabel': resistanceLieLabel,
       'resistanceLieContext': resistanceLieContext,
       'inferredFears': inferredFears,
+      'declinedPermissions': declinedPermissions,
       // Communication matrix
       'coachingStyle': coachingStyle.name,
       'verbosityPreference': verbosityPreference,
@@ -268,6 +322,11 @@ class PsychometricProfile {
       'peakEnergyWindow': peakEnergyWindow,
       'resilienceScore': resilienceScore,
       'baselineSentiment': baselineSentiment,
+      // Sensor Data
+      'lastNightSleepMinutes': lastNightSleepMinutes,
+      'currentHRV': currentHRV,
+      'distractionMinutes': distractionMinutes,
+      
       'riskBitmask': riskBitmask,
       'isSynced': isSynced,
       'lastUpdated': lastUpdated.toIso8601String(),
@@ -288,6 +347,7 @@ class PsychometricProfile {
       resistanceLieLabel: json['resistanceLieLabel'] as String?,
       resistanceLieContext: json['resistanceLieContext'] as String?,
       inferredFears: List<String>.from(json['inferredFears'] ?? []),
+      declinedPermissions: List<String>.from(json['declinedPermissions'] ?? []),
       // Communication matrix
       coachingStyle: CoachingStyle.values.firstWhere(
         (e) => e.name == json['coachingStyle'],
@@ -300,6 +360,12 @@ class PsychometricProfile {
       peakEnergyWindow: json['peakEnergyWindow'] ?? '09:00',
       resilienceScore: (json['resilienceScore'] ?? 0.5).toDouble(),
       baselineSentiment: json['baselineSentiment'] ?? 'Neutral',
+      
+      // Sensor Data
+      lastNightSleepMinutes: json['lastNightSleepMinutes'] as int?,
+      currentHRV: (json['currentHRV'] as num?)?.toDouble(),
+      distractionMinutes: json['distractionMinutes'] as int?,
+      
       riskBitmask: json['riskBitmask'] ?? 0,
       isSynced: json['isSynced'] ?? false,
       lastUpdated: json['lastUpdated'] != null 

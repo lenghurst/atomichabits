@@ -201,6 +201,69 @@ class PsychometricEngine {
     );
   }
 
+  /// Updates profile based on sensor data (Sherlock Expansion).
+  /// 
+  /// - Sleep < 6h: Lowers resilience, forces SUPPORTIVE persona.
+  /// - High Distraction: Logs vulnerability, lowers resilience.
+  /// - Low HRV: Logs Stress risk.
+  PsychometricProfile updateFromSensorData(
+    PsychometricProfile profile, {
+    int? sleepMinutes,
+    double? hrv,
+    int? distractionMinutes,
+  }) {
+    double newResilience = profile.resilienceScore;
+    CoachingStyle newStyle = profile.coachingStyle;
+    int newBitmask = profile.riskBitmask;
+    
+    // 1. Analyze Sleep
+    if (sleepMinutes != null) {
+      if (sleepMinutes < 360) { // < 6 hours
+        // Sleep deprivation significantly lowers willpower (Baumeister)
+        newResilience -= 0.15;
+        // Switch to supportive if currently tough love (compassion for biology)
+        if (newStyle == CoachingStyle.toughLove) {
+          newStyle = CoachingStyle.supportive;
+        }
+        newBitmask |= RiskFlags.fatigue; // Set FATIGUE flag
+      } else if (sleepMinutes > 480) { // > 8 hours
+        newResilience += 0.05;
+        newBitmask &= ~RiskFlags.fatigue; // Clear FATIGUE flag
+      }
+    }
+    
+    // 2. Analyze HRV (Stress) - Simplified baseline logic
+    // We assume < 30ms is stressed for general population (very rough heuristic)
+    // Real implementation should compare against user's running baseline.
+    if (hrv != null) {
+      if (hrv < 30.0) {
+        newBitmask |= RiskFlags.stress;
+         newResilience -= 0.05;
+      } else {
+        newBitmask &= ~RiskFlags.stress;
+      }
+    }
+    
+    // 3. Analyze Distraction (Dopamine Burn)
+    if (distractionMinutes != null) {
+      // > 60 mins of scrolling is a dopamine crash risk
+      if (distractionMinutes > 60) {
+        newResilience -= 0.1;
+      }
+    }
+
+    return profile.copyWith(
+      resilienceScore: newResilience.clamp(0.0, 1.0),
+      coachingStyle: newStyle,
+      riskBitmask: newBitmask,
+      lastNightSleepMinutes: sleepMinutes,
+      currentHRV: hrv,
+      distractionMinutes: distractionMinutes,
+      lastUpdated: DateTime.now(),
+      isSynced: false,
+    );
+  }
+
   /// Calculates peak energy window based on completion times.
   /// Runs in Isolate for large habit lists.
   Future<String> calculatePeakEnergyWindowAsync(List<Habit> habits) async {

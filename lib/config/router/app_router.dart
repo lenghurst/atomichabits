@@ -39,6 +39,7 @@ import '../../features/contracts/contracts_list_screen.dart';
 import '../../features/witness/witness_accept_screen.dart';
 import '../../features/witness/witness_dashboard.dart';
 import '../../features/onboarding/pact_reveal_screen.dart';
+import '../../features/onboarding/identity_first/sherlock_permission_screen.dart';
 
 import 'app_routes.dart';
 
@@ -155,6 +156,12 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.tierOnboarding,
         builder: (context, state) => const PactTierSelectorScreen(),
+      ),
+      
+      // Sherlock Permissions (The Data Handshake)
+      GoRoute(
+        path: AppRoutes.sherlockPermissions,
+        builder: (context, state) => const SherlockPermissionScreen(),
       ),
       
       // Phase 43: Pact Reveal Screen (Variable Reward)

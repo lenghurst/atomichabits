@@ -110,6 +110,9 @@ dependencies:
   # Dependencies added for missing packages (uuid is used by lexicon_entry.dart)
   uuid: ^4.5.1
   crypto: ^3.0.6
+  health: ^13.1.4
+  geolocator: ^14.0.2
+  app_usage: ^4.0.1
 
 dev_dependencies:
   flutter_test:

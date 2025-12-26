@@ -49,6 +49,15 @@
 	<true/>
 	<key>NSContactsUsageDescription</key>
 	<string>We need access to your contacts to help you select a witness for your pact.</string>
+	<!-- Phase 47: Sherlock Expansion Permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to trigger habits based on where you are (e.g., Gym, Library).</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need background location to detect when you enter or leave your habit zones.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>We need access to your health data (Sleep, HRV) to adjust your coaching intensity based on your physiological state.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>We need to write data to HealthKit to track your mindful minutes.</string>
 	<!-- Phase 9: URL Schemes for widget deep links -->
 	<key>CFBundleURLTypes</key>
 	<array>

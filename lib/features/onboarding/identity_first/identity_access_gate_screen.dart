@@ -123,7 +123,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
         }
         
         // Navigate to next onboarding screen
-        context.go(AppRoutes.witnessOnboarding);
+        context.go(AppRoutes.sherlockPermissions);
       } else {
         setState(() {
           _errorMessage = result.error ?? 'Google sign-in failed';
@@ -187,7 +187,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
           await appState.setUserProfile(profile);
         }
         
-        context.go(AppRoutes.witnessOnboarding);
+        context.go(AppRoutes.sherlockPermissions);
       } else {
         setState(() {
           _errorMessage = result.error ?? 'Authentication failed';

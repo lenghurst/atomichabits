@@ -45,6 +45,10 @@ abstract class AppRoutes {
   /// Pact Reveal screen (Phase 43: Variable Reward)
   /// Shows the Pact Identity Card after Sherlock Protocol completes
   static const String pactReveal = '/onboarding/pact-reveal';
+
+  /// Sherlock Permission Screen (The Data Handshake)
+  /// Requests sensitive scopes (Calendar, YouTube) progressively
+  static const String sherlockPermissions = '/onboarding/sherlock-permissions';
   
   // ============================================================
   // NICHE LANDING PAGES (Side Doors)
@@ -155,6 +159,7 @@ abstract class AppRoutes {
     witnessOnboarding,
     tierOnboarding,
     pactReveal,
+    sherlockPermissions,
   ];
   
   /// Routes that require premium subscription

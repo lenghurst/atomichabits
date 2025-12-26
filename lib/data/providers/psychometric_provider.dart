@@ -5,6 +5,10 @@ import '../../domain/services/psychometric_engine.dart';
 import '../repositories/psychometric_repository.dart';
 import '../models/habit.dart';
 import '../models/onboarding_data.dart' as onboarding;
+// Sensors (Phase 47)
+import '../sensors/biometric_sensor.dart';
+import '../sensors/digital_truth_sensor.dart';
+import '../sensors/environmental_sensor.dart';
 
 /// PsychometricProvider: Manages the user's psychological profile for LLM context.
 /// 
@@ -260,6 +264,23 @@ class PsychometricProvider extends ChangeNotifier {
     await _repository.saveProfile(_profile);
     notifyListeners();
   }
+
+  /// Log refusal to grant "Sherlock Sensors" as a psychometric trait.
+  /// 
+  /// The user's refusal to share data is itself a data point (The Refusal Protocol).
+  /// We log *what* was refused (e.g. 'calendar', 'youtube') without immediately
+  /// assigning a prescriptive archetype.
+  Future<void> logPermissionRefusal(String scope) async {
+    // Append to declined permissions if not already present
+    if (!_profile.declinedPermissions.contains(scope)) {
+      final updatedRefusals = List<String>.from(_profile.declinedPermissions)..add(scope);
+      _profile = _profile.copyWith(
+        declinedPermissions: updatedRefusals,
+      );
+      await _repository.saveProfile(_profile);
+      notifyListeners();
+    }
+  }
   
   /// Check if the Holy Trinity has been captured
   bool get hasHolyTrinity => _profile.hasHolyTrinity;
@@ -307,4 +328,67 @@ class PsychometricProvider extends ChangeNotifier {
   
   /// Check if the profile has enough data to display (for fallback logic)
   bool get hasDisplayableData => _profile.hasDisplayableData;
+
+  // ============================================================
+  // PHASE 47: SENSOR FUSION (Sherlock Expansion)
+  // ============================================================
+
+  /// Syncs data from all Sherlock sensors (Biometric, Digital Truth, etc.)
+  /// and updates the psychometric profile accordingly.
+  Future<void> syncSensors() async {
+    if (kDebugMode) debugPrint('PsychometricProvider: Syncing Sherlock Sensors...');
+    
+    // 1. Initialize sensors
+    final bioSensor = BiometricSensor();
+    final truthSensor = DigitalTruthSensor();
+    final envSensor = EnvironmentalSensor();
+    
+    await bioSensor.initialize();
+    await envSensor.initialize();
+    
+    // 2. Fetch Data
+    
+    // Biometrics
+    int? sleepMinutes;
+    double? hrv;
+    try {
+      sleepMinutes = await bioSensor.getLastNightSleepMinutes();
+      hrv = await bioSensor.getLatestHRV();
+      // Filter out invalid/empty (-1)
+      if (sleepMinutes == -1) sleepMinutes = null;
+      if (hrv == -1) hrv = null;
+    } catch (e) {
+      debugPrint('PsychometricProvider: Error fetching biometrics: $e');
+    }
+    
+    // Digital Truth (App Usage)
+    int? distractionMinutes;
+    try {
+      if (truthSensor.isSupported) {
+        distractionMinutes = await truthSensor.getDopamineBurnMinutes();
+      }
+    } catch (e) {
+      debugPrint('PsychometricProvider: Error fetching digital truth: $e');
+    }
+    
+    // 3. Update Profile via Engine
+    _profile = _engine.updateFromSensorData(
+      _profile,
+      sleepMinutes: sleepMinutes,
+      hrv: hrv,
+      distractionMinutes: distractionMinutes,
+    );
+    
+    // 4. Persist
+    await _repository.saveProfile(_profile);
+    notifyListeners();
+    
+    if (kDebugMode) {
+      debugPrint('PsychometricProvider: Sensor Sync Complete.');
+      debugPrint('  - Sleep: $sleepMinutes min');
+      debugPrint('  - HRV: $hrv');
+      debugPrint('  - Distraction: $distractionMinutes min');
+      debugPrint('  - New Resilience: ${_profile.resilienceScore}');
+    }
+  }
 }
