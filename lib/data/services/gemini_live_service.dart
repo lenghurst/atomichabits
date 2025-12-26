@@ -599,8 +599,10 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           body: {'lockToConfig': true},
         );
       } on FunctionException catch (e) {
-        final errorBody = e.details;
-        final status = e.status;
+        // According to functions_client 2.5.0 source, the details field contains the error
+        // status is available via e.status
+        final errorBody = e.details ?? 'No details';
+        final status = e.status ?? 0;
         final errorMsg = 'Edge Function Error ($status): $errorBody';
         AppLogger.error('❌ [GeminiLive] $errorMsg');
         _addDebugLog('❌ Token fetch failed: $status', isError: true);
@@ -613,7 +615,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           _isUsingApiKey = true;
           return _TokenResult(_ephemeralToken, 'Dev fallback after Edge Function error ($status)');
         }
-        return _TokenResult(null, 'Edge Function Error ($status): ${e.reason} - $errorBody');
+        return _TokenResult(null, 'Edge Function Error ($status): $errorBody');
       } catch (e) {
         // Network or other errors
         AppLogger.error('❌ [GeminiLive] Token invocation failed: $e');
