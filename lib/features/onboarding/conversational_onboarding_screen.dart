@@ -406,15 +406,16 @@ class _ConversationalOnboardingScreenState
       final appState = context.read<AppState>();
       await appState.createHabit(habit);
       
-      // 3. Complete onboarding (only if in onboarding mode)
-      if (widget.isOnboarding) {
-        await appState.completeOnboarding();
-      }
+      // 3. Mark onboarding complete (only if in onboarding mode)
+      // Phase 43: Defer completion to PactRevealScreen
+      // if (widget.isOnboarding) {
+      //   await appState.completeOnboarding();
+      // }
       
       if (!mounted) return;
       
-      // 4. Navigate to home
-      context.go(AppRoutes.dashboard);
+      // 4. Navigate to the Magic Moment (Pact Reveal)
+      context.go(AppRoutes.pactReveal);
       
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

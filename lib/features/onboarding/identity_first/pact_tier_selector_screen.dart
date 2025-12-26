@@ -80,8 +80,9 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         _confettiController.play();
         await _showCelebrationDialog();
         
-        await appState.completeOnboarding();
-        if (mounted) context.go(AppRoutes.dashboard);
+        // Navigate to the Magic Moment (Pact Reveal)
+        // Note: We don't complete onboarding here anymore, PactRevealScreen handles it
+        if (mounted) context.go(AppRoutes.pactReveal);
       } else {
         setState(() => _isProcessing = false);
       }
@@ -91,10 +92,10 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
       _confettiController.play();
       await _showCelebrationDialog();
       
-      await appState.completeOnboarding();
-      
+      // Navigate to the Magic Moment (Pact Reveal)
+      // Note: We don't complete onboarding here anymore, PactRevealScreen handles it
       if (mounted) {
-        context.go(AppRoutes.dashboard);
+        context.go(AppRoutes.pactReveal);
       }
     }
   }

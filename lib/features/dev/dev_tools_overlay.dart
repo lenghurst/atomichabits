@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../config/ai_model_config.dart';
+import '../../domain/services/voice_provider_selector.dart';
 import 'debug_console_view.dart';
 
 /// Developer Tools Overlay - Phase 38 (In-App Log Console)
@@ -252,12 +253,29 @@ class DevToolsOverlay extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.terminal),
-                label: const Text('View Gemini Logs'),
+                label: const Text('View Voice Logs'),
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.green.shade700,
                 ),
               ),
               
+              const SizedBox(height: 8),
+
+              // Voice Connection Test
+              OutlinedButton.icon(
+                onPressed: () async {
+                   final selector = VoiceProviderSelector();
+                   final rec = await selector.runDiagnostics();
+                   if (context.mounted) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       SnackBar(content: Text('Recommended: ${rec.provider}')),
+                     );
+                   }
+                },
+                icon: const Icon(Icons.speed),
+                label: const Text('Test Voice Connection'),
+              ),
+
               const SizedBox(height: 8),
               
               // Copy Debug Info button (Peter Thiel recommendation)
