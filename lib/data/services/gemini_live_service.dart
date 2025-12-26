@@ -200,9 +200,11 @@ class GeminiLiveService {
       _addDebugLog('🔗 Building WebSocket URL...');
       String wsUrl = _wsEndpoint;
       if (_isUsingApiKey) {
+        // Legacy/Dev fallback
         wsUrl += '?key=$token';
         if (kDebugMode) debugPrint('GeminiLiveService: Using API Key auth (key= param)');
       } else {
+        // Ephemeral token flow
         wsUrl += '?access_token=$token';
         if (kDebugMode) debugPrint('GeminiLiveService: Using OAuth token auth (access_token= param)');
       }
@@ -211,9 +213,8 @@ class GeminiLiveService {
       _setPhase("CONNECTING_SOCKET");
       
       // PHASE 38: Verbose logging for debugging
-      final headers = {
-        'Host': 'generativelanguage.googleapis.com',
-        'User-Agent': 'Dart/3.5 (flutter); co.thepact.app/6.0.4', // Honest UA
+      final headers = <String, dynamic>{
+        // 'Authorization': 'Bearer $token', // Alternative if query param fails, but standard is access_token
       };
       
       _addDebugLog('📡 Endpoint: ${_wsEndpoint.split("?")[0]}');
@@ -245,7 +246,7 @@ class GeminiLiveService {
       // Format: "Runtime/Version (Framework); PackageID/AppVersion"
       _channel = IOWebSocketChannel.connect(
         Uri.parse(wsUrl),
-        headers: headers,
+        headers: headers, // Pass the headers map, even if empty or minimal
       );
       
       // PHASE 37: Wait for WebSocket handshake to complete before proceeding
@@ -618,7 +619,11 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         return _TokenResult(null, 'Edge function returned empty token - check backend GEMINI_API_KEY');
       }
 
-      _tokenExpiry = DateTime.parse(data['expiresAt'] as String);
+      // If backend doesn't return expiry, default to 30 mins
+      _tokenExpiry = data['expiresAt'] != null 
+          ? DateTime.parse(data['expiresAt'] as String)
+          : DateTime.now().add(const Duration(minutes: 30));
+          
       _isUsingApiKey = false;
 
       // Log the model returned by backend for debugging
@@ -626,9 +631,6 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Backend token model: $backendModel');
         debugPrint('GeminiLiveService: Frontend model: ${AIModelConfig.tier2Model}');
-        if (backendModel != null && backendModel != AIModelConfig.tier2Model) {
-          debugPrint('GeminiLiveService: ⚠️ WARNING - Model mismatch detected!');
-        }
       }
 
       return _TokenResult(_ephemeralToken, 'Ephemeral token from backend');

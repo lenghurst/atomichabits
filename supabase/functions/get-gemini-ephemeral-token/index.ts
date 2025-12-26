@@ -1,51 +1,11 @@
-// Supabase Edge Function: get-gemini-ephemeral-token
-// Phase 25.3: Secure ephemeral token generation for Gemini Live API
-// Phase 28: Gemini 3 Compliance - Removed temperature, added thinkingConfig
-//
-// This function:
-// 1. Authenticates the user via Supabase Auth JWT
-// 2. Requests an ephemeral token from Google's Gemini API
-// 3. Returns the short-lived token to the Flutter client
-//
-// The ephemeral token is valid for ~30 minutes and can only start 1 session.
-// This prevents API key exposure in client-side applications.
-//
-// GEMINI 3 COMPLIANCE:
-// - DO NOT set temperature. Values < 1.0 cause "unexpected behavior, such as looping".
-// - Use thinkingConfig with thinkingLevel: "MINIMAL" for voice interactions.
-
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// Using the REST API directly instead of the SDK to avoid npm dependency issues in Deno environment if not fully configured
+// This aligns with the existing implementation style but simplifies the logic as requested
 
 // CORS headers for Flutter web support
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-// Gemini API configuration
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
-const GEMINI_API_VERSION = 'v1alpha'
-const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com'
-
-// Model configuration (December 2025 verified endpoints)
-// Phase 27.15: CRITICAL - Must match Flutter app's AIModelConfig.tier2Model
-// Phase 34.4: Model name corrected per official Google AI docs
-// Source: https://ai.google.dev/gemini-api/docs/live (Dec 25, 2025)
-const LIVE_API_MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025'
-
-interface EphemeralTokenRequest {
-  // Optional: Lock token to specific configuration
-  lockToConfig?: boolean
-  // Optional: Custom expiry in minutes (default 30)
-  expiryMinutes?: number
-}
-
-interface EphemeralTokenResponse {
-  token: string
-  expiresAt: string
-  model: string
-  websocketUrl: string
 }
 
 serve(async (req) => {
@@ -55,143 +15,54 @@ serve(async (req) => {
   }
 
   try {
-    // === 1. AUTHENTICATE USER ===
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorisation header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // 1. Get MASTER API key from env
+    const apiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!apiKey) {
+        return new Response(
+            JSON.stringify({ error: 'Missing GEMINI_API_KEY environment variable' }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        )
     }
 
-    // Verify Supabase JWT
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // === 2. CHECK API KEY ===
-    if (!GEMINI_API_KEY) {
-      console.error('GEMINI_API_KEY not configured in environment')
-      return new Response(
-        JSON.stringify({ error: 'Service not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // === 3. PARSE REQUEST ===
-    let requestBody: EphemeralTokenRequest = {}
-    if (req.method === 'POST') {
-      try {
-        requestBody = await req.json()
-      } catch {
-        // Empty body is fine, use defaults
-      }
-    }
-
-    const expiryMinutes = requestBody.expiryMinutes ?? 30
-    const lockToConfig = requestBody.lockToConfig ?? true
-
-    // === 4. REQUEST EPHEMERAL TOKEN FROM GOOGLE ===
-    const now = new Date()
-    const expireTime = new Date(now.getTime() + expiryMinutes * 60 * 1000)
-    const newSessionExpireTime = new Date(now.getTime() + 60 * 1000) // 1 minute to start session
-
-    // Build the token request payload
-    const tokenRequestPayload: Record<string, unknown> = {
-      uses: 1, // Single session only
-      expire_time: expireTime.toISOString(),
-      new_session_expire_time: newSessionExpireTime.toISOString(),
-    }
-
-    // Optionally lock token to specific configuration (enhanced security)
-    // GEMINI 3 COMPLIANCE: DO NOT set temperature. Use thinkingConfig instead.
-    if (lockToConfig) {
-      tokenRequestPayload.live_connect_constraints = {
-        model: LIVE_API_MODEL,
-        config: {
-          session_resumption: {},
-          // REMOVED: temperature: 0.7 - Gemini 3 docs warn this causes looping
-          response_modalities: ['AUDIO'],
-          // GEMINI 3 COMPLIANCE: Use thinking level to control latency
-          thinking_config: {
-            thinking_level: 'MINIMAL', // Reduces "dead air" in voice conversations
-          },
+    // 2. Generate Ephemeral Token using Google REST API
+    // https://ai.google.dev/api/tokens
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1alpha/authTokens?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                config: {
+                    uses: 1, // Token works for one session only
+                    expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+                    httpOptions: { apiVersion: 'v1alpha' } // REQUIRED for Live API
+                }
+            })
         }
-      }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        return new Response(
+            JSON.stringify({ error: `Failed to create token: ${errorText}` }),
+            { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        )
     }
 
-    // Call Google's auth token endpoint
-    const tokenResponse = await fetch(
-      `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/authTokens?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tokenRequestPayload),
-      }
-    )
+    const data = await response.json();
 
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text()
-      console.error('Gemini API error:', tokenResponse.status, errorText)
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to generate ephemeral token',
-          details: tokenResponse.status === 403 ? 'API key may be invalid' : 'Service unavailable'
-        }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const tokenData = await tokenResponse.json()
-
-    // === 5. LOG USAGE (Optional: for analytics) ===
-    // You can log token generation to a Supabase table for monitoring
-    try {
-      await supabase.from('ai_token_usage').insert({
-        user_id: user.id,
-        model: LIVE_API_MODEL,
-        token_type: 'ephemeral',
-        created_at: now.toISOString(),
-        expires_at: expireTime.toISOString(),
-      })
-    } catch (logError) {
-      // Non-critical, don't fail the request
-      console.warn('Failed to log token usage:', logError)
-    }
-
-    // === 6. RETURN TOKEN TO CLIENT ===
-    const response: EphemeralTokenResponse = {
-      token: tokenData.name, // The ephemeral token string
-      expiresAt: expireTime.toISOString(),
-      model: LIVE_API_MODEL,
-      websocketUrl: `wss://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${LIVE_API_MODEL}:streamGenerateContent`,
-    }
-
+    // 3. Return the token to the Flutter app
+    // The API returns { name: "authTokens/..." }
     return new Response(
-      JSON.stringify(response),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ token: data.name }), 
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     )
-
   } catch (error) {
-    console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     )
   }
 })
