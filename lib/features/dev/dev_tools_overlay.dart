@@ -164,11 +164,11 @@ class DevToolsOverlay extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   _NavChip(
-                    label: 'Voice Coach',
+                    label: 'Sherlock (Voice)',
                     icon: Icons.mic,
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(AppRoutes.voiceOnboarding);
+                      context.go(AppRoutes.onboardingSherlock);
                     },
                   ),
                   _NavChip(

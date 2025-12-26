@@ -53,9 +53,10 @@ class _SherlockScreenState extends State<SherlockScreen>
   late Animation<double> _pulseAnimation;
   
   // Audio Playback
-  final List<Uint8List> _audioQueue = [];
-  bool _isPlaying = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final List<int> _audioBuffer = []; 
+  bool _isPlaying = false;
+  static const int _bufferingThreshold = 24000; // ~0.5s at 24kHz 16-bit
 
   @override
   void initState() {
@@ -196,31 +197,47 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
   
   void _handleAudioReceived(Uint8List audioData) {
     if (!mounted) return;
-    _audioQueue.add(audioData);
-    if (!_isPlaying) {
-      _processAudioQueue();
+    _audioBuffer.addAll(audioData);
+    if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
+      _playBufferedAudio();
     }
   }
 
-  Future<void> _processAudioQueue() async {
-    if (_audioQueue.isEmpty) {
+  Future<void> _playBufferedAudio() async {
+    if (_audioBuffer.isEmpty) {
       _isPlaying = false;
       return;
     }
 
     _isPlaying = true;
-    final chunk = _audioQueue.removeAt(0);
+    final List<int> chunk = List.from(_audioBuffer);
+    _audioBuffer.clear();
 
     try {
-      final wavBytes = _addWavHeader(chunk);
+      final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
+      
+      if (kDebugMode) debugPrint('SherlockScreen: ▶️ Playing ${chunk.length} bytes...');
+      
       await _audioPlayer.play(BytesSource(wavBytes));
-      await _audioPlayer.onPlayerComplete.first;
-      _processAudioQueue();
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('SherlockScreen: Audio playback error: $e');
+      
+      // Wait for completion with timeout logic
+      try {
+        await _audioPlayer.onPlayerComplete.first.timeout(
+          Duration(milliseconds: (chunk.length / 48).round() + 1000),
+          onTimeout: () => null,
+        );
+      } catch (_) {}
+      
+      if (!mounted) return;
+
+      if (_audioBuffer.isNotEmpty) {
+        _playBufferedAudio();
+      } else {
+        _isPlaying = false;
       }
-      _processAudioQueue(); // Skip and continue
+    } catch (e) {
+      debugPrint('SherlockScreen: ❌ Audio playback error: $e');
+      _isPlaying = false;
     }
   }
 
@@ -352,6 +369,9 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
+      _audioBuffer.clear(); // Clear pending audio
+      await _audioPlayer.stop(); // Stop current playback
+      _isPlaying = false;
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {
