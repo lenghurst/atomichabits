@@ -290,7 +290,22 @@ class GeminiLiveService implements VoiceApiService {
             }
           } else if (message is List<int>) {
             // CRITICAL: Log that we received binary audio data
-            AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY AUDIO: ${message.length} bytes');
+            final hex = message.take(20).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+            AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY AUDIO: ${message.length} bytes. Hex: $hex...');
+            
+            // EXPERIMENTAL: Try to decode as UTF-8 to see if it's text sent as binary
+            try {
+              final text = utf8.decode(message);
+              AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY decoded as UTF-8: $text');
+              // If it looks like JSON, handle it as server message
+              if (text.trim().startsWith('{')) {
+                _handleServerMessage(jsonDecode(text));
+                return;
+              }
+            } catch (e) {
+              // Not text
+            }
+            
             _handleAudioData(Uint8List.fromList(message));
           }
         },
@@ -569,72 +584,37 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   /// Result class for token fetching with detailed reason
   Future<_TokenResult> _getEphemeralTokenWithReason() async {
-    // PHASE 46: SIMPLIFICATION - DIRECT API ONLY
-    // We are disabling the Supabase Edge Function path for launch.
-    // Re-enable this logic later if we need to hide keys from the client.
-
-    if (AIModelConfig.hasGeminiKey) {
-      _ephemeralToken = AIModelConfig.geminiApiKey;
-      _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
-      _isUsingApiKey = true;
-      return _TokenResult(_ephemeralToken, 'Direct API Key (Simpified Path)');
-    } else {
-      return _TokenResult(null, 'No GEMINI_API_KEY found in secrets.json');
-    }
-
-    /* DEPRECATED: Edge Function Path
-    // Check if we have a valid cached token
-    if (_ephemeralToken != null && _tokenExpiry != null &&
-        _tokenExpiry!.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
-      return _TokenResult(_ephemeralToken, 'Cached token valid');
-    }
+    // PHASE 46: EPHEMERAL TOKEN IMPLEMENTATION
+    // As requested by user, we prefer the secure Edge Function path.
+    // We fallback to API key only if explicitly needed or in extreme dev scenarios.
 
     try {
       final supabase = Supabase.instance.client;
       final session = supabase.auth.currentSession;
 
-      // DEV MODE BYPASS: Use API key directly if no session
-      if (session == null) {
-        if (kDebugMode && AIModelConfig.hasGeminiKey) {
-          debugPrint('GeminiLiveService: DEV MODE - Using Gemini API key directly (no auth session)');
-          _ephemeralToken = AIModelConfig.geminiApiKey;
-          _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
-          _isUsingApiKey = true;
-          return _TokenResult(_ephemeralToken, 'Dev mode API key');
-        }
-        debugPrint('GeminiLiveService: No session and no API key available');
-        return _TokenResult(null, 'No Supabase session (not logged in) and no GEMINI_API_KEY in secrets.json for dev fallback');
+      // DEV MODE BYPASS: If no session, try API key first (simpler dev flow)
+      if (session == null && kDebugMode && AIModelConfig.hasGeminiKey) {
+        debugPrint('GeminiLiveService: DEV MODE - Using Gemini API key directly (no auth session)');
+        _ephemeralToken = AIModelConfig.geminiApiKey;
+        _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+        _isUsingApiKey = true;
+        return _TokenResult(_ephemeralToken, 'Dev mode API key (No Session)');
       }
 
       // Try to get ephemeral token from Supabase Edge Function
       FunctionResponse response;
       try {
+        _setPhase("FETCHING_TOKEN_EDGE_FUNCTION");
         response = await supabase.functions.invoke(
           _tokenEndpoint,
           body: {'lockToConfig': true},
         );
-      } on FunctionException catch (e) {
-        // According to functions_client 2.5.0 source, the details field contains the error
-        // status is available via e.status
-        final errorBody = e.details ?? 'No details';
-        final status = e.status ?? 0;
-        final errorMsg = 'Edge Function Error ($status): $errorBody';
-        AppLogger.error('❌ [GeminiLive] $errorMsg');
-        _addDebugLog('❌ Token fetch failed: $status', isError: true);
-
-        // DEV MODE FALLBACK
-        if (kDebugMode && AIModelConfig.hasGeminiKey) {
-           debugPrint('GeminiLiveService: DEV MODE FALLBACK - Edge function failed ($status), using API key');
-          _ephemeralToken = AIModelConfig.geminiApiKey;
-          _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
-          _isUsingApiKey = true;
-          return _TokenResult(_ephemeralToken, 'Dev fallback after Edge Function error ($status)');
-        }
-        return _TokenResult(null, 'Edge Function Error ($status): $errorBody');
       } catch (e) {
         // Network or other errors
         AppLogger.error('❌ [GeminiLive] Token invocation failed: $e');
         _addDebugLog('❌ Token fetch exception: $e', isError: true);
+        
+        // FAILOVER TO API KEY IN DEBUG MODE
          if (kDebugMode && AIModelConfig.hasGeminiKey) {
           debugPrint('GeminiLiveService: DEV MODE FALLBACK - Network error, using API key');
           _ephemeralToken = AIModelConfig.geminiApiKey;
@@ -669,18 +649,9 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       }
 
       // If backend doesn't return expiry, default to 30 mins
-      _tokenExpiry = data['expiresAt'] != null 
-          ? DateTime.parse(data['expiresAt'] as String)
-          : DateTime.now().add(const Duration(minutes: 30));
+      _tokenExpiry = DateTime.now().add(const Duration(minutes: 30));
           
       _isUsingApiKey = false;
-
-      // Log the model returned by backend for debugging
-      final backendModel = data['model'] as String?;
-      if (kDebugMode) {
-        debugPrint('GeminiLiveService: Backend token model: $backendModel');
-        debugPrint('GeminiLiveService: Frontend model: ${AIModelConfig.tier2Model}');
-      }
 
       return _TokenResult(_ephemeralToken, 'Ephemeral token from backend');
 
@@ -695,7 +666,6 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       }
       return _TokenResult(null, 'Exception: $e');
     }
-    */
   }
 
   // Legacy method for backwards compatibility

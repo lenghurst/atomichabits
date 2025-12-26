@@ -337,6 +337,12 @@ class AppState extends ChangeNotifier {
       
       // Open Hive box (like opening a database table)
       _dataBox = await Hive.openBox('habit_data');
+
+      // TEMPORARY: Clear data for fresh onboarding testing as requested by user
+      if (kDebugMode) {
+        await _dataBox!.clear();
+        debugPrint('⚠️ FACTORY RESET: Cleared all Hive data for testing');
+      }
       
       // Load saved data from Hive
       await _loadFromStorage();
