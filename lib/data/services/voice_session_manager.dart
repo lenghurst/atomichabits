@@ -70,6 +70,10 @@ class VoiceSessionManager {
   
   /// Legacy system instruction (for backward compatibility)
   final String? systemInstruction;
+
+  /// Screening data from onboarding (Mission, Enemy, Vibe)
+  final Map<String, String>? screeningData;
+
   final bool enableTranscription;
   
   // === PROVIDERS (Phase 42) ===
@@ -129,8 +133,8 @@ class VoiceSessionManager {
     this.mode = VoiceSessionMode.legacy,
     this.systemInstruction,
     this.enableTranscription = true,
-    this.psychometricProvider,
-    this.userProfile,
+    required this.psychometricProvider,
+    required this.userProfile,
     this.psychometricProfile,
     this.onTranscription,
     this.onAudioReceived,
@@ -142,6 +146,7 @@ class VoiceSessionManager {
     this.onTurnComplete,
     this.onDebugLogUpdated,
     this.onTraitUpdated,
+    this.screeningData,
   }) {
     _initializeServices();
   }
@@ -252,6 +257,14 @@ class VoiceSessionManager {
     switch (mode) {
       case VoiceSessionMode.onboarding:
         // Use the Sherlock Protocol prompt for onboarding
+        // Inject screening data if available (Phase 25)
+        if (screeningData != null) {
+          return AtomicHabitsReasoningPrompts.voiceOnboardingWithContext(
+            mission: screeningData!['mission'],
+            enemy: screeningData!['enemy'],
+            vibe: screeningData!['vibe'],
+          );
+        }
         return AtomicHabitsReasoningPrompts.voiceOnboardingSystemPrompt;
         
       case VoiceSessionMode.coaching:

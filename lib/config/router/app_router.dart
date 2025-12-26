@@ -21,6 +21,7 @@ import '../../data/services/voice_session_manager.dart';
 // Feature screens
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/onboarding/conversational_onboarding_screen.dart';
+import '../../features/onboarding/onboarding_screening_page.dart';
 import '../../features/onboarding/voice_coach_screen.dart';
 import '../../features/onboarding/identity_first/identity_access_gate_screen.dart';
 import '../../features/onboarding/identity_first/witness_investment_screen.dart';
@@ -129,10 +130,20 @@ class AppRouter {
         builder: (context, state) => const ConversationalOnboardingScreen(isOnboarding: false),
       ),
       
+      // Pre-Flight Screening (Mission, Enemy, Vibe)
+      GoRoute(
+        path: AppRoutes.onboardingScreening,
+        builder: (context, state) => const OnboardingScreeningPage(),
+      ),
+
       // Voice onboarding: Gemini Live API (Phase 27.5)
       GoRoute(
         path: AppRoutes.voiceOnboarding,
-        builder: (context, state) => const VoiceCoachScreen(),
+        builder: (context, state) {
+          // Extract screening data passed from OnboardingScreeningPage
+          final screeningData = state.extra as Map<String, String>?;
+          return VoiceCoachScreen(screeningData: screeningData);
+        },
       ),
       
       // Manual onboarding: Form UI (Tier 4 fallback)

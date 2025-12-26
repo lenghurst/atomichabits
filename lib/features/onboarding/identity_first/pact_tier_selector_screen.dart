@@ -80,8 +80,9 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         _confettiController.play();
         await _showCelebrationDialog();
         
-        await appState.completeOnboarding();
-        if (mounted) context.go(AppRoutes.dashboard);
+        // Phase 25.1: Navigate to Pre-Flight Screening (Mission, Enemy, Vibe)
+        // Do NOT complete onboarding yet - that happens after the Voice Session (Pact Reveal)
+        if (mounted) context.go(AppRoutes.onboardingScreening);
       } else {
         setState(() => _isProcessing = false);
       }
