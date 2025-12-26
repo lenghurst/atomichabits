@@ -1,3 +1,12 @@
+## [6.4.3] - 2025-12-26 - Phase 46.1: "Security & Clean Code"
+
+### Security
+- **Secure Configuration:** Introduced `Env` class for build-time secret injection (`GEMINI_API_KEY`, `SUPABASE_URL`, etc.).
+- **Backdoor Removal:** Removed legacy "Oliver Backdoor" implementation and comments from `AppState`.
+- **API Hardening:** Removed hardcoded API key placeholders from `GeminiChatService` and `AiSuggestionService`.
+
+---
+
 ## [6.4.2] - 2025-12-26 - Phase 46.2: "iOS Platform Alignment"
 
 ### Fixed
