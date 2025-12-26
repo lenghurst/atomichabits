@@ -289,23 +289,22 @@ class GeminiLiveService implements VoiceApiService {
               AppLogger.warning('⚠️ [GeminiLive] Rx Non-JSON text: $message');
             }
           } else if (message is List<int>) {
-            // CRITICAL: Log that we received binary audio data
-            final hex = message.take(20).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
-            AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY AUDIO: ${message.length} bytes. Hex: $hex...');
-            
-            // EXPERIMENTAL: Try to decode as UTF-8 to see if it's text sent as binary
+            // EXPERIMENTAL: Google sometimes sends JSON as Binary frames (UTF-8 bytes)
             try {
               final text = utf8.decode(message);
-              AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY decoded as UTF-8: $text');
-              // If it looks like JSON, handle it as server message
+              // If it looks like JSON, handle it as server message and RETURN
               if (text.trim().startsWith('{')) {
+                AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY (Type: JSON): routing to message handler');
                 _handleServerMessage(jsonDecode(text));
                 return;
               }
             } catch (e) {
-              // Not text
+              // Not UTF-8 text, treat as raw binary
             }
             
+            // If we are here, it's actual binary audio (PCM) or unknown binary
+            final hex = message.take(10).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+            AppLogger.debug('ℹ️ [GeminiLive] 📥 Rx BINARY (Type: PCM/Other): ${message.length} bytes. Hex: $hex...');
             _handleAudioData(Uint8List.fromList(message));
           }
         },

@@ -148,6 +148,7 @@ Use British English spelling and phrasing.''';
   
   /// Handle transcription from user or AI
   void _handleTranscription(String text, bool isUser) {
+    if (!mounted) return;
     setState(() {
       _transcript.add(TranscriptMessage(
         text: text,
@@ -165,6 +166,7 @@ Use British English spelling and phrasing.''';
   
   /// Handle session state changes
   void _handleStateChanged(VoiceSessionState state) {
+    if (!mounted) return;
     setState(() {
       switch (state) {
         case VoiceSessionState.idle:
@@ -194,6 +196,7 @@ Use British English spelling and phrasing.''';
   
   /// Handle errors
   void _handleError(String error) {
+    if (!mounted) return;
     setState(() {
       _errorMessage = error;
       _addSystemMessage('⚠️ Error: $error');
@@ -203,6 +206,7 @@ Use British English spelling and phrasing.''';
   
   /// Handle audio level changes for visualisation
   void _handleAudioLevelChanged(double level) {
+    if (!mounted) return;
     setState(() {
       _audioLevel = level;
     });
@@ -210,6 +214,7 @@ Use British English spelling and phrasing.''';
   
   /// Handle AI speaking state changes
   void _handleAISpeakingChanged(bool isSpeaking) {
+    if (!mounted) return;
     setState(() {
       if (isSpeaking) {
         _voiceState = VoiceState.speaking;
@@ -227,6 +232,7 @@ Use British English spelling and phrasing.''';
   /// Handle AI turn completion
   void _handleTurnComplete() {
     if (_sessionManager?.isActive == true) {
+      if (!mounted) return;
       setState(() => _voiceState = VoiceState.listening);
     }
   }
@@ -240,6 +246,7 @@ Use British English spelling and phrasing.''';
   
   /// Add system message to transcript
   void _addSystemMessage(String message) {
+    if (!mounted) return;
     setState(() {
       _transcript.add(TranscriptMessage(
         text: message,
