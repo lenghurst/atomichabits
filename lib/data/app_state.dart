@@ -419,6 +419,12 @@ class AppState extends ChangeNotifier {
     // Load onboarding status
     _hasCompletedOnboarding = _dataBox!.get('hasCompletedOnboarding', defaultValue: false);
     
+    // FORCE OVERRIDE FOR DEBUGGING
+    if (kDebugMode) {
+      debugPrint('⚠️ FORCE OVERRIDE: hasCompletedOnboarding = false (Debug Mode)');
+      _hasCompletedOnboarding = false;
+    }
+    
     // Load premium status
     _isPremium = _dataBox!.get('isPremium', defaultValue: false);
 
