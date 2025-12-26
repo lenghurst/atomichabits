@@ -1,3 +1,15 @@
+## [6.3.1] - 2025-12-26 - Phase 44: Build Fixes & Final Wiring
+
+### Fixed
+- **CardTheme → CardThemeData:** Flutter Material 3 compatibility fix in `lib/main.dart`
+- **Missing Import:** Added `psychometric_profile_extensions.dart` import to `psychometric_provider.dart`
+
+### Technical Details
+- Build now passes static analysis
+- `hasDisplayableData` extension correctly accessible across all files
+
+---
+
 ## [6.3.0] - 2025-12-26 - Phase 44: "The Investment"
 
 ### Added
