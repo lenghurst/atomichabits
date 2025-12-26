@@ -9,6 +9,10 @@ import '../providers/psychometric_provider.dart';
 import 'ai/prompt_factory.dart';
 import 'audio_recording_service.dart';
 import 'gemini_live_service.dart';
+import 'openai_live_service.dart';
+import 'voice_api_service.dart';
+import '../../config/ai_model_config.dart';
+import '../enums/voice_session_mode.dart';
 
 /// Voice Session Manager
 /// 
@@ -48,21 +52,6 @@ import 'gemini_live_service.dart';
 /// await manager.endSession();
 /// ```
 
-/// Session modes for the voice coach
-enum VoiceSessionMode {
-  /// Onboarding mode: Sherlock Protocol with tool calls
-  /// Used for initial psychometric profiling
-  onboarding,
-  
-  /// Coaching mode: Standard voice coaching
-  /// Uses PromptFactory with psychometric context
-  coaching,
-  
-  /// Legacy mode: Uses systemInstruction directly
-  /// For backward compatibility
-  legacy,
-}
-
 class VoiceSessionManager {
   // === CONFIGURATION ===
   /// Session mode determines prompt generation and tool enablement
@@ -84,10 +73,10 @@ class VoiceSessionManager {
   
   // === SERVICES ===
   late final AudioRecordingService _audioService;
-  late final GeminiLiveService _geminiService;
+  late final VoiceApiService _voiceService;
   
-  /// Expose GeminiLiveService for debug access
-  GeminiLiveService? get geminiService => _geminiService;
+  /// Expose VoiceApiService for debug access
+  VoiceApiService? get voiceService => _voiceService;
   
   // === STATE ===
   VoiceSessionState _state = VoiceSessionState.idle;
@@ -234,17 +223,29 @@ class VoiceSessionManager {
       onVoiceActivityDetected: _handleVoiceActivity,
     );
     
-    // Gemini Live Service
-    _geminiService = GeminiLiveService(
-      onAudioReceived: _handleAIAudio,
-      onTranscription: _handleTranscription,
-      onModelSpeakingChanged: _handleAISpeakingChanged,
-      onConnectionStateChanged: _handleConnectionStateChanged,
-      onError: _handleGeminiError,
-      onTurnComplete: _handleTurnComplete,
-      onDebugLogUpdated: onDebugLogUpdated,
-      onToolCall: _handleToolCall, // Phase 42: Tool call handling
-    );
+    // Choose Provider based on Config
+    if (AIModelConfig.voiceProvider == 'openai') {
+      _voiceService = OpenAILiveService(
+        onAudioReceived: _handleAIAudio,
+        onTranscription: _handleTranscription,
+        onModelSpeakingChanged: _handleAISpeakingChanged,
+        onError: _handleGeminiError, // Reuse error handler
+        onToolCall: _handleToolCall,
+        onDebugLogUpdated: onDebugLogUpdated,
+      );
+    } else {
+      // Default to Gemini
+      _voiceService = GeminiLiveService(
+        onAudioReceived: _handleAIAudio,
+        onTranscription: _handleTranscription,
+        onModelSpeakingChanged: _handleAISpeakingChanged,
+        onConnectionStateChanged: _handleConnectionStateChanged,
+        onError: _handleGeminiError,
+        onTurnComplete: _handleTurnComplete,
+        onDebugLogUpdated: onDebugLogUpdated,
+        onToolCall: _handleToolCall, // Phase 42: Tool call handling
+      );
+    }
   }
   
   /// Generate the system instruction based on session mode (Phase 42)
@@ -318,12 +319,12 @@ class VoiceSessionManager {
         debugPrint('VoiceSessionManager: Tools enabled: ${tools != null}');
       }
       
-      // Step 2: Connect to Gemini Live API
+      // Step 2: Connect to AI Service
       if (kDebugMode) {
-        debugPrint('VoiceSessionManager: Connecting to Gemini Live API...');
+        debugPrint('VoiceSessionManager: Connecting to AI service (${AIModelConfig.voiceProvider})...');
       }
       
-      final connected = await _geminiService.connect(
+      final connected = await _voiceService.connect(
         systemInstruction: instruction,
         enableTranscription: enableTranscription,
         tools: tools,
@@ -342,7 +343,7 @@ class VoiceSessionManager {
       
       final audioReady = await _audioService.initialize();
       if (!audioReady) {
-        await _geminiService.disconnect();
+        await _voiceService.disconnect();
         _setState(VoiceSessionState.error);
         onError?.call('Failed to initialise microphone');
         return false;
@@ -355,7 +356,7 @@ class VoiceSessionManager {
       
       final recordingStarted = await _audioService.startRecording();
       if (!recordingStarted) {
-        await _geminiService.disconnect();
+        await _voiceService.disconnect();
         _setState(VoiceSessionState.error);
         onError?.call('Failed to start recording');
         return false;
@@ -391,7 +392,7 @@ class VoiceSessionManager {
     
     try {
       await _audioService.stopRecording();
-      await _geminiService.disconnect();
+      await _voiceService.disconnect();
     } catch (e) {
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Error during disconnect: $e');
@@ -435,12 +436,12 @@ class VoiceSessionManager {
       return;
     }
     
-    _geminiService.sendText(text);
+    _voiceService.sendText(text);
   }
   
   /// Interrupt the AI's current response.
   void interruptAI() {
-    _geminiService.interrupt();
+    _voiceService.interrupt();
   }
   
   // === PRIVATE HANDLERS ===
@@ -455,8 +456,8 @@ class VoiceSessionManager {
   void _handleMicrophoneAudio(Uint8List audioData) {
     if (_state != VoiceSessionState.active) return;
     
-    // Forward audio to Gemini
-    _geminiService.sendAudio(audioData);
+    // Forward audio to AI Service
+    _voiceService.sendAudio(audioData);
   }
   
   /// Handle audio data from the AI.
@@ -547,7 +548,7 @@ class VoiceSessionManager {
         debugPrint('VoiceSessionManager: Unknown tool: $functionName');
       }
       // Send error response
-      _geminiService.sendToolResponse(
+      _voiceService.sendToolResponse(
         functionName,
         callId,
         {'error': 'Unknown tool: $functionName'},
@@ -560,7 +561,7 @@ class VoiceSessionManager {
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: No psychometric provider available');
       }
-      _geminiService.sendToolResponse(
+      _voiceService.sendToolResponse(
         functionName,
         callId,
         {'error': 'Psychometric provider not configured'},
@@ -580,7 +581,7 @@ class VoiceSessionManager {
       }
       
       // Send success response back to the AI
-      _geminiService.sendToolResponse(
+      _voiceService.sendToolResponse(
         functionName,
         callId,
         {
@@ -596,7 +597,7 @@ class VoiceSessionManager {
       }
       
       // Send error response
-      _geminiService.sendToolResponse(
+      _voiceService.sendToolResponse(
         functionName,
         callId,
         {

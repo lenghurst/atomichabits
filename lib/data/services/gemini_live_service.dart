@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/ai_model_config.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/logging/log_buffer.dart';
+import 'voice_api_service.dart';
 
 /// Gemini Live API Service - Phase 38: In-App Log Console
 /// 
@@ -51,7 +52,7 @@ import '../../core/logging/log_buffer.dart';
 /// - Close Code (e.g., 1006 = Abnormal Closure)
 /// - Close Reason (server's explanation)
 /// - Model Name (to verify correct model is being used)
-class GeminiLiveService {
+class GeminiLiveService implements VoiceApiService {
   // === CONFIGURATION ===
   // PHASE 34 FIX: Changed from v1alpha to v1beta per official Gemini API documentation
   // The December 2025 model requires v1beta endpoint
@@ -568,6 +569,20 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   /// Result class for token fetching with detailed reason
   Future<_TokenResult> _getEphemeralTokenWithReason() async {
+    // PHASE 46: SIMPLIFICATION - DIRECT API ONLY
+    // We are disabling the Supabase Edge Function path for launch.
+    // Re-enable this logic later if we need to hide keys from the client.
+
+    if (AIModelConfig.hasGeminiKey) {
+      _ephemeralToken = AIModelConfig.geminiApiKey;
+      _tokenExpiry = DateTime.now().add(const Duration(hours: 24));
+      _isUsingApiKey = true;
+      return _TokenResult(_ephemeralToken, 'Direct API Key (Simpified Path)');
+    } else {
+      return _TokenResult(null, 'No GEMINI_API_KEY found in secrets.json');
+    }
+
+    /* DEPRECATED: Edge Function Path
     // Check if we have a valid cached token
     if (_ephemeralToken != null && _tokenExpiry != null &&
         _tokenExpiry!.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
@@ -680,6 +695,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       }
       return _TokenResult(null, 'Exception: $e');
     }
+    */
   }
 
   // Legacy method for backwards compatibility

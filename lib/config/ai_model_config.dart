@@ -44,6 +44,9 @@ class AIModelConfig {
   
   /// OpenAI API key (Fallback TTS provider)
   static const String openAiApiKey = String.fromEnvironment('OPENAI_API_KEY');
+
+  /// Selected Voice Provider (gemini or openai)
+  static const String voiceProvider = String.fromEnvironment('VOICE_PROVIDER', defaultValue: 'gemini');
   
   /// Check if DeepSeek API is configured
   static bool get hasDeepSeekKey => deepSeekApiKey.isNotEmpty;

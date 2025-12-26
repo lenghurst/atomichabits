@@ -181,12 +181,8 @@ User → Voice Coach Screen
      Gemini Live Service
      (tools: psychometricTool)
          ↓
-   ┌─────┴─────┐
-   │           │
-Supabase    DEV MODE
-Edge Fn     (Direct API)
-   │           │
-   └─────┬─────┘
+     Direct API
+   (Edge Fn Deprecated)
          ↓
    Gemini Live API (WebSocket)
    + Tool Calling Support
