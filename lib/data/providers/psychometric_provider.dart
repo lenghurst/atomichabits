@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/psychometric_profile.dart';
+import '../../domain/entities/psychometric_profile_extensions.dart';
 import '../../domain/services/psychometric_engine.dart';
 import '../repositories/psychometric_repository.dart';
 import '../models/habit.dart';
