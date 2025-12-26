@@ -240,10 +240,6 @@ If not, that's likely the problem. Make it smaller first.
 /// - UI displays: "Gemini 3 Flash"
 /// - API calls: "gemini-2.5-flash"
 class GeminiChatService {
-  // TODO: Replace with your actual API key (use environment variables in production)
-  // For development, you can get a free API key at https://makersuite.google.com/app/apikey
-  static const String _defaultApiKey = 'AIzaSyB6BVpzg6lXxY_AAi3rPcSuGpcjV89H8dE';
-
   final String apiKey;
   GenerativeModel? _model;
   final Connectivity _connectivity = Connectivity();
@@ -258,15 +254,15 @@ class GeminiChatService {
   GeminiChatService({
     String? apiKey,
     this.onStreamChunk,
-  }) : apiKey = apiKey ?? _defaultApiKey;
+  }) : apiKey = apiKey ?? AIModelConfig.geminiApiKey;
 
   /// Initialize the Gemini model
   Future<void> init() async {
     await _storage.init();
 
-    if (apiKey == _defaultApiKey || apiKey.isEmpty) {
+    if (apiKey.isEmpty) {
       if (kDebugMode) {
-        debugPrint('WARNING: Using placeholder API key. Set your Gemini API key.');
+        debugPrint('WARNING: No API key found. Set your Gemini API key.');
       }
       return;
     }
