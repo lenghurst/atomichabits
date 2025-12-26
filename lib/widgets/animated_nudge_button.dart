@@ -206,9 +206,9 @@ class _AnimatedNudgeButtonState extends State<AnimatedNudgeButton>
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: buttonColor.withOpacity(0.1),
+                  color: buttonColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(color: buttonColor.withOpacity(0.3)),
+                  border: Border.all(color: buttonColor.withValues(alpha: 0.3)),
                 ),
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -225,7 +225,7 @@ class _AnimatedNudgeButtonState extends State<AnimatedNudgeButton>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: buttonColor.withOpacity(1 - _rippleAnimation.value),
+                                  color: buttonColor.withValues(alpha: 1 - _rippleAnimation.value),
                                   width: 2,
                                 ),
                               ),
@@ -285,7 +285,7 @@ class _AnimatedNudgeButtonState extends State<AnimatedNudgeButton>
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: buttonColor.withOpacity(0.3),
+                            color: buttonColor.withValues(alpha: 0.3),
                             blurRadius: _isPressed ? 4 : 8,
                             offset: Offset(0, _isPressed ? 2 : 4),
                           ),
@@ -321,7 +321,7 @@ class _AnimatedNudgeButtonState extends State<AnimatedNudgeButton>
                             child: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(1 - _rippleAnimation.value),
+                                  color: Colors.white.withValues(alpha: 1 - _rippleAnimation.value),
                                   width: 2,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
@@ -536,7 +536,7 @@ class _FloatingNudgeButtonState extends State<FloatingNudgeButton>
       _particles.add(_Particle(
         angle: (i * math.pi / 4) + random.nextDouble() * 0.5,
         distance: 30 + random.nextDouble() * 20,
-        color: Colors.orange.withOpacity(0.8),
+        color: Colors.orange.withValues(alpha: 0.8),
       ));
     }
     

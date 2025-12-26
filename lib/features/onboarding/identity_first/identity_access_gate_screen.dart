@@ -245,11 +245,11 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
               width: 256,
               height: 256,
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withOpacity(0.05),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.05),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF22C55E).withOpacity(0.05),
+                    color: const Color(0xFF22C55E).withValues(alpha: 0.05),
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -264,11 +264,11 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
               width: 384,
               height: 384,
               decoration: BoxDecoration(
-                color: const Color(0xFF06B6D4).withOpacity(0.05),
+                color: const Color(0xFF06B6D4).withValues(alpha: 0.05),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF06B6D4).withOpacity(0.05),
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.05),
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -321,7 +321,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: isDeveloperMode
-                                ? const Color(0xFF22C55E).withOpacity(0.2)
+                                ? const Color(0xFF22C55E).withValues(alpha: 0.2)
                                 : const Color(0xFF1E293B),
                             border: Border.all(
                               color: isDeveloperMode
@@ -439,7 +439,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           hintStyle: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF475569).withOpacity(0.6),
+                            color: const Color(0xFF475569).withValues(alpha: 0.6),
                             letterSpacing: -0.01,
                           ),
                           border: const UnderlineInputBorder(
@@ -521,7 +521,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF22C55E).withOpacity(0.3),
+                            color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -529,7 +529,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           children: [
                             Icon(
                               Icons.favorite_outline,
-                              color: const Color(0xFF22C55E).withOpacity(0.8),
+                              color: const Color(0xFF22C55E).withValues(alpha: 0.8),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -538,7 +538,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                                 'We measure progress, not perfection. No streaks. No shame.',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   height: 1.4,
                                 ),
                               ),
@@ -568,7 +568,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              const Color(0xFF334155).withOpacity(0.5),
+                              const Color(0xFF334155).withValues(alpha: 0.5),
                               Colors.transparent,
                             ],
                           ),
@@ -595,7 +595,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFDC2626).withOpacity(0.1),
+                            color: const Color(0xFFDC2626).withValues(alpha: 0.1),
                             border: Border.all(color: const Color(0xFFDC2626)),
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -616,7 +616,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF334155).withOpacity(0.3),
+                            color: const Color(0xFF334155).withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -866,7 +866,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -878,14 +878,14 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Icon(
                       Icons.verified,
                       size: 14,
-                      color: const Color(0xFF22C55E).withOpacity(0.8),
+                      color: const Color(0xFF22C55E).withValues(alpha: 0.8),
                     ),
                   ],
                 ),
@@ -1062,7 +1062,7 @@ class _IdentityChipState extends State<_IdentityChip> with SingleTickerProviderS
             boxShadow: widget.isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.3),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),

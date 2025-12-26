@@ -101,7 +101,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
         Text(
           '✨ Powered by AI',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.primary.withOpacity(0.7),
+            color: theme.colorScheme.primary.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -201,10 +201,10 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: colorScheme.outline.withOpacity(0.2),
+              color: colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -321,9 +321,9 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
   Color _getStatusColor(DayStatus status, ColorScheme colorScheme) {
     switch (status) {
       case DayStatus.completed:
-        return Colors.green.withOpacity(0.2);
+        return Colors.green.withValues(alpha: 0.2);
       case DayStatus.missed:
-        return Colors.red.withOpacity(0.1);
+        return Colors.red.withValues(alpha: 0.1);
       case DayStatus.pending:
         return colorScheme.surfaceContainerHighest;
     }
@@ -392,7 +392,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -413,7 +413,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
-                    color: badgeColor?.withOpacity(0.2),
+                    color: badgeColor?.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

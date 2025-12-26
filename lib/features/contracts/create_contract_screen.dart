@@ -277,7 +277,8 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedHabitId,
+          key: ValueKey(_selectedHabitId),
+          initialValue: _selectedHabitId,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             hintText: 'Choose a habit to commit to',

@@ -51,7 +51,7 @@ class GracefulConsistencyCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _getScoreColor().withOpacity(0.3),
+              color: _getScoreColor().withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -402,7 +402,7 @@ extension _ColorShades on Color {
     if (this == Colors.orange) return Colors.orange.shade300;
     if (this == Colors.amber) return Colors.amber.shade300;
     if (this == Colors.blue) return Colors.blue.shade300;
-    return withOpacity(0.5);
+    return withValues(alpha: 0.5);
   }
   
   Color get shade400 {
@@ -411,7 +411,7 @@ extension _ColorShades on Color {
     if (this == Colors.orange) return Colors.orange.shade400;
     if (this == Colors.amber) return Colors.amber.shade400;
     if (this == Colors.blue) return Colors.blue.shade400;
-    return withOpacity(0.6);
+    return withValues(alpha: 0.6);
   }
   
   Color get shade500 {
@@ -420,7 +420,7 @@ extension _ColorShades on Color {
     if (this == Colors.orange) return Colors.orange.shade500;
     if (this == Colors.amber) return Colors.amber.shade500;
     if (this == Colors.blue) return Colors.blue.shade500;
-    return withOpacity(0.7);
+    return withValues(alpha: 0.7);
   }
   
   Color get shade600 {
@@ -429,6 +429,6 @@ extension _ColorShades on Color {
     if (this == Colors.orange) return Colors.orange.shade600;
     if (this == Colors.amber) return Colors.amber.shade600;
     if (this == Colors.blue) return Colors.blue.shade600;
-    return withOpacity(0.8);
+    return withValues(alpha: 0.8);
   }
 }

@@ -218,7 +218,7 @@ class _WitnessContractCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(theme).withOpacity(0.1),
+                      color: _getStatusColor(theme).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -443,7 +443,7 @@ class _ActivityEventCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _getEventColor(theme).withOpacity(0.1),
+          backgroundColor: _getEventColor(theme).withValues(alpha: 0.1),
           child: Text(
             _getEventEmoji(),
             style: const TextStyle(fontSize: 20),
@@ -589,7 +589,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               subtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),

@@ -62,7 +62,7 @@ class AlphaShieldBanner extends StatelessWidget {
           color: bannerColor,
           boxShadow: [
             BoxShadow(
-              color: bannerColor.withOpacity(0.3),
+              color: bannerColor.withValues(alpha: 0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -95,7 +95,7 @@ class AlphaShieldBanner extends StatelessWidget {
             Icon(
               Icons.info_outline,
               size: 14,
-              color: textColor.withOpacity(0.7),
+              color: textColor.withValues(alpha: 0.7),
             ),
           ],
         ),
@@ -116,7 +116,7 @@ class AlphaShieldBanner extends StatelessWidget {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: bannerColor.withOpacity(0.1),
+          color: bannerColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: bannerColor,
@@ -159,7 +159,7 @@ class AlphaShieldBanner extends StatelessWidget {
             Text(
               'Tap for more info',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 11,
                 fontStyle: FontStyle.italic,
               ),
@@ -263,7 +263,7 @@ class AlphaShieldSplashOverlay extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Color(AlphaShieldConfig.bannerColorValue).withOpacity(0.9),
+              color: Color(AlphaShieldConfig.bannerColorValue).withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -291,7 +291,7 @@ class AlphaShieldSplashOverlay extends StatelessWidget {
           Text(
             AlphaShieldConfig.shortDisclaimer,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               fontSize: 11,
             ),
             textAlign: TextAlign.center,

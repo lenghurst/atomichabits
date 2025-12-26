@@ -50,7 +50,7 @@ class HabitSummaryCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: isCompleted
-            ? BorderSide(color: completedColor.withOpacity(0.3), width: 2)
+            ? BorderSide(color: completedColor.withValues(alpha: 0.3), width: 2)
             : BorderSide.none,
       ),
       child: InkWell(
@@ -190,7 +190,7 @@ class HabitSummaryCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: completedColor.withOpacity(0.1),
+          color: completedColor.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -203,7 +203,7 @@ class HabitSummaryCard extends StatelessWidget {
 
     return Material(
       color: isBreakHabit 
-          ? Colors.purple.withOpacity(0.1) 
+          ? Colors.purple.withValues(alpha: 0.1) 
           : Theme.of(context).colorScheme.primaryContainer,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
@@ -234,7 +234,7 @@ class HabitSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: streak > 0
-            ? activeColor.withOpacity(0.1)
+            ? activeColor.withValues(alpha: 0.1)
             : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -344,7 +344,7 @@ class HabitSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

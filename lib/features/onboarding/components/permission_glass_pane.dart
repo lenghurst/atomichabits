@@ -162,7 +162,7 @@ class PermissionGlassPane extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -215,10 +215,10 @@ class PermissionGlassPane extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.3),
+                    color: colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(

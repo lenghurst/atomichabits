@@ -82,7 +82,8 @@ class HabitStackSelector extends StatelessWidget {
         
         // Anchor Habit Dropdown
         DropdownButtonFormField<String>(
-          value: selectedAnchorId,
+          key: ValueKey(selectedAnchorId),
+          initialValue: selectedAnchorId,
           decoration: InputDecoration(
             labelText: stackPosition == 'after' 
                 ? 'After completing...' 

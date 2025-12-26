@@ -216,7 +216,7 @@ class _MagicWandButtonState extends State<MagicWandButton>
                 boxShadow: isEnabled
                     ? [
                         BoxShadow(
-                          color: colorScheme.primary.withOpacity(0.3),
+                          color: colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -298,8 +298,8 @@ class MagicWandButtonLarge extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                colorScheme.primary.withOpacity(0.1),
-                colorScheme.secondary.withOpacity(0.1),
+                colorScheme.primary.withValues(alpha: 0.1),
+                colorScheme.secondary.withValues(alpha: 0.1),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

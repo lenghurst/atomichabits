@@ -211,7 +211,7 @@ class _DayCell extends StatelessWidget {
       textColor = Colors.white;
       shadows = [
         BoxShadow(
-          color: Colors.green.withOpacity(0.3),
+          color: Colors.green.withValues(alpha: 0.3),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -221,13 +221,13 @@ class _DayCell extends StatelessWidget {
       textColor = Colors.white;
       shadows = [
         BoxShadow(
-          color: Colors.blue.withOpacity(0.3),
+          color: Colors.blue.withValues(alpha: 0.3),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
       ];
     } else if (isFuture) {
-      textColor = theme.colorScheme.onSurface.withOpacity(0.3);
+      textColor = theme.colorScheme.onSurface.withValues(alpha: 0.3);
     }
     
     if (isToday) {

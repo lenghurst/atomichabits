@@ -131,7 +131,7 @@ class _TimeDriftSuggestionDialogState extends State<TimeDriftSuggestionDialog>
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.orange.withOpacity(0.3),
+                            color: Colors.orange.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -387,7 +387,7 @@ class _TimeDriftSuggestionDialogState extends State<TimeDriftSuggestionDialog>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark 
-            ? (isOld ? Colors.grey.shade800 : Colors.orange.shade900.withOpacity(0.3))
+            ? (isOld ? Colors.grey.shade800 : Colors.orange.shade900.withValues(alpha: 0.3))
             : (isOld ? Colors.grey.shade100 : Colors.orange.shade50),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(

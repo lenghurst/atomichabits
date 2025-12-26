@@ -149,7 +149,7 @@ class _HighFiveSheetState extends State<HighFiveSheet>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withOpacity(0.2),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -170,7 +170,7 @@ class _HighFiveSheetState extends State<HighFiveSheet>
                 Text(
                   'Let ${widget.builderName} know you saw their progress',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -312,7 +312,7 @@ class _ReactionButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -332,7 +332,7 @@ class _ReactionButton extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: isSelected
                     ? theme.colorScheme.onPrimaryContainer
-                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -459,7 +459,7 @@ class _HighFiveReceivedOverlayState extends State<HighFiveReceivedOverlay>
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),

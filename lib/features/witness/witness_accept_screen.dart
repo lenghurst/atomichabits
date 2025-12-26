@@ -314,10 +314,10 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withOpacity(0.1),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF22C55E).withOpacity(0.3),
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                 ),
               ),
               child: const Column(
@@ -350,15 +350,15 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF3B82F6).withOpacity(0.2),
-                    const Color(0xFFEC4899).withOpacity(0.2),
+                    const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                    const Color(0xFFEC4899).withValues(alpha: 0.2),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -533,7 +533,7 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
             border: Border.all(color: Colors.brown.shade300, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.brown.withOpacity(0.3),
+                color: Colors.brown.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(4, 4),
               ),
@@ -824,7 +824,7 @@ class _WitnessAcceptScreenState extends State<WitnessAcceptScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.5),
+            color: Colors.brown.withValues(alpha: 0.5),
             blurRadius: 8,
             offset: const Offset(2, 2),
           ),

@@ -118,8 +118,8 @@ class HabitListScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -158,7 +158,7 @@ class HabitListScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -240,13 +240,13 @@ class HabitListScreen extends StatelessWidget {
                               Icon(
                                 Icons.subdirectory_arrow_right,
                                 size: 16,
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'stacked ${habit.stackPosition}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
                                   fontSize: 11,
                                 ),
                               ),
@@ -319,7 +319,7 @@ class HabitListScreen extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primaryContainer,
-            theme.colorScheme.primaryContainer.withOpacity(0.7),
+            theme.colorScheme.primaryContainer.withValues(alpha: 0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -352,7 +352,7 @@ class HabitListScreen extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
           ),
         ),
       ],

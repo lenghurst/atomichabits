@@ -189,7 +189,7 @@ class _StackPromptDialogState extends State<StackPromptDialog>
                         offset: Offset(0, _chainBounceAnimation.value),
                         child: Icon(
                           Icons.link,
-                          color: accentColor.withOpacity(0.7),
+                          color: accentColor.withValues(alpha: 0.7),
                           size: 32,
                         ),
                       );
@@ -224,7 +224,7 @@ class _StackPromptDialogState extends State<StackPromptDialog>
             shouldLoop: false,
             colors: [
               accentColor,
-              accentColor.withOpacity(0.7),
+              accentColor.withValues(alpha: 0.7),
               Colors.amber,
               Colors.amber.shade300,
               Colors.white,
@@ -249,11 +249,11 @@ class _StackPromptDialogState extends State<StackPromptDialog>
             return Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.1 * value),
+                color: accentColor.withValues(alpha: 0.1 * value),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: accentColor.withOpacity(0.3 * value),
+                    color: accentColor.withValues(alpha: 0.3 * value),
                     blurRadius: 20 * value,
                     spreadRadius: 5 * value,
                   ),
@@ -312,9 +312,9 @@ class _StackPromptDialogState extends State<StackPromptDialog>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -350,9 +350,9 @@ class _StackPromptDialogState extends State<StackPromptDialog>
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.05),
+              color: accentColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: accentColor.withOpacity(0.2)),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2)),
             ),
             child: Column(
               children: [
@@ -496,9 +496,9 @@ class CompactStackPrompt extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.1),
+                color: accentColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: accentColor.withOpacity(0.3)),
+                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

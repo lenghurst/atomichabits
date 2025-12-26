@@ -170,7 +170,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           decoration: BoxDecoration(
             color: _currentPageIndex == index
                 ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );

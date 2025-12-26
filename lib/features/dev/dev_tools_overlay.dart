@@ -83,7 +83,7 @@ class DevToolsOverlay extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.3),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -302,7 +302,7 @@ class DevToolsOverlay extends StatelessWidget {
                   child: Text(
                     'The Pact v0.27.6-dev',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.5),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),

@@ -577,7 +577,7 @@ Use British English spelling and phrasing.''';
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, -5),
                     ),
@@ -613,7 +613,7 @@ Use British English spelling and phrasing.''';
                                 color: _getButtonColor(colorScheme),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getButtonColor(colorScheme).withOpacity(0.4),
+                                    color: _getButtonColor(colorScheme).withValues(alpha: 0.4),
                                     blurRadius: 20,
                                     spreadRadius: 5,
                                   ),

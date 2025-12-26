@@ -50,7 +50,7 @@ class ChatMessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -185,8 +185,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withOpacity(
-                      0.4 + (_dotAnimations[index].value * 0.6),
+                    color: colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4 + (_dotAnimations[index].value * 0.6),
                     ),
                     shape: BoxShape.circle,
                   ),

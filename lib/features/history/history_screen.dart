@@ -195,7 +195,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         gradient: LinearGradient(
           colors: [
             Theme.of(context).colorScheme.primaryContainer,
-            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.7),
+            Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -337,8 +337,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               label: Text(m.label),
               backgroundColor: isAchieved 
-                  ? Colors.amber.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.1),
+                  ? Colors.amber.withValues(alpha: 0.2)
+                  : Colors.grey.withValues(alpha: 0.1),
               labelStyle: TextStyle(
                 color: isAchieved ? Colors.amber.shade800 : Colors.grey,
                 fontWeight: isAchieved ? FontWeight.bold : FontWeight.normal,
@@ -448,8 +448,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               colors: [
-                colorScheme.primaryContainer.withOpacity(0.8),
-                colorScheme.secondaryContainer.withOpacity(0.6),
+                colorScheme.primaryContainer.withValues(alpha: 0.8),
+                colorScheme.secondaryContainer.withValues(alpha: 0.6),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -460,7 +460,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surface.withOpacity(0.9),
+                  color: colorScheme.surface.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

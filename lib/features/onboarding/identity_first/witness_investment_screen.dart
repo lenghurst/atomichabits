@@ -367,7 +367,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFEF4444).withOpacity(0.1),
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                       blurRadius: 100,
                       spreadRadius: 50,
                     ),
@@ -384,7 +384,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
             width: 384,
             height: 384,
             decoration: BoxDecoration(
-              color: const Color(0xFF22C55E).withOpacity(0.05),
+              color: const Color(0xFF22C55E).withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
           ),
@@ -531,7 +531,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
         border: Border.all(
           color: _selectedContact != null
               ? const Color(0xFF22C55E)
-              : const Color(0xFFEF4444).withOpacity(0.5),
+              : const Color(0xFFEF4444).withValues(alpha: 0.5),
           width: 2,
         ),
       ),
@@ -692,9 +692,9 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF22C55E).withOpacity(0.1),
+              color: const Color(0xFF22C55E).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF22C55E).withOpacity(0.3)),
+              border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -786,7 +786,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
               style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
             ),
             contentPadding: EdgeInsets.zero,
-            activeColor: const Color(0xFF22C55E),
+            activeTrackColor: const Color(0xFF22C55E),
           ),
         ],
       ),

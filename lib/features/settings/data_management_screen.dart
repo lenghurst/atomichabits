@@ -74,7 +74,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
           children: [
             // ========== Info Card ==========
             Card(
-              color: colorScheme.primaryContainer.withOpacity(0.3),
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -120,7 +120,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.upload_file, color: Colors.green),
@@ -172,7 +172,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
+                        color: Colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.download, color: Colors.orange),
@@ -272,7 +272,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             
             // ========== Tips Section ==========
             Card(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -543,9 +543,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

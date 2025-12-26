@@ -258,7 +258,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getTrendColor(summary.scoreChange).withOpacity(0.1),
+                    color: _getTrendColor(summary.scoreChange).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -352,7 +352,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           horizontalInterval: 20,
           getDrawingHorizontalLine: (value) {
             return FlLine(
-              color: colorScheme.outlineVariant.withOpacity(0.3),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               strokeWidth: 1,
             );
           },
@@ -443,8 +443,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  colorScheme.primary.withOpacity(0.3),
-                  colorScheme.primary.withOpacity(0.0),
+                  colorScheme.primary.withValues(alpha: 0.3),
+                  colorScheme.primary.withValues(alpha: 0.0),
                 ],
               ),
             ),
@@ -707,7 +707,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     horizontalInterval: 1,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: colorScheme.outlineVariant.withOpacity(0.3),
+                        color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                         strokeWidth: 1,
                       );
                     },
@@ -794,7 +794,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getHealthScoreColor(patternSummary.healthScore).withOpacity(0.1),
+                    color: _getHealthScoreColor(patternSummary.healthScore).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -846,9 +846,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -874,7 +874,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -932,7 +932,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final theme = Theme.of(context);
     
     return Card(
-      color: Colors.green.withOpacity(0.1),
+      color: Colors.green.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -1025,7 +1025,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
     
     return Card(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

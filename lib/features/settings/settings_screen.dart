@@ -342,13 +342,13 @@ class SettingsScreen extends StatelessWidget {
                       Icon(
                         Icons.self_improvement,
                         size: 48,
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'The Pact',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -358,7 +358,7 @@ class SettingsScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontStyle: FontStyle.italic,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                       ),
                     ],
@@ -743,7 +743,7 @@ class SettingsScreen extends StatelessWidget {
     
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: iconColor.withOpacity(0.1),
+        backgroundColor: iconColor.withValues(alpha: 0.1),
         child: Icon(icon, color: iconColor),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),

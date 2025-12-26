@@ -126,7 +126,7 @@ class _GuestDataWarningBannerState extends State<GuestDataWarningBanner>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.amber.withOpacity(0.3),
+              color: Colors.amber.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -142,7 +142,7 @@ class _GuestDataWarningBannerState extends State<GuestDataWarningBanner>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -172,7 +172,7 @@ class _GuestDataWarningBannerState extends State<GuestDataWarningBanner>
                       Text(
                         'Sign up to permanently seal your pact',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 12,
                         ),
                       ),
@@ -221,7 +221,7 @@ class _GuestDataWarningBannerState extends State<GuestDataWarningBanner>
                       child: Text(
                         'Later',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 10,
                           decoration: TextDecoration.underline,
                         ),

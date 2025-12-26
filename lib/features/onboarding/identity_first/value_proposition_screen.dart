@@ -107,7 +107,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF3B82F6).withOpacity(0.15),
+                    const Color(0xFF3B82F6).withValues(alpha: 0.15),
                     Colors.transparent,
                   ],
                 ),
@@ -123,7 +123,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFEC4899).withOpacity(0.1),
+                    const Color(0xFFEC4899).withValues(alpha: 0.1),
                     Colors.transparent,
                   ],
                 ),
@@ -240,7 +240,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w400,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             height: 1.2,
           ),
         ),
@@ -259,7 +259,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
-                color: const Color(0xFF22C55E).withOpacity(0.5),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.5),
                 width: 3,
               ),
             ),
@@ -269,7 +269,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontStyle: FontStyle.italic,
               height: 1.4,
             ),
@@ -305,7 +305,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -337,7 +337,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
             // Quote icon
             Icon(
               Icons.format_quote,
-              color: const Color(0xFF22C55E).withOpacity(0.5),
+              color: const Color(0xFF22C55E).withValues(alpha: 0.5),
               size: 32,
             ),
             const SizedBox(height: 16),
@@ -394,7 +394,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -471,7 +471,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
               );
             },
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white.withOpacity(0.7),
+              foregroundColor: Colors.white.withValues(alpha: 0.7),
             ),
             child: const Text(
               "I have an invite",

@@ -535,7 +535,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   color: !_isBreakHabit ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: !_isBreakHabit
-                      ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))]
+                      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))]
                       : null,
                 ),
                 child: Row(
@@ -568,7 +568,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   color: _isBreakHabit ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: _isBreakHabit
-                      ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))]
+                      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))]
                       : null,
                 ),
                 child: Row(
@@ -664,7 +664,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         
         // Anchor Habit Dropdown
         DropdownButtonFormField<String>(
-          value: _anchorHabitId,
+          key: ValueKey(_anchorHabitId),
+          initialValue: _anchorHabitId,
           decoration: const InputDecoration(
             labelText: 'Stack after which habit?',
             hintText: 'Choose an existing habit (or leave blank)',
@@ -698,9 +699,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.05),
+              color: Colors.green.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green.withOpacity(0.2)),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [

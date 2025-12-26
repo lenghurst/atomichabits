@@ -109,7 +109,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
         border: Border.all(color: Colors.white12, width: 1),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: -5,
             offset: const Offset(0, 10),
@@ -124,7 +124,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.3), width: 2),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
             ),
             child: Icon(Icons.fingerprint, size: 60, color: color),
           ),
@@ -164,12 +164,12 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.touch_app, color: Colors.white.withOpacity(0.7), size: 14),
+                Icon(Icons.touch_app, color: Colors.white.withValues(alpha: 0.7), size: 14),
                 const SizedBox(width: 8),
                 Text(
                   "TAP TO REVEAL",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2,
@@ -198,7 +198,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
           colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withOpacity(0.5), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,7 +222,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -307,9 +307,9 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.3)),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +342,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
                 Text(
                   widget.profile.archetypeDescription,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5), 
+                    color: Colors.white.withValues(alpha: 0.5), 
                     fontSize: 10, 
                     fontStyle: FontStyle.italic,
                   ),
@@ -358,7 +358,7 @@ class _PactIdentityCardState extends State<PactIdentityCard> with SingleTickerPr
             child: Text(
               "TAP TO FLIP",
               style: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 8,
                 letterSpacing: 2,
               ),
