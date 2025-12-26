@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 45 - Pre-Launch Fixes  
+> **Current Phase:** Phase 46 - Voice Architecture Simplification  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -47,7 +47,8 @@
 | **Backend** | Supabase | ^2.8.4 |
 | **AI (Tier 1)** | DeepSeek-V3 | Text Chat (JSON mode) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
-| **Voice** | Gemini Live API | WebSocket Streaming |
+| **Voice Provider** | Gemini / OpenAI | Alternative Providers (Phase 46) |
+| **Voice Protocol** | WebSocket (Direct) | Removed Edge Function dependency |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
@@ -85,6 +86,7 @@
 | **44** | The Investment - Profile persistence to Hive | ✅ |
 | **45.1** | User Data Unification (`isPremium` → `UserProfile`) | ✅ |
 | **45.2** | Cloud Sync Prep (`isSynced` flag for Psychometrics) | ✅ |
+| **46** | Voice simplification & OpenAI Integration | ✅ |
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
@@ -100,11 +102,11 @@
 | `lib/data/providers/psychometric_provider.dart` | `updateFromToolCall()` + `finalizeOnboarding()` |
 | `lib/data/providers/user_provider.dart` | `completeOnboarding()` for state flag |
 | `lib/data/services/ai/prompt_factory.dart` | Dynamic prompt generation (NEW) |
-| `lib/data/services/gemini_live_service.dart` | Tool calling support, `sendToolResponse()` |
-| `lib/data/services/voice_session_manager.dart` | `VoiceSessionMode`, orchestration |
-| `lib/features/onboarding/widgets/pact_identity_card.dart` | 3D flip card (NEW) |
-| `lib/features/onboarding/pact_reveal_screen.dart` | Reveal sequence + Investment wiring |
-| `lib/features/onboarding/voice_coach_screen.dart` | "DONE" button, reveal navigation |
+| `lib/data/services/voice_api_service.dart` | NEW abstract interface (Phase 46) |
+| `lib/data/services/openai_live_service.dart` | NEW OpenAI implementation (Phase 46) |
+| `lib/data/services/gemini_live_service.dart` | Refactored to implement interface |
+| `lib/domain/services/voice_provider_selector.dart` | Real network diagnostics (Phase 46) |
+| `lib/data/services/voice_session_manager.dart` | Updated to use `VoiceApiService` |
 
 ---
 
@@ -142,12 +144,13 @@ lib/
 │   │   └── psychometric_provider.dart
 │   │
 │   ├── services/               # External Services
-│   │   ├── gemini_live_service.dart    # Voice AI + Tool Calling (Phase 42)
+│   │   ├── voice_api_service.dart      # NEW Interface (Phase 46)
+│   │   ├── gemini_live_service.dart    # Gemini implementation
+│   │   ├── openai_live_service.dart    # OpenAI implementation (Phase 46) 
 │   │   ├── audio_recording_service.dart
-│   │   ├── voice_session_manager.dart  # Session Orchestration (Phase 42)
-│   │   ├── ai_service_manager.dart
-│   │   └── ai/
-│   │       └── prompt_factory.dart     # Dynamic Prompts (Phase 42)
+│   │   ├── voice_session_manager.dart  # Session Orchestration
+│   │   ├── ai/
+│   │       └── prompt_factory.dart     # Dynamic Prompts
 │   │
 │   └── app_state.dart          # Legacy (being strangled)
 │
@@ -177,22 +180,15 @@ lib/
 User → Voice Coach Screen
          ↓
      Voice Session Manager
-     (mode: onboarding / coaching)
          ↓
-     Gemini Live Service
-     (tools: AiToolsConfig.psychometricTool)
+    VoiceApiService (Interface)
+    (Gemini / OpenAI)
          ↓
-   ┌─────┴─────┐
-   │           │
-Supabase    DEV MODE
-Edge Fn     (Direct API)
-   │           │
-   └─────┬─────┘
+    Direct WebSocket
+  (Edge Fn Removed)
          ↓
-   IOWebSocketChannel.connect()
-   + Custom Headers (Phase 37)
-         ↓
-   Gemini Live API (WebSocket)
+    AI Provider API
+    + Tool Calling Support
          ↓
    ┌─────┴─────────────────┐
    │                       │

@@ -176,16 +176,15 @@ lib/
 User → Voice Coach Screen
          ↓
      Voice Session Manager
-     (mode: onboarding/coaching)
          ↓
-     Gemini Live Service
-     (tools: psychometricTool)
+    VoiceApiService (Interface)
+    (Gemini / OpenAI)
          ↓
-     Direct API
-   (Edge Fn Deprecated)
+    Direct WebSocket
+  (Edge Fn Removed)
          ↓
-   Gemini Live API (WebSocket)
-   + Tool Calling Support
+    AI Provider API
+    + Tool Calling Support
          ↓
    ┌─────┴─────┐
    │           │
