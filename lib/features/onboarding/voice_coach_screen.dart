@@ -10,12 +10,6 @@ import '../../config/router/app_routes.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../dev/dev_tools_overlay.dart';
 
-/// Voice-First Onboarding Screen
-/// 
-/// "The Interrogation"
-/// - Audio Buffering to prevent stuttering (Gemini Live)
-/// - Visualizer Orb
-/// - System Link status
 class VoiceCoachScreen extends StatefulWidget {
   const VoiceCoachScreen({super.key});
 
@@ -48,10 +42,40 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // 1. Initial Speaker Enforcement
+    _enforceSpeakerOutput();
+    
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
   
+  /// CRITICAL: Helper to force audio to speaker, even if mic is on
+  Future<void> _enforceSpeakerOutput() async {
+    if (kDebugMode) debugPrint('VoiceCoachScreen: 🔊 Enforcing Speaker Output...');
+    
+    await _audioPlayer.setVolume(1.0); // Ensure volume is max
+    
+    await AudioPlayer.global.setAudioContext(AudioContext(
+      android: const AudioContextAndroid(
+        isSpeakerphoneOn: true,
+        stayAwake: true,
+        contentType: AndroidContentType.speech,
+        usageType: AndroidUsageType.assistant,
+        audioFocus: AndroidAudioFocus.gain,
+      ),
+      iOS: AudioContextIOS(
+        // 'playAndRecord' is required to hear audio while mic is active
+        category: AVAudioSessionCategory.playAndRecord, 
+        options: {
+          AVAudioSessionOptions.defaultToSpeaker, 
+          AVAudioSessionOptions.allowBluetooth,
+          AVAudioSessionOptions.allowAirPlay
+        },
+      ),
+    ));
+  }
+
   void _initializePulseAnimation() {
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -61,8 +85,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
-
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -84,19 +106,21 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         if (mounted) setState(() => _audioLevel = level);
       },
       onAISpeakingChanged: _handleAISpeakingChanged,
-      onUserSpeakingChanged: (_) {}, // Visualiser driven by audio level
+      onUserSpeakingChanged: (_) {}, 
       onTurnComplete: _handleTurnComplete,
-      // Debug logging if needed, we can add it back if requested but keeping UI clean for now
     );
 
     try {
       await _sessionManager!.startSession();
-      // Auto-start if permission granted/ready?
-      // For "Interrogation", maybe we want user to initiate "Link"?
-      // Or auto-connect.
+      
+      // 2. CRITICAL FIX: Re-enforce speaker AFTER recording starts
+      // The recording plugin often steals the session and sets it to "Record Only"
+      // calling this here overrides it back to "PlayAndRecord"
+      await _enforceSpeakerOutput(); 
+
        setState(() {
         _isConnected = true;
-        _voiceState = VoiceState.idle; // Ready to start
+        _voiceState = VoiceState.idle; 
       });
     } catch (e) {
       if (mounted) {
@@ -112,7 +136,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
-    _audioPlayer.stop(); // Stop immediately
+    _audioPlayer.stop();
     _audioPlayer.dispose();
     _sessionManager?.dispose();
     super.dispose();
@@ -122,11 +146,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
   void _handleAudioReceived(Uint8List audioData) {
     if (!mounted) return;
-    if (kDebugMode) debugPrint('VoiceCoachScreen: 📥 Rx Audio Chunk: ${audioData.length} bytes. Buffer: ${_audioBuffer.length}');
+    // Buffer logic...
     _audioBuffer.addAll(audioData);
-    
     if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
-      if (kDebugMode) debugPrint('VoiceCoachScreen: ▶️ Threshold reached (${_audioBuffer.length} >= $_bufferingThreshold), starting playback');
       _playBufferedAudio();
     }
   }
@@ -140,45 +162,31 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     _isPlaying = true;
     final List<int> chunk = List.from(_audioBuffer);
     _audioBuffer.clear();
-    
-    if (kDebugMode) debugPrint('VoiceCoachScreen: 🔊 Playing chunk: ${chunk.length} bytes');
 
     try {
       final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
-      if (kDebugMode) debugPrint('VoiceCoachScreen: 🎵 WAV created (${wavBytes.length} bytes), feeding to player...');
-      await _audioPlayer.play(BytesSource(wavBytes));
-      if (kDebugMode) debugPrint('VoiceCoachScreen: ✅ Player accepted source');
       
-      // Wait for player to finish with timeout to prevent hanging
+      if (kDebugMode) debugPrint('VoiceCoachScreen: ▶️ Playing ${chunk.length} bytes...');
+      
+      await _audioPlayer.play(BytesSource(wavBytes));
+      
+      // Wait for completion with timeout
       try {
         await _audioPlayer.onPlayerComplete.first.timeout(
-          Duration(milliseconds: (chunk.length / 48).round() + 1000), // ~24kHz 16bit mono = 48 bytes/ms
-          onTimeout: () {
-            if (kDebugMode) debugPrint('VoiceCoachScreen: ⚠️ Audio chunk timeout (playback took too long)');
-            return;
-          },
+          Duration(milliseconds: (chunk.length / 48).round() + 1000),
+          onTimeout: () => null,
         );
-      } catch (_) {
-        // Timeout or other error during wait - proceed to next chunk
-      }
+      } catch (_) {}
       
-      // CRITICAL: Check if user left screen during playback
-      if (!mounted) {
-        if (kDebugMode) debugPrint('VoiceCoachScreen: 🛑 Context lost, aborting playback loop');
-        return; 
-      }
+      if (!mounted) return;
 
-      if (kDebugMode) debugPrint('VoiceCoachScreen: 🏁 Chunk finished/timeout');
-      
-      // Recursive call to play next chunk if available
       if (_audioBuffer.isNotEmpty) {
         _playBufferedAudio();
       } else {
         _isPlaying = false;
-        if (kDebugMode) debugPrint('VoiceCoachScreen: ⏹️ Buffer empty, stopping playback loop');
       }
     } catch (e) {
-      debugPrint('VoiceCoachScreen: ❌ Audio Playback Error: $e');
+      debugPrint('VoiceCoachScreen: ❌ Playback Error: $e');
       _isPlaying = false;
     }
   }
@@ -207,7 +215,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     view.setUint32(28, byteRate, Endian.little);
     view.setUint16(32, blockAlign, Endian.little);
     view.setUint16(34, bitsPerSample, Endian.little);
-    header.setRange(36, 4, ascii.encode('data'));
+    header.setRange(36, 40, ascii.encode('data'));
     view.setUint32(40, dataSize, Endian.little);
 
     final wavFile = Uint8List(44 + dataSize);
@@ -282,12 +290,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
-      
-      // Stop current playback immediately
-      _audioBuffer.clear(); // Wipe pending audio
-      await _audioPlayer.stop(); // Kill current audio
+      _audioBuffer.clear(); 
+      await _audioPlayer.stop(); 
       _isPlaying = false;
-      
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {
@@ -297,6 +302,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         await _sessionManager!.startSession();
       }
       _pulseController.repeat(reverse: true);
+      // Ensure speaker is still enforced if we resumed
+      await _enforceSpeakerOutput();
       setState(() => _voiceState = VoiceState.listening);
     }
   }
@@ -366,13 +373,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                       const SizedBox(width: 12),
                       const Text(
                         'THE INTERROGATION',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontFamily: 'monospace',
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14, fontFamily: 'monospace', letterSpacing: 2.0, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       // Status Pill
@@ -381,29 +382,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                         decoration: BoxDecoration(
                           color: _isConnected ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _isConnected ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5),
-                          ),
+                          border: Border.all(color: _isConnected ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                             Container(
-                               width: 6, height: 6,
-                               decoration: BoxDecoration(
-                                 shape: BoxShape.circle,
-                                 color: _isConnected ? Colors.green : Colors.red,
-                               ),
-                             ),
+                             Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: _isConnected ? Colors.green : Colors.red)),
                              const SizedBox(width: 8),
-                             Text(
-                               _isConnected ? 'LINK ACTIVE' : 'NO SIGNAL',
-                               style: TextStyle(
-                                 color: _isConnected ? Colors.greenAccent : Colors.redAccent,
-                                 fontSize: 10,
-                                 fontWeight: FontWeight.bold,
-                               ),
-                             ),
+                             Text(_isConnected ? 'LINK ACTIVE' : 'NO SIGNAL', style: TextStyle(color: _isConnected ? Colors.greenAccent : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       )
@@ -445,31 +431,16 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                         return Transform.scale(
                           scale: scale,
                           child: Container(
-                            width: 200,
-                            height: 200,
+                            width: 200, height: 200,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: orbColor.withOpacity(0.2),
                               boxShadow: [
-                                BoxShadow(
-                                  color: orbColor.withOpacity(0.6),
-                                  blurRadius: blur,
-                                  spreadRadius: blur / 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.9),
-                                  blurRadius: 10,
-                                  spreadRadius: -50,
-                                ),
+                                BoxShadow(color: orbColor.withOpacity(0.6), blurRadius: blur, spreadRadius: blur / 2),
+                                BoxShadow(color: Colors.white.withOpacity(0.9), blurRadius: 10, spreadRadius: -50),
                               ],
                             ),
-                            child: Center(
-                              child: Icon(
-                                _getButtonIcon(),
-                                color: Colors.white,
-                                size: 48,
-                              ),
-                            ),
+                            child: Center(child: Icon(_getButtonIcon(), color: Colors.white, size: 48)),
                           ),
                         );
                       },
@@ -482,32 +453,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                 // Instruction Text
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: Text(
-                    _getInstructionText(),
-                    key: ValueKey(_voiceState),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'Roboto', 
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  child: Text(_getInstructionText(), key: ValueKey(_voiceState), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w300, fontFamily: 'Roboto', letterSpacing: 0.5)),
                 ),
                 
                 const SizedBox(height: 16),
                 
-                Text(
-                  _voiceState == VoiceState.speaking 
-                      ? 'INCOMING TRANSMISSION...' 
-                      : 'Tap orb to toggle link',
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 14,
-                    fontFamily: 'monospace',
-                  ),
-                ),
+                Text(_voiceState == VoiceState.speaking ? 'INCOMING TRANSMISSION...' : 'Tap orb to toggle link', style: const TextStyle(color: Colors.white38, fontSize: 14, fontFamily: 'monospace')),
 
                 const SizedBox(height: 40),
                 
@@ -515,15 +466,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextButton(
-                      onPressed: () => context.go(AppRoutes.manualOnboarding),
-                      child: const Text('MANUAL OVERRIDE', style: TextStyle(color: Colors.white54)),
-                    ),
+                    TextButton(onPressed: () => context.go(AppRoutes.manualOnboarding), child: const Text('MANUAL OVERRIDE', style: TextStyle(color: Colors.white54))),
                     if (_isConnected && _voiceState != VoiceState.connecting)
-                      TextButton(
-                        onPressed: _onSessionComplete,
-                         child: const Text('END LINK', style: TextStyle(color: Colors.white54)),
-                      ),
+                      TextButton(onPressed: _onSessionComplete, child: const Text('END LINK', style: TextStyle(color: Colors.white54))),
                   ],
                 ),
                 const SizedBox(height: 24),

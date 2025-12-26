@@ -477,92 +477,85 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
   void _handleServerMessage(Map<String, dynamic> data) {
     try {
-      // --- DIAGNOSTIC LOGGING ---
-      if (kDebugMode) {
-        // Log top-level keys to see if we have 'serverContent', 'server_content', etc.
-        debugPrint('🔍 DIAGNOSTIC: Root keys: ${data.keys.toList()}');
-      }
-
-      // GEMINI 3 COMPLIANCE: Capture Thought Signature
-      if (data.containsKey('thoughtSignature')) {
-        _currentThoughtSignature = data['thoughtSignature'] as String?;
-      }
-
       // 1. SETUP COMPLETE
       if (data.containsKey('setupComplete')) {
-        if (kDebugMode) debugPrint('GeminiLiveService: ✅ SetupComplete received!');
+        AppLogger.debug('ℹ️ [GeminiLive] ✅ SetupComplete received!');
         _setupComplete = true;
         _setupCompleter?.complete();
         return;
       }
 
-      // 2. SERVER CONTENT (The Audio/Text)
-      // Check for both camelCase (standard) and snake_case (sometimes used in beta)
-      final content = data['serverContent'] ?? data['server_content'];
-      
+      // 2. FIND CONTENT (Nuclear Search)
+      final content = data['serverContent'] ?? 
+                      data['server_content'] ?? 
+                      data['modelTurn'] ?? 
+                      data['model_turn'];
+
+      if (content == null) {
+        // CRITICAL DIAGNOSTIC: Print root keys if content is missing
+        AppLogger.debug('⚠️ [GeminiLive] No content key found. Root keys: ${data.keys.toList()}');
+        return;
+      }
+
       if (content is Map<String, dynamic>) {
-        if (kDebugMode) debugPrint('🔍 DIAGNOSTIC: Content keys: ${content.keys.toList()}');
+        // Handle Turn Complete
+        if (content['turnComplete'] == true || content['turn_complete'] == true) {
+          AppLogger.debug('ℹ️ [GeminiLive] 🏁 Turn complete');
+          onModelSpeakingChanged?.call(false);
+          onTurnComplete?.call();
+          return;
+        }
 
         // Handle Interruption
         if (content['interrupted'] == true) {
-          if (kDebugMode) debugPrint('GeminiLiveService: 🛑 Model interrupted by server VAD');
+          AppLogger.debug('ℹ️ [GeminiLive] 🛑 Interrupted');
           onModelSpeakingChanged?.call(false);
           return;
         }
 
-        // Handle Turn Complete
-        if (content['turnComplete'] == true) {
-          if (kDebugMode) debugPrint('GeminiLiveService: 🏁 Turn complete');
-          onModelSpeakingChanged?.call(false);
-          onTurnComplete?.call();
-        }
-
-        // Handle Model Turn (Audio)
-        final modelTurn = content['modelTurn'] ?? content['model_turn'];
+        // 3. FIND PARTS & LOG RAW JSON (For Debugging)
+        final modelTurn = content['modelTurn'] ?? content['model_turn'] ?? content;
+        
         if (modelTurn is Map<String, dynamic>) {
           final parts = modelTurn['parts'] as List<dynamic>?;
-          
+
           if (parts != null && parts.isNotEmpty) {
+            // LOG THE FIRST PART RAW TO SEE STRUCTURE
+            if (kDebugMode) {
+               AppLogger.debug('🔍 [GeminiLive] RAW PART JSON: ${parts[0]}'); 
+            }
+
             for (final part in parts) {
               final p = part as Map<String, dynamic>;
               
-              // CHECK 1: Audio Data (inlineData or inline_data)
+              // 4. EXTRACT AUDIO
               final inlineData = p['inlineData'] ?? p['inline_data'];
+              
               if (inlineData is Map<String, dynamic>) {
                 final base64Data = inlineData['data'] as String?;
                 if (base64Data != null) {
                   final audioBytes = base64Decode(base64Data);
-                  if (kDebugMode) debugPrint('GeminiLiveService: 🔊 Audio Chunk: ${audioBytes.length} bytes');
+                  // SUCCESS LOG
+                  AppLogger.debug('🔊 [GeminiLive] Audio Chunk Found: ${audioBytes.length} bytes'); 
                   onAudioReceived?.call(Uint8List.fromList(audioBytes));
                   onModelSpeakingChanged?.call(true);
                 }
-              } 
-              // CHECK 2: Text Data (Safety Refusals?)
-              else if (p.containsKey('text')) {
-                 final text = p['text'] as String?;
-                 if (kDebugMode) debugPrint('GeminiLiveService: 📝 Text Response: $text');
-                 // If we get text but no audio, the model might be refusing to speak
+              } else if (p.containsKey('text')) {
+                 // FAILURE LOG (Safety Refusal)
+                 AppLogger.debug('📝 [GeminiLive] Text Response: "${p['text']}"');
               }
             }
           }
         }
       }
 
-      // 3. TOOL CALLS
-      if (data.containsKey('toolCall')) {
-        _handleToolCall(data['toolCall'] as Map<String, dynamic>);
-      }
-      
-      // Handle errors from server
-      if (data.containsKey('error')) {
-        final error = data['error'] as Map<String, dynamic>;
-        final errorMessage = error['message'] as String? ?? 'Unknown server error';
-        final errorCode = error['code'] as int?;
-        _notifyDetailedError("Server Error", "Code: $errorCode | $errorMessage");
+      // 4. TOOL CALLS
+      if (data.containsKey('toolCall') || data.containsKey('tool_call')) {
+        _handleToolCall((data['toolCall'] ?? data['tool_call']) as Map<String, dynamic>);
       }
       
     } catch (e, stack) {
-      debugPrint('GeminiLiveService: ❌ Parse error: $e');
+      AppLogger.error('❌ [GeminiLive] CRITICAL PARSE ERROR: $e');
       debugPrint('Stack: $stack');
     }
   }

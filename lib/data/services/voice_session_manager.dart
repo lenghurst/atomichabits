@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'dart:math' as math;
 
 import '../../config/ai_prompts.dart';
 import '../../config/ai_tools_config.dart';
@@ -469,8 +470,41 @@ class VoiceSessionManager {
   }
   
   /// Handle audio data from the AI.
+  /// Handle audio data from the AI.
   void _handleAIAudio(Uint8List audioData) {
+    // 1. Log reception in Manager
+    if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
+    
+    // 2. Forward to Screen
     onAudioReceived?.call(audioData);
+    
+    // 3. Update Audio Level (for Visualizer)
+    final level = _calculateRms(audioData);
+    onAudioLevelChanged?.call(level);
+  }
+
+  /// Calculate RMS (Root Mean Square) for audio visualization
+  double _calculateRms(Uint8List audioData) {
+    if (audioData.isEmpty) return 0.0;
+    
+    double sum = 0;
+    // Process 16-bit PCM data
+    for (int i = 0; i < audioData.length - 1; i += 2) {
+      int sample = audioData[i] | (audioData[i + 1] << 8);
+      // Handle signed 16-bit integer conversion correctly in Dart
+      if (sample > 32767) sample -= 65536;
+      
+      final normalizedSample = sample / 32768.0;
+      sum += normalizedSample * normalizedSample;
+    }
+    
+    // Calculate RMS from the sum of squares
+    final sampleCount = audioData.length ~/ 2;
+    if (sampleCount == 0) return 0.0;
+    
+    final rms = math.sqrt(sum / sampleCount);
+    // Amplify slightly for better visual effect and clamp to 0.0-1.0
+    return (rms * 5.0).clamp(0.0, 1.0);
   }
   
   /// Handle transcription from the AI.
