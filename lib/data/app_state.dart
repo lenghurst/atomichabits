@@ -281,7 +281,7 @@ class AppState extends ChangeNotifier {
       // return true;
     }
     
-    // 2. Standard Premium Check (Oliver Backdoor REMOVED - Phase 41 Security Fix)
+    // 2. Standard Premium Check
     return _isPremium;
   }
 

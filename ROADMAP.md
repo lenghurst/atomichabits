@@ -139,7 +139,7 @@
 
 | ID | Task | Effort | Status |
 |----|------|--------|--------|
-| T1 | Fix 5 failing unit tests | Low | [ ] |
+| T1 | Fix 5 failing unit tests | Low | [x] |
 | T2 | Fix static analysis issues (withOpacity) | Low | ✅ |
 | F1 | Fix onboarding route gap (PactRevealScreen) | Low | ✅ |
 | F2 | Integrate Sherlock Profiling for Text Chat | Low | ✅ |
@@ -153,10 +153,10 @@
 
 | ID | Task | Effort | Status |
 |----|------|--------|--------|
-| S1 | Create `Env` class for secure configuration | Low | [ ] |
-| S2 | Remove hardcoded keys in `GeminiChatService` | Low | [ ] |
-| S3 | Inject endpoints in `AiSuggestionService` | Low | [ ] |
-| S4 | Remove legacy "Backdoor" comments | Low | [ ] |
+| S1 | Create `Env` class for secure configuration | Low | [x] |
+| S2 | Remove hardcoded keys in `GeminiChatService` | Low | [x] |
+| S3 | Inject endpoints in `AiSuggestionService` | Low | [x] |
+| S4 | Remove legacy "Backdoor" comments | Low | [x] |
 
 
 ### Phase 46: Provider Wiring (Post-Launch)
