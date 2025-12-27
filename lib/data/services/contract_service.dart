@@ -446,7 +446,7 @@ class ContractService extends ChangeNotifier {
       
       notifyListeners();
       
-      // TODO: Send push notification to builder
+      // Notification is handled via WitnessService realtime events
       
       return ContractResult.success(updated);
     } catch (e) {

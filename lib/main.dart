@@ -23,6 +23,7 @@ import 'data/services/sound_service.dart';
 import 'data/services/feedback_service.dart';
 import 'data/services/deep_link_service.dart';
 import 'data/services/witness_service.dart';
+import 'data/models/witness_event.dart';
 // Phase 41: Witness screen imports moved to app_router.dart
 
 // Phase 34: Shadow Wiring - New Architecture (Dark Launch)
@@ -117,6 +118,9 @@ void main() async {
     contractService: contractService,
   );
   await witnessService.initialize();
+
+  // Wire up realtime events to local notifications
+  witnessService.listenToRealtimeEvents();
 
   // Initialize AppState (moved from MultiProvider to main to prevent router recreation loops)
   final appState = AppState();
