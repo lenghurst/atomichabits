@@ -245,11 +245,17 @@ class HabitListScreen extends StatelessWidget {
   }
 
   Widget _buildHabitList(BuildContext context, AppState appState, List<Habit> habits) {
+    // ⚡ Bolt: Performance optimization
+    // Calculate today's date once for all habits instead of inside the loop
+    // Reduces object creation and DateTime.now() calls by N * 2
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     // Phase 13: Use habitsWithStacks to show habits in stack order
     final orderedHabits = appState.habitsWithStacks;
     
     // Calculate overall stats
-    final completedToday = orderedHabits.where((h) => _isCompletedToday(h)).length;
+    final completedToday = orderedHabits.where((h) => _isCompletedToday(h, today)).length;
     final avgScore = orderedHabits.isNotEmpty
         ? orderedHabits.map((h) => h.gracefulScore).reduce((a, b) => a + b) / orderedHabits.length
         : 0.0;
@@ -312,7 +318,7 @@ class HabitListScreen extends StatelessWidget {
                         child: HabitSummaryCard(
                           habit: habit,
                           index: index,
-                          isCompleted: _isCompletedToday(habit),
+                          isCompleted: _isCompletedToday(habit, today),
                           onTap: () {
                             appState.setFocusHabit(habit.id);
                             context.push(AppRoutes.today);
@@ -511,10 +517,9 @@ class HabitListScreen extends StatelessWidget {
     );
   }
 
-  bool _isCompletedToday(Habit habit) {
+  bool _isCompletedToday(Habit habit, DateTime today) {
     if (habit.lastCompletedDate == null) return false;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    // We expect today to be stripped of time (year, month, day)
     final lastDate = DateTime(
       habit.lastCompletedDate!.year,
       habit.lastCompletedDate!.month,
