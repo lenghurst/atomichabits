@@ -107,6 +107,9 @@ dependencies:
   # Phase 33: Investment Screen - TypeAhead contact search
   flutter_typeahead: ^5.2.0
 
+  # Phase 33.5: Low-latency Audio Streaming for Voice AI
+  sound_stream: ^0.3.0
+
   # Dependencies added for missing packages (uuid is used by lexicon_entry.dart)
   uuid: ^4.5.1
   crypto: ^3.0.6
