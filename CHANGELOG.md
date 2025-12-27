@@ -1,3 +1,26 @@
+## [6.5.1] - 2025-12-27 - Phase 49: "Sherlock Screening & Thinking Fixes"
+
+### Fixed
+- **AI Amnesia:** Fixed a critical bug where the AI forgot context across turns. Specifically, `thoughtSignature` is now correctly extracted from server responses and echoed back, ensuring the AI remembers persona instructions (e.g., "Homeless Man").
+- **Thinking Mode:** Audit confirmed "Thinking Mode" is ON by default for `gemini-2.5-flash-native-audio-preview-12-2025`. Decision made to KEEP it enabled for Sherlock Screening to ensure higher accuracy and reasoning depth.
+- **UI Terminology:** Renamed "The Interrogation" / "Voice Coach" header to "**SHERLOCK SCREENING**" during the onboarding phase for clarity.
+
+### Added
+- **Sherlock Screening:** Formalized the initial voice interaction as a distinct "Sherscreening" phase with Always-On VAD.
+
+---
+
+## [6.5.0] - 2025-12-27 - Phase 48: "Voice Note Style UI"
+
+### Changed
+- **UI Overhaul:** Refactored `VoiceCoachScreen` to separate the Visualizer (Sherlock's Avatar) from the Microphone Control.
+- **Interaction Model:** Replaced single "Orb" tap with a dedicated Microphone Button:
+  - **Hold-to-Talk:** Press and hold to speak, release to send (Voice Note style).
+  - **Tap-to-Lock:** Tap once to lock microphone on, tap again to send.
+- **Feedback:** Added explicit state labels ("Sherlock Speaking", "Hold to Speak or Tap to Lock") and distinct visual cues (Green Arrow for Send, Red/Pulse for Talk).
+
+---
+
 ## [6.4.8] - 2025-12-27 - Phase 47.2: "Manual Turn-Taking (Tap-to-Talk)"
 
 ### Added

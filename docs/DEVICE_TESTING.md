@@ -7,6 +7,7 @@
 - **Physical Device:** Android (Developer Mode ON) or iOS Device.
 - **Connection:** USB Cable (preferred) or WiFi Debugging.
 - **Secrets:** `secrets.json` must exist in the project root.
+- **Agent Responsibility:** The device is physically connected to the macOS host. The AI Agent is responsible for executing build and testing commands directly on this host.
 
 ## 2. The "Golden" Build Command
 

@@ -1,7 +1,7 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 46.5 - Release Preparation (Voice 2.0)
+> **Current Phase:** Phase 49 - Sherlock Screening & Reliability
 > **Target:** NYE 2025 Launch  
 > **Status:** ✅ Voice Architecture Simplified (StreamVoicePlayer)
 
@@ -28,6 +28,26 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 49: Sherlock Screening & Reliability (27 Dec 2025)
+**Goal:** Fix AI "Amnesia" and formalize the "Sherlock Screening" phase.
+
+| ID | Task | Status |
+|----|------|--------|
+| R1 | Fix `thoughtSignature` context loss (AI Amnesia) | ✅ |
+| R2 | Audit "Thinking Mode" defaults for Gemini 2.5 | ✅ |
+| R3 | Rename UI header to "SHERLOCK SCREENING" | ✅ |
+| R4 | Verify Always-On VAD stability | ✅ |
+
+### Phase 48: Voice Note Style UI (27 Dec 2025)
+**Goal:** Replace "Orb" interaction with intuitive Voice Note controls.
+
+| ID | Task | Status |
+|----|------|--------|
+| U1 | Separate Visualizer (Orb) from Controls (Button) | ✅ |
+| U2 | Implement Hold-to-Talk Logic | ✅ |
+| U3 | Implement Tap-to-Lock Logic | ✅ |
+| U4 | Explicit State Labels ("Sherlock Speaking", "Tap to Send") | ✅ |
 
 ### Phase 46.5: Voice 2.0 (27 Dec 2025)
 **Goal:** Simplify voice architecture and fix audio reliability issues.

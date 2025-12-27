@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 47.2 - Manual Turn-Taking (Tap-to-Talk)  
+> **Current Phase:** Phase 49 - Sherlock Screening & Reliability  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -53,7 +53,7 @@
 
 ---
 
-## Current State: Phase 44
+## Current State: Phase 49
 
 ### What's Working
 
@@ -97,6 +97,8 @@
 | **47.2** | UI Interruption Logic (User overrides AI) | ✅ |
 | **47.3** | AI Filler Phrase Negative Constraints | ✅ |
 | **47.4** | **Manual Turn-Taking** (Tap-to-Talk) | ✅ |
+| **48** | **Voice Note UI** (Hold-to-Talk / Tap-to-Lock) | ✅ |
+| **49** | **Sherlock Screening** (Amnesia Fix / Thinking Mode) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 

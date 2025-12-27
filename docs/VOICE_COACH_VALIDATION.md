@@ -151,7 +151,12 @@ Select an Identity (e.g., "Athlete").
 1. Go to **Dashboard** (main habits screen)
 2. Tap the **+ button** (Add Habit)
 3. In the bottom sheet, tap **"Voice Coach"** (purple mic icon)
-4. **Verification:** If the screen loads and you see the "Listening" orb/UI, Tier 2 is active
+4. **Verification:**
+    - **Visual:** You see Sherlock (Pulsing Orb) at the top and a **Microphone Button** at the bottom.
+    - **Interaction:**
+        - **Hold:** Press and hold the mic button to speak. Release to send.
+        - **Tap:** Tap to lock mic on ("Listening..."). Tap again to send.
+    - **Feedback:** "Sherlock is speaking" vs "Hold to Speak".
 5. **Failure Mode:** If you don't see the Voice Coach option, the Oliver Backdoor isn't working
 
 ---
@@ -162,7 +167,9 @@ Select an Identity (e.g., "Athlete").
 |------|-----------------|--------|
 | Google Sign-In | Successful authentication | ☐ |
 | Tier 2 Access | Voice Coach option visible in + menu | ☐ |
-| Voice Coach Loads | Voice Coach screen opens | ☐ |
+| Voice Coach Loads | Split UI (Orb + Mic Button) visible | ☐ |
+| Hold-to-Talk | Hold records, release sends | ☐ |
+| Tap-to-Lock | Tap locks mic, tap again sends | ☐ |
 | Voice Latency | Response < 500ms | ☐ |
 | Context Memory | AI remembers previous conversation | ☐ |
 | Background Security | Audio stops when app backgrounded | ☐ |

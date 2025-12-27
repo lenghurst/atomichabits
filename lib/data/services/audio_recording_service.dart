@@ -93,16 +93,24 @@ class AudioRecordingService {
   /// Returns true if initialisation was successful.
   Future<bool> initialize() async {
     if (_isInitialised) return true;
+    if (kDebugMode) debugPrint('AudioRecordingService: 🚀 Initializing...');
     
     try {
-      // Step 1: Request microphone permission
-      final permissionStatus = await _requestMicrophonePermission();
-      if (!permissionStatus) {
+      // Step 1: Check permission
+      var permissionStatus = await Permission.microphone.status;
+      if (kDebugMode) debugPrint('AudioRecordingService: Permission Status: $permissionStatus');
+      
+      if (!permissionStatus.isGranted) {
+        permissionStatus = await Permission.microphone.request();
+      }
+      
+      if (!permissionStatus.isGranted) {
         onError?.call('Microphone permission denied');
         return false;
       }
       
       // Step 2: Check if recording is supported
+      if (kDebugMode) debugPrint('AudioRecordingService: Checking recorder support...');
       final hasPermission = await _recorder.hasPermission();
       if (!hasPermission) {
         onError?.call('Recording not supported on this device');
@@ -110,6 +118,7 @@ class AudioRecordingService {
       }
       
       // Step 3: Configure audio session
+      if (kDebugMode) debugPrint('AudioRecordingService: Configuring Audio Session...');
       await _configureAudioSession();
       
       _isInitialised = true;
@@ -214,18 +223,30 @@ class AudioRecordingService {
     }
     
     try {
-      // Configure the recording stream
-      final stream = await _recorder.startStream(RecordConfig(
+      final config = RecordConfig(
         encoder: AudioEncoder.pcm16bits,
         sampleRate: sampleRate,
         numChannels: numChannels,
         bitRate: sampleRate * numChannels * bitDepth,
-      ));
+      );
+      
+      // PHASE 49 DEBUG: Force logging of Record Config
+      debugPrint('AudioRecordingService: 🎤 Starting Stream with Config:');
+      debugPrint('  - SampleRate: ${config.sampleRate}');
+      debugPrint('  - BitRate: ${config.bitRate}');
+      debugPrint('  - Encoder: ${config.encoder}');
+
+      final stream = await _recorder.startStream(config);
       
       // Subscribe to the audio stream
       _audioSubscription = stream.listen(
         (data) {
           // Forward audio data to callback
+          // PHASE 49 DEBUG: Force logging of first packet size to confirm liveness
+          // We limit this to once per second to avoid flooding if needed, 
+          // or just print it if it's the first few packets. 
+          // For now, let's just print it.
+          // debugPrint('AudioRecordingService: 🎤 Raw Input: ${data.length} bytes');
           onAudioData?.call(data);
           
           // Calculate audio level for visualisation

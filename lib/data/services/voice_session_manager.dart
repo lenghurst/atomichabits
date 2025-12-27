@@ -247,6 +247,7 @@ class VoiceSessionManager {
         onTurnComplete: _handleTurnComplete,
         onDebugLogUpdated: onDebugLogUpdated,
         onToolCall: _handleToolCall, // Phase 42: Tool call handling
+        onThinkingChanged: _handleThinkingChanged, // Fix: Unblock stuck thinking
       );
     }
     
@@ -479,7 +480,9 @@ class VoiceSessionManager {
   
   /// Handle audio data from the microphone.
   void _handleMicrophoneAudio(Uint8List audioData) {
-    if (_state != VoiceSessionState.active) return;
+    // PHASE 48: Barge-In Support
+    // We MUST send audio even if "Thinking" so the server can hear interruptions.
+    if (_state != VoiceSessionState.active && _state != VoiceSessionState.thinking) return;
     
     // Forward audio to AI Service
     _voiceService.sendAudio(audioData);
@@ -558,8 +561,6 @@ class VoiceSessionManager {
   
   Timer? _silenceTimer;
   
-  // Manual control flag (Phase 48)
-  bool _manualTurnTaking = true;
 
   /// Manual Mode: Commit the user's turn (simulate end of speech).
   Future<void> commitUserTurn() async {
@@ -567,8 +568,9 @@ class VoiceSessionManager {
     
     if (kDebugMode) debugPrint('VoiceSessionManager: 👆 User manually committed turn');
     
-    // 1. Pause Mic (Stop Sending Audio) - CRITICAL for Manual Mode
-    await _audioService.pauseRecording();
+    // PHASE 48: Always-On VAD
+    // We do NOT pause the microphone anymore. This fixes truncation issues.
+    // await _audioService.pauseRecording(); 
     
     // 2. Force End Turn (Empty Text) - Signals server to reply immediately
     _voiceService.sendText(" ", turnComplete: true);
@@ -583,23 +585,23 @@ class VoiceSessionManager {
       _isUserSpeaking = isActive;
       onUserSpeakingChanged?.call(isActive);
       
-      if (!_manualTurnTaking) {
-          // Phase 47: Silence Timeout Logic
-          if (isActive) {
-            // User started speaking, cancel any pending timeout
-            _silenceTimer?.cancel();
-            if (_state == VoiceSessionState.thinking) {
-              // If we were "thinking" but they spoke again, go back to listening
-               _setState(VoiceSessionState.active);
-            }
-          } else {
-            // User stopped speaking, start silence timer
-            _silenceTimer?.cancel();
-            _silenceTimer = Timer(const Duration(milliseconds: 800), _handleSilenceTimeout);
-          }
+      // PHASE 48: VAD Logic
+      // Since we are Always-On, we rely on VAD to detect end of speech.
+      // However, we don't auto-commit in "Manual Turn Taking" mode?
+      // Wait, the plan says "VAD Only". So we should enable auto-commit.
+      // But let's check strict requirements. User said "Auto-Detect".
+      
+      if (isActive) {
+        // User started speaking, cancel any pending timeout
+        _silenceTimer?.cancel();
+        if (_state == VoiceSessionState.thinking) {
+          // Barge-in or follow-up
+           _setState(VoiceSessionState.active);
+        }
       } else {
-         // Manual Mode: Just update state, no timer
-         _silenceTimer?.cancel();
+        // User stopped speaking, start silence timer
+        _silenceTimer?.cancel();
+        _silenceTimer = Timer(const Duration(milliseconds: 1500), _handleSilenceTimeout);
       }
     } else if (isActive) {
       // Still speaking, ensure timer is cancelled
@@ -614,6 +616,11 @@ class VoiceSessionManager {
     
     if (canCommit) {
       if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Turn Ended (Manual/Silence), switching to thinking state');
+      
+      // PHASE 48: Safety Net - Force Server to Reply
+      // Prevents "Stuck on Listening" or "Fake Thinking" state.
+      _voiceService.sendText(" ", turnComplete: true);
+      
       // Visually switch to thinking state to acknowledge input
       _setState(VoiceSessionState.thinking);
     }
@@ -747,6 +754,15 @@ class VoiceSessionManager {
     }
   }
   
+  /// Handle explicit thinking state changes from the AI service.
+  void _handleThinkingChanged(bool isThinking) {
+    if (_state == VoiceSessionState.thinking && !isThinking) {
+      // If we were thinking and the service says we are done (e.g. audio started),
+      // transition to active state immediately.
+      _setState(VoiceSessionState.active);
+    }
+  }
+
   /// Dispose of all resources.
   Future<void> dispose() async {
     await endSession();

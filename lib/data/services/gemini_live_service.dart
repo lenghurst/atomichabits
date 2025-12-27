@@ -94,6 +94,7 @@ class GeminiLiveService implements VoiceApiService {
   final void Function()? onFallbackToTextMode;
   final void Function()? onVoiceModeRestored;
   final void Function(bool)? onVoiceActivityDetected;
+  final void Function(bool)? onThinkingChanged; // Added for VAD Logic Fix
   final void Function(List<String> log)? onDebugLogUpdated;
   
   // === PHASE 42: TOOL CALL CALLBACK ===
@@ -118,6 +119,7 @@ class GeminiLiveService implements VoiceApiService {
     this.onFallbackToTextMode,
     this.onVoiceModeRestored,
     this.onVoiceActivityDetected,
+    this.onThinkingChanged,
     this.onDebugLogUpdated,
     this.onToolCall,
   });
@@ -484,6 +486,12 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         _setupCompleter?.complete();
         return;
       }
+      
+      // CRITICAL FIX: Extract Thought Signature to prevent "Amnesia"
+      if (data.containsKey('thoughtSignature')) {
+        _currentThoughtSignature = data['thoughtSignature'];
+        // AppLogger.debug('🧠 [GeminiLive] Thought Signature Captured');
+      }
 
       // 2. FIND CONTENT (Nuclear Search)
       final content = data['serverContent'] ?? 
@@ -503,6 +511,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
           AppLogger.debug('ℹ️ [GeminiLive] 🏁 Turn complete');
           onModelSpeakingChanged?.call(false);
           onTurnComplete?.call();
+          // ERROR FIX: Ensure we unblock UI even if no audio was sent
+          onThinkingChanged?.call(false); 
           return;
         }
 
@@ -510,6 +520,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         if (content['interrupted'] == true) {
           AppLogger.debug('ℹ️ [GeminiLive] 🛑 Interrupted');
           onModelSpeakingChanged?.call(false);
+          // Interruption should also unblock UI state
+          onThinkingChanged?.call(false);
           return;
         }
 
@@ -539,10 +551,17 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
                   AppLogger.debug('🔊 [GeminiLive] Audio Chunk Found: ${audioBytes.length} bytes'); 
                   onAudioReceived?.call(Uint8List.fromList(audioBytes));
                   onModelSpeakingChanged?.call(true);
+                  // CRITICAL: If we are getting audio, we are no longer "thinking".
+                  // This unblocks the UI immediately.
+                  onThinkingChanged?.call(false);
                 }
               } else if (p.containsKey('text')) {
-                 // FAILURE LOG (Safety Refusal)
-                 AppLogger.debug('📝 [GeminiLive] Text Response: "${p['text']}"');
+                 // FAILURE LOG (Safety Refusal or Text Only)
+                 final text = p['text'];
+                 AppLogger.debug('📝 [GeminiLive] Text Response: "$text"');
+                 // Ensure this unblocks the UI so user isn't stuck "Thinking"
+                 // Also helps debug "Sleepwalker" vs "Corpse"
+                 onThinkingChanged?.call(false);
               }
             }
           }
@@ -692,8 +711,35 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
   /// - Includes `thoughtSignature` if available to maintain context.
   void sendAudio(Uint8List audioData) {
     if (!_isConnected || _channel == null) return;
+
+    // DEBUG: Log audio data statistics to check for silence/endianness
+    // DEBUG: Log audio data statistics to check for silence/endianness
+    // PHASE 49 DEBUG: Force logging to catch "Ghost" audio format issues
+    if (audioData.every((b) => b == 0)) {
+       AppLogger.warning('⚠️ [GeminiLive] 📤 Tx SILENCE DETECTED (${audioData.length} bytes of zeros)');
+    } else {
+       // Log first 44 bytes to check for WAV Header (RIFF = 52 49 46 46)
+       final hex = audioData.take(44).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+       AppLogger.debug('ℹ️ [GeminiLive] 📤 Tx HEX: $hex...');
+    }
     
-    final base64Audio = base64Encode(audioData);
+    // PHASE 49 FIX: Strip WAV Header if present (RIFF . . . WAVE)
+    // Android 'record' package often wraps PCM in WAV container during stream.
+    // Gemini interprets this header as loud static ("The Corpse").
+    Uint8List dataToSend = audioData;
+    if (audioData.length >= 44 && 
+        audioData[0] == 0x52 && // R
+        audioData[1] == 0x49 && // I
+        audioData[2] == 0x46 && // F
+        audioData[3] == 0x46    // F
+    ) {
+      if (kDebugMode) {
+        debugPrint('⚠️ [GeminiLive] WAV HEADER DETECTED! Stripping first 44 bytes to send raw PCM.');
+      }
+      dataToSend = audioData.sublist(44);
+    }
+    
+    final base64Audio = base64Encode(dataToSend);
     final Map<String, dynamic> message = {
       'realtimeInput': {
         'mediaChunks': [
