@@ -187,7 +187,13 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   /// VAD Handler
   void _handleUserSpeakingChanged(bool isSpeaking) {
     if (!mounted) return;
-    setState(() => _isUserSpeaking = isSpeaking);
+    setState(() {
+      _isUserSpeaking = isSpeaking;
+      // Fix: If user speaks, force state to listening to handle interruptions
+      if (isSpeaking && _voiceState == VoiceState.speaking) {
+         _voiceState = VoiceState.listening;
+      }
+    });
   }
 
   void _handleTurnComplete() {
@@ -245,7 +251,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   String _getInstructionText() {
-    if (_isUserSpeaking) return 'I hear you...';
+    if (_isUserSpeaking) return 'Receiving input...';
     
     switch (_voiceState) {
       case VoiceState.idle: return 'Initialize Link';

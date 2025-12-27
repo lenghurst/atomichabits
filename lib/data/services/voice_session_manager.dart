@@ -575,7 +575,7 @@ class VoiceSessionManager {
       } else {
         // User stopped speaking, start silence timer
         _silenceTimer?.cancel();
-        _silenceTimer = Timer(const Duration(milliseconds: 1500), _handleSilenceTimeout);
+        _silenceTimer = Timer(const Duration(milliseconds: 800), _handleSilenceTimeout);
       }
     } else if (isActive) {
       // Still speaking, ensure timer is cancelled
@@ -586,7 +586,7 @@ class VoiceSessionManager {
   /// Called when silence is detected for > 1.5s
   void _handleSilenceTimeout() {
     if (_state == VoiceSessionState.active && !_isUserSpeaking) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Silence detected (1.5s), switching to thinking state');
+      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Silence detected (0.8s), switching to thinking state');
       // Visually switch to thinking state to acknowledge input
       _setState(VoiceSessionState.thinking);
     }

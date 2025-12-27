@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
+import 'dart:math' as math;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_session/audio_session.dart';
 
@@ -43,6 +44,9 @@ class AudioRecordingService {
   
   /// Buffer size in milliseconds (smaller = lower latency, higher CPU)
   static const int bufferMs = 100;
+  
+  /// Adaptive VAD State
+  double _adaptiveNoiseFloor = 0.02; // Start with assumption of quiet room
   
   // === STATE ===
   final AudioRecorder _recorder = AudioRecorder();
@@ -323,24 +327,73 @@ class AudioRecordingService {
     final samples = data.buffer.asInt16List();
     if (samples.isEmpty) return;
     
-    // Calculate RMS (Root Mean Square) for audio level
-    double sum = 0;
+    // 1. Calculate DC Offset (Mean)
+    double dcSum = 0;
     for (final sample in samples) {
-      sum += sample * sample;
+      dcSum += sample;
     }
-    final rms = sum / samples.length;
-    final level = rms > 0 ? (rms / 32768.0 / 32768.0).clamp(0.0, 1.0) : 0.0;
+    final dcOffset = dcSum / samples.length;
     
-    // Normalise to 0-1 range with some smoothing
-    final normalisedLevel = (level * 10).clamp(0.0, 1.0);
+    // 2. Calculate Variance (RMS without DC)
+    double sumSquares = 0;
+    for (final sample in samples) {
+      // Remove DC offset and normalize
+      final centered = (sample - dcOffset) / 32768.0;
+      sumSquares += centered * centered;
+    }
     
-    onAudioLevelChanged?.call(normalisedLevel);
+    // Correct RMS calculation
+    final rms = math.sqrt(sumSquares / samples.length);
     
-    // Simple voice activity detection based on level threshold
-    // Tuned to 0.1 (from 0.05) to prevent sticky "I hear you" state
-    final isVoiceActive = normalisedLevel > 0.1;
+    // 3. Adaptive Noise Floor Logic
+    if (rms < _adaptiveNoiseFloor) {
+      // Fast attack downward (found quieter silence)
+      _adaptiveNoiseFloor = rms;
+    } else {
+      // Slow drift upward (environment getting louder)
+      // Limit drift rate to avoid adapting to speech
+      _adaptiveNoiseFloor += 0.0001; 
+    }
+    
+    // Clamp floor to reasonable bounds
+    // Min 0.005 (-46dB), Max 0.1 (-20dB)
+    if (_adaptiveNoiseFloor < 0.005) _adaptiveNoiseFloor = 0.005;
+    if (_adaptiveNoiseFloor > 0.1) _adaptiveNoiseFloor = 0.1;
+
+    // Dynamic Threshold: Floor + Margin
+    // Margin 0.03 is approx +10dB above floor
+    final vadThreshold = _adaptiveNoiseFloor + 0.03;
+
+    final isVoiceActive = rms > vadThreshold;
+    
+    // Logarithmic boost for visualization
+    // We visualize energy relative to the threshold for better feedback
+    // If active, it should be visible.
+    double displayLevel = 0.0;
+    if (isVoiceActive) {
+       // Scale the excess energy to 0.0-1.0
+       displayLevel = ((rms - _adaptiveNoiseFloor) * 5.0).clamp(0.2, 1.0);
+    } else {
+       // Dim output for silence
+       displayLevel = (rms * 2.0).clamp(0.0, 0.1);
+    }
+    
+    onAudioLevelChanged?.call(displayLevel);
+
+    // Debug logging (Always print if connected)
+    if (kDebugMode && _isRecording) {
+      // Throttle logs: print every 10th frame (approx 1 per second)
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now % 1000 < 150) { 
+         debugPrint('[VAD] RMS: ${rms.toStringAsFixed(4)} | Floor: ${_adaptiveNoiseFloor.toStringAsFixed(4)} | Thresh: ${vadThreshold.toStringAsFixed(4)} | Active: $isVoiceActive');
+      }
+    }
+    
+    // Only log state changes to avoid spam
     onVoiceActivityDetected?.call(isVoiceActive);
   }
+    
+
   
   /// Dispose of all resources.
   Future<void> dispose() async {

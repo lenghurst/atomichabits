@@ -60,7 +60,7 @@
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
-| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with tool calling |
+| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with Adaptive VAD |
 | **Soul Capture Onboarding** | ✅ **WORKING** | Sherlock Protocol with real-time tool calls |
 | **Pact Identity Card** | ✅ **WORKING** | Variable Reward - flip card reveal |
 | **Identity Persistence** | ✅ **NEW** | Phase 44 - Profile locked to Hive on "ENTER THE PACT" |
@@ -93,6 +93,9 @@
 | **46.2** | iOS Platform Alignment (Podfile & Permissions) | ✅ |
 | **45.4** | Onboarding Persistence (Google Sign-In & Factory Reset) | ✅ |
 | **47** | VAD Silence Timeout & "Thinking" State | ✅ |
+| **47.1** | Adaptive VAD (DC Offset Removal & Dynamic Threshold) | ✅ |
+| **47.2** | UI Interruption Logic (User overrides AI) | ✅ |
+| **47.3** | AI Filler Phrase Negative Constraints | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 

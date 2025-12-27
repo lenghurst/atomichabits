@@ -1,3 +1,15 @@
+## [6.4.7] - 2025-12-27 - Phase 47.1: "VAD Calibration & UI Reliability"
+
+### Fixed
+- **Sticky VAD:** Implemented **DC Offset Removal** and **Component-Level Adaptive Thresholding** in `AudioRecordingService`. The VAD now dynamically learns the room's noise floor (starting at 0.02) to prevent getting stuck in "Listening" mode due to hardware bias or background noise.
+- **UI Zombie State:** Fixed a race condition in `VoiceCoachScreen` where interrupting the AI (or echo) left the UI stuck saying "SHERLOCK SPEAKING". User input now immediately overrides AI playback state.
+- **AI Phrasing:** Added negative constraints to `ai_prompts.dart` to suppress filler phrases like "I hear you" or "I understand".
+
+### Added
+- **Detailed VAD Logging:** `[VAD] RMS | Floor | Thresh` logs for real-time calibration.
+
+---
+
 ## [6.4.6] - 2025-12-26 - Phase 45.4: "Onboarding & Persistence Fixes"
 
 ### Fixed

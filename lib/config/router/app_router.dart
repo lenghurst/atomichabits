@@ -67,6 +67,9 @@ class AppRouter {
       refreshListenable: appState,
       debugLogDiagnostics: kDebugMode,
       redirect: (context, state) => _redirect(context, state, appState),
+      observers: [
+        _NavigationLogger(),
+      ],
       routes: _buildRoutes(),
     );
   }
@@ -299,5 +302,16 @@ class AppRouter {
         return IdentityAccessGateScreen(presetIdentity: presetIdentity);
       },
     );
+  }
+}
+
+/// Simple logger to track active screens
+class _NavigationLogger extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    if (kDebugMode) {
+      debugPrint('AppRouter: [NAV] Pushed: ${route.settings.name}');
+    }
   }
 }
