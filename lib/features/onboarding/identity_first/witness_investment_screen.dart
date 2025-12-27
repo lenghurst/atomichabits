@@ -402,6 +402,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           IconButton(
             onPressed: () => context.pop(),
             icon: const Icon(Icons.arrow_back, color: Color(0xFFF8FAFC)),
+            tooltip: 'Go back',
           ),
           const Spacer(),
           // Progress indicator
@@ -744,6 +745,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                     });
                   },
                   icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                  tooltip: 'Clear selection',
                 ),
               ],
             ),
