@@ -997,6 +997,25 @@ class SettingsScreen extends StatelessWidget {
   void _showEmailSignInDialog(BuildContext context, AuthService authService) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+
+    Future<void> submit() async {
+      Navigator.pop(context);
+      final result = await authService.signInWithEmail(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+      if (context.mounted) {
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Signed in!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${result.error}')),
+          );
+        }
+      }
+    }
     
     showDialog(
       context: context,
@@ -1012,6 +1031,8 @@ class SettingsScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
             TextField(
@@ -1021,6 +1042,8 @@ class SettingsScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => submit(),
             ),
           ],
         ),
@@ -1030,24 +1053,7 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final result = await authService.signInWithEmail(
-                email: emailController.text.trim(),
-                password: passwordController.text,
-              );
-              if (context.mounted) {
-                if (result.success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Signed in!')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${result.error}')),
-                  );
-                }
-              }
-            },
+            onPressed: submit,
             child: const Text('Sign In'),
           ),
         ],
@@ -1059,6 +1065,31 @@ class SettingsScreen extends StatelessWidget {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
     final confirmController = TextEditingController();
+
+    Future<void> submit() async {
+      if (passwordController.text != confirmController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Passwords do not match')),
+        );
+        return;
+      }
+      Navigator.pop(context);
+      final result = await authService.upgradeWithEmail(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+      if (context.mounted) {
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account upgraded!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${result.error}')),
+          );
+        }
+      }
+    }
     
     showDialog(
       context: context,
@@ -1079,6 +1110,8 @@ class SettingsScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
             TextField(
@@ -1088,6 +1121,7 @@ class SettingsScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
             TextField(
@@ -1097,6 +1131,8 @@ class SettingsScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => submit(),
             ),
           ],
         ),
@@ -1106,30 +1142,7 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () async {
-              if (passwordController.text != confirmController.text) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Passwords do not match')),
-                );
-                return;
-              }
-              Navigator.pop(context);
-              final result = await authService.upgradeWithEmail(
-                email: emailController.text.trim(),
-                password: passwordController.text,
-              );
-              if (context.mounted) {
-                if (result.success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Account upgraded!')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${result.error}')),
-                  );
-                }
-              }
-            },
+            onPressed: submit,
             child: const Text('Link Account'),
           ),
         ],
@@ -1203,6 +1216,8 @@ class SettingsScreen extends StatelessWidget {
                   hintText: '@yourhandle or "Jane Doe"',
                   border: OutlineInputBorder(),
                 ),
+                autofocus: true,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
               TextField(
@@ -1213,6 +1228,7 @@ class SettingsScreen extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
               ),
             ],
           ),
@@ -1295,6 +1311,8 @@ class SettingsScreen extends StatelessWidget {
                   hintText: '@yourhandle',
                   border: OutlineInputBorder(),
                 ),
+                autofocus: true,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
               TextField(
@@ -1305,6 +1323,7 @@ class SettingsScreen extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 5,
+                textCapitalization: TextCapitalization.sentences,
               ),
             ],
           ),
@@ -1380,6 +1399,8 @@ class SettingsScreen extends StatelessWidget {
                   hintText: '@yourhandle',
                   border: OutlineInputBorder(),
                 ),
+                autofocus: true,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
               TextField(
@@ -1390,6 +1411,7 @@ class SettingsScreen extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
               ),
             ],
           ),
