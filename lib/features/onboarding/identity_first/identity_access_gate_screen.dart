@@ -1045,50 +1045,56 @@ class _IdentityChipState extends State<_IdentityChip> with SingleTickerProviderS
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handleTap,
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) => _controller.reverse(),
-      onTapCancel: () => _controller.reverse(),
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 10,
-        ),
-          decoration: BoxDecoration(
-            // Phase 28.4: Brand gradient when selected (Blue-to-Pink)
-            gradient: widget.isSelected
-                ? const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            color: widget.isSelected ? null : const Color(0xFF1E293B),
-            border: Border.all(
-              color: widget.isSelected ? Colors.transparent : const Color(0xFF334155),
+    return Semantics(
+      button: true,
+      selected: widget.isSelected,
+      label: widget.label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: _handleTap,
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) => _controller.reverse(),
+        onTapCancel: () => _controller.reverse(),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
             ),
-            borderRadius: BorderRadius.circular(20),
-            // Phase 31 (Zhuo Z2): Subtle shadow when selected
-            boxShadow: widget.isSelected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            widget.label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: widget.isSelected ? Colors.white : const Color(0xFF94A3B8),
+            decoration: BoxDecoration(
+              // Phase 28.4: Brand gradient when selected (Blue-to-Pink)
+              gradient: widget.isSelected
+                  ? const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFFEC4899)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: widget.isSelected ? null : const Color(0xFF1E293B),
+              border: Border.all(
+                color: widget.isSelected ? Colors.transparent : const Color(0xFF334155),
+              ),
+              borderRadius: BorderRadius.circular(20),
+              // Phase 31 (Zhuo Z2): Subtle shadow when selected
+              boxShadow: widget.isSelected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: widget.isSelected ? Colors.white : const Color(0xFF94A3B8),
+              ),
             ),
           ),
         ),
