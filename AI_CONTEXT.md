@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 46 - Voice Architecture Simplification  
+> **Current Phase:** Phase 46.5 - Release Preparation (Voice 2.0)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -88,6 +88,7 @@
 | **45.2** | Cloud Sync Prep (`isSynced` flag for Psychometrics) | ✅ |
 | **46** | Voice simplification & OpenAI Integration | ✅ |
 | **46.1** | Audit Remediation (Voice Diagnostics + Deprecations) | ✅ |
+| **46.3** | Audio Refactor V2: StreamVoicePlayer Service | ✅ |
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 | **46.2** | iOS Platform Alignment (Podfile & Permissions) | ✅ |
 | **45.4** | Onboarding Persistence (Google Sign-In & Factory Reset) | ✅ |
@@ -112,7 +113,8 @@
 | `lib/data/services/openai_live_service.dart` | NEW OpenAI implementation (Phase 46) |
 | `lib/data/services/gemini_live_service.dart` | Refactored to implement interface |
 | `lib/domain/services/voice_provider_selector.dart` | Real network diagnostics (Phase 46) |
-| `lib/data/services/voice_session_manager.dart` | Updated to use `VoiceApiService` |
+| `lib/data/services/voice_session_manager.dart` | Integrated `StreamVoicePlayer` |
+| `lib/data/services/stream_voice_player.dart` | NEW Service: Centralized audio playback (Phase 46.3) |
 
 ---
 
@@ -155,6 +157,7 @@ lib/
 │   │   ├── openai_live_service.dart    # OpenAI implementation (Phase 46) 
 │   │   ├── audio_recording_service.dart
 │   │   ├── voice_session_manager.dart  # Session Orchestration
+│   │   ├── stream_voice_player.dart    # Audio Playback (V2)
 │   │   ├── ai/
 │   │       └── prompt_factory.dart     # Dynamic Prompts
 │   │
@@ -187,11 +190,13 @@ User → Voice Coach Screen
          ↓
      Voice Session Manager
          ↓
-    VoiceApiService (Interface)
-    (Gemini / OpenAI)
-         ↓
-    Direct WebSocket
-  (Edge Fn Removed)
+     VoiceApiService (Interface)
+     (Gemini / OpenAI)
+          ↓
+     StreamVoicePlayer (V2)
+     (Buffering + Speaker Enforcement)
+          ↓
+     Audio Output (Speaker)
          ↓
     AI Provider API
     + Tool Calling Support
@@ -294,17 +299,13 @@ https://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta
 | **Copy Debug Info** | Copy diagnostic info |
 | **Quick Navigation** | Jump to any screen |
 
-### 4.3 Audio Playback & Buffering
-**Phase 39 (Audio Fix via Universal Parser)**:
-- **Universal Parsing**: `GeminiLiveService` now robustly handles both `camelCase` (standard) and `snake_case` (beta legacy) JSON keys from the server.
-  - Keys checked: `serverContent`/`server_content`, `inlineData`/`inline_data`, `modelTurn`/`model_turn`.
-  - Diagnostics: `kDebugMode` logs now dump root keys (`data.keys`) to identify structure mismatches immediately.
-- **Buffering Strategy**:
-  - `VoiceCoachScreen` uses a **24,000 byte threshold** (~0.5s of audio) before starting playback.
-  - This prevents "stuttering" where playback catches up to the network stream.
-  - **Recursive Playback Loop**: `_playBufferedAudio` recursively calls itself until the buffer is empty.
-  - **Async Safety**: `if (!mounted) return` checks are placed after every `await` to prevent crashes if the user leaves the screen.
-- **Format**: WAV header is prepended to raw PCM (24kHz, 16-bit, Mono) chunks before feeding to `audioplayers`.
+### 4.3 Audio Playback & Buffering (V2 Architecture)
+**Phase 46.3 (StreamVoicePlayer Service)**:
+- **Centralized Service**: All audio logic moved to `StreamVoicePlayer.dart`.
+- **Event-Driven Architecture**: Uses `StreamController<bool>` to expose playback state to UI.
+- **Robustness**: Replaced recursive playback loops with `onPlayerComplete.listen()` for stability.
+- **Buffering**: Maintains **24,000 byte threshold** (~0.5s) to prevent stutter.
+- **Speaker Enforcement**: Centralized `AudioContext` configuration ensures audio plays through speaker on iOS/Android even when the microphone is active (VoIP mode).
 
 ### 4.4 Connection & Security
 - **Endpoints**: Uses `v1beta` (required for 2025 preview models).

@@ -13,7 +13,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 46.2 | Voice Response Fixed, Debug Triggers Added |
+| **Mobile App** | 🟢 Phase 46.5 | Voice 2.0 (Stream Architecture) |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | ✅ **WORKING** | Gemini 2.5 Flash Native (Audio+Text Modalities) |

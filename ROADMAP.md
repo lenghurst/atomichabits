@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 45 - Pre-Launch Fixes  
+> **Current Phase:** Phase 46.5 - Release Preparation (Voice 2.0)
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Full Hook Model **COMPLETE**. Identity persisted to Hive.
+> **Status:** ✅ Voice Architecture Simplified (StreamVoicePlayer)
 
 ---
 
@@ -28,6 +28,17 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 46.5: Voice 2.0 (27 Dec 2025)
+**Goal:** Simplify voice architecture and fix audio reliability issues.
+
+| ID | Task | Status |
+|----|------|--------|
+| V1 | Create `StreamVoicePlayer` service | ✅ |
+| V2 | Migrate `VoiceSessionManager` to use Stream V2 | ✅ |
+| V3 | Refactor `VoiceCoachScreen` (Ui logic only) | ✅ |
+| V4 | Refactor `SherlockScreen` (Ui logic only) | ✅ |
+| V5 | Fix "Forced Data Wipe" bug in `AppState` | ✅ |
 
 ### Phase 44: The Investment (26 Dec 2025)
 
