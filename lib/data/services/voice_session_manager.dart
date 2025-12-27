@@ -557,6 +557,25 @@ class VoiceSessionManager {
   }
   
   Timer? _silenceTimer;
+  
+  // Manual control flag (Phase 48)
+  bool _manualTurnTaking = true;
+
+  /// Manual Mode: Commit the user's turn (simulate end of speech).
+  Future<void> commitUserTurn() async {
+    if (_state != VoiceSessionState.active) return;
+    
+    if (kDebugMode) debugPrint('VoiceSessionManager: 👆 User manually committed turn');
+    
+    // 1. Pause Mic (Stop Sending Audio) - CRITICAL for Manual Mode
+    await _audioService.pauseRecording();
+    
+    // 2. Force End Turn (Empty Text) - Signals server to reply immediately
+    _voiceService.sendText(" ", turnComplete: true);
+    
+    // Switch to thinking logic
+    _handleSilenceTimeout(); 
+  }
 
   /// Handle voice activity detection.
   void _handleVoiceActivity(bool isActive) {
@@ -564,18 +583,23 @@ class VoiceSessionManager {
       _isUserSpeaking = isActive;
       onUserSpeakingChanged?.call(isActive);
       
-      // Phase 47: Silence Timeout Logic
-      if (isActive) {
-        // User started speaking, cancel any pending timeout
-        _silenceTimer?.cancel();
-        if (_state == VoiceSessionState.thinking) {
-          // If we were "thinking" but they spoke again, go back to listening
-           _setState(VoiceSessionState.active);
-        }
+      if (!_manualTurnTaking) {
+          // Phase 47: Silence Timeout Logic
+          if (isActive) {
+            // User started speaking, cancel any pending timeout
+            _silenceTimer?.cancel();
+            if (_state == VoiceSessionState.thinking) {
+              // If we were "thinking" but they spoke again, go back to listening
+               _setState(VoiceSessionState.active);
+            }
+          } else {
+            // User stopped speaking, start silence timer
+            _silenceTimer?.cancel();
+            _silenceTimer = Timer(const Duration(milliseconds: 800), _handleSilenceTimeout);
+          }
       } else {
-        // User stopped speaking, start silence timer
-        _silenceTimer?.cancel();
-        _silenceTimer = Timer(const Duration(milliseconds: 800), _handleSilenceTimeout);
+         // Manual Mode: Just update state, no timer
+         _silenceTimer?.cancel();
       }
     } else if (isActive) {
       // Still speaking, ensure timer is cancelled
@@ -583,10 +607,13 @@ class VoiceSessionManager {
     }
   }
 
-  /// Called when silence is detected for > 1.5s
+  /// Called when silence is detected for > 1.5s OR Manual Commit
   void _handleSilenceTimeout() {
-    if (_state == VoiceSessionState.active && !_isUserSpeaking) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Silence detected (0.8s), switching to thinking state');
+    // Determine if we can commit
+    bool canCommit = _state == VoiceSessionState.active;
+    
+    if (canCommit) {
+      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Turn Ended (Manual/Silence), switching to thinking state');
       // Visually switch to thinking state to acknowledge input
       _setState(VoiceSessionState.thinking);
     }

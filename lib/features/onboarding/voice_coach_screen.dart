@@ -198,7 +198,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
   void _handleTurnComplete() {
      if (_sessionManager?.isActive == true) {
-      if (mounted) setState(() => _voiceState = VoiceState.listening);
+       // Manual Mode: Mic stays CLOSED after AI turn. User must tap to speak.
+       // This prevents "stuck" listening states.
+       if (mounted) setState(() => _voiceState = VoiceState.idle);
     }
   }
 
@@ -211,12 +213,29 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     }
     if (_sessionManager == null) return;
     
+    // Manual Mode Logic:
+    // 1. Idle/Paused -> Start Listening (RESUME MIC)
+    // 2. Listening/Active -> Commit Turn (PAUSE MIC + SEND)
+    // 3. Speaking (AI) -> Interrupt -> Start Listening (RESUME MIC)
+    
     if (_sessionManager!.isActive) {
-      await _sessionManager!.pauseSession();
-      _pulseController.stop();
-      setState(() => _voiceState = VoiceState.idle);
+      if (_voiceState == VoiceState.speaking) {
+         // Interrupt AI & Resume Mic
+         _sessionManager!.interruptAI();
+         await _sessionManager!.resumeSession(); // Ensure mic is ON
+         setState(() => _voiceState = VoiceState.listening);
+      } else if (_voiceState == VoiceState.listening) {
+         // Commit Turn (Manual Send)
+         // Assuming user is done speaking
+         await _sessionManager!.commitUserTurn(); 
+         _pulseController.stop(); 
+         // State transitions to 'thinking' via session callback, but we update locally for snappiness
+         setState(() => _voiceState = VoiceState.thinking);
+      }
     } else {
+      // Resume / Start
       if (_sessionManager!.state == VoiceSessionState.paused) {
+        // If we were paused (e.g. after manual commit), resume recording
         await _sessionManager!.resumeSession();
       } else {
         await _sessionManager!.startSession();
@@ -251,13 +270,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   String _getInstructionText() {
-    if (_isUserSpeaking) return 'Receiving input...';
+    // Manual Mode: Always say "TAP TO SEND" when active
+    if (_voiceState == VoiceState.listening || _isUserSpeaking) return 'TAP TO SEND';
     
     switch (_voiceState) {
       case VoiceState.idle: return 'Initialize Link';
       case VoiceState.connecting: return 'Authenticating...';
-      case VoiceState.listening: return 'Listening...';
-      case VoiceState.thinking: return 'Analyzing...';
+      case VoiceState.listening: return 'TAP TO SEND';
+      case VoiceState.thinking: return 'ANALYSING...';
       case VoiceState.speaking: return 'Sherlock is Speaking';
       case VoiceState.error: return 'Signal Lost';
     }

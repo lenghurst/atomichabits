@@ -1,3 +1,11 @@
+## [6.4.8] - 2025-12-27 - Phase 47.2: "Manual Turn-Taking (Tap-to-Talk)"
+
+### Added
+- **Manual Turn-Taking:** Implemented "Tap to Send" logic in `VoiceCoachScreen`. Tapping the orb while listening now explicitly commits the turn, pauses the microphone, and forces a server response.
+- **Explicit Mic Control:** ensuring the microphone is physically paused during the "Analysing..." phase to prevent "Sticky VAD" issues.
+
+---
+
 ## [6.4.7] - 2025-12-27 - Phase 47.1: "VAD Calibration & UI Reliability"
 
 ### Fixed

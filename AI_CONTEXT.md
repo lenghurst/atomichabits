@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 47 - VAD & Silence Detection  
+> **Current Phase:** Phase 47.2 - Manual Turn-Taking (Tap-to-Talk)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -96,6 +96,7 @@
 | **47.1** | Adaptive VAD (DC Offset Removal & Dynamic Threshold) | ✅ |
 | **47.2** | UI Interruption Logic (User overrides AI) | ✅ |
 | **47.3** | AI Filler Phrase Negative Constraints | ✅ |
+| **47.4** | **Manual Turn-Taking** (Tap-to-Talk) | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 

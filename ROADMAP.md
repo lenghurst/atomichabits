@@ -41,6 +41,7 @@
 | V5 | Fix "Forced Data Wipe" bug in `AppState` | ✅ |
 | V6 | Adaptive VAD (DC Removal + Dynamic Noise Floor) | ✅ |
 | V7 | UI Interruption Handling (User Priority) | ✅ |
+| V8 | Manual Turn-Taking (Tap-to-Talk) Implementation | ✅ |
 
 
 ### Phase 44: The Investment (26 Dec 2025)
