@@ -4,68 +4,80 @@ import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
-/// Stream Voice Player
-/// 
-/// Handles real-time audio playback for Gemini/Sherlock.
-/// Encapsulates:
-/// - Audio buffering (to prevent stutter)
-/// - WAV header injection (for raw PCM support)
-/// - Speaker enforcement (AudioContext)
+/// Handles streaming audio playback with buffering and WAV header injection.
+/// Unifies logic previously duplicated across VoiceCoachScreen and SherlockScreen.
 class StreamVoicePlayer {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final List<int> _audioBuffer = [];
-  
   bool _isPlaying = false;
-  bool get isPlaying => _isPlaying;
   
-  // Callback for state changes (e.g., for UI animations)
-  final void Function(bool isPlaying)? onPlayingStateChanged;
-  
-  // Configuration
-  static const int _bufferingThreshold = 24000; // ~0.5s at 24kHz 16-bit
-  static const int _sampleRate = 24000;
-  
-  StreamVoicePlayer({this.onPlayingStateChanged});
+  // ~0.5s at 24kHz 16-bit to prevent stuttering
+  static const int _bufferingThreshold = 24000; 
 
-  /// Initialize the player and enforce speaker output
-  Future<void> initialize() async {
-    await _enforceSpeakerOutput();
+  final StreamController<bool> _playingStateController = StreamController<bool>.broadcast();
+  Stream<bool> get isPlayingStream => _playingStateController.stream;
+
+  StreamVoicePlayer() {
+    _initialize();
   }
 
-  /// Add audio chunk to buffer and attempt to play
-  void playChunk(Uint8List chunk) {
-    _audioBuffer.addAll(chunk);
+  Future<void> _initialize() async {
+    // Initial setup
+    await enforceSpeakerOutput();
     
-    // Start playing if not already playing and buffer is sufficient
-    if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
-      _playBufferedAudio();
-    }
-  }
-  
-  /// Stop playback and clear buffer
-  Future<void> stop() async {
-    _audioBuffer.clear();
-    await _audioPlayer.stop();
-    _setPlaying(false);
-  }
-  
-  /// Re-enforce speaker output (useful after mic permission grants)
-  Future<void> enforceSpeaker() async {
-    await _enforceSpeakerOutput();
-  }
-  
-  /// Dispose resources
-  Future<void> dispose() async {
-    await stop();
-    await _audioPlayer.dispose();
-  }
+    // Listen for completion
+    _audioPlayer.onPlayerComplete.listen((_) {
+      if (_audioBuffer.isNotEmpty) {
+        _playBufferedAudio();
+      } else {
+        _setPlaying(false);
+      }
+    });
 
-  // === INTERNAL LOGIC ===
+    // Handle errors globally for the player
+    // audio_players stream might not catch all platform errors, keeping robust try-catch on play()
+  }
 
   void _setPlaying(bool playing) {
     if (_isPlaying != playing) {
       _isPlaying = playing;
-      onPlayingStateChanged?.call(playing);
+      _playingStateController.add(playing);
+    }
+  }
+
+  /// Force audio to speaker, critical for iOS when microphone is active.
+  Future<void> enforceSpeakerOutput() async {
+    if (kDebugMode) debugPrint('StreamVoicePlayer: 🔊 Enforcing Speaker Output...');
+    
+    await _audioPlayer.setVolume(1.0);
+    
+    await AudioPlayer.global.setAudioContext(AudioContext(
+      android: const AudioContextAndroid(
+        isSpeakerphoneOn: true,
+        stayAwake: true,
+        contentType: AndroidContentType.speech,
+        usageType: AndroidUsageType.assistant,
+        audioFocus: AndroidAudioFocus.gain,
+      ),
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playAndRecord,
+        options: {
+          AVAudioSessionOptions.defaultToSpeaker,
+          AVAudioSessionOptions.allowBluetooth,
+          AVAudioSessionOptions.allowAirPlay
+        },
+      ),
+    ));
+  }
+  
+  // Alias for compatibility if needed
+  Future<void> enforceSpeaker() => enforceSpeakerOutput();
+
+  /// Processes incoming PCM chunks
+  void playChunk(Uint8List audioData) {
+    _audioBuffer.addAll(audioData);
+    if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
+      _playBufferedAudio();
     }
   }
 
@@ -77,73 +89,35 @@ class StreamVoicePlayer {
 
     _setPlaying(true);
     
-    // Take a snapshot of the buffer
     final List<int> chunk = List.from(_audioBuffer);
     _audioBuffer.clear();
 
     try {
       final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
-      
-      if (kDebugMode) {
-        debugPrint('StreamVoicePlayer: ▶️ Playing ${chunk.length} bytes...');
-      }
-      
+      if (kDebugMode) debugPrint('StreamVoicePlayer: ▶️ Playing ${chunk.length} bytes...');
       await _audioPlayer.play(BytesSource(wavBytes));
-      
-      // Wait for completion with timeout based on audio length
-      try {
-        // Calculate duration: bytes / (sampleRate * channels * bytesPerSample)
-        // 24000Hz * 1 channel * 2 bytes = 48000 bytes/sec
-        final durationMs = (chunk.length / 48).round();
-        
-        await _audioPlayer.onPlayerComplete.first.timeout(
-          Duration(milliseconds: durationMs + 1000), // Add 1s buffer
-          onTimeout: () => null,
-        );
-      } catch (_) {
-        // Ignore timeout errors
-      }
-      
-      // Recursive call to play next chunk if available
-      if (_audioBuffer.isNotEmpty) {
-        await _playBufferedAudio();
-      } else {
-        _setPlaying(false);
-      }
     } catch (e) {
       debugPrint('StreamVoicePlayer: ❌ Playback Error: $e');
       _setPlaying(false);
     }
   }
 
-  /// CRITICAL: Force audio to speaker, even if mic is on
-  Future<void> _enforceSpeakerOutput() async {
-    if (kDebugMode) debugPrint('StreamVoicePlayer: 🔊 Enforcing Speaker Output...');
-    
-    await _audioPlayer.setVolume(1.0); // Ensure volume is max
-    
-    await AudioPlayer.global.setAudioContext(AudioContext(
-      android: const AudioContextAndroid(
-        isSpeakerphoneOn: true,
-        stayAwake: true,
-        contentType: AndroidContentType.speech,
-        usageType: AndroidUsageType.assistant,
-        audioFocus: AndroidAudioFocus.gain,
-      ),
-      iOS: AudioContextIOS(
-        // 'playAndRecord' is required to hear audio while mic is active
-        category: AVAudioSessionCategory.playAndRecord, 
-        options: {
-          AVAudioSessionOptions.defaultToSpeaker, 
-          AVAudioSessionOptions.allowBluetooth,
-          AVAudioSessionOptions.allowAirPlay
-        },
-      ),
-    ));
+  /// Stops playback and clears buffer
+  Future<void> stop() async {
+    _audioBuffer.clear();
+    await _audioPlayer.stop();
+    _setPlaying(false);
   }
 
+  Future<void> dispose() async {
+    await stop();
+    await _audioPlayer.dispose();
+    await _playingStateController.close();
+  }
+
+  /// Adds WAV header to raw PCM data so AudioPlayer can play it
   Uint8List _addWavHeader(Uint8List pcmData) {
-    const int sampleRate = _sampleRate;
+    const int sampleRate = 24000;
     const int numChannels = 1;
     const int bitsPerSample = 16;
     

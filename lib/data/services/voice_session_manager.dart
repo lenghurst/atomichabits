@@ -251,15 +251,12 @@ class VoiceSessionManager {
     }
     
     // Initialize Voice Player
-    _voicePlayer = StreamVoicePlayer(
-      onPlayingStateChanged: (isPlaying) {
-        // Use player state to drive UI animations for better sync
-        if (_isAISpeaking != isPlaying) {
-          _isAISpeaking = isPlaying;
-          onAISpeakingChanged?.call(isPlaying);
-        }
-      },
-    );
+    _voicePlayer = StreamVoicePlayer();
+    _voicePlayer.isPlayingStream.listen((isPlaying) {
+      if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ AI Speaking STARTED' : 'VoiceSessionManager: 🤫 AI Speaking STOPPED');
+      _isAISpeaking = isPlaying;
+      onAISpeakingChanged?.call(isPlaying);
+    });
   }
   
   /// Generate the system instruction based on session mode (Phase 42)
@@ -390,8 +387,7 @@ class VoiceSessionManager {
         debugPrint('VoiceSessionManager: Session started successfully');
       }
       
-      // Initialize player
-      await _voicePlayer.initialize();
+      // Player initialized in constructor
       
       return true;
     } catch (e, stackTrace) {
@@ -450,7 +446,8 @@ class VoiceSessionManager {
     if (_state != VoiceSessionState.paused) return;
     
     await _audioService.resumeRecording();
-    await _voicePlayer.enforceSpeaker(); // Re-enforce speaker
+       // CRITICAL: Re-enforce speaker output after recording starts
+      await _voicePlayer.enforceSpeakerOutput(); // Re-enforce speaker
     _setState(VoiceSessionState.active);
     
     if (kDebugMode) {
