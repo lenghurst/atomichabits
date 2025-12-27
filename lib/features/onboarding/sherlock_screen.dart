@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:typed_data';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +7,7 @@ import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
 import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/voice_session_manager.dart';
+import '../../data/services/audio_playback_service.dart';
 import '../dev/dev_tools_overlay.dart';
 
 /// Sherlock Protocol Screen
@@ -53,47 +52,24 @@ class _SherlockScreenState extends State<SherlockScreen>
   late Animation<double> _pulseAnimation;
   
   // Audio Playback
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  final List<int> _audioBuffer = []; 
-  bool _isPlaying = false;
-  static const int _bufferingThreshold = 24000; // ~0.5s at 24kHz 16-bit
+  final AudioPlaybackService _audioService = AudioPlaybackService();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     
-    // 1. Initial Speaker Enforcement
-    _enforceSpeakerOutput();
-    
+    _initializeAudio();
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
 
-  /// CRITICAL: Helper to force audio to speaker, even if mic is on
-  Future<void> _enforceSpeakerOutput() async {
-    if (kDebugMode) debugPrint('SherlockScreen: 🔊 Enforcing Speaker Output...');
-    
-    await _audioPlayer.setVolume(1.0); // Ensure volume is max
-    
-    await AudioPlayer.global.setAudioContext(AudioContext(
-      android: const AudioContextAndroid(
-        isSpeakerphoneOn: true,
-        stayAwake: true,
-        contentType: AndroidContentType.speech,
-        usageType: AndroidUsageType.assistant,
-        audioFocus: AndroidAudioFocus.gain,
-      ),
-      iOS: AudioContextIOS(
-        // 'playAndRecord' is required to hear audio while mic is active
-        category: AVAudioSessionCategory.playAndRecord, 
-        options: {
-          AVAudioSessionOptions.defaultToSpeaker, 
-          AVAudioSessionOptions.allowBluetooth,
-          AVAudioSessionOptions.allowAirPlay
-        },
-      ),
-    ));
+  Future<void> _initializeAudio() async {
+    try {
+      await _audioService.initialize();
+    } catch (e) {
+      if (kDebugMode) debugPrint('SherlockScreen: Audio initialization failed: $e');
+    }
   }
   
   void _initializePulseAnimation() {
@@ -111,7 +87,7 @@ class _SherlockScreenState extends State<SherlockScreen>
     WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
     _sessionManager?.dispose();
-    _audioPlayer.dispose();
+    _audioService.dispose();
     super.dispose();
   }
 
@@ -163,9 +139,6 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     
     final success = await _sessionManager!.startSession();
     
-    // 2. CRITICAL FIX: Re-enforce speaker AFTER recording starts
-    await _enforceSpeakerOutput();
-    
     if (!success) {
       setState(() {
         _voiceState = VoiceState.error;
@@ -196,83 +169,8 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
   }
   
   void _handleAudioReceived(Uint8List audioData) {
-    if (!mounted) return;
-    _audioBuffer.addAll(audioData);
-    if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
-      _playBufferedAudio();
-    }
-  }
-
-  Future<void> _playBufferedAudio() async {
-    if (_audioBuffer.isEmpty) {
-      _isPlaying = false;
-      return;
-    }
-
-    _isPlaying = true;
-    final List<int> chunk = List.from(_audioBuffer);
-    _audioBuffer.clear();
-
-    try {
-      final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
-      
-      if (kDebugMode) debugPrint('SherlockScreen: ▶️ Playing ${chunk.length} bytes...');
-      
-      await _audioPlayer.play(BytesSource(wavBytes));
-      
-      // Wait for completion with timeout logic
-      try {
-        await _audioPlayer.onPlayerComplete.first.timeout(
-          Duration(milliseconds: (chunk.length / 48).round() + 1000),
-          onTimeout: () => null,
-        );
-      } catch (_) {}
-      
-      if (!mounted) return;
-
-      if (_audioBuffer.isNotEmpty) {
-        _playBufferedAudio();
-      } else {
-        _isPlaying = false;
-      }
-    } catch (e) {
-      debugPrint('SherlockScreen: ❌ Audio playback error: $e');
-      _isPlaying = false;
-    }
-  }
-
-  Uint8List _addWavHeader(Uint8List pcmData) {
-    const int sampleRate = 24000;
-    const int numChannels = 1;
-    const int bitsPerSample = 16;
-    
-    final int byteRate = sampleRate * numChannels * bitsPerSample ~/ 8;
-    final int blockAlign = numChannels * bitsPerSample ~/ 8;
-    final int dataSize = pcmData.length;
-    final int fileSize = 36 + dataSize;
-
-    final header = Uint8List(44);
-    final view = ByteData.view(header.buffer);
-
-    header.setRange(0, 4, ascii.encode('RIFF'));
-    view.setUint32(4, fileSize, Endian.little);
-    header.setRange(8, 12, ascii.encode('WAVE'));
-    header.setRange(12, 16, ascii.encode('fmt '));
-    view.setUint32(16, 16, Endian.little);
-    view.setUint16(20, 1, Endian.little);
-    view.setUint16(22, numChannels, Endian.little);
-    view.setUint32(24, sampleRate, Endian.little);
-    view.setUint32(28, byteRate, Endian.little);
-    view.setUint16(32, blockAlign, Endian.little);
-    view.setUint16(34, bitsPerSample, Endian.little);
-    header.setRange(36, 4, ascii.encode('data'));
-    view.setUint32(40, dataSize, Endian.little);
-
-    final wavFile = Uint8List(44 + dataSize);
-    wavFile.setRange(0, 44, header);
-    wavFile.setRange(44, 44 + dataSize, pcmData);
-    
-    return wavFile;
+    // Stream directly to the low-latency player
+    _audioService.write(audioData);
   }
   
   void _handleStateChanged(VoiceSessionState state) {
@@ -369,9 +267,7 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
-      _audioBuffer.clear(); // Clear pending audio
-      await _audioPlayer.stop(); // Stop current playback
-      _isPlaying = false;
+      await _audioService.stop(); // Clear buffer
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {
