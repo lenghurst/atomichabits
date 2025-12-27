@@ -337,7 +337,8 @@ class AudioRecordingService {
     onAudioLevelChanged?.call(normalisedLevel);
     
     // Simple voice activity detection based on level threshold
-    final isVoiceActive = normalisedLevel > 0.05;
+    // Tuned to 0.1 (from 0.05) to prevent sticky "I hear you" state
+    final isVoiceActive = normalisedLevel > 0.1;
     onVoiceActivityDetected?.call(isVoiceActive);
   }
   

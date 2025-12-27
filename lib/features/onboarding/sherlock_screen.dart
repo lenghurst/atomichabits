@@ -6,19 +6,11 @@ import '../../config/router/app_routes.dart';
 import '../../config/ai_model_config.dart';
 import '../../data/providers/psychometric_provider.dart';
 import '../../data/services/voice_session_manager.dart';
+import '../../data/enums/voice_session_mode.dart';
 import '../dev/dev_tools_overlay.dart';
 
 /// Sherlock Protocol Screen
-/// 
-/// Phase 42: "The Soul Capture"
-/// 
-/// This screen is a dedicated psychological profiling session.
-/// Goal: Extract the "Holy Trinity" using the Sherlock persona:
-/// 1. Anti-Identity (The Fear)
-/// 2. Failure Archetype (The Reason)
-/// 3. Resistance Lie (The Excuse)
-/// 
-/// It routes to the PactRevealScreen (The "Magic Moment") upon success.
+@Deprecated('Use VoiceCoachScreen(mode: VoiceSessionMode.onboarding) instead')
 class SherlockScreen extends StatefulWidget {
   const SherlockScreen({super.key});
 
@@ -31,10 +23,14 @@ class _SherlockScreenState extends State<SherlockScreen>
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
   final List<TranscriptMessage> _transcript = [];
+  
   // ignore: unused_field
   String? _errorMessage;
   // ignore: unused_field
   double _audioLevel = 0.0;
+  
+  // VAD State (Visual Confidence)
+  bool _isUserSpeaking = false;
   
   // ignore: unused_field
   bool _isConnected = false;
@@ -43,28 +39,17 @@ class _SherlockScreenState extends State<SherlockScreen>
   
   // ignore: unused_field
   List<String> _debugLog = [];
-  // ignore: unused_field
-  bool _showDebugPanel = false;
   
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
-  // Audio Playback
-  // Managed by VoiceSessionManager via StreamVoicePlayer
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    // 1. Initial Speaker Enforcement - Handled by Manager now
-    // _enforceSpeakerOutput();
-    
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
-
-  // _enforceSpeakerOutput moved to StreamVoicePlayer service
   
   void _initializePulseAnimation() {
     _pulseController = AnimationController(
@@ -88,9 +73,6 @@ class _SherlockScreenState extends State<SherlockScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
       if (_sessionManager?.isActive == true) {
-        if (kDebugMode) {
-          debugPrint('SherlockScreen: App backgrounded, pausing session for security.');
-        }
         _sessionManager?.pauseSession();
       }
     }
@@ -99,7 +81,10 @@ class _SherlockScreenState extends State<SherlockScreen>
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
     
-    // SHERLOCK PERSONA (Investigative Journalist)
+    // Phase 42: We explicitly use .onboarding() factory here if we wanted strictly Sherlock,
+    // but the current implementation uses the manual system prompt for specific control.
+    // We will stick to the manual prompt logic but ensure VAD is wired.
+    
     const systemInstruction = '''You are Sherlock, an investigative journalist for the user's soul.
 Your Goal: Uncover the TRUTH about why they fail, so they can finally succeed.
 
@@ -117,22 +102,23 @@ Keep responses SHORT (1-2 sentences). You are on a voice call.
 Start by asking: "Tell me, who are you afraid of becoming?"''';
     
     _sessionManager = VoiceSessionManager(
+      // We pass the provider to enable tool calls for psychometric updates
+      psychometricProvider: context.read<PsychometricProvider>(),
+      mode: VoiceSessionMode.onboarding, // Enables tools
       systemInstruction: systemInstruction,
       enableTranscription: true,
       onTranscription: _handleTranscription,
-      onAudioReceived: null, // Routed to VoicePlayer internally
+      onAudioReceived: null,
       onStateChanged: _handleStateChanged,
       onError: _handleError,
       onAudioLevelChanged: _handleAudioLevelChanged,
       onAISpeakingChanged: _handleAISpeakingChanged,
-      onUserSpeakingChanged: _handleUserSpeakingChanged,
+      onUserSpeakingChanged: _handleUserSpeakingChanged, // VAD Callback
       onTurnComplete: _handleTurnComplete,
       onDebugLogUpdated: _handleDebugLogUpdated,
     );
     
     final success = await _sessionManager!.startSession();
-    
-    // 2. CRITICAL FIX: Speaker enforcement handled by VoiceSessionManager automatically
     
     if (!success) {
       setState(() {
@@ -152,6 +138,8 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     }
   }
   
+  // --- Handlers ---
+
   void _handleTranscription(String text, bool isUser) {
     if (!mounted) return;
     setState(() {
@@ -162,8 +150,6 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
       ));
     });
   }
-  
-  // Audio Methods removed - managed by VoiceSessionManager
   
   void _handleStateChanged(VoiceSessionState state) {
     if (!mounted) return;
@@ -186,6 +172,10 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
         case VoiceSessionState.disconnecting:
           _voiceState = VoiceState.connecting;
           break;
+        case VoiceSessionState.thinking:
+          _voiceState = VoiceState.thinking;
+          _pulseController.repeat(reverse: true);
+          break;
         case VoiceSessionState.error:
           _voiceState = VoiceState.error;
           _pulseController.stop();
@@ -205,24 +195,24 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
   
   void _handleAudioLevelChanged(double level) {
     if (!mounted) return;
-    setState(() {
-      _audioLevel = level;
-    });
+    setState(() => _audioLevel = level);
   }
   
   void _handleAISpeakingChanged(bool isSpeaking) {
     if (!mounted) return;
     setState(() {
-    if (isSpeaking) {
-      _voiceState = VoiceState.speaking;
-    } else if (_sessionManager?.isActive == true) {
-      _voiceState = VoiceState.listening;
-    }
+      if (isSpeaking) {
+        _voiceState = VoiceState.speaking;
+      } else if (_sessionManager?.isActive == true) {
+        _voiceState = VoiceState.listening;
+      }
     });
   }
   
+  /// VAD Handler: Updates UI when user starts/stops speaking
   void _handleUserSpeakingChanged(bool isSpeaking) {
-    // Optional visual feedback
+    if (!mounted) return;
+    setState(() => _isUserSpeaking = isSpeaking);
   }
   
   void _handleTurnComplete() {
@@ -233,9 +223,7 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
   }
   
   void _handleDebugLogUpdated(List<String> log) {
-    if (mounted) {
-      setState(() => _debugLog = List.from(log));
-    }
+    if (mounted) setState(() => _debugLog = List.from(log));
   }
   
   void _addSystemMessage(String message) {
@@ -259,7 +247,6 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
-      await _sessionManager!.pauseSession();
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {
@@ -273,38 +260,20 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     }
   }
   
+  // --- UI Methods ---
+
   void _showDetailedErrorDialog(String error) {
     if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.bug_report, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Debug Info'),
-          ],
-        ),
+        title: const Text('Debug Info'),
         content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Debugging Info:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              SelectableText(
-                error,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-              ),
-            ],
-          ),
+          child: Text(error, style: const TextStyle(fontFamily: 'monospace', fontSize: 11)),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Dismiss'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Dismiss')),
         ],
       ),
     );
@@ -315,9 +284,7 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Voice Unavailable'),
-        content: const Text(
-          'Connections to Sherlock are unstable. We can proceed with manual entry.',
-        ),
+        content: const Text('Connections to Sherlock are unstable. We can proceed with manual entry.'),
         actions: [
           TextButton(
             onPressed: () {
@@ -331,25 +298,49 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     );
   }
   
-  /// Transition to the "Magic Moment"
   Future<void> _onSessionComplete() async {
     await _sessionManager?.endSession();
-    
     if (!mounted) return;
     
     final profile = context.read<PsychometricProvider>().profile;
-    // Sherlock Protocol Success Criteria:
-    final hasData = profile.antiIdentityLabel != null ||
-                    profile.failureArchetype != null ||
-                    profile.resistanceLieLabel != null;
-    
-    if (hasData) {
-      // Magic Moment
+    if (profile.antiIdentityLabel != null || profile.failureArchetype != null) {
       context.go(AppRoutes.pactReveal);
     } else {
-      // Fallback
       context.go(AppRoutes.dashboard);
     }
+  }
+  
+  String _getStatusText() {
+    if (_isUserSpeaking) return 'I HEAR YOU...';
+    
+    switch (_voiceState) {
+      case VoiceState.idle: return 'TAP TO CONFESS';
+      case VoiceState.connecting: return 'ESTABLISHING LINK...';
+      case VoiceState.listening: return 'SHERLOCK IS LISTENING...';
+      case VoiceState.thinking: return 'ANALYSING...';
+      case VoiceState.speaking: return 'SHERLOCK SPEAKING...';
+      case VoiceState.error: return 'CONNECTION LOST';
+    }
+  }
+
+  Color _getButtonColor() {
+    if (_isUserSpeaking) return Colors.tealAccent; // Visual feedback for VAD
+    
+    switch (_voiceState) {
+      case VoiceState.idle: return Colors.grey.shade800;
+      case VoiceState.connecting: return Colors.blueGrey;
+      case VoiceState.listening: return Colors.redAccent;
+      case VoiceState.thinking: return Colors.purpleAccent;
+      case VoiceState.speaking: return Colors.cyanAccent;
+      case VoiceState.error: return Colors.red;
+    }
+  }
+
+  IconData _getButtonIcon() {
+    if (_isUserSpeaking) return Icons.graphic_eq; // Visual feedback
+    if (_voiceState == VoiceState.listening) return Icons.mic;
+    if (_voiceState == VoiceState.speaking) return Icons.volume_up;
+    return Icons.mic_none;
   }
   
   @override
@@ -358,7 +349,7 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
     final colorScheme = theme.colorScheme;
     
     return Scaffold(
-      backgroundColor: Colors.black, // Cinematic black for Sherlock
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('THE INTERROGATION'),
         centerTitle: true,
@@ -375,7 +366,6 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
         children: [
           Column(
             children: [
-              // Transcript
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -386,8 +376,6 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
                   },
                 ),
               ),
-              
-              // Visualiser
               Container(
                 height: 240,
                 width: double.infinity,
@@ -395,20 +383,20 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black, colorScheme.primary.withValues(alpha: 0.2)],
+                    colors: [Colors.black, colorScheme.primary.withOpacity(0.2)],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  border: Border(top: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3))),
+                  border: Border(top: BorderSide(color: colorScheme.primary.withOpacity(0.3))),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      _getStatusText(),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        letterSpacing: 2,
-                        fontWeight: FontWeight.w500,
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        _getStatusText(),
+                        key: ValueKey(_getStatusText()),
+                        style: const TextStyle(color: Colors.white70, letterSpacing: 2, fontWeight: FontWeight.w500),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -417,8 +405,12 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
                       child: AnimatedBuilder(
                         animation: _pulseAnimation,
                         builder: (context, child) {
+                          // Pulse faster if user is speaking
+                          double scale = _voiceState == VoiceState.listening ? _pulseAnimation.value : 1.0;
+                          if (_isUserSpeaking) scale *= 1.1; 
+                          
                           return Transform.scale(
-                            scale: _voiceState == VoiceState.listening ? _pulseAnimation.value : 1.0,
+                            scale: scale,
                             child: Container(
                               width: 90,
                               height: 90,
@@ -427,17 +419,13 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
                                 color: _getButtonColor(),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getButtonColor().withValues(alpha: 0.5),
-                                    blurRadius: 30,
-                                    spreadRadius: 2,
+                                    color: _getButtonColor().withOpacity(_isUserSpeaking ? 0.8 : 0.5),
+                                    blurRadius: _isUserSpeaking ? 40 : 30,
+                                    spreadRadius: _isUserSpeaking ? 5 : 2,
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                _getButtonIcon(),
-                                color: Colors.white,
-                                size: 36,
-                              ),
+                              child: Icon(_getButtonIcon(), color: Colors.white, size: 36),
                             ),
                           );
                         },
@@ -449,92 +437,54 @@ Start by asking: "Tell me, who are you afraid of becoming?"''';
               ),
             ],
           ),
-          
           if (kDebugMode) const DevToolsOverlay(),
         ],
       ),
     );
-  }
-  
-  String _getStatusText() {
-    switch (_voiceState) {
-      case VoiceState.idle: return 'TAP TO CONFESS';
-      case VoiceState.connecting: return 'ESTABLISHING LINK...';
-      case VoiceState.listening: return 'SHERLOCK IS LISTENING...';
-      case VoiceState.thinking: return 'ANALYSING...';
-      case VoiceState.speaking: return 'SHERLOCK SPEAKING...';
-      case VoiceState.error: return 'CONNECTION LOST';
-    }
-  }
-
-  Color _getButtonColor() {
-    switch (_voiceState) {
-      case VoiceState.idle: return Colors.grey.shade800;
-      case VoiceState.connecting: return Colors.blueGrey;
-      case VoiceState.listening: return Colors.redAccent; // Recording = Red
-      case VoiceState.thinking: return Colors.purpleAccent;
-      case VoiceState.speaking: return Colors.cyanAccent;
-      case VoiceState.error: return Colors.red;
-    }
-  }
-
-  IconData _getButtonIcon() {
-    if (_voiceState == VoiceState.listening) return Icons.mic;
-    if (_voiceState == VoiceState.speaking) return Icons.graphic_eq;
-    return Icons.mic_none;
   }
 }
 
 class _TranscriptBubble extends StatelessWidget {
   final TranscriptMessage message;
   final bool isDark;
-
   const _TranscriptBubble({required this.message, this.isDark = false});
 
   @override
   Widget build(BuildContext context) {
-    final isUser = message.isUser;
-    final isSystem = message.isSystem;
-    
-    if (isSystem) {
+    if (message.isSystem) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
           message.text,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isDark ? Colors.white54 : Colors.grey,
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
-          ),
+          style: TextStyle(color: isDark ? Colors.white54 : Colors.grey, fontSize: 12, fontStyle: FontStyle.italic),
         ),
       );
     }
-    
     return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isUser 
-              ? (isDark ? Colors.white24 : Colors.blue.shade100)
-              : (isDark ? Colors.grey.shade900 : Colors.grey.shade200),
+          color: message.isUser ? (isDark ? Colors.white24 : Colors.blue.shade100) : (isDark ? Colors.grey.shade900 : Colors.grey.shade200),
           borderRadius: BorderRadius.circular(16),
           border: isDark ? Border.all(color: Colors.white10) : null,
         ),
-        child: Text(
-          message.text,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-          ),
-        ),
+        child: Text(message.text, style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
       ),
     );
   }
 }
 
-/// Simple state for the voice UI
+class TranscriptMessage {
+  final String text;
+  final bool isUser;
+  final bool isSystem;
+  final DateTime timestamp;
+  TranscriptMessage({required this.text, this.isUser = false, this.isSystem = false, required this.timestamp});
+}
+
 enum VoiceState {
   idle,
   connecting,
@@ -542,19 +492,4 @@ enum VoiceState {
   thinking,
   speaking,
   error,
-}
-
-/// Represents a message in the transcript
-class TranscriptMessage {
-  final String text;
-  final bool isUser;
-  final bool isSystem;
-  final DateTime timestamp;
-
-  TranscriptMessage({
-    required this.text,
-    this.isUser = false,
-    this.isSystem = false,
-    required this.timestamp,
-  });
 }

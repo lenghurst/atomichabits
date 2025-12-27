@@ -13,15 +13,15 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 46.5 | Voice 2.0 (Stream Architecture) |
+| **Mobile App** | 🟢 Phase 47 | Voice 2.0 (Stream Architecture + VAD Fixes) |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | ✅ **WORKING** | Gemini 2.5 Flash Native (Audio+Text Modalities) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
-> **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 45 - Pre-Launch Fixes  
+> **Last Updated:** 27 December 2025  
+> **Current Phase:** Phase 47 - VAD Tuning  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
@@ -103,7 +103,9 @@ Create `secrets.json` in project root:
 | **[docs/BUILD_PIPELINE.md](./docs/BUILD_PIPELINE.md)** | Build commands and pipelines |
 | **[docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)** | Testing the Gemini Live connection |
 | **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
+| **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** | Provider architecture guide |
+| **[docs/DEVICE_TESTING.md](./docs/DEVICE_TESTING.md)** | **NEW** Device Testing & Hotfix Guide |
 
 ### Gemini Live API
 

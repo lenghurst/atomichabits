@@ -17,12 +17,13 @@ import 'package:provider/provider.dart';
 import '../../data/app_state.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/voice_session_manager.dart';
+import '../../data/enums/voice_session_mode.dart'; // Added for Unification
 
 // Feature screens
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/onboarding/conversational_onboarding_screen.dart';
 import '../../features/onboarding/voice_coach_screen.dart';
-import '../../features/onboarding/sherlock_screen.dart';
+
 import '../../features/onboarding/identity_first/identity_access_gate_screen.dart';
 import '../../features/onboarding/identity_first/witness_investment_screen.dart';
 import '../../features/onboarding/identity_first/pact_tier_selector_screen.dart';
@@ -140,7 +141,7 @@ class AppRouter {
 
       GoRoute(
         path: AppRoutes.onboardingSherlock,
-        builder: (context, state) => const SherlockScreen(), // Dedicated profiling screen
+        builder: (context, state) => const VoiceCoachScreen(mode: VoiceSessionMode.onboarding), // Unified Screen
       ),
       
       // Text chat onboarding

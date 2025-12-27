@@ -1,14 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart'; // Added for context.read
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 
 import '../../data/services/voice_session_manager.dart';
+import '../../data/providers/user_provider.dart'; // Added
+import '../../data/providers/psychometric_provider.dart'; // Added
+import '../../data/providers/settings_provider.dart'; // Added for Haptics
+import '../../data/models/user_profile.dart'; // Added
 import '../dev/dev_tools_overlay.dart';
 
+import '../../data/enums/voice_session_mode.dart'; // Added
+
 class VoiceCoachScreen extends StatefulWidget {
-  const VoiceCoachScreen({super.key});
+  final VoiceSessionMode mode;
+
+  const VoiceCoachScreen({
+    super.key,
+    this.mode = VoiceSessionMode.coaching,
+  });
 
   @override
   State<VoiceCoachScreen> createState() => _VoiceCoachScreenState();
@@ -17,34 +29,25 @@ class VoiceCoachScreen extends StatefulWidget {
 class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   
-  // Session Manager
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
   
-  // Audio Playback
-  // Removed local AudioPlayer - handled by VoiceSessionManager via StreamVoicePlayer
-
-  // Visualization
+  // VAD State (Visual Confidence)
+  bool _isUserSpeaking = false;
+  
   double _audioLevel = 0.0;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   
-  // Connection Status
   bool _isConnected = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    // 1. Initial Speaker Enforcement - Handled by Manager now
-    // _enforceSpeakerOutput();
-    
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
-  
-  // _enforceSpeakerOutput moved to StreamVoicePlayer service
 
   void _initializePulseAnimation() {
     _pulseController = AnimationController(
@@ -68,23 +71,50 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
     
-    _sessionManager = VoiceSessionManager(
-      onStateChanged: _handleStateChanged,
-      onAudioReceived: null, // Audio routed to StreamVoicePlayer internal
-      onError: _handleError,
-      onAudioLevelChanged: (level) {
-        if (mounted) setState(() => _audioLevel = level);
-      },
-      onAISpeakingChanged: _handleAISpeakingChanged,
-      onUserSpeakingChanged: (_) {}, 
-      onTurnComplete: _handleTurnComplete,
-    );
+    // Phase 46: Dependency Injection
+    final userProvider = context.read<UserProvider>();
+    final psychometricProvider = context.read<PsychometricProvider>();
+    
+    // Safety check for user profile
+    final safeUser = userProvider.userProfile ?? 
+        UserProfile(name: 'Guest', identity: 'Achiever', createdAt: DateTime.now(), isPremium: true);
+
+    // Phase 42: unified session initialization
+    if (widget.mode == VoiceSessionMode.coaching) {
+      _sessionManager = VoiceSessionManager.coaching(
+        psychometricProvider: psychometricProvider,
+        userProfile: safeUser,
+        psychometricProfile: psychometricProvider.profile,
+        onStateChanged: _handleStateChanged,
+        onAudioReceived: null, // Routed internally
+        onError: _handleError,
+        onAudioLevelChanged: (level) {
+          if (mounted) setState(() => _audioLevel = level);
+        },
+        onAISpeakingChanged: _handleAISpeakingChanged,
+        onUserSpeakingChanged: _handleUserSpeakingChanged,
+        onTurnComplete: _handleTurnComplete,
+      );
+    } else {
+      // Onboarding / Sherlock Mode
+      _sessionManager = VoiceSessionManager.onboarding(
+        psychometricProvider: psychometricProvider,
+        userProfile: safeUser,
+        onStateChanged: _handleStateChanged,
+        onAudioReceived: null,
+        onError: _handleError,
+        onAudioLevelChanged: (level) {
+          if (mounted) setState(() => _audioLevel = level);
+        },
+        onAISpeakingChanged: _handleAISpeakingChanged,
+        onUserSpeakingChanged: _handleUserSpeakingChanged,
+        onTurnComplete: _handleTurnComplete,
+        // Phase 42: Tool calls are handled internally by the manager for onboarding
+      );
+    }
 
     try {
       await _sessionManager!.startSession();
-      
-      // 2. CRITICAL FIX: Speaker enforcement handled by VoiceSessionManager automatically 
-
        setState(() {
         _isConnected = true;
         _voiceState = VoiceState.idle; 
@@ -107,12 +137,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     super.dispose();
   }
 
-  // --- Audio Handling ---
-
-  // --- Audio Handling ---
-  // Managed by VoiceSessionManager now
-
-  // --- State Handlers ---
+  // --- Handlers ---
 
   void _handleStateChanged(VoiceSessionState state) {
     if (!mounted) return;
@@ -131,6 +156,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           _voiceState = VoiceState.listening;
           _pulseController.repeat(reverse: true);
           break;
+        case VoiceSessionState.thinking:
+           _voiceState = VoiceState.thinking;
+           _pulseController.repeat(reverse: true); // Keep pulsing but maybe different color (handled by build)
+           break;
         case VoiceSessionState.error:
           _voiceState = VoiceState.error;
           _pulseController.stop();
@@ -142,7 +171,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   void _handleError(String error) {
     if (!mounted) return;
     setState(() => _voiceState = VoiceState.error);
-    // Could show snackbar or status text update
   }
 
   void _handleAISpeakingChanged(bool isSpeaking) {
@@ -155,6 +183,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       }
     });
   }
+  
+  /// VAD Handler
+  void _handleUserSpeakingChanged(bool isSpeaking) {
+    if (!mounted) return;
+    setState(() => _isUserSpeaking = isSpeaking);
+  }
 
   void _handleTurnComplete() {
      if (_sessionManager?.isActive == true) {
@@ -163,6 +197,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   Future<void> _handleMicrophoneTap() async {
+    context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
+
     if (_voiceState == VoiceState.error) {
       await _initializeVoiceSession();
       return;
@@ -180,20 +216,24 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         await _sessionManager!.startSession();
       }
       _pulseController.repeat(reverse: true);
-      // Ensure speaker is still enforced if we resumed
-      // await _enforceSpeakerOutput(); // handled by manager
       setState(() => _voiceState = VoiceState.listening);
     }
   }
 
   Future<void> _onSessionComplete() async {
     await _sessionManager?.endSession();
-    if (mounted) context.go(AppRoutes.dashboard);
+    // Mark completion in Hive via UserProvider
+    if (mounted) {
+      await context.read<UserProvider>().completeOnboarding();
+      context.go(AppRoutes.dashboard);
+    }
   }
 
   // --- UI Helpers ---
 
   IconData _getButtonIcon() {
+    if (_isUserSpeaking) return Icons.graphic_eq; // VAD Feedback
+    
     switch (_voiceState) {
       case VoiceState.idle: return Icons.mic_none;
       case VoiceState.connecting: return Icons.cloud_sync;
@@ -205,6 +245,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   String _getInstructionText() {
+    if (_isUserSpeaking) return 'I hear you...';
+    
     switch (_voiceState) {
       case VoiceState.idle: return 'Initialize Link';
       case VoiceState.connecting: return 'Authenticating...';
@@ -214,8 +256,15 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       case VoiceState.error: return 'Signal Lost';
     }
   }
-
-  // --- Build ---
+  
+  Color _getButtonColor() {
+    if (_isUserSpeaking) return Colors.greenAccent; // VAD Feedback
+    if (_voiceState == VoiceState.connecting) return Colors.blue;
+    if (_voiceState == VoiceState.listening) return Colors.redAccent;
+    if (_voiceState == VoiceState.speaking) return Colors.purpleAccent;
+    if (_voiceState == VoiceState.thinking) return Colors.amber;
+    return Colors.grey.shade800;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +272,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background Void
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -242,19 +290,17 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Row(
                     children: [
                       const Icon(Icons.record_voice_over, color: Colors.white54, size: 20),
                       const SizedBox(width: 12),
-                      const Text(
-                        'THE INTERROGATION',
-                        style: TextStyle(color: Colors.white70, fontSize: 14, fontFamily: 'monospace', letterSpacing: 2.0, fontWeight: FontWeight.bold),
+                        Text(
+                        widget.mode == VoiceSessionMode.onboarding ? 'THE INTERROGATION' : 'VOICE COACH',
+                        style: const TextStyle(color: Colors.white70, fontSize: 14, fontFamily: 'monospace', letterSpacing: 2.0, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
-                      // Status Pill
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -277,7 +323,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
                 const Spacer(),
 
-                // Central Orb
                 Center(
                   child: GestureDetector(
                     onTap: _handleMicrophoneTap,
@@ -285,26 +330,24 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                       animation: _pulseAnimation,
                       builder: (context, child) {
                         double scale = 1.0;
-                        Color orbColor = Colors.grey.shade800;
                         double blur = 20;
 
                         if (_voiceState == VoiceState.connecting) {
-                          orbColor = Colors.blue;
                           scale = _pulseAnimation.value * 0.9;
                           blur = 30;
                         } else if (_voiceState == VoiceState.listening) {
-                          orbColor = Colors.redAccent; 
                           scale = 1.0 + (_audioLevel * 5).clamp(0.0, 0.5); 
                           blur = 20 + (_audioLevel * 20);
                         } else if (_voiceState == VoiceState.speaking) {
-                          orbColor = Colors.purpleAccent; 
                           scale = _pulseAnimation.value * 1.5; 
                           blur = 60;
                         } else if (_voiceState == VoiceState.thinking) {
-                           orbColor = Colors.amber;
                            scale = 1.1;
                            blur = 40;
                         }
+                        
+                        // VAD Pulse
+                        if (_isUserSpeaking) scale *= 1.1;
 
                         return Transform.scale(
                           scale: scale,
@@ -312,9 +355,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                             width: 200, height: 200,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: orbColor.withOpacity(0.2),
+                              color: _getButtonColor().withOpacity(0.2),
                               boxShadow: [
-                                BoxShadow(color: orbColor.withOpacity(0.6), blurRadius: blur, spreadRadius: blur / 2),
+                                BoxShadow(color: _getButtonColor().withOpacity(0.6), blurRadius: blur, spreadRadius: blur / 2),
                                 BoxShadow(color: Colors.white.withOpacity(0.9), blurRadius: 10, spreadRadius: -50),
                               ],
                             ),
@@ -328,10 +371,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                 
                 const Spacer(),
 
-                // Instruction Text
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: Text(_getInstructionText(), key: ValueKey(_voiceState), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w300, fontFamily: 'Roboto', letterSpacing: 0.5)),
+                  child: Text(_getInstructionText(), key: ValueKey(_getInstructionText()), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w300, fontFamily: 'Roboto', letterSpacing: 0.5)),
                 ),
                 
                 const SizedBox(height: 16),
@@ -340,7 +382,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
                 const SizedBox(height: 40),
                 
-                // Footer
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -354,7 +395,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
             ),
           ),
           
-          if (kDebugMode) const DevToolsOverlay(),
+          // DevToolsOverlay removed per user request for simpler UI
+          // if (kDebugMode) const DevToolsOverlay(),
         ],
       ),
     );

@@ -491,8 +491,10 @@ class VoiceSessionManager {
     // 1. Log reception in Manager
     if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
     
-    // 2. Forward to Screen
-    // onAudioReceived?.call(audioData); // Legacy UI handling
+    // Reset thinking state if we get audio
+    if (_state == VoiceSessionState.thinking) {
+       _setState(VoiceSessionState.active);
+    }
     
     // 2. Play via internal player
     _voicePlayer.playChunk(audioData);
@@ -554,11 +556,39 @@ class VoiceSessionManager {
     }
   }
   
+  Timer? _silenceTimer;
+
   /// Handle voice activity detection.
   void _handleVoiceActivity(bool isActive) {
     if (_isUserSpeaking != isActive) {
       _isUserSpeaking = isActive;
       onUserSpeakingChanged?.call(isActive);
+      
+      // Phase 47: Silence Timeout Logic
+      if (isActive) {
+        // User started speaking, cancel any pending timeout
+        _silenceTimer?.cancel();
+        if (_state == VoiceSessionState.thinking) {
+          // If we were "thinking" but they spoke again, go back to listening
+           _setState(VoiceSessionState.active);
+        }
+      } else {
+        // User stopped speaking, start silence timer
+        _silenceTimer?.cancel();
+        _silenceTimer = Timer(const Duration(milliseconds: 1500), _handleSilenceTimeout);
+      }
+    } else if (isActive) {
+      // Still speaking, ensure timer is cancelled
+      _silenceTimer?.cancel();
+    }
+  }
+
+  /// Called when silence is detected for > 1.5s
+  void _handleSilenceTimeout() {
+    if (_state == VoiceSessionState.active && !_isUserSpeaking) {
+      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Silence detected (1.5s), switching to thinking state');
+      // Visually switch to thinking state to acknowledge input
+      _setState(VoiceSessionState.thinking);
     }
   }
   
@@ -711,6 +741,9 @@ enum VoiceSessionState {
   
   /// Session is paused (microphone muted)
   paused,
+  
+  /// Waiting for AI response
+  thinking, // Phase 47: Silence Detection
   
   /// Disconnecting from AI service
   disconnecting,

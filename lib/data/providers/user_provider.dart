@@ -22,8 +22,8 @@ class UserProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   
   /// Premium status
-  /// Phase 35: Now unified in UserProfile
-  bool get isPremium => _userProfile?.isPremium ?? false;
+  /// Phase 46.5: Force Enabled (Free Tier 2)
+  bool get isPremium => true;
   
   /// Convenience getters for common profile fields
   String get userName => _userProfile?.name ?? '';

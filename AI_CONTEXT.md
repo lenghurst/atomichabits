@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 46.5 - Release Preparation (Voice 2.0)  
+> **Current Phase:** Phase 47 - VAD & Silence Detection  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -92,6 +92,7 @@
 | **45.3** | Onboarding Flow Unification (Manual/Chat → Reveal) | ✅ |
 | **46.2** | iOS Platform Alignment (Podfile & Permissions) | ✅ |
 | **45.4** | Onboarding Persistence (Google Sign-In & Factory Reset) | ✅ |
+| **47** | VAD Silence Timeout & "Thinking" State | ✅ |
 
 ### Key Files Changed (Phase 42-45)
 
@@ -389,6 +390,7 @@ Phase 36 used Python client spoofing (`goog-python-genai/0.1.0`). Phase 37 switc
 - `docs/VERIFICATION_CHECKLIST.md` - Testing protocol
 - `docs/GOOGLE_OAUTH_SETUP.md` - OAuth configuration
 - `docs/ARCHITECTURE_MIGRATION.md` - Provider architecture
+- `docs/DEVICE_TESTING.md` - Device testing & Hotfix guide
 
 ### Gemini Live API
 - `docs/PHASE_38_LOG_CONSOLE.md` - In-App Log Console
@@ -400,9 +402,9 @@ Phase 36 used Python client spoofing (`goog-python-genai/0.1.0`). Phase 37 switc
 
 ## Quick Commands
 
-### Build Debug APK
+### Build Debug APK (Golden Command)
 ```bash
-flutter build apk --debug --dart-define-from-file=secrets.json
+git pull origin main && flutter clean && flutter pub get && flutter run --debug --dart-define-from-file=secrets.json
 ```
 
 ### Run with Verbose Logging
