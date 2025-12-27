@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/supabase_config.dart';
 import '../models/habit_contract.dart';
 import '../models/witness_event.dart';
+import '../notification_service.dart';
 import 'auth_service.dart';
 import 'contract_service.dart';
 
@@ -38,6 +39,7 @@ class WitnessService extends ChangeNotifier {
   // Real-time subscriptions
   RealtimeChannel? _eventsChannel;
   StreamSubscription? _authSubscription;
+  final _eventController = StreamController<WitnessEvent>.broadcast();
   
   // Event cache
   List<WitnessEvent> _pendingEvents = [];
@@ -75,6 +77,9 @@ class WitnessService extends ChangeNotifier {
   /// Last error message
   String? get lastError => _lastError;
   
+  /// Stream of incoming realtime events
+  Stream<WitnessEvent> get eventStream => _eventController.stream;
+
   /// Pending events (unread)
   List<WitnessEvent> get pendingEvents => List.unmodifiable(_pendingEvents);
   
@@ -200,7 +205,10 @@ class WitnessService extends ChangeNotifier {
       // Notify listeners
       notifyListeners();
       
-      // Trigger callback for notification handling
+      // Add to stream
+      _eventController.add(event);
+
+      // Trigger callback for notification handling (Legacy support)
       onEventReceived?.call(event);
       
       // Special handling for high-fives (extra dopamine!)
@@ -652,6 +660,83 @@ class WitnessService extends ChangeNotifier {
   }
   
   // ============================================================
+  // NOTIFICATION WIRING
+  // ============================================================
+
+  /// Wire up realtime events to local notifications
+  ///
+  /// This enables "Simulated Push" - utilizing the existing realtime connection
+  /// to trigger local notifications when the app is running or backgrounded.
+  void listenToRealtimeEvents() {
+    // Initialize notification service (singleton)
+    final notificationService = NotificationService();
+
+    // Listen to the broadcast stream instead of overwriting callbacks
+    _eventController.stream.listen((event) {
+      if (kDebugMode) {
+        debugPrint('WitnessService: Event received in listener: ${event.type}');
+      }
+
+      switch (event.type) {
+        case WitnessEventType.nudgeReceived:
+          notificationService.showNudgeReceivedNotification(
+            witnessName: 'Your Witness',
+            message: event.message ?? 'Time to check in!',
+            contractId: event.contractId,
+            habitId: event.habitId ?? 'unknown',
+          );
+          break;
+
+        case WitnessEventType.highFiveReceived:
+          notificationService.showHighFiveReceivedNotification(
+            witnessName: 'Your Witness',
+            emoji: event.reaction?.emoji ?? '🖐️',
+            message: event.message,
+            contractId: event.contractId,
+          );
+          break;
+
+        case WitnessEventType.driftWarning:
+          notificationService.showDriftWarningNotification(
+            builderName: 'The Builder',
+            habitName: event.habitName ?? 'their habit',
+            contractId: event.contractId,
+            builderId: event.actorId,
+          );
+          break;
+
+        case WitnessEventType.contractAccepted:
+          notificationService.showContractAcceptedNotification(
+            witnessName: 'Your Partner',
+            habitName: event.habitName ?? 'your habit',
+            contractId: event.contractId,
+          );
+          break;
+
+        case WitnessEventType.habitCompleted:
+        case WitnessEventType.streakMilestone:
+          // These are Builder -> Witness events
+          notificationService.showWitnessCompletionNotification(
+            builderName: 'The Builder',
+            habitName: event.habitName ?? 'Habit',
+            identity: event.identity ?? 'someone',
+            contractId: event.contractId,
+            builderId: event.actorId,
+            currentStreak: event.metadata?['streak'] as int?,
+            isMilestone: event.type == WitnessEventType.streakMilestone,
+            milestoneEmoji: event.metadata?['milestone_emoji'] as String?,
+            milestoneMessage: event.metadata?['milestone_message'] as String?,
+          );
+          break;
+
+        default:
+          // Other events don't trigger notifications
+          break;
+      }
+    });
+  }
+
+  // ============================================================
   // HELPERS
   // ============================================================
   
@@ -671,6 +756,7 @@ class WitnessService extends ChangeNotifier {
   void dispose() {
     _unsubscribeFromEvents();
     _authSubscription?.cancel();
+    _eventController.close();
     super.dispose();
   }
 }
