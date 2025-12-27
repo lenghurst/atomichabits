@@ -346,8 +346,9 @@ class AppState extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('🏭 FACTORY RESET: Checking for reset request...');
         // Force reset every time for now as per user request
-        final shouldReset = true; 
+        final shouldReset = false; // Set to true to force factory reset on start 
         
+        // ignore: dead_code
         if (shouldReset) {
           debugPrint('⚠️ FACTORY RESET: Wiping all data...');
           

@@ -14,6 +14,7 @@ import 'openai_live_service.dart';
 import 'voice_api_service.dart';
 import '../../config/ai_model_config.dart';
 import '../enums/voice_session_mode.dart';
+import 'stream_voice_player.dart';
 
 /// Voice Session Manager
 /// 
@@ -75,6 +76,7 @@ class VoiceSessionManager {
   // === SERVICES ===
   late final AudioRecordingService _audioService;
   late final VoiceApiService _voiceService;
+  late final StreamVoicePlayer _voicePlayer;
   
   /// Expose VoiceApiService for debug access
   VoiceApiService? get voiceService => _voiceService;
@@ -247,6 +249,17 @@ class VoiceSessionManager {
         onToolCall: _handleToolCall, // Phase 42: Tool call handling
       );
     }
+    
+    // Initialize Voice Player
+    _voicePlayer = StreamVoicePlayer(
+      onPlayingStateChanged: (isPlaying) {
+        // Use player state to drive UI animations for better sync
+        if (_isAISpeaking != isPlaying) {
+          _isAISpeaking = isPlaying;
+          onAISpeakingChanged?.call(isPlaying);
+        }
+      },
+    );
   }
   
   /// Generate the system instruction based on session mode (Phase 42)
@@ -377,6 +390,9 @@ class VoiceSessionManager {
         debugPrint('VoiceSessionManager: Session started successfully');
       }
       
+      // Initialize player
+      await _voicePlayer.initialize();
+      
       return true;
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -401,6 +417,7 @@ class VoiceSessionManager {
     
     try {
       await _audioService.stopRecording();
+      await _voicePlayer.stop();
       await _voiceService.disconnect();
     } catch (e) {
       if (kDebugMode) {
@@ -420,6 +437,7 @@ class VoiceSessionManager {
     if (_state != VoiceSessionState.active) return;
     
     await _audioService.pauseRecording();
+    await _voicePlayer.stop(); // Clear buffer and stop playing
     _setState(VoiceSessionState.paused);
     
     if (kDebugMode) {
@@ -432,6 +450,7 @@ class VoiceSessionManager {
     if (_state != VoiceSessionState.paused) return;
     
     await _audioService.resumeRecording();
+    await _voicePlayer.enforceSpeaker(); // Re-enforce speaker
     _setState(VoiceSessionState.active);
     
     if (kDebugMode) {
@@ -476,7 +495,10 @@ class VoiceSessionManager {
     if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
     
     // 2. Forward to Screen
-    onAudioReceived?.call(audioData);
+    // onAudioReceived?.call(audioData); // Legacy UI handling
+    
+    // 2. Play via internal player
+    _voicePlayer.playChunk(audioData);
     
     // 3. Update Audio Level (for Visualizer)
     final level = _calculateRms(audioData);
@@ -546,8 +568,8 @@ class VoiceSessionManager {
   /// Handle AI speaking state changes.
   void _handleAISpeakingChanged(bool isSpeaking) {
     if (_isAISpeaking != isSpeaking) {
-      _isAISpeaking = isSpeaking;
-      onAISpeakingChanged?.call(isSpeaking);
+      // _isAISpeaking = isSpeaking; // Driven by player now
+      // onAISpeakingChanged?.call(isSpeaking); // Driven by player now
     }
   }
   
@@ -675,6 +697,7 @@ class VoiceSessionManager {
   Future<void> dispose() async {
     await endSession();
     await _audioService.dispose();
+    await _voicePlayer.dispose();
   }
 }
 

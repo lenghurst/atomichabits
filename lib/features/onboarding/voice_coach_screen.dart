@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -25,10 +22,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   VoiceState _voiceState = VoiceState.idle;
   
   // Audio Playback
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  final List<int> _audioBuffer = []; 
-  bool _isPlaying = false;
-  static const int _bufferingThreshold = 24000; // ~0.5s at 24kHz 16-bit
+  // Removed local AudioPlayer - handled by VoiceSessionManager via StreamVoicePlayer
 
   // Visualization
   double _audioLevel = 0.0;
@@ -43,38 +37,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     
-    // 1. Initial Speaker Enforcement
-    _enforceSpeakerOutput();
+    // 1. Initial Speaker Enforcement - Handled by Manager now
+    // _enforceSpeakerOutput();
     
     _initializePulseAnimation();
     _initializeVoiceSession();
   }
   
-  /// CRITICAL: Helper to force audio to speaker, even if mic is on
-  Future<void> _enforceSpeakerOutput() async {
-    if (kDebugMode) debugPrint('VoiceCoachScreen: 🔊 Enforcing Speaker Output...');
-    
-    await _audioPlayer.setVolume(1.0); // Ensure volume is max
-    
-    await AudioPlayer.global.setAudioContext(AudioContext(
-      android: const AudioContextAndroid(
-        isSpeakerphoneOn: true,
-        stayAwake: true,
-        contentType: AndroidContentType.speech,
-        usageType: AndroidUsageType.assistant,
-        audioFocus: AndroidAudioFocus.gain,
-      ),
-      iOS: AudioContextIOS(
-        // 'playAndRecord' is required to hear audio while mic is active
-        category: AVAudioSessionCategory.playAndRecord, 
-        options: {
-          AVAudioSessionOptions.defaultToSpeaker, 
-          AVAudioSessionOptions.allowBluetooth,
-          AVAudioSessionOptions.allowAirPlay
-        },
-      ),
-    ));
-  }
+  // _enforceSpeakerOutput moved to StreamVoicePlayer service
 
   void _initializePulseAnimation() {
     _pulseController = AnimationController(
@@ -100,7 +70,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     
     _sessionManager = VoiceSessionManager(
       onStateChanged: _handleStateChanged,
-      onAudioReceived: _handleAudioReceived,
+      onAudioReceived: null, // Audio routed to StreamVoicePlayer internal
       onError: _handleError,
       onAudioLevelChanged: (level) {
         if (mounted) setState(() => _audioLevel = level);
@@ -113,10 +83,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     try {
       await _sessionManager!.startSession();
       
-      // 2. CRITICAL FIX: Re-enforce speaker AFTER recording starts
-      // The recording plugin often steals the session and sets it to "Record Only"
-      // calling this here overrides it back to "PlayAndRecord"
-      await _enforceSpeakerOutput(); 
+      // 2. CRITICAL FIX: Speaker enforcement handled by VoiceSessionManager automatically 
 
        setState(() {
         _isConnected = true;
@@ -136,94 +103,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
     _sessionManager?.dispose();
     super.dispose();
   }
 
   // --- Audio Handling ---
 
-  void _handleAudioReceived(Uint8List audioData) {
-    if (!mounted) return;
-    // Buffer logic...
-    _audioBuffer.addAll(audioData);
-    if (!_isPlaying && _audioBuffer.length >= _bufferingThreshold) {
-      _playBufferedAudio();
-    }
-  }
-
-  Future<void> _playBufferedAudio() async {
-    if (_audioBuffer.isEmpty) {
-      _isPlaying = false;
-      return;
-    }
-
-    _isPlaying = true;
-    final List<int> chunk = List.from(_audioBuffer);
-    _audioBuffer.clear();
-
-    try {
-      final wavBytes = _addWavHeader(Uint8List.fromList(chunk));
-      
-      if (kDebugMode) debugPrint('VoiceCoachScreen: ▶️ Playing ${chunk.length} bytes...');
-      
-      await _audioPlayer.play(BytesSource(wavBytes));
-      
-      // Wait for completion with timeout
-      try {
-        await _audioPlayer.onPlayerComplete.first.timeout(
-          Duration(milliseconds: (chunk.length / 48).round() + 1000),
-          onTimeout: () => null,
-        );
-      } catch (_) {}
-      
-      if (!mounted) return;
-
-      if (_audioBuffer.isNotEmpty) {
-        _playBufferedAudio();
-      } else {
-        _isPlaying = false;
-      }
-    } catch (e) {
-      debugPrint('VoiceCoachScreen: ❌ Playback Error: $e');
-      _isPlaying = false;
-    }
-  }
-
-  Uint8List _addWavHeader(Uint8List pcmData) {
-    const int sampleRate = 24000;
-    const int numChannels = 1;
-    const int bitsPerSample = 16;
-    
-    final int byteRate = sampleRate * numChannels * bitsPerSample ~/ 8;
-    final int blockAlign = numChannels * bitsPerSample ~/ 8;
-    final int dataSize = pcmData.length;
-    final int fileSize = 36 + dataSize;
-
-    final header = Uint8List(44);
-    final view = ByteData.view(header.buffer);
-
-    header.setRange(0, 4, ascii.encode('RIFF'));
-    view.setUint32(4, fileSize, Endian.little);
-    header.setRange(8, 12, ascii.encode('WAVE'));
-    header.setRange(12, 16, ascii.encode('fmt '));
-    view.setUint32(16, 16, Endian.little);
-    view.setUint16(20, 1, Endian.little);
-    view.setUint16(22, numChannels, Endian.little);
-    view.setUint32(24, sampleRate, Endian.little);
-    view.setUint32(28, byteRate, Endian.little);
-    view.setUint16(32, blockAlign, Endian.little);
-    view.setUint16(34, bitsPerSample, Endian.little);
-    header.setRange(36, 40, ascii.encode('data'));
-    view.setUint32(40, dataSize, Endian.little);
-
-    final wavFile = Uint8List(44 + dataSize);
-    wavFile.setRange(0, 44, header);
-    wavFile.setRange(44, 44 + dataSize, pcmData);
-    
-    return wavFile;
-  }
+  // --- Audio Handling ---
+  // Managed by VoiceSessionManager now
 
   // --- State Handlers ---
 
@@ -262,9 +149,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     if (!mounted) return;
     setState(() {
       if (isSpeaking) {
-        if (!_isPlaying && _audioBuffer.isNotEmpty) {
-          _playBufferedAudio();
-        }
         _voiceState = VoiceState.speaking;
       } else if (_sessionManager?.isActive == true) {
         _voiceState = VoiceState.listening;
@@ -273,9 +157,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   void _handleTurnComplete() {
-     if (!_isPlaying && _audioBuffer.isNotEmpty) {
-        _playBufferedAudio();
-     }
      if (_sessionManager?.isActive == true) {
       if (mounted) setState(() => _voiceState = VoiceState.listening);
     }
@@ -290,9 +171,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     
     if (_sessionManager!.isActive) {
       await _sessionManager!.pauseSession();
-      _audioBuffer.clear(); 
-      await _audioPlayer.stop(); 
-      _isPlaying = false;
       _pulseController.stop();
       setState(() => _voiceState = VoiceState.idle);
     } else {
@@ -303,7 +181,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       }
       _pulseController.repeat(reverse: true);
       // Ensure speaker is still enforced if we resumed
-      await _enforceSpeakerOutput();
+      // await _enforceSpeakerOutput(); // handled by manager
       setState(() => _voiceState = VoiceState.listening);
     }
   }
