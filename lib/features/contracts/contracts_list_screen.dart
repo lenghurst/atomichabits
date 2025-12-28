@@ -97,6 +97,7 @@ class _ContractsListScreenState extends State<ContractsListScreen>
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => contractService.loadContracts(),
+            tooltip: 'Refresh contracts',
           ),
         ],
       ),
