@@ -18,6 +18,7 @@ import '../../data/app_state.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../../data/enums/voice_session_mode.dart'; // Added for Unification
+import '../../data/providers/psychometric_provider.dart'; // Added for Commitment Checks
 
 // Feature screens
 import '../../features/onboarding/onboarding_screen.dart';
@@ -28,7 +29,6 @@ import '../../features/onboarding/identity_first/identity_access_gate_screen.dar
 import '../../features/onboarding/identity_first/witness_investment_screen.dart';
 import '../../features/onboarding/identity_first/pact_tier_selector_screen.dart';
 
-import '../../features/onboarding/screens/value_prop_screen.dart';
 import '../../features/onboarding/screens/permissions_screen.dart';
 import '../../features/onboarding/screens/loading_insights_screen.dart';
 import '../../features/onboarding/screens/tier_selection_screen.dart';
@@ -46,6 +46,10 @@ import '../../features/witness/witness_accept_screen.dart';
 import '../../features/witness/witness_dashboard.dart';
 import '../../features/onboarding/pact_reveal_screen.dart';
 import '../../features/onboarding/identity_first/sherlock_permission_screen.dart';
+import '../../features/onboarding/screens/goal_screening_screen.dart';
+import '../../features/onboarding/screens/oracle_coach_screen.dart';
+import '../../features/onboarding/screens/misalignment_screen.dart';
+import '../../features/onboarding/identity_first/value_proposition_screen.dart';
 
 import 'app_routes.dart';
 
@@ -89,6 +93,37 @@ class AppRouter {
                                location == AppRoutes.home ||
                                AppRoutes.nicheRoutes.contains(location);
     
+    // Guard 0: Commitment Alignment (Phase 5)
+    // Prevents Side Door access to deep onboarding steps without verified commitment
+    
+    // Check 1: Permission Flags (AppState)
+    final commitmentRedirect = appState.checkCommitment(location);
+    if (commitmentRedirect != null) {
+      if (kDebugMode) debugPrint('AppRouter: 🛑 Commitment Broken (Permissions) -> Redirecting to $commitmentRedirect');
+      return commitmentRedirect;
+    }
+
+    // Check 2: Data Integrity (Psychometric Profile)
+    // Critical: Must have valid "Holy Trinity" data to enter Screening/Oracle
+    if (location.startsWith('/onboarding/oracle') || location.startsWith('/onboarding/screening')) {
+      // Exception: If we have completed onboarding fully, allow access (e.g. re-visiting)
+      if (!appState.hasCompletedOnboarding) {
+         try {
+           final psychProvider = context.read<PsychometricProvider>();
+           if (!psychProvider.profile.hasHolyTrinity) {
+              if (kDebugMode) debugPrint('AppRouter: 🛑 Commitment Broken (Missing Data) -> Redirecting to Misalignment');
+              // If they don't have the data, they haven't done the work.
+              // We could send them to Sherlock (Start) or Misalignment (Fail).
+              // Per v4 spec: "User Commitment Misalignment Detected" if steps skipped.
+              return AppRoutes.misalignment;
+           }
+         } catch (e) {
+           // If provider fails, fail safe to home
+           return AppRoutes.home;
+         }
+      }
+    }
+    
     // Guard 1: Redirect authenticated users away from onboarding
     // Exception: Allow access to voice coach from dashboard
     if (appState.hasCompletedOnboarding && 
@@ -124,7 +159,7 @@ class AppRouter {
       // Phase 29: Value First Flow (Hook Screen)
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const ValuePropScreen(),
+        builder: (context, state) => const ValuePropositionScreen(),
       ),
       
       GoRoute(
@@ -197,6 +232,24 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.pactReveal,
         builder: (context, state) => const PactRevealScreen(),
+      ),
+
+      // Step 8: Goal Screening
+      GoRoute(
+        path: AppRoutes.screening,
+        builder: (context, state) => const GoalScreeningScreen(),
+      ),
+
+      // Step 9: Oracle Coach
+      GoRoute(
+        path: AppRoutes.oracle,
+        builder: (context, state) => const OracleCoachScreen(),
+      ),
+
+      // Step 10: Misalignment
+      GoRoute(
+        path: AppRoutes.misalignment,
+        builder: (context, state) => const MisalignmentScreen(),
       ),
       
       // ============================================================

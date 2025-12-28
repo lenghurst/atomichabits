@@ -11,4 +11,7 @@ enum VoiceSessionMode {
   /// Legacy mode: Uses systemInstruction directly
   /// For backward compatibility
   legacy,
+
+  /// Oracle mode: Future Compass / Vision setting (Step 9)
+  oracle,
 }

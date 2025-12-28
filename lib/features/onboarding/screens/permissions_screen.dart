@@ -182,10 +182,8 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                     // Skip for now, maybe? Or mandate it?
-                     // Verify "I need to see everything" usually implies mandatory.
-                     // But for UX, maybe allow skip.
-                     context.push(AppRoutes.onboardingLoading);
+                     // Strict Commitment: Declining permissions leads to Misalignment (Fail State)
+                     context.go(AppRoutes.misalignment);
                   },
                   child: Text(
                     'Not now',

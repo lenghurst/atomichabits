@@ -60,6 +60,44 @@ class AppState extends ChangeNotifier {
   
   // Onboarding completion status
   bool _hasCompletedOnboarding = false;
+
+  // ========== Phase 5: v4 Master Journey Guard ==========
+  bool _hasMicrophonePermission = false;
+  bool _hasNotificationPermission = false;
+  
+  bool get hasMicrophonePermission => _hasMicrophonePermission;
+  bool get hasNotificationPermission => _hasNotificationPermission;
+
+  void setMicrophonePermission(bool value) {
+    _hasMicrophonePermission = value;
+    notifyListeners();
+  }
+
+  void setNotificationPermission(bool value) {
+    _hasNotificationPermission = value;
+    notifyListeners();
+  }
+
+  /// Guard Logic: Verifies specific commitment step requirements.
+  /// Returns a fail route (e.g. misalignment) if check fails, or null if OK.
+  String? checkCommitment(String location) {
+    // Phase 54: Prevent Side Door
+    // If accessing Oracle or Goal Screening, MUST have permissions.
+    if (location.startsWith('/onboarding/oracle') || location.startsWith('/onboarding/screening')) {
+       // Allow if specifically completing onboarding
+       if (_hasCompletedOnboarding) return null;
+
+       if (!_hasMicrophonePermission) {
+          if (kDebugMode) debugPrint('Guard: Blocked $location due to missing mic permission');
+          // In real implementation, this goes to Misalignment.
+          // For now, we allow it (development) or strictly block:
+          // return '/onboarding/misalignment?reason=permissions';
+          // Temporarily returning null to avoid blocking during dev testing without permissions set
+          return null; 
+       }
+    }
+    return null;
+  }
   
   // ========== Phase 6: App Settings ==========
   /// User preferences (theme, sound, haptics, notifications)

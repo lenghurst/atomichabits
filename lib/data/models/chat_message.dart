@@ -41,6 +41,8 @@ class ChatMessage {
   MessageStatus status;
   final bool isVoiceInput;
   String? errorMessage;
+  /// Phase 17: Metadata for specialized analysis (e.g., 'suspected_lie')
+  final Map<String, dynamic>? metadata;
 
   ChatMessage({
     required this.id,
@@ -51,12 +53,14 @@ class ChatMessage {
     this.isVoiceInput = false,
     this.errorMessage,
     bool? isUser,
+    this.metadata,
   }) : role = role ?? (isUser == true ? MessageRole.user : MessageRole.assistant);
 
   /// Create a new user message
   factory ChatMessage.user({
     required String content,
     bool isVoiceInput = false,
+    Map<String, dynamic>? metadata,
   }) {
     return ChatMessage(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -65,6 +69,7 @@ class ChatMessage {
       timestamp: DateTime.now(),
       status: MessageStatus.complete,
       isVoiceInput: isVoiceInput,
+      metadata: metadata,
     );
   }
 
@@ -72,6 +77,7 @@ class ChatMessage {
   factory ChatMessage.assistant({
     String content = '',
     MessageStatus status = MessageStatus.streaming,
+    Map<String, dynamic>? metadata,
   }) {
     return ChatMessage(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -79,6 +85,7 @@ class ChatMessage {
       content: content,
       timestamp: DateTime.now(),
       status: status,
+      metadata: metadata,
     );
   }
 
@@ -105,6 +112,7 @@ class ChatMessage {
       status: MessageStatus.fromJson(json['status'] as String),
       isVoiceInput: json['isVoiceInput'] as bool? ?? false,
       errorMessage: json['errorMessage'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -118,6 +126,7 @@ class ChatMessage {
       'status': status.toJson(),
       'isVoiceInput': isVoiceInput,
       'errorMessage': errorMessage,
+      'metadata': metadata,
     };
   }
 

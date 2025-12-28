@@ -265,7 +265,7 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
             ),
           ),
           child: Text(
-            "Don't rely on willpower.\nRely on your people.",
+            "Don't rely on willpower.\nRely on the Protocol.",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -445,10 +445,11 @@ class _ValuePropositionScreenState extends State<ValuePropositionScreen>
               elevation: 0,
             ),
             child: const Text(
-              "Get Started",
+              "Initiate Behavioral Protocol",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
           ),

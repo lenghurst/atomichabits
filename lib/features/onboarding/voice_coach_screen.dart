@@ -249,6 +249,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     if (_voiceState == VoiceState.listening || _isUserSpeaking) return Colors.greenAccent;
     if (_voiceState == VoiceState.connecting) return Colors.blue;
     if (_voiceState == VoiceState.ready) return Colors.blueGrey;
+    
+    // Oracle Mode Default
+    if (widget.mode == VoiceSessionMode.oracle) return const Color(0xFFFFD700); // Gold
+    
     return Colors.grey;
   }
   
@@ -313,10 +317,15 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                 gradient: RadialGradient(
                   center: Alignment.center,
                   radius: 1.5,
-                  colors: [
-                    Colors.deepPurple.shade900.withOpacity(0.4),
-                    Colors.black,
-                  ],
+                  colors: widget.mode == VoiceSessionMode.oracle 
+                      ? [
+                          const Color(0xFFB45309).withOpacity(0.3), // Amber-700
+                          Colors.black,
+                        ]
+                      : [
+                          Colors.deepPurple.shade900.withOpacity(0.4),
+                          Colors.black,
+                        ],
                 ),
               ),
             ),
@@ -333,8 +342,18 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                       const Icon(Icons.record_voice_over, color: Colors.white54, size: 20),
                       const SizedBox(width: 12),
                         Text(
-                        widget.mode == VoiceSessionMode.onboarding ? 'SHERLOCK SCREENING' : 'VOICE COACH',
-                        style: const TextStyle(color: Colors.white70, fontSize: 14, fontFamily: 'monospace', letterSpacing: 2.0, fontWeight: FontWeight.bold),
+                        widget.mode == VoiceSessionMode.onboarding 
+                            ? 'SHERLOCK SCREENING' 
+                            : widget.mode == VoiceSessionMode.oracle
+                                ? 'ORACLE COACH'
+                                : 'VOICE COACH',
+                        style: TextStyle(
+                            color: widget.mode == VoiceSessionMode.oracle ? const Color(0xFFFFD700) : Colors.white70,
+                            fontSize: 14, 
+                            fontFamily: 'monospace', 
+                            letterSpacing: 2.0, 
+                            fontWeight: FontWeight.bold
+                        ),
                       ),
                       const Spacer(),
                       _buildStatusIndicator(),

@@ -57,6 +57,15 @@ abstract class AppRoutes {
 
   /// Sherlock Screening Questions (Voice)
   static const String onboardingSherlock = '/onboarding/sherlock';
+
+  /// Step 8: Goal Screening (Text-Based)
+  static const String screening = '/onboarding/screening';
+
+  /// Step 9: Oracle Coach (Voice-Based)
+  static const String oracle = '/onboarding/oracle';
+
+  /// Step 10: Commitment Misalignment (Fail State)
+  static const String misalignment = '/onboarding/misalignment';
   
   /// Sherlock Permission Screen (The Data Handshake)
   /// Requests sensitive scopes (Calendar, YouTube) progressively

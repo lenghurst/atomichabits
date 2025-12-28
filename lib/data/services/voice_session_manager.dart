@@ -408,6 +408,13 @@ class VoiceSessionManager {
       return false;
     }
   }
+
+  /// Stub for Step 9: Save progression from Oracle/Sherlock
+  Future<void> saveProgression() async {
+    // Phase 54: This will commit gathered data to the engine.
+    // For now, it's a stub to allow the v4 flow to compile/run.
+    if (kDebugMode) debugPrint('VoiceSessionManager: Stub saveProgression() called.');
+  }
   
   /// End the current voice session.
   Future<void> endSession() async {

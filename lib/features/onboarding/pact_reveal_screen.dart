@@ -8,7 +8,7 @@ import '../../data/providers/psychometric_provider.dart';
 import '../../data/providers/user_provider.dart';
 import '../../data/services/gemini_chat_service.dart';
 import '../../domain/services/psychometric_engine.dart';
-import '../../data/app_state.dart';
+
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/entities/psychometric_profile_extensions.dart';
 import 'widgets/pact_identity_card.dart';
@@ -148,21 +148,10 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     final psychometricProvider = context.read<PsychometricProvider>();
     await psychometricProvider.finalizeOnboarding();
     
-    // 2. Mark onboarding complete (new architecture)
-    final userProvider = context.read<UserProvider>();
-    await userProvider.completeOnboarding();
-    
-    // 3. Mark onboarding complete (legacy AppState - for router guard)
-    // This is the "bridge" during Phase 34 Shadow Wiring
-    final appState = context.read<AppState>();
-    await appState.completeOnboarding();
-    
-    if (!mounted) return;
-    
-    // 4. Navigate to Habit Formation (Voice Coach - Step 2)
-    // "Now let's build your first habit."
+    // 4. Navigate to Step 8: Goal Screening
+    // "Now let's align your Future Self."
     if (mounted) {
-      context.go(AppRoutes.voiceOnboarding);
+      context.go(AppRoutes.screening);
     }
   }
 

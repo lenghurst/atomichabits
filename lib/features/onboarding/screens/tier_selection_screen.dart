@@ -30,29 +30,67 @@ class TierSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               
-              // Tier 1 Card
-              _buildTierCard(
-                context,
-                title: 'Standard Protocol',
-                subtitle: 'Daily text Check-ins',
-                price: 'Free',
-                features: ['Text-based AI Coach', 'Basic Analytics', 'Manual Tracking'],
-                color: Colors.blueGrey.shade800,
-                onTap: () {
-                  // Tier 1 Logic
-                   context.push(AppRoutes.manualOnboarding);
-                },
+              // Tier 1 Card (Standard) - LOCKED / ALPHA
+              Opacity(
+                opacity: 0.5,
+                child: Stack(
+                  children: [
+                    _buildTierCard(
+                      context,
+                      title: 'Observer Mode',
+                      subtitle: 'Passive Tracking',
+                      price: 'Free',
+                      features: ['Manual Tracking', 'Basic Analytics'],
+                      color: Colors.blueGrey.shade900,
+                      onTap: () {
+                         // Disabled
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           const SnackBar(content: Text("Currently in Alpha testing with First Adopter Group")),
+                         );
+                      },
+                    ),
+                    // Alpha Overlay
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Center(
+                          child: Transform.rotate(
+                            angle: -0.2,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white24),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                "ALPHA LOCKED",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               
-              // Tier 2 Card (Voice)
+              // Tier 2 Card (Commitment) - PRIMARY & ONLY OPTION
               _buildTierCard(
                 context,
-                title: 'High-Stakes Protocol',
-                subtitle: 'Voice Coaching & Sherlock',
+                title: 'Commitment Protocol',
+                subtitle: 'High-Stakes Behavioral Architecture',
                 price: '\$9.99/mo',
-                features: ['Real-time Voice Calls', 'Sherlock Behavioral Analysis', 'Deep Insights'],
-                color: Colors.deepPurple.shade900,
+                features: ['Sherlock Intelligence', 'Oracle Vision', 'Detailed Behavioral Audit'],
+                color: const Color(0xFF312E81), // Indigo 900
                 isRecommended: true,
                 onTap: () {
                    // Tier 2 Logic -> Sherlock Screening

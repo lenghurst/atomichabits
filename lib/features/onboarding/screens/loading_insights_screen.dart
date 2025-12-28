@@ -26,8 +26,8 @@ class _LoadingInsightsScreenState extends State<LoadingInsightsScreen> with Sing
   }
 
   Future<void> _runSequence() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _statusText = 'Identifying resistance patterns...');
+    // Specific Sequence from v4 Spec:
+    // "Parsing behavioral data..." -> "Generating insights..."
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) setState(() => _statusText = 'Generating insights...');
     await Future.delayed(const Duration(seconds: 2));

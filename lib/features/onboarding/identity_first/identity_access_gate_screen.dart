@@ -591,14 +591,16 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
                       const SizedBox(height: 24),
 
-                      // "Secure Your Commitment" label
-                      const Text(
-                        'SECURE YOUR COMMITMENT',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF94A3B8),
-                          letterSpacing: 1.0,
+                      // "Secure Your Commitment" label - Shifted to be less aggressive
+                      Center(
+                        child: Text(
+                          'FINAL STEP: SECURE YOUR IDENTITY',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                            letterSpacing: 1.5,
+                          ),
                         ),
                       ),
 
