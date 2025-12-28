@@ -1,18 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:provider/provider.dart'; // Added for context.read
+import 'package:provider/provider.dart'; 
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 
 import '../../data/services/voice_session_manager.dart';
-import '../../data/providers/user_provider.dart'; // Added
-import '../../data/providers/psychometric_provider.dart'; // Added
-import '../../data/providers/settings_provider.dart'; // Added for Haptics
-import '../../data/models/user_profile.dart'; // Added
+import '../../data/providers/user_provider.dart'; 
+import '../../data/providers/psychometric_provider.dart'; 
+import '../../data/providers/settings_provider.dart'; 
+import '../../data/models/user_profile.dart'; 
 
-
-import '../../data/enums/voice_session_mode.dart'; // Added
+import '../../data/enums/voice_session_mode.dart'; 
 
 class VoiceCoachScreen extends StatefulWidget {
   final VoiceSessionMode mode;
@@ -40,6 +39,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   late Animation<double> _pulseAnimation;
   
   bool _isConnected = false;
+  
+  // Phase 55: Visual Deduction Feedback
+  String? _deductionStatus;
+  Timer? _deductionTimer;
 
   late PsychometricProvider _psychometricProvider;
 
@@ -82,6 +85,28 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     }
   }
 
+  // Phase 55: The Deduction Flash
+  void _handleTraitUpdated(String trait, dynamic value) {
+    if (!mounted) return;
+    
+    // 1. Haptic Feedback (Heavy Impact for "Locked In" feel)
+    context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
+    
+    setState(() {
+      // 2. Visual Status Override
+      _deductionStatus = "⚖️ DEDUCTION: $value";
+      
+      // 3. Visual Pulse (Green Flash)
+      // We momentarily speed up the pulse or change its color in _buildVisualizer
+    });
+    
+    // Clear the status after 3 seconds
+    _deductionTimer?.cancel();
+    _deductionTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _deductionStatus = null);
+    });
+  }
+
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
     
@@ -100,7 +125,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         userProfile: safeUser,
         psychometricProfile: psychometricProvider.profile,
         onStateChanged: _handleStateChanged,
-        onAudioReceived: null, // Routed internally
+        onAudioReceived: null, 
         onError: _handleError,
         onAudioLevelChanged: (level) {
           if (mounted) setState(() => _audioLevel = level);
@@ -108,6 +133,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         onAISpeakingChanged: _handleAISpeakingChanged,
         onUserSpeakingChanged: _handleUserSpeakingChanged,
         onTurnComplete: _handleTurnComplete,
+        onTraitUpdated: _handleTraitUpdated, // Wired for Coaching too (Feedback loop)
       );
     } else {
       // Onboarding / Sherlock Mode
@@ -123,7 +149,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         onAISpeakingChanged: _handleAISpeakingChanged,
         onUserSpeakingChanged: _handleUserSpeakingChanged,
         onTurnComplete: _handleTurnComplete,
-        // Phase 42: Tool calls are handled internally by the manager for onboarding
+        onTraitUpdated: _handleTraitUpdated, // Phase 55: Wired for Sherlock
       );
     }
 
@@ -135,7 +161,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           _voiceState = VoiceState.idle;
         });
       } else {
-        // State change handled by onStateChanged or onError, but explicit fallback here
          if (mounted && !_isConnected) {
             setState(() {
               _isConnected = false;
@@ -159,6 +184,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     _psychometricProvider.removeListener(_onPsychometricUpdate);
     _pulseController.dispose();
     _sessionManager?.dispose();
+    _deductionTimer?.cancel();
     super.dispose();
   }
 
@@ -186,7 +212,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           break;
         case VoiceSessionState.thinking:
            _voiceState = VoiceState.thinking;
-           _pulseController.repeat(reverse: true); // Keep pulsing but maybe different color (handled by build)
+           _pulseController.repeat(reverse: true); 
            break;
         case VoiceSessionState.error:
           _voiceState = VoiceState.error;
@@ -212,12 +238,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     });
   }
   
-  /// VAD Handler
   void _handleUserSpeakingChanged(bool isSpeaking) {
     if (!mounted) return;
     setState(() {
       _isUserSpeaking = isSpeaking;
-      // Fix: If user speaks, force state to listening to handle interruptions
       if (isSpeaking && _voiceState == VoiceState.speaking) {
          _voiceState = VoiceState.listening;
       }
@@ -226,17 +250,16 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
   void _handleTurnComplete() {
      if (_sessionManager?.isActive == true) {
-       // Manual Mode: Mic stays CLOSED after AI turn. User must tap to speak.
-       // This prevents "stuck" listening states.
        if (mounted) setState(() => _voiceState = VoiceState.idle);
     }
   }
 
-
-
   // --- UI Helpers ---
 
   String _getInstructionText() {
+    // Phase 55: Deduction Override
+    if (_deductionStatus != null) return _deductionStatus!;
+
     switch (_voiceState) {
       case VoiceState.idle: return 'Initialize Link';
       case VoiceState.connecting: return 'Authenticating...';
@@ -251,57 +274,49 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   String _getMicButtonLabel() {
     if (_voiceState == VoiceState.speaking) return 'Locked (AI Speaking)';
     if (_voiceState == VoiceState.thinking) return 'Processing...';
-    if (_voiceState == VoiceState.listening) return 'Release to Send'; // Active
-    if (_voiceState == VoiceState.idle) return 'Tap to Connect'; // Initial
+    if (_voiceState == VoiceState.listening) return 'Release to Send'; 
+    if (_voiceState == VoiceState.idle) return 'Tap to Connect'; 
     if (_voiceState == VoiceState.ready) return 'Hold to Speak';
-    // Default fallback
     return 'Hold to Speak'; 
   }
 
   Color _getOrbColor() {
+    // Phase 55: Deduction Flash Color (Gold)
+    if (_deductionStatus != null) return const Color(0xFFFFD700);
+
     if (_voiceState == VoiceState.speaking) return Colors.purpleAccent;
     if (_voiceState == VoiceState.thinking) return Colors.amber;
     if (_voiceState == VoiceState.listening || _isUserSpeaking) return Colors.greenAccent;
     if (_voiceState == VoiceState.connecting) return Colors.blue;
     if (_voiceState == VoiceState.ready) return Colors.blueGrey;
     
-    // Oracle Mode Default
-    if (widget.mode == VoiceSessionMode.oracle) return const Color(0xFFFFD700); // Gold
+    if (widget.mode == VoiceSessionMode.oracle) return const Color(0xFFFFD700); 
     
     return Colors.grey;
   }
   
   Color _getMicButtonColor() {
-    if (_voiceState == VoiceState.speaking) return Colors.white10; // Locked visually
-    if (_voiceState == VoiceState.listening) return Colors.green; // Active recording
-    return Colors.white; // Default idle
+    if (_voiceState == VoiceState.speaking) return Colors.white10; 
+    if (_voiceState == VoiceState.listening) return Colors.green; 
+    return Colors.white; 
   }
 
   // --- Input Handlers (New) ---
 
-  
   Future<void> _handleMicTap() async {
     context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
     
-    // Tap Logic:
-    // 1. AI Speaking -> Interrupt
-    // 2. Idle -> Lock Mic (Start)
-    // 3. Listening -> Commit (Send)
-    
     if (_voiceState == VoiceState.speaking) {
-       // Phase 51: Lockdown - User cannot interrupt AI
        context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
        return; 
     }
     
     if (_voiceState == VoiceState.listening) {
-       // Stop & Send
        await _sessionManager?.commitUserTurn();
        setState(() => _voiceState = VoiceState.thinking);
        return;
     }
     
-    // Start / Resume (Lock Mode)
     if (_sessionManager?.state == VoiceSessionState.paused) {
       await _sessionManager?.resumeSession();
     } else {
@@ -312,7 +327,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
   Future<void> _onSessionComplete() async {
     await _sessionManager?.endSession();
-    // Mark completion in Hive via UserProvider
     if (mounted) {
       await context.read<UserProvider>().completeOnboarding();
       context.go(AppRoutes.pactReveal);
@@ -325,7 +339,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -334,7 +347,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                   radius: 1.5,
                   colors: widget.mode == VoiceSessionMode.oracle 
                       ? [
-                          const Color(0xFFB45309).withOpacity(0.3), // Amber-700
+                          const Color(0xFFB45309).withOpacity(0.3),
                           Colors.black,
                         ]
                       : [
@@ -349,7 +362,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Row(
@@ -378,25 +390,30 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
 
                 const Spacer(),
 
-                // 1. Visualizer (The Orb / Avatar)
                 _buildVisualizer(),
                 
                 const SizedBox(height: 20),
                 
-                // State Label
-                Text(
-                  _getInstructionText(),
-                  style: const TextStyle(color: Colors.white70, fontSize: 16, letterSpacing: 1.2),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    _getInstructionText(),
+                    key: ValueKey(_getInstructionText()),
+                    style: TextStyle(
+                      color: _deductionStatus != null ? const Color(0xFFFFD700) : Colors.white70, 
+                      fontSize: 16, 
+                      letterSpacing: 1.2,
+                      fontWeight: _deductionStatus != null ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
                 ),
 
                 const Spacer(),
 
-                // 2. Mic Control (Voice Note Style)
                 _buildMicControl(),
 
                 const SizedBox(height: 40),
                 
-                // Footer Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -447,9 +464,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
            scale = 1.1;
            opacity = 0.8;
          } else if (_isUserSpeaking) {
-           // VAD Feedback: Pulse based on audio level
            scale = 1.0 + (_audioLevel * 5).clamp(0.0, 0.5);
            opacity = 0.8;
+         }
+         
+         // Deduction Pulse (Boost)
+         if (_deductionStatus != null) {
+            scale = 1.3;
+            opacity = 1.0;
          }
          
          return Transform.scale(
@@ -478,20 +500,15 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     return Column(
       children: [
         GestureDetector(
-          // PHASE 52: Push-to-Talk (PTT) Implementation
-          // Tap: Connect (Initial)
-          // Long Press: Hold to Speak
           onTap: () {
             if (_voiceState == VoiceState.idle || _voiceState == VoiceState.error) {
-               _handleMicTap(); // Connect
+               _handleMicTap(); 
             } else if (_voiceState == VoiceState.speaking) {
-               // Locked - Do nothing or Haptic
                context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
             }
           },
           onLongPressStart: (_) async {
             if (_voiceState == VoiceState.speaking) {
-               // Locked - Do nothing
                context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
                return;
             }
@@ -512,8 +529,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
             }
           },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100), // Faster animation for PTT
-            width: isActive ? 100 : 80, // Grow when holding
+            duration: const Duration(milliseconds: 100), 
+            width: isActive ? 100 : 80, 
             height: isActive ? 100 : 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -545,5 +562,5 @@ enum VoiceState {
   thinking,
   speaking,
   error,
-  ready, // Connected but mic closed (PTT Ready)
+  ready, 
 }
