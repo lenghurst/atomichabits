@@ -100,7 +100,10 @@
 | **48** | **Voice Note UI** (Hold-to-Talk / Tap-to-Lock) | ✅ |
 | **49** | **Sherlock Screening** (Amnesia Fix / Thinking Mode) | ✅ |
 
-### Key Files Changed (Phase 42-45)
+| **50** | **WAV Header Buffering** (Split-chunk protection) | ✅ |
+| **50.1** | Config schema alignment (`v1beta` & `generationConfig`) | ✅ |
+
+### Key Files Changed (Phase 42-50)
 
 | File | Changes |
 |------|---------|

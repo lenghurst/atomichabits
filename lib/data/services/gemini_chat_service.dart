@@ -278,7 +278,7 @@ class GeminiChatService {
       model: AIModelConfig.tier2TextModel,
       apiKey: apiKey,
       generationConfig: GenerationConfig(
-        temperature: AIModelConfig.tier2Temperature,
+        temperature: 0.7, // Safe for Text/REST API (Tier 2 Text), unlike Live API
         topP: 0.9,
         maxOutputTokens: 1024,
       ),

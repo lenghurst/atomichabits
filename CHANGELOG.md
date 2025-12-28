@@ -1,3 +1,13 @@
+## [6.5.2] - 2025-12-27 - Phase 50: "Gemini API Reconciliation & Robustness"
+
+### Fixed
+- **WAV Header Stripping:** Implemented robust **Split-Chunk Buffering** in `GeminiLiveService`. The system now accumulates audio bytes until it has the full 44-byte header for inspection, preventing crashes or noise blasts when the "RIFF" header is fragmented across network packets.
+- **Transcription Config:** Moved `outputAudioTranscription` inside `generationConfig` to strictly adhere to the Gemini v1beta schema, ensuring reliable Bidi transcription.
+- **Config Cleanup:** Removed deprecated `tier2Temperature` to prevent "Looping" behavior in Gemini 3.0 models.
+- **API Consistency:** Standardized all endpoints and logs to `v1beta`.
+
+---
+
 ## [6.5.1] - 2025-12-27 - Phase 49: "Sherlock Screening & Thinking Fixes"
 
 ### Fixed

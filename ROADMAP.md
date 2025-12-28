@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 49 - Sherlock Screening & Reliability
+> **Current Phase:** Phase 50 - Gemini API Reconciliation
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Voice Architecture Simplified (StreamVoicePlayer)
+> **Status:** ✅ Audio Pipeline Robustness
 
 ---
 
@@ -28,6 +28,15 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 50: Gemini API Reconciliation (27 Dec 2025)
+**Goal:** Align implementation with official docs and harden audio pipeline.
+
+| ID | Task | Status |
+|----|------|--------|
+| G1 | Move `outputAudioTranscription` to `generationConfig` | ✅ |
+| G2 | Implement robust WAV Header Buffering (Split-chunk support) | ✅ |
+| G3 | Remove hazardous `tier2Temperature` | ✅ |
 
 ### Phase 49: Sherlock Screening & Reliability (27 Dec 2025)
 **Goal:** Fix AI "Amnesia" and formalize the "Sherlock Screening" phase.

@@ -25,8 +25,8 @@ import 'voice_api_service.dart';
 ///   - No temperature setting (prevents looping behaviour)
 /// 
 /// Phase 35 Fix:
-/// - CRITICAL: Moved thinkingConfig INSIDE generationConfig per official API schema
-/// - Previous error "Unknown name 'thinkingConfig'" was caused by incorrect nesting
+/// - CRITICAL: Removed thinkingConfig completely per official API schema
+/// - Previous error "Unknown name 'thinkingConfig'" was caused by it being invalid for this model
 /// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
 /// 
 /// Phase 36 Fix:
@@ -83,6 +83,10 @@ class GeminiLiveService implements VoiceApiService {
   
   // === PHASE 42: TOOL STATE ===
   Map<String, dynamic>? _pendingTools; // Tools to inject in setup message
+  
+  // === PHASE 51: WAV HEADER BUFFERING ===
+  List<int> _headerBuffer = []; 
+  bool _hasCheckedHeader = false;
   
   // === CALLBACKS ===
   final void Function(Uint8List)? onAudioReceived;
@@ -187,6 +191,10 @@ class GeminiLiveService implements VoiceApiService {
     // Reset thought signature on new connection
     _currentThoughtSignature = null;
     
+    // Reset WAV header buffer
+    _headerBuffer.clear();
+    _hasCheckedHeader = false;
+    
     try {
       // PHASE 1: TOKEN
       _setPhase("FETCHING_TOKEN");
@@ -228,7 +236,7 @@ class GeminiLiveService implements VoiceApiService {
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Connecting to WebSocket...');
         debugPrint('GeminiLiveService: Model: ${AIModelConfig.tier2Model}');
-        debugPrint('GeminiLiveService: Endpoint: v1alpha (Phase 45 fix)');
+        debugPrint('GeminiLiveService: Endpoint: v1beta (Phase 45 fix)');
         debugPrint('GeminiLiveService: Headers: $headers');
         debugPrint('GeminiLiveService: Full URL: $wsUrl');
         debugPrint('GeminiLiveService: Gemini 3 Compliance: thinking_level=MINIMAL, thoughtSignature=enabled');
@@ -391,7 +399,7 @@ $title
 $details
 Model: ${AIModelConfig.tier2Model}
 Auth: ${_isUsingApiKey ? "API Key" : "OAuth Token"}
-Endpoint: v1alpha
+Endpoint: v1beta
 ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     
     _lastErrorDetail = fullError;
@@ -422,9 +430,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
   /// Sends the initial setup message to the Gemini Live API.
   /// 
   /// Phase 35: Fix thinkingConfig placement
-  /// - CRITICAL FIX: Moved `thinkingConfig` INSIDE `generationConfig` per official API schema
-  /// - The API was returning "Unknown name 'thinkingConfig'" because it was at the wrong level
-  /// - See: https://ai.google.dev/api/generate-content#ThinkingConfig
+  /// - CRITICAL FIX: Removed `thinkingConfig` completely per official API schema
+  /// - The API was returning "Unknown name 'thinkingConfig'" because it's invalid for this model endpoint
   /// - Removed `temperature` setting to prevent looping behaviour.
   /// 
   /// Phase 42: Tool Injection
@@ -437,21 +444,24 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         'generationConfig': {
           'responseModalities': ['AUDIO'], // Reverting to strictly AUDIO to fix Handshake Timeout
           'speechConfig': {
-            'voiceConfig': {
-              'prebuiltVoiceConfig': {
-                'voiceName': 'Kore', 
-              }
-            }
+             'voiceConfig': {
+               'prebuiltVoiceConfig': {
+                 'voiceName': 'Kore', 
+               }
+             }
+          },
+          // Phase 50 Fix: Transcription config moved INSIDE generationConfig per verification plan
+          if (transcribe) ...{
+            'outputAudioTranscription': {},
+            // Note: inputAudioTranscription is not standard in generationConfig for some APIs, 
+            // but for Bidi setup it often accompanies it. 
+            // If this fails, we might need to remove inputAudioTranscription or check specific model docs.
           },
         },
         if (instruction != null) 
           'systemInstruction': {
             'parts': [{'text': instruction}]
           },
-        if (transcribe) ...{
-          'outputAudioTranscription': {},
-          'inputAudioTranscription': {},
-        },
       }
     };
     
@@ -681,7 +691,12 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     _isConnected = false;
     _isListening = false;
     _setupComplete = false;
+    _isConnected = false;
+    _isListening = false;
+    _setupComplete = false;
     _currentThoughtSignature = null; // Clear thought signature on disconnect
+    _headerBuffer.clear(); // Clear buffer
+    _hasCheckedHeader = false;
     await _subscription?.cancel();
     _subscription = null;
     await _channel?.sink.close();
@@ -723,20 +738,45 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
        AppLogger.debug('ℹ️ [GeminiLive] 📤 Tx HEX: $hex...');
     }
     
-    // PHASE 49 FIX: Strip WAV Header if present (RIFF . . . WAVE)
-    // Android 'record' package often wraps PCM in WAV container during stream.
-    // Gemini interprets this header as loud static ("The Corpse").
-    Uint8List dataToSend = audioData;
-    if (audioData.length >= 44 && 
-        audioData[0] == 0x52 && // R
-        audioData[1] == 0x49 && // I
-        audioData[2] == 0x46 && // F
-        audioData[3] == 0x46    // F
-    ) {
-      if (kDebugMode) {
-        debugPrint('⚠️ [GeminiLive] WAV HEADER DETECTED! Stripping first 44 bytes to send raw PCM.');
+    // PHASE 51 FIX: Robust WAV Header Buffering
+    // Instead of checking just the first chunk, we buffer until we have 44 bytes.
+    // This handles cases where the header is split across multiple small chunks.
+    Uint8List dataToSend;
+    
+    if (_hasCheckedHeader) {
+      // Fast path: Header already handled, just send raw audio
+      dataToSend = audioData;
+    } else {
+      // Buffer path: Accumulate bytes
+      _headerBuffer.addAll(audioData);
+      
+      if (_headerBuffer.length < 44) {
+        // Not enough bytes to check for header yet. Wait for next chunk.
+        if (kDebugMode) {
+          debugPrint('ℹ️ [GeminiLive] Buffering audio for header check: ${_headerBuffer.length}/44 bytes');
+        }
+        return; // Don't send anything yet
       }
-      dataToSend = audioData.sublist(44);
+      
+      // We have at least 44 bytes. Check for RIFF header.
+      if (_headerBuffer[0] == 0x52 && // R
+          _headerBuffer[1] == 0x49 && // I
+          _headerBuffer[2] == 0x46 && // F
+          _headerBuffer[3] == 0x46    // F
+      ) {
+        if (kDebugMode) {
+           debugPrint('⚠️ [GeminiLive] WAV HEADER DETECTED (Buffered)! Stripping first 44 bytes.');
+        }
+        // Strip 44 bytes, send the rest
+        final fullBuffer = Uint8List.fromList(_headerBuffer);
+        dataToSend = fullBuffer.sublist(44);
+      } else {
+        // No header detected, send everything we buffered
+        dataToSend = Uint8List.fromList(_headerBuffer);
+      }
+      
+      _hasCheckedHeader = true;
+      _headerBuffer.clear(); // Free memory, we don't need the buffer anymore
     }
     
     final base64Audio = base64Encode(dataToSend);

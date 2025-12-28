@@ -102,11 +102,9 @@ class AIModelConfig {
   /// Used if the December model fails handshake
   static const String tier2FallbackModel = 'gemini-2.5-flash-native-audio-preview-09-2025';
   
-  /// @deprecated Do not use for Gemini 3. Retained for DeepSeek compatibility only.
-  /// Gemini 3 documentation warns: "setting temperature < 1.0 causes unexpected
-  /// behavior, such as looping". Use thinking_level instead.
-  @Deprecated('Do not use for Gemini 3 Live API. Causes looping behaviour.')
-  static const double tier2Temperature = 0.7;
+  // Gemini 3 documentation warns: "setting temperature < 1.0 causes unexpected
+  // behavior, such as looping". Use thinking_level instead.
+  // REMOVED deprecated tier2Temperature to prevent accidental usage.
   
   /// Tier 2 Text-Only Fallback (for non-voice interactions)
   /// - Used when Live API is not required (text chat)
