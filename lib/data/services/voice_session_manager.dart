@@ -515,9 +515,10 @@ class VoiceSessionManager {
   
   /// Handle audio data from the microphone.
   void _handleMicrophoneAudio(Uint8List audioData) {
-    // PHASE 48: Barge-In Support
-    // We MUST send audio even if "Thinking" so the server can hear interruptions.
-    if (_state != VoiceSessionState.active && _state != VoiceSessionState.thinking) return;
+    // PHASE 52: Strict PTT Enforcement (No Barge-In)
+    // We only transmit audio if the user is explicitly holding the PTT button (Active state).
+    // Previous "Thinking" state check removed to disable barge-in.
+    if (_state != VoiceSessionState.active) return;
     
     // Forward audio to AI Service
     _voiceService.sendAudio(audioData);

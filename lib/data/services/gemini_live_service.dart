@@ -831,8 +831,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
 
     final Map<String, dynamic> message = {
       'clientContent': {
+        'turns': [], // PHASE 52 FIX: API requires 'turns' field even if empty
         'turnComplete': true,
-        // intentionally empty 'turns' list or omitted entirely
       }
     };
 

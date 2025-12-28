@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 28 December 2025  
-> **Current Phase:** Phase 32.5 - Hardware AEC Enforcement  
+> **Current Phase:** Phase 52 - MVP Complete  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Hardware AEC Locked
+> **Status:** ✅ MVP Verified
 
 ---
 
@@ -37,6 +37,25 @@
 | A1 | Integrate `flutter_webrtc` for dummy stream | ✅ |
 | A2 | Configure `AudioSession` for `videoChat` | ✅ |
 | A3 | Refactor `AudioRecordingService` to hybrid stack | ✅ |
+
+### Phase 52: Audio Foundation MVP (28 Dec 2025)
+**Goal:** Finalize audio stability for release.
+
+| ID | Task | Status |
+|----|------|--------|
+| F1 | Enforce Strict Push-to-Talk (No Barge-In) | ✅ |
+| F2 | Implement Hardware AEC Lock ("Dummy Stream") | ✅ |
+| F3 | Fix Background Audio Ducking (`mixWithOthers`) | ✅ |
+| F4 | Fix Gemini Code 1007 (`turnComplete` payload) | ✅ |
+
+### Phase 53: Post-MVP Polish (Q1 2026)
+**Goal:** Refine the Sherlock Screening UI based on user feedback.
+
+| ID | Task | Status |
+|----|------|--------|
+| P1 | **Visual States**: Clearly separate "Speaking", "Listening", "Thinking" states (Color/Anim). | [ ] |
+| P2 | **Hold Button**: Improve tactile feedback for PTT hold gesture. | [ ] |
+| P3 | **Interrupt UI**: Re-introduce "Tap to Interrupt" if PTT feels too restrictive. | [ ] |
 
 ### Phase 50: Gemini API Reconciliation (27 Dec 2025)
 **Goal:** Align implementation with official docs and harden audio pipeline.

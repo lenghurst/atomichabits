@@ -103,8 +103,8 @@
             </intent-filter>
         </activity>
         
-        <!-- Phase 9: Home Screen Widget Provider -->
-        <receiver
+        <!-- Phase 9: Home Screen Widget Provider (DISABLED: Missing Class) -->
+        <!-- <receiver
             android:name=".HabitWidgetProvider"
             android:exported="true"
             android:label="@string/widget_name">
@@ -114,7 +114,7 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/habit_widget_info"/>
-        </receiver>
+        </receiver> -->
         
         <!-- Phase 9: Home Widget Background Service (for interactivity) -->
         <receiver

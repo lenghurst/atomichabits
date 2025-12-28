@@ -16,12 +16,12 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Mobile App** | 🟢 Phase 48 | Voice Note UI (Hold-to-Talk / Tap-to-Lock) |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **WORKING** | Gemini 2.5 Flash Native (Audio+Text Modalities) |
+| **Voice AI** | ✅ **MVP** | Sherlock Protocol (PTT Enforced + AEC Locked) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
-> **Last Updated:** 27 December 2025  
-> **Current Phase:** Phase 48 - Voice Note UI  
+> **Last Updated:** 28 December 2025  
+> **Current Phase:** Phase 52 - Audio Foundation MVP  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
