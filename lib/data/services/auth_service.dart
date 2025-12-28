@@ -124,12 +124,13 @@ class AuthService extends ChangeNotifier {
       }
     } catch (e) {
       _authState = AuthState.error;
-      _errorMessage = e.toString();
+      final userMsg = _sanitizeAuthError(e);
+      _errorMessage = userMsg;
       notifyListeners();
       if (kDebugMode) {
         debugPrint('Anonymous sign-in error: $e');
       }
-      return AuthResult.failure(e.toString());
+      return AuthResult.failure(userMsg);
     }
   }
   
@@ -177,12 +178,13 @@ class AuthService extends ChangeNotifier {
       }
     } catch (e) {
       _authState = AuthState.error;
-      _errorMessage = e.toString();
+      final userMsg = _sanitizeAuthError(e);
+      _errorMessage = userMsg;
       notifyListeners();
       if (kDebugMode) {
         debugPrint('Email upgrade error: $e');
       }
-      return AuthResult.failure(e.toString());
+      return AuthResult.failure(userMsg);
     }
   }
   
@@ -218,9 +220,13 @@ class AuthService extends ChangeNotifier {
       }
     } catch (e) {
       _authState = AuthState.error;
-      _errorMessage = e.toString();
+      final userMsg = _sanitizeAuthError(e);
+      _errorMessage = userMsg;
       notifyListeners();
-      return AuthResult.failure(e.toString());
+      if (kDebugMode) {
+        debugPrint('Sign-in error: $e');
+      }
+      return AuthResult.failure(userMsg);
     }
   }
   
@@ -396,7 +402,8 @@ class AuthService extends ChangeNotifier {
       return AuthResult.failure('Google sign-in failed');
     } catch (e, stackTrace) {
       _authState = AuthState.error;
-      _errorMessage = e.toString();
+      final userMsg = _sanitizeAuthError(e);
+      _errorMessage = userMsg;
       notifyListeners();
       
       // VERBOSE ERROR LOGGING for ApiException: 10 debugging
@@ -406,6 +413,7 @@ class AuthService extends ChangeNotifier {
         debugPrint('╠══════════════════════════════════════════════════════════');
         debugPrint('║ Error Type: ${e.runtimeType}');
         debugPrint('║ Error Message: $e');
+        debugPrint('║ Sanitize Message: $userMsg');
         debugPrint('║ ');
         debugPrint('║ Configuration Check:');
         debugPrint('║   - Package Name (code): ${SupabaseConfig.androidPackageName}');
@@ -424,10 +432,41 @@ class AuthService extends ChangeNotifier {
         debugPrint('╚══════════════════════════════════════════════════════════');
       }
       
-      return AuthResult.failure(e.toString());
+      return AuthResult.failure(userMsg);
     }
   }
   
+  /// Sanitize authentication errors for user display
+  String _sanitizeAuthError(Object error) {
+    // If it's a Supabase AuthException, the message is usually safe
+    if (error is AuthException) {
+      return error.message;
+    }
+
+    final String errorStr = error.toString().toLowerCase();
+
+    // Network errors
+    if (errorStr.contains('socketexception') ||
+        errorStr.contains('network') ||
+        errorStr.contains('connection')) {
+      return 'Network connection error. Please check your internet.';
+    }
+
+    // Cancellation
+    if (errorStr.contains('cancelled') || errorStr.contains('canceled')) {
+      return 'Operation cancelled.';
+    }
+
+    // Timeout
+    if (errorStr.contains('timeout')) {
+      return 'Connection timed out. Please try again.';
+    }
+
+    // Default safe message for unknown errors
+    // We log the real error in debug mode, but show this to user
+    return 'An unexpected authentication error occurred.';
+  }
+
   /// requestSherlockScopes: Progressive disclosure for psychometric sensors.
   /// 
   /// This method requests the sensitive scopes ONLY after the user has agreed 
