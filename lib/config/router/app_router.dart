@@ -54,6 +54,7 @@ import '../../features/onboarding/screens/goal_screening_screen.dart';
 import '../../features/onboarding/screens/oracle_coach_screen.dart';
 import '../../features/onboarding/screens/misalignment_screen.dart';
 import '../../features/onboarding/identity_first/value_proposition_screen.dart';
+import '../../features/onboarding/bootstrap_screen.dart';
 
 import 'app_routes.dart';
 
@@ -72,7 +73,7 @@ class AppRouter {
     return GoRouter(
       initialLocation: appState.hasCompletedOnboarding 
           ? AppRoutes.dashboard 
-          : AppRoutes.home,
+          : AppRoutes.bootstrap, // Phase 52: Bootstrap handles async checks
       // Phase 7.2: Listen to BOTH states for routing changes
       refreshListenable: Listenable.merge([appState, onboardingState]),
       debugLogDiagnostics: kDebugMode,
@@ -151,7 +152,11 @@ class AppRouter {
     // Exception: Allow public routes (niche landing pages, onboarding flow)
     if (!appState.hasCompletedOnboarding && 
         !isOnboardingRoute &&
-        !location.startsWith('/contracts/join')) {
+        !location.startsWith('/contracts/join') && 
+        location != AppRoutes.bootstrap) { // Allow bootstrap to run
+      // If user tries to access a protected route (e.g. /dashboard) without auth,
+      // redirect them. 
+      // Note: Bootstrap will handle determining if they should go to Home or SideDoor.
       AppLogger.info('AppRouter: 🛡️ Security Guard -> Home');
       AppLogger.info('  - Attempted: $location');
       return AppRoutes.home;
@@ -165,6 +170,10 @@ class AppRouter {
   /// Build all route definitions
   static List<RouteBase> _buildRoutes() {
     return [
+      GoRoute(
+        path: AppRoutes.bootstrap,
+        builder: (context, state) => const BootstrapScreen(),
+      ),
       // ============================================================
       // ONBOARDING ROUTES
       // ============================================================

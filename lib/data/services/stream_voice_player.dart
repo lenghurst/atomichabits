@@ -109,6 +109,14 @@ class StreamVoicePlayer {
     _setPlaying(false);
   }
 
+  /// Force play any remaining buffered audio (called on Turn Complete)
+  Future<void> flush() async {
+    if (_audioBuffer.isNotEmpty && !_isPlaying) {
+      if (kDebugMode) debugPrint('StreamVoicePlayer: 🚽 Flushing ${_audioBuffer.length} bytes...');
+      await _playBufferedAudio();
+    }
+  }
+
   Future<void> dispose() async {
     await stop();
     await _audioPlayer.dispose();

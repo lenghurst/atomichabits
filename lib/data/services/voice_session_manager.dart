@@ -516,6 +516,7 @@ class VoiceSessionManager {
   
   void _setState(VoiceSessionState newState) {
     if (_state == newState) return;
+    if (kDebugMode) debugPrint('🕵️ [SHERLOCK_TRACE] State Transition: ${_state.name} -> ${newState.name}');
     _state = newState;
     onStateChanged?.call(newState);
   }
@@ -685,6 +686,10 @@ class VoiceSessionManager {
   
   /// Handle AI turn completion.
   void _handleTurnComplete() {
+    // PHASE 52 Fix: Flush any buffered audio that was less than the threshold
+    // This prevents "Stuck in Thinking" for short responses.
+    _voicePlayer.flush();
+    
     onTurnComplete?.call();
   }
   
@@ -700,6 +705,7 @@ class VoiceSessionManager {
       debugPrint('VoiceSessionManager: Tool call received: $functionName');
       debugPrint('VoiceSessionManager: Args: $args');
       debugPrint('VoiceSessionManager: Call ID: $callId');
+      debugPrint('🕵️ [SHERLOCK_TRACE] Tool Exec START: $functionName (ID: $callId)');
     }
     
     // Only handle the psychometric tool
@@ -738,6 +744,7 @@ class VoiceSessionManager {
       
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Psychometric profile updated successfully');
+        debugPrint('🕵️ [SHERLOCK_TRACE] Tool Exec END: $functionName (Success)');
       }
       
       // Send success response back to the AI
@@ -754,6 +761,7 @@ class VoiceSessionManager {
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Failed to update psychometric profile: $e');
         debugPrint('Stack trace: $stackTrace');
+        debugPrint('🕵️ [SHERLOCK_TRACE] Tool Exec ERROR: $functionName');
       }
       
       // Send error response

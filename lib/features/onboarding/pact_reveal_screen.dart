@@ -138,7 +138,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
   /// 
   /// The "Investment" in Nir Eyal's Hook Model:
   /// User has invested time + psychological insight → stored value → higher retention
-  Future<void> _navigateToDashboard() async {
+  Future<void> _navigateToScreening() async {
     // Heavy haptic for the "lock" moment
     HapticFeedback.heavyImpact();
     
@@ -206,7 +206,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
               top: MediaQuery.of(context).padding.top + 16,
               right: 16,
               child: TextButton(
-                onPressed: _navigateToDashboard,
+                onPressed: _navigateToScreening,
                 child: Text(
                   "SKIP",
                   style: TextStyle(
@@ -401,7 +401,7 @@ Join the pact at thepact.co
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _navigateToDashboard,
+        onTap: _navigateToScreening,
         borderRadius: BorderRadius.circular(30),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

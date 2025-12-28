@@ -499,6 +499,15 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         // AppLogger.debug('🧠 [GeminiLive] Thought Signature Captured');
       }
 
+      // 2. HANDLER TOOL CALLS (Priority)
+      // Fix: Check for tool calls BEFORE validating serverContent, as pure tool calls
+      // may not have serverContent.
+      bool handledTool = false;
+      if (data.containsKey('toolCall') || data.containsKey('tool_call')) {
+        _handleToolCall((data['toolCall'] ?? data['tool_call']) as Map<String, dynamic>);
+        handledTool = true;
+      }
+
       // 2. FIND CONTENT (Nuclear Search)
       final content = data['serverContent'] ?? 
                       data['server_content'] ?? 
@@ -506,8 +515,10 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
                       data['model_turn'];
 
       if (content == null) {
-        // CRITICAL DIAGNOSTIC: Print root keys if content is missing
-        AppLogger.debug('⚠️ [GeminiLive] No content key found. Root keys: ${data.keys.toList()}');
+        if (!handledTool) {
+          // CRITICAL DIAGNOSTIC: Print root keys if content is missing matched neither
+          AppLogger.debug('⚠️ [GeminiLive] No content key found. Root keys: ${data.keys.toList()}');
+        }
         return;
       }
 
@@ -574,10 +585,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         }
       }
 
-      // 4. TOOL CALLS
-      if (data.containsKey('toolCall') || data.containsKey('tool_call')) {
-        _handleToolCall((data['toolCall'] ?? data['tool_call']) as Map<String, dynamic>);
-      }
+
       
     } catch (e, stack) {
       AppLogger.error('❌ [GeminiLive] CRITICAL PARSE ERROR: $e');
@@ -842,7 +850,11 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     }
 
     sendJsonMessage(message);
-    if (kDebugMode) debugPrint('GeminiLiveService: Sent End-of-Turn signal (Audio Priority)');
+    sendJsonMessage(message);
+    if (kDebugMode) {
+      debugPrint('GeminiLiveService: Sent End-of-Turn signal (Audio Priority)');
+      AppLogger.debug('🕵️ [SHERLOCK_TRACE] 📤 Client Turn Complete (Signal Sent)');
+    }
   }
   
   /// Helper to send JSON messages with logging
@@ -924,6 +936,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         _addDebugLog('🔧 Tool call received: $name (id: $id)');
         if (kDebugMode) {
           debugPrint('GeminiLiveService: Tool call - $name with args: $args');
+          AppLogger.debug('🕵️ [SHERLOCK_TRACE] 📥 Tool Call Received: $name (ID: $id)');
         }
         
         // Notify the callback
@@ -971,6 +984,7 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       _addDebugLog('✅ Tool response sent: $functionName');
       if (kDebugMode) {
         debugPrint('GeminiLiveService: Tool response sent for $functionName');
+        AppLogger.debug('🕵️ [SHERLOCK_TRACE] 📤 Tool Response Sent: $functionName');
       }
     } catch (e) {
       _addDebugLog('❌ Failed to send tool response: $e', isError: true);

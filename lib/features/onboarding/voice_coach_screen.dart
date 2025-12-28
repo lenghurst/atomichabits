@@ -41,12 +41,26 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   
   bool _isConnected = false;
 
+  late PsychometricProvider _psychometricProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // Phase 55: Auto-Navigation Listener
+    _psychometricProvider = context.read<PsychometricProvider>();
+    _psychometricProvider.addListener(_onPsychometricUpdate);
+    
     _initializePulseAnimation();
     _initializeVoiceSession();
+  }
+
+  void _onPsychometricUpdate() {
+    if (!mounted) return;
+    if (_psychometricProvider.isOnboardingComplete) {
+       _onSessionComplete();
+    }
   }
 
   void _initializePulseAnimation() {
@@ -142,6 +156,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _psychometricProvider.removeListener(_onPsychometricUpdate);
     _pulseController.dispose();
     _sessionManager?.dispose();
     super.dispose();
@@ -300,7 +315,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     // Mark completion in Hive via UserProvider
     if (mounted) {
       await context.read<UserProvider>().completeOnboarding();
-      context.go(AppRoutes.dashboard);
+      context.go(AppRoutes.pactReveal);
     }
   }
 
@@ -343,7 +358,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                       const SizedBox(width: 12),
                         Text(
                         widget.mode == VoiceSessionMode.onboarding 
-                            ? 'SHERLOCK SCREENING' 
+                            ? 'THE PACT INTERVIEW' 
                             : widget.mode == VoiceSessionMode.oracle
                                 ? 'ORACLE COACH'
                                 : 'VOICE COACH',

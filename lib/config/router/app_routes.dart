@@ -22,6 +22,7 @@ abstract class AppRoutes {
   // ============================================================
   
   /// Root route - Value Proposition Screen (Hook)
+  static const String bootstrap = '/bootstrap';
   static const String home = '/';
   
   /// Voice-first onboarding with Gemini Live
