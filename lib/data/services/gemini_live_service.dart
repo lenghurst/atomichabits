@@ -443,20 +443,16 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
         'model': 'models/${AIModelConfig.tier2Model}',
         'generationConfig': {
           'responseModalities': ['AUDIO'], // Reverting to strictly AUDIO to fix Handshake Timeout
-          'speechConfig': {
-             'voiceConfig': {
-               'prebuiltVoiceConfig': {
-                 'voiceName': 'Kore', 
-               }
-             }
-          },
-          // Phase 50 Fix: Transcription config moved INSIDE generationConfig per verification plan
-          if (transcribe) ...{
-            'outputAudioTranscription': {},
-            // Note: inputAudioTranscription is not standard in generationConfig for some APIs, 
-            // but for Bidi setup it often accompanies it. 
-            // If this fails, we might need to remove inputAudioTranscription or check specific model docs.
-          },
+           'speechConfig': {
+              'voiceConfig': {
+                'prebuiltVoiceConfig': {
+                  'voiceName': 'Kore', 
+                }
+              }
+           },
+          // Phase 50 Fix: Transcription config removed as it causes Code 1007 (Unknown name)
+          // Input transcription is handled automatically by the server for Voice sessions.
+          // Output transcription is provided via TEXT modality if requested.
         },
         if (instruction != null) 
           'systemInstruction': {
@@ -784,7 +780,8 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
       'realtimeInput': {
         'mediaChunks': [
           {
-            'mimeType': AIModelConfig.audioInputMimeType,
+            // RCA FIX: Explicitly specify sample rate for PCM input
+            'mimeType': 'audio/pcm;rate=16000',
             'data': base64Audio,
           }
         ]
@@ -824,6 +821,28 @@ ThoughtSignature: ${_currentThoughtSignature != null ? "present" : "none"}''';
     }
     
     sendJsonMessage(message);
+  }
+  
+  /// Sends a signal that the user's turn is complete without sending text.
+  /// This triggers the model to generate a response based on the streamed audio.
+  /// Fixes the "Space Hack" issue where " " text overrides audio buffer.
+  void sendEndTurn() {
+    if (!_isConnected || _channel == null) return;
+
+    final Map<String, dynamic> message = {
+      'clientContent': {
+        'turnComplete': true,
+        // intentionally empty 'turns' list or omitted entirely
+      }
+    };
+
+    // GEMINI 3 COMPLIANCE: Echo thought signature
+    if (_currentThoughtSignature != null) {
+      message['thoughtSignature'] = _currentThoughtSignature;
+    }
+
+    sendJsonMessage(message);
+    if (kDebugMode) debugPrint('GeminiLiveService: Sent End-of-Turn signal (Audio Priority)');
   }
   
   /// Helper to send JSON messages with logging

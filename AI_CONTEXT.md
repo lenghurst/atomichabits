@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 49 - Sherlock Screening & Reliability  
+> **Last Updated:** 28 December 2025  
+> **Current Phase:** Phase 32.5 - Hardware AEC Enforcement  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -45,6 +45,7 @@
 | **Mobile** | Flutter | 3.38.4 |
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
+| **Audio Stack** | **flutter_webrtc + record** | **Hybrid AEC** |
 | **AI (Tier 1)** | DeepSeek-V3 | Text Chat (JSON mode) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
 | **Voice Provider** | Gemini / OpenAI | Alternative Providers (Phase 46) |
@@ -60,7 +61,7 @@
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
-| **Voice AI (Gemini)** | ✅ **WORKING** | `gemini-2.5-flash-native-audio-preview-12-2025` with Adaptive VAD |
+| **Voice AI (Gemini)** | ✅ **WORKING** | **Hardware AEC Enforced** (No Echo) |
 | **Soul Capture Onboarding** | ✅ **WORKING** | Sherlock Protocol with real-time tool calls |
 | **Pact Identity Card** | ✅ **WORKING** | Variable Reward - flip card reveal |
 | **Identity Persistence** | ✅ **NEW** | Phase 44 - Profile locked to Hive on "ENTER THE PACT" |
@@ -108,6 +109,9 @@
 | File | Changes |
 |------|---------|
 | `lib/features/onboarding/identity_first/identity_access_gate_screen.dart` | Fixed Google Sign-In redirect target |
+| `lib/data/services/audio_recording_service.dart` | **REFACTOR:** Hybrid WebRTC/Record Stack |
+| `pubspec.yaml` | Added `flutter_webrtc` for Hardware AEC |
+| `lib/config/ai_model_config.dart` | Added Component Stack API Keys |
 | `lib/data/app_state.dart` | Added Supabase signOut to `clearAllData` |
 | `lib/features/onboarding/screens/tier_selection_screen.dart` | Fixed Standard Protocol navigation loop |
 | `lib/data/models/user_profile.dart` | Added `isPremium` field (Data Unification) |

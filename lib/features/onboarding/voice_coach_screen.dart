@@ -114,11 +114,21 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     }
 
     try {
-      await _sessionManager!.startSession();
-       setState(() {
-        _isConnected = true;
-        _voiceState = VoiceState.idle; 
-      });
+      final success = await _sessionManager!.startSession();
+      if (success) {
+        setState(() {
+          _isConnected = true;
+          _voiceState = VoiceState.idle;
+        });
+      } else {
+        // State change handled by onStateChanged or onError, but explicit fallback here
+         if (mounted && !_isConnected) {
+            setState(() {
+              _isConnected = false;
+              _voiceState = VoiceState.error;
+            });
+         }
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -144,8 +154,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     setState(() {
       switch (state) {
         case VoiceSessionState.idle:
-        case VoiceSessionState.paused:
           _voiceState = VoiceState.idle;
+          _pulseController.stop();
+          break;
+        case VoiceSessionState.paused:
+          _voiceState = VoiceState.ready;
           _pulseController.stop();
           break;
         case VoiceSessionState.connecting:
@@ -216,14 +229,18 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       case VoiceState.thinking: return 'Thinking...';
       case VoiceState.speaking: return 'Sherlock Speaking';
       case VoiceState.error: return 'Signal Lost';
+      case VoiceState.ready: return 'Ready';
     }
   }
   
   String _getMicButtonLabel() {
-    if (_voiceState == VoiceState.speaking) return 'Tap to Interrupt';
+    if (_voiceState == VoiceState.speaking) return 'Locked (AI Speaking)';
     if (_voiceState == VoiceState.thinking) return 'Processing...';
-    // Default state for Always-On VAD
-    return 'Listening...';
+    if (_voiceState == VoiceState.listening) return 'Release to Send'; // Active
+    if (_voiceState == VoiceState.idle) return 'Tap to Connect'; // Initial
+    if (_voiceState == VoiceState.ready) return 'Hold to Speak';
+    // Default fallback
+    return 'Hold to Speak'; 
   }
 
   Color _getOrbColor() {
@@ -231,11 +248,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     if (_voiceState == VoiceState.thinking) return Colors.amber;
     if (_voiceState == VoiceState.listening || _isUserSpeaking) return Colors.greenAccent;
     if (_voiceState == VoiceState.connecting) return Colors.blue;
+    if (_voiceState == VoiceState.ready) return Colors.blueGrey;
     return Colors.grey;
   }
   
   Color _getMicButtonColor() {
-    if (_voiceState == VoiceState.speaking) return Colors.grey.withOpacity(0.3); // Disabled color
+    if (_voiceState == VoiceState.speaking) return Colors.white10; // Locked visually
     if (_voiceState == VoiceState.listening) return Colors.green; // Active recording
     return Colors.white; // Default idle
   }
@@ -252,10 +270,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     // 3. Listening -> Commit (Send)
     
     if (_voiceState == VoiceState.speaking) {
-       _sessionManager?.interruptAI();
-       await _sessionManager?.resumeSession();
-       setState(() => _voiceState = VoiceState.listening);
-       return;
+       // Phase 51: Lockdown - User cannot interrupt AI
+       context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
+       return; 
     }
     
     if (_voiceState == VoiceState.listening) {
@@ -427,21 +444,50 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     return Column(
       children: [
         GestureDetector(
-          // PHASE 48: Always-On VAD - Remove Hold Gesture
-          // onLongPressStart: ... 
-          // onLongPressEnd: ...
-          onTap: _handleMicTap, // Single tap to Interrupt or Manual Send
+          // PHASE 52: Push-to-Talk (PTT) Implementation
+          // Tap: Connect (Initial)
+          // Long Press: Hold to Speak
+          onTap: () {
+            if (_voiceState == VoiceState.idle || _voiceState == VoiceState.error) {
+               _handleMicTap(); // Connect
+            } else if (_voiceState == VoiceState.speaking) {
+               // Locked - Do nothing or Haptic
+               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
+            }
+          },
+          onLongPressStart: (_) async {
+            if (_voiceState == VoiceState.speaking) {
+               // Locked - Do nothing
+               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
+               return;
+            }
+            
+            if (_voiceState == VoiceState.idle) {
+               await _handleMicTap(); 
+            } else {
+               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
+               await _sessionManager?.startRecording();
+               setState(() => _voiceState = VoiceState.listening);
+            }
+          },
+          onLongPressEnd: (_) async {
+            if (_voiceState == VoiceState.listening) {
+               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
+               await _sessionManager?.stopRecording();
+               setState(() => _voiceState = VoiceState.thinking);
+            }
+          },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: isActive ? 90 : 80,
-            height: isActive ? 90 : 80,
+            duration: const Duration(milliseconds: 100), // Faster animation for PTT
+            width: isActive ? 100 : 80, // Grow when holding
+            height: isActive ? 100 : 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _getMicButtonColor(),
-              boxShadow: isActive ? [BoxShadow(color: Colors.greenAccent.withOpacity(0.5), blurRadius: 20, spreadRadius: 5)] : [],
+              boxShadow: isActive ? [BoxShadow(color: Colors.greenAccent.withOpacity(0.6), blurRadius: 30, spreadRadius: 8)] : [],
             ),
             child: Icon(
-              isActive ? Icons.arrow_upward : Icons.mic, // Arrow up implies "Send"
+              isActive ? Icons.mic : Icons.mic_none,
               color: isActive ? Colors.white : (_voiceState == VoiceState.speaking ? Colors.white24 : Colors.black),
               size: 32,
             ),
@@ -465,4 +511,5 @@ enum VoiceState {
   thinking,
   speaking,
   error,
+  ready, // Connected but mic closed (PTT Ready)
 }

@@ -1,3 +1,16 @@
+## [6.6.0] - 2025-12-28 - Phase 32.5: "The AEC Fix (Hardware Enforcement)"
+
+### Architecture
+- **Hardware AEC Enforcement:** Integrated `flutter_webrtc` to open a "Dummy" audio track, forcing the OS into Voice Communication mode. This engages the hardware DSP for Acoustic Echo Cancellation, preventing the "Infinite Loop" where the AI hears itself.
+- **Hybrid Audio Stack:** Decoupled Session Management (WebRTC) from Data Capture (Record).
+- **Component Stack Prep:** Added API keys (`Cartesia`, `Deepgram`, `Retell`) and `Tier 3` model definitions to `AIModelConfig` for future migration.
+
+### Dependencies
+- Added `flutter_webrtc: ^0.12.2`.
+- Removed duplicate `app_usage` dependency.
+
+---
+
 ## [6.5.2] - 2025-12-27 - Phase 50: "Gemini API Reconciliation & Robustness"
 
 ### Fixed

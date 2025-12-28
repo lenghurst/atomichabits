@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 26 December 2025  
-> **Current Phase:** Phase 50 - Gemini API Reconciliation
+> **Last Updated:** 28 December 2025  
+> **Current Phase:** Phase 32.5 - Hardware AEC Enforcement  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Audio Pipeline Robustness
+> **Status:** ✅ Hardware AEC Locked
 
 ---
 
@@ -28,6 +28,15 @@
 ---
 
 ## ✅ Completed Phases
+
+### Phase 32.5: Hardware AEC Enforcement (28 Dec 2025)
+**Goal:** Fix the "Echo Nightmare" by enforcing OS-level echo cancellation.
+
+| ID | Task | Status |
+|----|------|--------|
+| A1 | Integrate `flutter_webrtc` for dummy stream | ✅ |
+| A2 | Configure `AudioSession` for `videoChat` | ✅ |
+| A3 | Refactor `AudioRecordingService` to hybrid stack | ✅ |
 
 ### Phase 50: Gemini API Reconciliation (27 Dec 2025)
 **Goal:** Align implementation with official docs and harden audio pipeline.

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 5.7.0+1
+version: 5.8.0+1 # Bumped for Architecture Refactor
 
 environment:
   sdk: ^3.5.0
@@ -98,9 +98,14 @@ dependencies:
   flutter_contacts: ^1.1.9+2
   permission_handler: ^11.3.1
   
-  # Phase 32: Audio Recording for Voice AI (FEAT-01)
-  # record: Real-time audio recording with streaming support
-  # audio_session: Audio session management for proper mic handling
+  app_usage: ^4.0.1
+
+  # === ARCHITECTURE REFACTOR DEPENDENCIES ===
+  # Phase 32.5: Hardware AEC & VoIP Mode Enforcer
+  flutter_webrtc: ^0.12.2
+  
+  # Keeping 'record' for raw byte stream access, but it will ride on top of
+  # the WebRTC audio session.
   record: ^5.2.0
   audio_session: ^0.1.21
   
@@ -112,7 +117,7 @@ dependencies:
   crypto: ^3.0.6
   health: ^13.1.4
   geolocator: ^14.0.2
-  app_usage: ^4.0.1
+
 
 dev_dependencies:
   flutter_test:

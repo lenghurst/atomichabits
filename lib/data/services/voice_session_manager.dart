@@ -256,6 +256,13 @@ class VoiceSessionManager {
     _voicePlayer.isPlayingStream.listen((isPlaying) {
       if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ AI Speaking STARTED' : 'VoiceSessionManager: 🤫 AI Speaking STOPPED');
       _isAISpeaking = isPlaying;
+      
+      // PHASE 52: Exit Thinking Loop
+      // When AI stops speaking, we go to PAUSED (Ready state for PTT)
+      if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
+         _setState(VoiceSessionState.paused);
+      }
+      
       onAISpeakingChanged?.call(isPlaying);
     });
   }
@@ -312,7 +319,7 @@ class VoiceSessionManager {
   /// 2. Initialises the audio recording service
   /// 3. Starts streaming audio to the AI
   Future<bool> startSession() async {
-    if (_state != VoiceSessionState.idle) {
+    if (_state != VoiceSessionState.idle && _state != VoiceSessionState.error) {
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Cannot start - already in state: $_state');
       }
@@ -455,6 +462,34 @@ class VoiceSessionManager {
       debugPrint('VoiceSessionManager: Session resumed');
     }
   }
+
+  /// Start recording (PTT Press).
+  /// Resumes mic and sets state to Active.
+  Future<void> startRecording() async {
+    // PHASE 52: PTT - Strict Lockdown
+    // Do NOT allow recording if AI is Speaking (No Barge-In)
+    if (_isAISpeaking) {
+      if (kDebugMode) debugPrint('VoiceSessionManager: PTT Blocked - AI is Speaking');
+       return;
+    }
+
+    if (_state != VoiceSessionState.thinking && _state != VoiceSessionState.active && _state != VoiceSessionState.paused) return;
+    
+    // Removed: interruptAI(); // User requested NO interrupt
+    
+    await _audioService.resumeRecording();
+    _setState(VoiceSessionState.active);
+  }
+
+  /// Stop recording (PTT Release).
+  /// Mutes mic and Commits turn.
+  Future<void> stopRecording() async {
+    if (_state != VoiceSessionState.active) return;
+    
+    await _audioService.pauseRecording();
+    await commitUserTurn();
+    // commitUserTurn sets state to Thinking
+  }
   
   /// Send a text message to the AI (for hybrid voice/text mode).
   void sendText(String text) {
@@ -495,9 +530,11 @@ class VoiceSessionManager {
     if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
     
     // Reset thinking state if we get audio
-    if (_state == VoiceSessionState.thinking) {
-       _setState(VoiceSessionState.active);
-    }
+    // PHASE 52: PTT - Disable auto-switch to Active. 
+    // State is controlled strictly by Button Press.
+    // if (_state == VoiceSessionState.thinking) {
+    //    _setState(VoiceSessionState.active);
+    // }
     
     // 2. Play via internal player
     _voicePlayer.playChunk(audioData);
@@ -559,7 +596,7 @@ class VoiceSessionManager {
     }
   }
   
-  Timer? _silenceTimer;
+  // Timer? _silenceTimer; // Removed for Manual Turn Taking
   
 
   /// Manual Mode: Commit the user's turn (simulate end of speech).
@@ -572,8 +609,12 @@ class VoiceSessionManager {
     // We do NOT pause the microphone anymore. This fixes truncation issues.
     // await _audioService.pauseRecording(); 
     
-    // 2. Force End Turn (Empty Text) - Signals server to reply immediately
-    _voiceService.sendText(" ", turnComplete: true);
+    // 2. Force End Turn (Signal Only) - Signals server to reply to AUDIO buffer
+    if (_voiceService is GeminiLiveService) {
+      _voiceService.sendEndTurn();
+    } else {
+      _voiceService.sendText(" ", turnComplete: true);
+    }
     
     // Switch to thinking logic
     _handleSilenceTimeout(); 
@@ -581,32 +622,13 @@ class VoiceSessionManager {
 
   /// Handle voice activity detection.
   void _handleVoiceActivity(bool isActive) {
-    if (_isUserSpeaking != isActive) {
-      _isUserSpeaking = isActive;
-      onUserSpeakingChanged?.call(isActive);
-      
-      // PHASE 48: VAD Logic
-      // Since we are Always-On, we rely on VAD to detect end of speech.
-      // However, we don't auto-commit in "Manual Turn Taking" mode?
-      // Wait, the plan says "VAD Only". So we should enable auto-commit.
-      // But let's check strict requirements. User said "Auto-Detect".
-      
-      if (isActive) {
-        // User started speaking, cancel any pending timeout
-        _silenceTimer?.cancel();
-        if (_state == VoiceSessionState.thinking) {
-          // Barge-in or follow-up
-           _setState(VoiceSessionState.active);
-        }
-      } else {
-        // User stopped speaking, start silence timer
-        _silenceTimer?.cancel();
-        _silenceTimer = Timer(const Duration(milliseconds: 1500), _handleSilenceTimeout);
-      }
-    } else if (isActive) {
-      // Still speaking, ensure timer is cancelled
-      _silenceTimer?.cancel();
-    }
+     // PHASE 51: Manual Turn Taking
+     // VAD visualization is fine, but we DISABLE auto-commit logic.
+     if (_isUserSpeaking != isActive) {
+       _isUserSpeaking = isActive;
+       onUserSpeakingChanged?.call(isActive);
+     }
+     // No timer logic here.
   }
 
   /// Called when silence is detected for > 1.5s OR Manual Commit
@@ -617,9 +639,14 @@ class VoiceSessionManager {
     if (canCommit) {
       if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Turn Ended (Manual/Silence), switching to thinking state');
       
-      // PHASE 48: Safety Net - Force Server to Reply
-      // Prevents "Stuck on Listening" or "Fake Thinking" state.
-      _voiceService.sendText(" ", turnComplete: true);
+      // PHASE 48 Fix: Use clean EndTurn signal instead of text " "
+      // This ensures the model processes the AUDIO buffer, not the text.
+      if (_voiceService is GeminiLiveService) {
+        _voiceService.sendEndTurn();
+      } else {
+        // Fallback for OpenAI or others if needed
+        _voiceService.sendText(" ", turnComplete: true); 
+      }
       
       // Visually switch to thinking state to acknowledge input
       _setState(VoiceSessionState.thinking);

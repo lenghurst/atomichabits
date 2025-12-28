@@ -45,6 +45,11 @@ class AIModelConfig {
   /// OpenAI API key (Fallback TTS provider)
   static const String openAiApiKey = String.fromEnvironment('OPENAI_API_KEY');
 
+  // === NEW KEYS FOR COMPONENT STACK ===
+  static const String cartesiaApiKey = String.fromEnvironment('CARTESIA_API_KEY');
+  static const String deepgramApiKey = String.fromEnvironment('DEEPGRAM_API_KEY');
+  static const String retellApiKey = String.fromEnvironment('RETELL_API_KEY');
+
   /// Selected Voice Provider (gemini or openai)
   static const String voiceProvider = String.fromEnvironment('VOICE_PROVIDER', defaultValue: 'gemini');
   
@@ -110,6 +115,10 @@ class AIModelConfig {
   /// - Used when Live API is not required (text chat)
   /// - Standard REST API compatible
   static const String tier2TextModel = 'gemini-2.5-flash';
+  
+  /// Tier 3: Gemini 3 Flash (The Brain)
+  /// Used in the Component Stack architecture.
+  static const String tier3ReasoningModel = 'gemini-2.5-flash'; // 3.0 via 2.5 endpoint for now
   
   /// Tier 3: Gemini 2.5 Pro "The Architect"
   /// - Marketing Name: "Gemini 3 Pro"
