@@ -97,18 +97,8 @@ class _ConversationalOnboardingScreenState
       return;
     }
     
-    String greeting;
-    switch (_hookVariant) {
-      case 'B': // Sergeant
-        greeting = "Listen up. I'm your Pact coach. We're building a habit that sticks. No excuses.\n\nFirst, state your name.";
-        break;
-      case 'C': // Visionary
-        greeting = "Welcome to the first day of your new life. I'm here to help you build a legacy.\n\nTo begin our journey, what is your name?";
-        break;
-      case 'A': // Friend (Default)
-      default:
-        greeting = "Hi! I'm your Pact coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?";
-    }
+    // Orchestrator handles correct prompt for variant
+    final greeting = orchestrator.getHookGreeting();
 
     // Add initial greeting
     setState(() {
@@ -227,18 +217,8 @@ class _ConversationalOnboardingScreenState
     
     if (!mounted) return;
     
-    String identityPrompt;
-    switch (_hookVariant) {
-      case 'B': // Sergeant
-        identityPrompt = "Copy that, $name. Now, identify the target. Who do you want to become? Answer me: \"I want to be the type of person who...\"";
-        break;
-      case 'C': // Visionary
-        identityPrompt = "A strong name, $name. Now, envision your future self. James Clear says every action is a vote for who you want to become. Cast your vote: \"I want to be the type of person who...\"";
-        break;
-      case 'A': // Friend
-      default:
-        identityPrompt = "Great to meet you, $name! Now, let's talk about who you want to become.\n\nJames Clear says: \"Every action is a vote for the type of person you want to become.\"\n\nComplete this sentence: \"I want to be the type of person who...\"";
-    }
+    final orchestrator = context.read<OnboardingOrchestrator>();
+    final identityPrompt = orchestrator.getHookIdentityPrompt(name);
 
     setState(() {
       _messages.add(ChatMessage.assistant(

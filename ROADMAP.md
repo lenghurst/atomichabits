@@ -7,27 +7,37 @@
 
 ---
 
-## 🎯 Current Focus: Pre-Launch Fixes (Phase 45)
+## 🎯 Current Focus: Navigation Audit (Phase A)
 
-**Goal:** Address critical blockers (tests, static analysis, build pipeline) before the first device test build and fix data fragmentation issues.
+**Goal:** Clean up the navigation stack before full release.
 
-**Status:** ✅ **COMPLETE**. Critical blockers and data fragmentation resolved.
+**Status:** 🟡 **IN PROGRESS**
  
-**What Was Built (Phase 45):**
-1. **User Data Unification:** Migrated `isPremium` from standalone Hive key to `UserProfile` model
-2. **Cloud Sync Preparation:** Added `isSynced` and `lastUpdated` to `PsychometricProfile`
-3. **Migration Engine:** Automatic legacy data migration for User data on app launch
-4. **Verification Tests:** Unit tests for both User migration and Psychometric sync logic
+**What Was Built (Phase 4 & 7):**
+1. **Persistent Navigation:** `StatefulShellRoute` implemented with 3-tab `BottomNavigationBar`.
+2. **Strangler Fig:** Onboarding logic successfully decoupled from legacy `AppState`.
+3. **Prompt Orchestrator:** Dynamic prompt injection implemented in service layer.
 
 **Immediate Priorities:**
-1.  **Test on Device:** Verify complete onboarding → reveal → dashboard flow
-2.  **Fix Unit Tests:** Resolve the 5 failing unit tests in `date_utils_test.dart`
-3.  **Static Analysis:** Clean up the 154 static analysis issues (mostly unused imports)
-4.  **GitHub Actions:** Guide the user to set up the 6 required repository secrets
+1.  **Analyze Router:** Audit entire `app_router.dart` for legacy paths.
+2.  **Verify Device:** Confirm persistent tab state on physical hardware.
+3.  **Refine Voice Onboarding:** Tighten up the "Sherlock Screening" flow.
 
 ---
 
 ## ✅ Completed Phases
+
+## ✅ Completed Phases
+
+### Phase 4 & 7: Architecture Modernization (28 Dec 2025)
+**Goal:** Implement persistent navigation and decouple legacy state logic.
+
+| ID | Task | Status |
+|----|------|--------|
+| A1 | Implement `StatefulShellRoute` (Bottom Nav) | ✅ |
+| A2 | Isolate `OnboardingState` (Strangler Fig) | ✅ |
+| A3 | Decouple Prompt Logic to `OnboardingOrchestrator` | ✅ |
+| A4 | Harden `AppState` Null Safety | ✅ |
 
 ### Phase 32.5: Hardware AEC Enforcement (28 Dec 2025)
 **Goal:** Fix the "Echo Nightmare" by enforcing OS-level echo cancellation.

@@ -13,7 +13,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 48 | Voice Note UI (Hold-to-Talk / Tap-to-Lock) |
+| **Mobile App** | 🟢 Phase 4&7 | ShellRoute Navigation + Strangler Fig Complete |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | ✅ **MVP** | Sherlock Protocol (PTT Enforced + AEC Locked) |

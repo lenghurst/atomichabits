@@ -170,6 +170,34 @@ You are now in Visionary mode.
         return '';
     }
   }
+
+  /// Phase 7.3: Get initial greeting based on hook variant
+  /// Encapsulates Hook Logic (A=Friend, B=Sergeant, C=Visionary)
+  String getHookGreeting() {
+    switch (_hookVariant) {
+      case 'B': // Sergeant
+        return "Listen up. I'm your Pact coach. We're building a habit that sticks. No excuses.\n\nFirst, state your name.";
+      case 'C': // Visionary
+        return "Welcome to the first day of your new life. I'm here to help you build a legacy.\n\nTo begin our journey, what is your name?";
+      case 'A': // Friend (Default)
+      default:
+        return "Hi! I'm your Pact coach. I'll help you build a habit that sticks.\n\nFirst, what's your name?";
+    }
+  }
+
+  /// Phase 7.3: Get identity prompt based on hook variant
+  /// Uses name collected in Step 1
+  String getHookIdentityPrompt(String userName) {
+    switch (_hookVariant) {
+      case 'B': // Sergeant
+        return "Copy that, $userName. Now, identify the target. Who do you want to become? Answer me: \"I want to be the type of person who...\"";
+      case 'C': // Visionary
+        return "A strong name, $userName. Now, envision your future self. James Clear says every action is a vote for who you want to become. Cast your vote: \"I want to be the type of person who...\"";
+      case 'A': // Friend
+      default:
+        return "Great to meet you, $userName! Now, let's talk about who you want to become.\n\nJames Clear says: \"Every action is a vote for the type of person you want to become.\"\n\nComplete this sentence: \"I want to be the type of person who...\"";
+    }
+  }
   
   /// Current conversation accessor
   ChatConversation? get conversation => _conversation;

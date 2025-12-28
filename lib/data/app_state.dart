@@ -15,6 +15,8 @@ import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
 import '../core/logging/app_logger.dart';
 
+import '../features/onboarding/state/onboarding_state.dart';
+
 /// Enum for haptic feedback types
 enum HapticFeedbackType {
   light,
@@ -47,56 +49,51 @@ enum HapticFeedbackType {
 /// - Legacy single-habit data auto-migrated on first load
 /// - CRUD methods: createHabit, updateHabit, deleteHabit, setFocusHabit
 class AppState extends ChangeNotifier {
+  // Dependency
+  final OnboardingState _onboardingState;
+
+  AppState({OnboardingState? onboardingState}) 
+      : _onboardingState = onboardingState ?? OnboardingState() {
+    // Listen to onboarding state changes to notify AppState listeners (Router refresh)
+    _onboardingState.addListener(notifyListeners);
+  }
+
+  @override
+  void dispose() {
+    _onboardingState.removeListener(notifyListeners);
+    super.dispose();
+  }
+
   // User profile
   UserProfile? _userProfile;
   
   // ========== Phase 3: Multi-Habit Support ==========
-  /// List of all user's habits
   List<Habit> _habits = [];
-  
-  /// ID of the currently focused habit (for Focus Mode)
-  /// If null, the first primary habit or first habit is used
   String? _focusedHabitId;
-  
-  // Onboarding completion status
   bool _hasCompletedOnboarding = false;
 
-  // ========== Phase 5: v4 Master Journey Guard ==========
-  bool _hasMicrophonePermission = false;
-  bool _hasNotificationPermission = false;
-  
-  bool get hasMicrophonePermission => _hasMicrophonePermission;
-  bool get hasNotificationPermission => _hasNotificationPermission;
+  // ========== Phase 5: v4 Master Journey Guard (DELEGATED via Strangler Fig) ==========
+  // Delegated to OnboardingState
+  bool get hasMicrophonePermission => _onboardingState.hasMicrophonePermission;
+  bool get hasNotificationPermission => _onboardingState.hasNotificationPermission;
 
   void setMicrophonePermission(bool value) {
-    _hasMicrophonePermission = value;
-    notifyListeners();
+    _onboardingState.setMicrophonePermission(value);
+    // notifyListeners handled by listener
   }
 
   void setNotificationPermission(bool value) {
-    _hasNotificationPermission = value;
-    notifyListeners();
+    _onboardingState.setNotificationPermission(value);
+    // notifyListeners handled by listener
   }
 
   /// Guard Logic: Verifies specific commitment step requirements.
-  /// Returns a fail route (e.g. misalignment) if check fails, or null if OK.
+  /// Phase 7.1: Delegated to OnboardingState
   String? checkCommitment(String location) {
-    // Phase 54: Prevent Side Door
-    // If accessing Oracle or Goal Screening, MUST have permissions.
-    if (location.startsWith('/onboarding/oracle') || location.startsWith('/onboarding/screening')) {
-       // Allow if specifically completing onboarding
-       if (_hasCompletedOnboarding) return null;
-
-       if (!_hasMicrophonePermission) {
-          if (kDebugMode) debugPrint('Guard: Blocked $location due to missing mic permission');
-          // In real implementation, this goes to Misalignment.
-          // For now, we allow it (development) or strictly block:
-          // return '/onboarding/misalignment?reason=permissions';
-          // Temporarily returning null to avoid blocking during dev testing without permissions set
-          return null; 
-       }
-    }
-    return null;
+    return _onboardingState.checkCommitment(
+      location, 
+      hasCompletedOnboarding: _hasCompletedOnboarding
+    );
   }
   
   // ========== Phase 6: App Settings ==========
@@ -246,8 +243,9 @@ class AppState extends ChangeNotifier {
   /// Get the anchor habit for a stacked habit
   Habit? getAnchorHabit(String childHabitId) {
     final childHabit = getHabitById(childHabitId);
-    if (childHabit?.anchorHabitId == null) return null;
-    return getHabitById(childHabit!.anchorHabitId!);
+    final anchorId = childHabit?.anchorHabitId;
+    if (anchorId == null) return null;
+    return getHabitById(anchorId);
   }
   
   /// Get all stacked habits (habits with an anchor)
@@ -453,10 +451,11 @@ class AppState extends ChangeNotifier {
   /// - Falls back to 'currentHabit' (legacy single habit)
   /// - Auto-upgrades legacy data to list format
   Future<void> _loadFromStorage() async {
-    if (_dataBox == null) return;
+    final box = _dataBox;
+    if (box == null) return;
 
     // Load onboarding status
-    _hasCompletedOnboarding = _dataBox!.get('hasCompletedOnboarding', defaultValue: false);
+    _hasCompletedOnboarding = box.get('hasCompletedOnboarding', defaultValue: false);
     
     // FORCE OVERRIDE FOR DEBUGGING
     if (kDebugMode) {
@@ -465,10 +464,10 @@ class AppState extends ChangeNotifier {
     }
     
     // Load premium status
-    _isPremium = _dataBox!.get('isPremium', defaultValue: false);
+    _isPremium = box.get('isPremium', defaultValue: false);
 
     // Phase 6: Load app settings
-    final settingsJson = _dataBox!.get('appSettings');
+    final settingsJson = box.get('appSettings');
     if (settingsJson != null) {
       _settings = AppSettings.fromJson(Map<String, dynamic>.from(settingsJson));
       if (kDebugMode) {
@@ -479,16 +478,16 @@ class AppState extends ChangeNotifier {
     }
 
     // Load user profile
-    final profileJson = _dataBox!.get('userProfile');
+    final profileJson = box.get('userProfile');
     if (profileJson != null) {
       _userProfile = UserProfile.fromJson(Map<String, dynamic>.from(profileJson));
     }
 
     // Load focused habit ID (Phase 3)
-    _focusedHabitId = _dataBox!.get('focusedHabitId');
+    _focusedHabitId = box.get('focusedHabitId');
 
     // Phase 3: Try to load habits list first
-    final habitsJson = _dataBox!.get('habits');
+    final habitsJson = box.get('habits');
     if (habitsJson != null) {
       // New format: list of habits
       final habitsList = habitsJson as List;
@@ -501,7 +500,7 @@ class AppState extends ChangeNotifier {
       }
     } else {
       // Legacy format: check for single 'currentHabit'
-      final legacyHabitJson = _dataBox!.get('currentHabit');
+      final legacyHabitJson = box.get('currentHabit');
       if (legacyHabitJson != null) {
         final legacyHabit = Habit.fromJson(Map<String, dynamic>.from(legacyHabitJson));
         
@@ -534,36 +533,38 @@ class AppState extends ChangeNotifier {
   /// 
   /// **Phase 3:** Saves habits as a list, plus focused habit ID
   Future<void> _saveToStorage() async {
-    if (_dataBox == null) return;
+    final box = _dataBox;
+    if (box == null) return;
 
     try {
       // Save onboarding status
-      await _dataBox!.put('hasCompletedOnboarding', _hasCompletedOnboarding);
+      await box.put('hasCompletedOnboarding', _hasCompletedOnboarding);
       
       // Save premium status
-      await _dataBox!.put('isPremium', _isPremium);
+      await box.put('isPremium', _isPremium);
 
       // Phase 6: Save app settings
-      await _dataBox!.put('appSettings', _settings.toJson());
+      await box.put('appSettings', _settings.toJson());
 
       // Save user profile
-      if (_userProfile != null) {
-        await _dataBox!.put('userProfile', _userProfile!.toJson());
+      final profile = _userProfile;
+      if (profile != null) {
+        await box.put('userProfile', profile.toJson());
       }
 
       // Phase 3: Save habits as list
-      await _dataBox!.put('habits', _habits.map((h) => h.toJson()).toList());
+      await box.put('habits', _habits.map((h) => h.toJson()).toList());
       
       // Save focused habit ID
       if (_focusedHabitId != null) {
-        await _dataBox!.put('focusedHabitId', _focusedHabitId);
+        await box.put('focusedHabitId', _focusedHabitId);
       } else {
-        await _dataBox!.delete('focusedHabitId');
+        await box.delete('focusedHabitId');
       }
       
       // Clean up legacy 'currentHabit' key if it exists (one-time cleanup)
-      if (_dataBox!.containsKey('currentHabit')) {
-        await _dataBox!.delete('currentHabit');
+      if (box.containsKey('currentHabit')) {
+        await box.delete('currentHabit');
         if (kDebugMode) {
           debugPrint('🧹 Cleaned up legacy currentHabit key');
         }

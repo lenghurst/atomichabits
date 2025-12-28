@@ -1,3 +1,18 @@
+## [6.7.0] - 2025-12-28 - Phase 4 & 7: "Architecture Modernization"
+
+### Architecture
+- **ShellRoute Navigation (Phase 4):** Implemented `StatefulShellRoute` with persistent bottom navigation for `Today`, `Dashboard`, and `Settings`. Users now maintain scroll state across tabs.
+- **Strangler Fig Complete (Phase 7):**
+  - **Decoupled Onboarding:** Extracted all prompt logic from `ConversationalOnboardingScreen` to `OnboardingOrchestrator`.
+  - **Null Safety Audit:** Hardened `AppState` persistence (`_loadFromStorage`) using "Local Variable Capture" pattern to eliminate unsafe null assertions.
+  - **Isolated State:** `AppRouter` now delegates onboarding logic to `OnboardingState` provider.
+
+### Added
+- **ScaffoldWithNavBar:** New widget implementing Material 3 NavigationBar.
+- **Prompt Hooks:** `OnboardingOrchestrator` methods for variant-specific greetings and identity prompts.
+
+---
+
 ## [6.6.0] - 2025-12-28 - Phase 32.5: "The AEC Fix (Hardware Enforcement)"
 
 ### Architecture

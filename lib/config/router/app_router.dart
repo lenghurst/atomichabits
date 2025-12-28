@@ -14,11 +14,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../features/onboarding/state/onboarding_state.dart'; // Added for Strangler Fig
+
 import '../../data/app_state.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../../data/enums/voice_session_mode.dart'; // Added for Unification
 import '../../data/providers/psychometric_provider.dart'; // Added for Commitment Checks
+import '../../core/logging/app_logger.dart'; // Robust Logging
+import '../../features/navigation/scaffold_with_navbar.dart'; // Phase 4: ShellRoute
 
 // Feature screens
 import '../../features/onboarding/onboarding_screen.dart';
@@ -57,20 +61,22 @@ import 'app_routes.dart';
 /// 
 /// Usage in main.dart:
 /// ```dart
-/// final router = AppRouter.createRouter(appState);
+/// final router = AppRouter.createRouter(appState, onboardingState);
 /// ```
 class AppRouter {
   /// Create the GoRouter instance with all routes and redirect logic
   /// 
   /// [appState] - The AppState instance for reactive updates and auth checks
-  static GoRouter createRouter(AppState appState) {
+  /// [onboardingState] - The OnboardingState instance (Strangler Fig) for v4 logic
+  static GoRouter createRouter(AppState appState, OnboardingState onboardingState) {
     return GoRouter(
       initialLocation: appState.hasCompletedOnboarding 
           ? AppRoutes.dashboard 
           : AppRoutes.home,
-      refreshListenable: appState,
+      // Phase 7.2: Listen to BOTH states for routing changes
+      refreshListenable: Listenable.merge([appState, onboardingState]),
       debugLogDiagnostics: kDebugMode,
-      redirect: (context, state) => _redirect(context, state, appState),
+      redirect: (context, state) => _redirect(context, state, appState, onboardingState),
       observers: [
         _NavigationLogger(),
       ],
@@ -87,6 +93,7 @@ class AppRouter {
     BuildContext context, 
     GoRouterState state, 
     AppState appState,
+    OnboardingState onboardingState,
   ) {
     final location = state.matchedLocation;
     final isOnboardingRoute = location.startsWith('/onboarding') || 
@@ -96,10 +103,16 @@ class AppRouter {
     // Guard 0: Commitment Alignment (Phase 5)
     // Prevents Side Door access to deep onboarding steps without verified commitment
     
-    // Check 1: Permission Flags (AppState)
+    // Check 1: Permission Flags (Delegated to OnboardingState via AppState wrapper OR direct)
+    // We access via appState's delegated checkCommitment for now to maintain API consistency,
+    // but we could also use logical separation here. 
+    // Since AppRouter now knows about OnboardingState, let's keep using appState's wrapper 
+    // as the "Facade" until full extraction.
     final commitmentRedirect = appState.checkCommitment(location);
     if (commitmentRedirect != null) {
-      if (kDebugMode) debugPrint('AppRouter: 🛑 Commitment Broken (Permissions) -> Redirecting to $commitmentRedirect');
+      AppLogger.info('AppRouter: 🛑 Commitment Broker Triggered');
+      AppLogger.info('  - Reason: Missing Permissions per v4 Protocol');
+      AppLogger.info('  - Action: Redirecting to $commitmentRedirect');
       return commitmentRedirect;
     }
 
@@ -111,14 +124,16 @@ class AppRouter {
          try {
            final psychProvider = context.read<PsychometricProvider>();
            if (!psychProvider.profile.hasHolyTrinity) {
-              if (kDebugMode) debugPrint('AppRouter: 🛑 Commitment Broken (Missing Data) -> Redirecting to Misalignment');
+              AppLogger.info('AppRouter: 🛑 Data Integrity Guard Triggered');
+              AppLogger.info('  - Reason: Missing "Holy Trinity" Psych Data');
+              AppLogger.info('  - Action: Redirecting to Misalignment (Step 10)');
               // If they don't have the data, they haven't done the work.
               // We could send them to Sherlock (Start) or Misalignment (Fail).
               // Per v4 spec: "User Commitment Misalignment Detected" if steps skipped.
               return AppRoutes.misalignment;
            }
          } catch (e) {
-           // If provider fails, fail safe to home
+           AppLogger.error('AppRouter: 🛑 Guard Error: $e');
            return AppRoutes.home;
          }
       }
@@ -128,9 +143,7 @@ class AppRouter {
     // Exception: Allow access to voice coach from dashboard
     if (appState.hasCompletedOnboarding && 
         location == AppRoutes.home) {
-      if (kDebugMode) {
-        debugPrint('AppRouter: Redirecting from home to dashboard (onboarding complete)');
-      }
+      AppLogger.info('AppRouter: 🔄 Auto-Redirect (Completed User) -> Dashboard');
       return AppRoutes.dashboard;
     }
     
@@ -139,13 +152,13 @@ class AppRouter {
     if (!appState.hasCompletedOnboarding && 
         !isOnboardingRoute &&
         !location.startsWith('/contracts/join')) {
-      if (kDebugMode) {
-        debugPrint('AppRouter: Redirecting to home (onboarding not complete)');
-      }
+      AppLogger.info('AppRouter: 🛡️ Security Guard -> Home');
+      AppLogger.info('  - Attempted: $location');
       return AppRoutes.home;
     }
     
-    // No redirect needed
+    // No redirect needed (Explicit Approval)
+    // Only log if not just "null" (to reduce spam, or keep at debug level)
     return null;
   }
   
@@ -263,21 +276,46 @@ class AppRouter {
       _buildNicheRoute(AppRoutes.makers, 'A Prolific Maker'),
       
       // ============================================================
-      // MAIN APP ROUTES
+      // MAIN APP ROUTES (SHELL ROUTE)
       // ============================================================
       
-      GoRoute(
-        path: AppRoutes.dashboard,
-        builder: (context, state) => const HabitListScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return ScaffoldWithNavBar(navigationShell: navigationShell);
+        },
+        branches: [
+          // Branch A: Today (Focus Mode)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.today,
+                builder: (context, state) => const TodayScreen(),
+              ),
+            ],
+          ),
+          
+          // Branch B: Habits (Dashboard)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.dashboard,
+                builder: (context, state) => const HabitListScreen(),
+              ),
+            ],
+          ),
+          
+          // Branch C: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.settings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.today,
-        builder: (context, state) => const TodayScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (context, state) => const SettingsScreen(),
-      ),
+
       GoRoute(
         path: AppRoutes.history,
         builder: (context, state) => const HistoryScreen(),

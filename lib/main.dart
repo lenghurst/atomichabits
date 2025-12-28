@@ -38,6 +38,7 @@ import 'data/providers/habit_provider.dart';
 import 'data/providers/psychometric_provider.dart';
 import 'domain/services/psychometric_engine.dart';
 import 'data/notification_service.dart';
+import 'features/onboarding/state/onboarding_state.dart'; // Phase 7: Strangler State
 
 void main() async {
   // Ensure Flutter is initialized before async operations
@@ -118,8 +119,11 @@ void main() async {
   );
   await witnessService.initialize();
 
+  // Phase 7.1: Initialize OnboardingState (The Fig)
+  final onboardingState = OnboardingState();
+
   // Initialize AppState (moved from MultiProvider to main to prevent router recreation loops)
-  final appState = AppState();
+  final appState = AppState(onboardingState: onboardingState); // Inject dependency
   await appState.initialize();
 
   // Initialize dependent services
@@ -201,6 +205,9 @@ void main() async {
         // Onboarding Orchestrator
         ChangeNotifierProvider.value(value: onboardingOrchestrator),
         
+        // Phase 7.1: Provide OnboardingState
+        ChangeNotifierProvider.value(value: onboardingState),
+        
         // Phase 32: Voice Session Manager
         Provider.value(value: voiceSessionManager),
         
@@ -220,6 +227,7 @@ void main() async {
       ],
       child: MyApp(
         appState: appState,
+        onboardingState: onboardingState, // Pass to MyApp
         deepLinkService: deepLinkService,
       ),
     ),
@@ -228,11 +236,13 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   final AppState appState;
+  final OnboardingState onboardingState; // Add this
   final DeepLinkService deepLinkService;
   
   const MyApp({
     super.key, 
     required this.appState,
+    required this.onboardingState, // Add this
     required this.deepLinkService,
   });
 
@@ -254,7 +264,13 @@ class _MyAppState extends State<MyApp> {
     // - Route constants (AppRoutes.dashboard)
     // - Redirect logic (auth/onboarding guards)
     // - Single source of truth for navigation
-    _router = AppRouter.createRouter(widget.appState);
+    // - Route constants (AppRoutes.dashboard)
+    // - Redirect logic (auth/onboarding guards)
+    // - Single source of truth for navigation
+    _router = AppRouter.createRouter(
+      widget.appState, 
+      widget.onboardingState, // Pass the Fig
+    );
     
     // Phase 21.1: Initialize deep link service with router
     widget.deepLinkService.setRouter(_router);
