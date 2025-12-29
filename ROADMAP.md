@@ -25,7 +25,23 @@
 
 ---
 
-## ✅ Completed Phases
+## 🚀 Upcoming Priorities
+
+### Phase 61: Data Architecture Audit (Current)
+**Goal**: Audit how data is captured, stored, analysed, and leveraged.
+**Status**: 🔴 STOP & FIX (Critical Vulnerability Found)
+
+| ID | Task | Status |
+|----|------|--------|
+| D1 | **Capture Audit**: Review Audio/Sensors/Inputs. | ⏸️ |
+| D2 | **Storage Audit**: Review Hive/Supabase/Security. | ⏸️ |
+| D3 | **Analysis Audit**: Review AI/Psychometrics. | ⏸️ |
+| D4 | **Leverage Audit**: Ensure data serves the user. | ⏸️ |
+| D5 | **Nightmare Scenario Protocol**: Week 1 Gate. | 🔴 FAILED |
+
+---
+
+## 🎯 Current Focus: Navigation Audit (Phase A)
 
 ## ✅ Completed Phases
 
@@ -38,6 +54,19 @@
 | A2 | Isolate `OnboardingState` (Strangler Fig) | ✅ |
 | A3 | Decouple Prompt Logic to `OnboardingOrchestrator` | ✅ |
 | A4 | Harden `AppState` Null Safety | ✅ |
+
+
+---
+
+### Phase 60: Voice Reliability (Hybrid Stack) (29 Dec 2025)
+**Goal:** Fix TTS 400 error and ensure robust audio generation.
+
+| ID | Task | Status |
+|----|------|--------|
+| H1 | **Hybrid Architecture**: Split Reasoning (SDK) and Mouth (REST). | ✅ |
+| H2 | **Gemini 3 Enforcement**: Ensure reasoning uses high-IQ model. | ✅ |
+| H3 | **REST TTS**: Bypass SDK limits for `responseModalities: ["AUDIO"]`. | ✅ |
+| H4 | **WAV Construction**: Manual PCM-to-WAV wrapping. | ✅ |
 
 ### Phase 59: Unified Low-Latency Audio (SoLoud) (29 Dec 2025)
 **Goal:** Deliver ultra-low latency (<50ms) voice interaction using C++ FFI.

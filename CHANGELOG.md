@@ -13,6 +13,32 @@
 
 ---
 
+## [6.9.4] - 2025-12-29 - Phase 61: "Strategic Trust Audit"
+
+### Security
+- **Nightmare Scenario Protocol (P0):** Executed a "Red Team" audit against the Social Layer.
+- **CRITICAL FAILURE:** `ContractService.sendNudge` lacks rate limiting, allowing for infinite harassment loops (Nudge Spam).
+- **Architecture Freeze:** All feature development halted until remediation is complete.
+
+---
+
+## [6.9.3] - 2025-12-29 - Phase 60: "Voice Reliability (Hybrid Stack)"
+
+### Architecture
+- **Hybrid Voice Stack:** Split the Voice Coach service into two distinct pipelines to maximize capability and reliability:
+  - **Reasoning (Brain):** retained `gemini-3-flash-preview` via Google AI Dart SDK for superior reasoning and persona adherence.
+  - **Speech (Mouth):** Implemented direct REST API call for `gemini-2.5-flash-preview-tts`. This bypasses SDK validation limits, allowing for the required `responseModalities: ["AUDIO"]` payload.
+- **WAV Construction:** Implemented manual `PCM-to-WAV` conversion (`_pcmBytesToWav`) to wrap raw audio bytes from the API into a playable format for Flutter.
+
+### Fixed
+- **TTS 400 Bad Request:** Resolved the "Invalid Argument" error preventing audio playback. The root cause was the SDK forcing text-based MIME types. The fix involves using the REST API with the specific `audio/wav` output config.
+
+### Added
+- **Validation:** Added empty-data checks to audio processing to prevent 44-byte "ghost files".
+- **Text Fallback:** `processText()` method implemented to allow the Voice Coach to speak even without audio input.
+
+---
+
 ## [6.9.2] - 2025-12-29 - Phase 59.4: "Unified Source of Truth (UI Fixes)"
  
  ### Architecture
