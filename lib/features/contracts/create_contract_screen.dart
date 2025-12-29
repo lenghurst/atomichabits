@@ -576,6 +576,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: 'Close',
           onPressed: () => context.go(AppRoutes.dashboard),
         ),
       ),
@@ -691,6 +692,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.copy),
+                          tooltip: 'Copy link',
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: inviteUrl));
                             ScaffoldMessenger.of(context).showSnackBar(

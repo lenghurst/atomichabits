@@ -38,6 +38,7 @@ class SettingsScreen extends StatelessWidget {
             centerTitle: true,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
+              tooltip: 'Back to Dashboard',
               onPressed: () => context.go(AppRoutes.dashboard),
             ),
           ),
