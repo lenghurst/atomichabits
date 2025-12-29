@@ -12,7 +12,7 @@ class GeminiVoiceNoteService {
   final String _apiKey = AIModelConfig.geminiApiKey;
 
   GeminiVoiceNoteService() {
-    // 1. The Brain (Reasoning): Uses SDK because we WANT text output
+    // 1. The Brain (Reasoning)
     _brain = GenerativeModel(
       model: AIModelConfig.reasoningModel, // 'gemini-3-flash-preview'
       apiKey: _apiKey,
@@ -22,7 +22,7 @@ class GeminiVoiceNoteService {
 
   Future<ChatMessage> processVoiceNote(String userAudioPath) async {
     try {
-      // --- STEP 1: THINK (Gemini 3) ---
+      // --- STEP 1: THINK ---
       final audioFile = File(userAudioPath);
       final audioBytes = await audioFile.readAsBytes();
 
@@ -36,12 +36,12 @@ class GeminiVoiceNoteService {
       final brainResponse = await _brain.generateContent([prompt]);
       final sherlockText = brainResponse.text ?? "I analyzed the audio but found no words.";
 
-      // --- STEP 2: SPEAK (Gemini 2.5 TTS via REST) ---
+      // --- STEP 2: SPEAK (REST API FIX) ---
       final audioPath = await _generateSpeechViaRest(sherlockText);
 
       return ChatMessage.assistant(
         content: sherlockText,
-        audioPath: audioPath, // UI renders player if this is not null
+        audioPath: audioPath,
         status: MessageStatus.complete,
       );
 
@@ -77,8 +77,6 @@ class GeminiVoiceNoteService {
     }
   }
 
-  /// ⚡ CORE FIX: Direct REST Call for TTS
-  /// Forces 'responseModalities': ['AUDIO'] using correct JSON structure.
   Future<String?> _generateSpeechViaRest(String text) async {
     final url = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=$_apiKey'
@@ -92,13 +90,13 @@ class GeminiVoiceNoteService {
           "contents": [{
             "parts": [{"text": text}]
           }],
-          // ✅ FIX: Use 'generationConfig', not 'config'
-          "generationConfig": {
-            "responseModalities": ["AUDIO"], 
+          // ✅ FIXED: Changed 'config' to 'generationConfig' to match API spec
+          "generationConfig": { 
+            "responseModalities": ["AUDIO"],
             "speechConfig": {
               "voiceConfig": {
                 "prebuiltVoiceConfig": {
-                  "voiceName": "Aoede" // Options: 'Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede'
+                  "voiceName": "Aoede"
                 }
               }
             }
@@ -108,12 +106,9 @@ class GeminiVoiceNoteService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
         if (data['candidates'] != null && (data['candidates'] as List).isNotEmpty) {
            final candidate = data['candidates'][0];
            final parts = candidate['content']['parts'] as List;
-           
-           // Look for the part that has 'inlineData'
            for (var part in parts) {
              if (part.containsKey('inlineData')) {
                final base64Audio = part['inlineData']['data'];
@@ -123,16 +118,12 @@ class GeminiVoiceNoteService {
            }
         }
       } else {
-        if (kDebugMode) {
-          print("TTS REST Error: ${response.statusCode} - ${response.body}");
-        }
+        if (kDebugMode) print("TTS REST Error: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("TTS Network Error: $e");
-      }
+      if (kDebugMode) print("TTS Network Error: $e");
     }
-    return null; // Graceful fallback (Text only)
+    return null;
   }
 
   Future<String> _saveAudioFile(List<int> bytes) async {
