@@ -17,7 +17,7 @@ import '../../config/ai_model_config.dart';
 import '../enums/voice_session_mode.dart';
 import 'stream_voice_player.dart';
 
-/// Voice Session Manager - Phase 59.2 (Sherlock Restored)
+/// Voice Session Manager - Phase 59.3 (Sherlock Restored & Integrated Safety Gate)
 class VoiceSessionManager {
   // === CONFIGURATION ===
   final VoiceSessionMode mode;
@@ -36,7 +36,8 @@ class VoiceSessionManager {
   VoiceSessionState _state = VoiceSessionState.idle;
   bool _isUserSpeaking = false;
   bool _isAISpeaking = false;
-  DateTime? _aiStartedSpeakingTime; // Safety Gate
+  DateTime? _aiSpeechStartTime; // Renamed from _aiStartedSpeakingTime
+  static const Duration _safetyGateDuration = Duration(milliseconds: 500);
   
   final List<Map<String, String>> _transcript = [];
   List<Map<String, String>> get transcript => List.unmodifiable(_transcript);
@@ -181,20 +182,7 @@ class VoiceSessionManager {
     }
     
     _voicePlayer = StreamVoicePlayer();
-    _voicePlayer.isPlayingStream.listen((isPlaying) {
-      if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ Player Reported Speaking' : 'VoiceSessionManager: 🤫 Player Reported Silence');
-      
-      // Only update if we aren't already in that state (Debounce)
-      if (_isAISpeaking != isPlaying) {
-        _isAISpeaking = isPlaying;
-        if (isPlaying) _aiStartedSpeakingTime = DateTime.now();
-        onAISpeakingChanged?.call(isPlaying);
-      }
-      
-      if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
-         _setState(VoiceSessionState.paused); // Or active depending on logic
-      }
-    });
+    _voicePlayer.isPlayingStream.listen(_handlePlayerStateChange);
   }
   
   String _generateSystemInstruction() {
@@ -277,25 +265,40 @@ class VoiceSessionManager {
     _setState(VoiceSessionState.active);
   }
 
+  /// Handles User Interaction (Tap to Speak / Interrupt).
+  /// Enforces the "Safety Gate" to prevent accidental interruptions.
   Future<void> startRecording() async {
-    // === SAFETY GATE ===
-    // If AI started speaking less than 500ms ago, ignore this tap.
-    // This prevents the "Accidental Interrupt" when you and Sherlock speak at the same time.
-    if (_isAISpeaking && _aiStartedSpeakingTime != null) {
-      final timeSinceStart = DateTime.now().difference(_aiStartedSpeakingTime!);
-      if (timeSinceStart.inMilliseconds < 500) {
-        if (kDebugMode) debugPrint('VoiceSessionManager: 🛡️ Input Ignored (Safety Gate active)');
+    // 1. Safety Gate Check
+    // We only guard if the AI is actively speaking (or we think it is).
+    // The gate is 500ms from the FIRST byte of audio received.
+    if (_isAISpeaking && _aiSpeechStartTime != null) {
+      final timeSinceStart = DateTime.now().difference(_aiSpeechStartTime!);
+      if (timeSinceStart < _safetyGateDuration) {
+        if (kDebugMode) debugPrint('VoiceSessionManager: 🛡️ Input Ignored (Safety Gate active: ${timeSinceStart.inMilliseconds}ms)');
         return;
       }
     }
 
+    // 2. Interrupt Logic
     if (_isAISpeaking) {
       if (kDebugMode) debugPrint('VoiceSessionManager: 🛑 Interrupting AI...');
+      
+      // Stop Output immediately
       await _voicePlayer.stop(); 
+      
+      // Send Interrupt Signal to AI Service
       _voiceService.interrupt();
+      
+      // Force state update immediately for UI responsiveness
+      _handlePlayerStateChange(false);
     }
     
-    if (_state != VoiceSessionState.thinking && _state != VoiceSessionState.active && _state != VoiceSessionState.paused) return;
+    // 3. Prevent "Double Tap" or invalid state re-entry
+    if (_state != VoiceSessionState.thinking && _state != VoiceSessionState.active && _state != VoiceSessionState.paused) {
+        return;
+    }
+    
+    // 4. Resume Input
     await _audioService.resumeRecording();
     _setState(VoiceSessionState.active);
   }
@@ -335,7 +338,7 @@ class VoiceSessionManager {
     if (!_isAISpeaking) {
       if (kDebugMode) debugPrint('VoiceSessionManager: ⚡ Force-Switching UI to Speaking (Data Received)');
       _isAISpeaking = true;
-      _aiStartedSpeakingTime = DateTime.now();
+      _aiSpeechStartTime = DateTime.now();
       onAISpeakingChanged?.call(true);
     }
     
@@ -449,13 +452,27 @@ class VoiceSessionManager {
     }
   }
 
+  void _handlePlayerStateChange(bool isPlaying) {
+    if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ Player Reported Speaking' : 'VoiceSessionManager: 🤫 Player Reported Silence');
+    
+    // Only update if we aren't already in that state (Debounce)
+    if (_isAISpeaking != isPlaying) {
+      _isAISpeaking = isPlaying;
+      if (isPlaying) _aiSpeechStartTime = DateTime.now();
+      onAISpeakingChanged?.call(isPlaying);
+    }
+    
+    if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
+       _setState(VoiceSessionState.paused); 
+    }
+  }
+
   Future<void> dispose() async {
     await endSession();
     await _audioService.dispose();
     await _voicePlayer.dispose();
   }
 }
-
 
 enum VoiceSessionState {
   idle,

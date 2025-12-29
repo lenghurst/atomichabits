@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 
-/// Stream Voice Player - Phase 59.1: Force Playback Protocol
+/// Stream Voice Player - Phase 59.2: Output Stabilization
 /// 
-/// Changes:
-/// - Immediate UI feedback (Optimistic State)
-/// - Race condition locking for stream initialization
-/// - Robust buffer monitoring to auto-reset state on silence
+/// Updates:
+/// - Implements "Silence Debouncing" to bridge network latency gaps.
+/// - Prevents UI flickering by holding "Speaking" state during buffer underruns.
+/// - Optimistic state management with race-condition guards.
 class StreamVoicePlayer {
   final SoLoud _soloud = SoLoud.instance;
   AudioSource? _streamSource;
@@ -16,6 +16,11 @@ class StreamVoicePlayer {
   
   bool _isInitialised = false;
   bool _isStartingStream = false; // Busy lock
+  
+  // === SILENCE DEBOUNCER ===
+  // Prevents state flickering when buffer runs dry due to network latency.
+  Timer? _silenceGraceTimer;
+  static const Duration _gracePeriod = Duration(milliseconds: 600);
   
   final StreamController<bool> _playingStateController = StreamController<bool>.broadcast();
   Stream<bool> get isPlayingStream => _playingStateController.stream;
@@ -39,7 +44,6 @@ class StreamVoicePlayer {
       }
       
       // Setup the dynamic buffer
-      // Note: In SoLoud v3, setBufferStream creates a source we can feed continuously
       _streamSource = _soloud.setBufferStream(
           maxBufferSizeBytes: 2048 * 1024, // 2MB Buffer
           bufferingType: BufferingType.preserved,
@@ -61,15 +65,21 @@ class StreamVoicePlayer {
     if (!_isInitialised || _streamSource == null) return;
 
     try {
-        // 1. Feed the engine immediately (Zero Latency)
+        // 1. Cancel any pending silence timer (The Bridge)
+        // We received data, so we are definitely still speaking.
+        if (_silenceGraceTimer?.isActive ?? false) {
+          _silenceGraceTimer!.cancel();
+          if (kDebugMode) debugPrint('StreamVoicePlayer: 🌉 Latency Bridge Active (Timer Cancelled)');
+        }
+
+        // 2. Feed the engine immediately (Zero Latency)
         _soloud.addAudioDataStream(_streamSource!, audioData);
         
-        // 2. Optimistic State Update:
-        // If we just fed data, we should be "Speaking" in the UI.
-        // We do this BEFORE the async check to break the "Amber Lock".
+        // 3. Optimistic State Update:
+        // We do this BEFORE the async check to ensure UI responsiveness.
         _setPlaying(true); 
 
-        // 3. Ensure the engine is actually pulling data
+        // 4. Ensure the engine is actually pulling data
         bool isHandleInvalid = _streamHandle == null || !_soloud.getIsValidVoiceHandle(_streamHandle!);
         
         if (isHandleInvalid) {
@@ -100,22 +110,30 @@ class StreamVoicePlayer {
     }
   }
 
-  /// Watchdog: Sets state to Idle when the buffer runs dry
+  /// Watchdog: Monitors the buffer and handles the transition to silence.
   void _monitorPlaybackState() async {
     // Wait while handle is valid (audio is playing)
     while (_streamHandle != null && _soloud.getIsValidVoiceHandle(_streamHandle!)) {
-      // Check every 100ms. If buffer empties, SoLoud invalidates the handle.
       await Future.delayed(const Duration(milliseconds: 100));
     }
     
-    // Double check we didn't just restart
+    // Double check we didn't just restart in a race condition
     if (!_isStartingStream) {
-      if (kDebugMode) debugPrint('StreamVoicePlayer: 🤫 Stream Drained (Silence)');
-      _setPlaying(false);
+      if (kDebugMode) debugPrint('StreamVoicePlayer: ⏳ Buffer Drained. Starting Grace Period...');
+      
+      // === GRACE PERIOD ===
+      // Don't kill the UI state immediately. Wait to see if more packets arrive.
+      _silenceGraceTimer?.cancel();
+      _silenceGraceTimer = Timer(_gracePeriod, () {
+        if (kDebugMode) debugPrint('StreamVoicePlayer: 🤫 Silence Confirmed (Grace Period Expired)');
+        _setPlaying(false);
+        _streamHandle = null; // Clean up the handle reference
+      });
     }
   }
 
   Future<void> stop() async {
+    _silenceGraceTimer?.cancel();
     if (_streamHandle != null) {
       await _soloud.stop(_streamHandle!);
       _streamHandle = null;
@@ -136,6 +154,7 @@ class StreamVoicePlayer {
   Future<void> enforceSpeakerOutput() async {}
 
   Future<void> dispose() async {
+    _silenceGraceTimer?.cancel();
     await stop();
     _soloud.deinit();
     await _playingStateController.close();

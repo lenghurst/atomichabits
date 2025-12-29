@@ -13,6 +13,19 @@
 
 ---
 
+## [6.9.1] - 2025-12-29 - Phase 59.3: "Audio Stack Stabilization (Failed)"
+
+### Architecture
+- **Integrated Safety Gate:** `VoiceSessionManager` now internally handles the 500ms safety lock to prevent accidental user interruptions.
+- **Silence Debouncer:** `StreamVoicePlayer` (SoLoud) now includes a 600ms grace period to smooth out network jitter and prevent UI flickering.
+- **Recursive Input Fallback:** `AudioRecordingService` now recursively retries initialization without WebRTC if resource locking is detected on Android.
+
+### Critical Issues (Verification Failed)
+- **UI/Audio Desync:** Physical device testing revealed a severe desynchronization between the "Optimistic" UI state and the actual audio playback. The UI gets stuck in "Thinking" (Amber) or "Speaking" (Purple) states incorrectly due to race conditions between the new Debouncer and the underlying hardware events.
+- **Action Required:** Immediate investigation into state management race conditions required.
+
+---
+
 ## [6.9.0] - 2025-12-29 - Phase 59: "Unified Low-Latency Audio (SoLoud)"
 
 ### Architecture

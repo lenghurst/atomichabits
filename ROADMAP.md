@@ -47,7 +47,11 @@
 | L1 | **SoLoud Protocol**: Replace `audioplayers` with `flutter_soloud` (FFI). | ✅ |
 | L2 | **Direct Streaming**: Implement `addAudioDataStream` for raw PCM. | ✅ |
 | L3 | **Safety Fuse**: Retain `flutter_webrtc` as hardware AEC anchor for Android. | ✅ |
+| L1 | **SoLoud Protocol**: Replace `audioplayers` with `flutter_soloud` (FFI). | ✅ |
+| L2 | **Direct Streaming**: Implement `addAudioDataStream` for raw PCM. | ✅ |
+| L3 | **Safety Fuse**: Retain `flutter_webrtc` as hardware AEC anchor for Android. | ✅ |
 | L4 | **Buffer Tuning**: Eliminate WAV header injection latency. | ✅ |
+| L5 | **Stabilization**: Silence Debouncer & Safety Gates (Phase 59.3). | 🔴 **FAILED** (Sync Issues) |
 
 ### Phase 58: Deferred Intelligence & DeepSeek (29 Dec 2025)
 **Goal:** Fix "Reasoning Lock" by moving analysis to post-session DeepSeek pipeline.

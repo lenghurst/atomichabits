@@ -13,8 +13,10 @@ import 'package:audio_session/audio_session.dart';
 ///    into "Voice Communication Mode" (Hardware AEC + Noise Suppression).
 /// 2. record: Captures the clean, pre-processed audio stream for the AI.
 /// 
-/// This effectively decouples the "Session Management" (WebRTC) from the
-/// "Data Capture" (Record), providing the best of both worlds.
+/// STABILITY UPDATE (Phase 59.1):
+/// Includes fallback logic. If the WebRTC anchor causes a resource lock on 
+/// Android (preventing the recorder from starting), we release the anchor 
+/// and retry in standard mode.
 class AudioRecordingService {
   // === CONFIGURATION ===
   static const int sampleRate = 16000;
@@ -88,7 +90,8 @@ class AudioRecordingService {
           if (kDebugMode) debugPrint('AudioRecordingService: ✅ Hardware AEC Lock Acquired');
         } catch (e) {
           debugPrint('AudioRecordingService: ⚠️ Failed to acquire AEC lock: $e');
-          // We continue, as audio_session might still save us
+          // Update config to reflect reality so we don't try to release a null stream later
+          useWebRtcAnchor = false; 
         }
       }
       
@@ -117,7 +120,10 @@ class AudioRecordingService {
   }
   
   /// Start recording the *clean* audio stream.
-  Future<bool> startRecording() async {
+  /// 
+  /// [isRetry] is a recursion guard. If the first attempt fails due to resource locking,
+  /// we disable the WebRTC anchor and try exactly one more time.
+  Future<bool> startRecording({bool isRetry = false}) async {
     if (!_isInitialised) await initialize();
     if (_isRecording) return true;
     
@@ -142,6 +148,22 @@ class AudioRecordingService {
       onRecordingStateChanged?.call(true);
       return true;
     } catch (e) {
+      // === FAILURE HANDLING & RETRY LOGIC ===
+      // If we are using the Anchor and we haven't already retried:
+      if (useWebRtcAnchor && !isRetry) {
+        debugPrint('AudioRecordingService: ⚠️ Resource locking detected ($e). Releasing WebRTC Anchor and retrying...');
+        
+        // 1. Release the lock which is likely blocking the recorder
+        await _releaseAnchor(); 
+        
+        // 2. Update config to prevent re-acquisition
+        useWebRtcAnchor = false;
+        _isInitialised = false; // Force re-initialization with new config
+        
+        // 3. Retry once (Recursion)
+        return startRecording(isRetry: true);
+      }
+
       onError?.call('Start recording failed: $e');
       return false;
     }
@@ -165,16 +187,26 @@ class AudioRecordingService {
     if (_isRecording) await _recorder.resume();
   }
   
+  /// Helper to safely release the WebRTC stream
+  Future<void> _releaseAnchor() async {
+    if (_aecStream != null) {
+      try {
+        _aecStream!.getTracks().forEach((track) => track.stop());
+        await _aecStream!.dispose();
+        debugPrint('AudioRecordingService: ⚓ WebRTC Anchor Released');
+      } catch (e) {
+        debugPrint('AudioRecordingService: ⚠️ Error releasing anchor: $e');
+      } finally {
+        _aecStream = null;
+      }
+    }
+  }
+  
   /// Full cleanup releasing the Hardware AEC Lock.
   Future<void> dispose() async {
     await stopRecording();
     _recorder.dispose();
-    
-    // Release the WebRTC stream (Disables Hardware AEC)
-    _aecStream?.getTracks().forEach((track) => track.stop());
-    await _aecStream?.dispose();
-    _aecStream = null;
-    
+    await _releaseAnchor();
     _isInitialised = false;
   }
 
