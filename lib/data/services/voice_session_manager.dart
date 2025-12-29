@@ -42,6 +42,10 @@ class VoiceSessionManager {
   late final VoiceApiService _voiceService;
   late final StreamVoicePlayer _voicePlayer;
   
+  // === DIAGNOSTICS ===
+  final Stopwatch _turnLatencyStopwatch = Stopwatch();
+  DateTime? _lastUserTurnEnd;
+  
   VoiceApiService? get voiceService => _voiceService;
   
   // === STATE ===
@@ -49,6 +53,10 @@ class VoiceSessionManager {
   bool _isUserSpeaking = false;
   bool _isAISpeaking = false;
   
+  // Transcript Buffer (Deferred Intelligence)
+  final List<Map<String, String>> _transcript = [];
+  List<Map<String, String>> get transcript => List.unmodifiable(_transcript);
+
   // === CALLBACKS ===
   final void Function(String text, bool isUser)? onTranscription;
   final void Function(Uint8List audioData)? onAudioReceived;
@@ -224,7 +232,10 @@ class VoiceSessionManager {
   }
   
   bool _shouldEnableTools() {
-    return mode == VoiceSessionMode.onboarding;
+    // DEFERRED INTELLIGENCE PIVOT:
+    // Disable live tools to prevent "Reasoning Lock" (yellow flash -> connection lost).
+    // We now capture the transcript and process it post-session.
+    return false; // mode == VoiceSessionMode.onboarding;
   }
   
   Map<String, dynamic>? _getToolsConfig() {
@@ -374,6 +385,17 @@ class VoiceSessionManager {
   
   void _handleAIAudio(Uint8List audioData) {
     if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
+    
+    // Diagnostics: Measure Latency
+    if (_turnLatencyStopwatch.isRunning) {
+      _turnLatencyStopwatch.stop();
+      if (kDebugMode && _lastUserTurnEnd != null) {
+        final totalLatency = DateTime.now().difference(_lastUserTurnEnd!).inMilliseconds;
+        debugPrint('⏱️ [LATENCY] Response Time: ${_turnLatencyStopwatch.elapsedMilliseconds}ms (Total: ${totalLatency}ms)');
+      }
+      _turnLatencyStopwatch.reset();
+    }
+    
     _voicePlayer.playChunk(audioData);
     final level = _calculateRms(audioData);
     onAudioLevelChanged?.call(level);
@@ -395,6 +417,16 @@ class VoiceSessionManager {
   }
   
   void _handleTranscription(String text, bool isUser) {
+    if (kDebugMode) {
+      // debugPrint('VoiceSessionManager: Transcription ($isUser): $text');
+    }
+    
+    // Buffer for Deferred Intelligence
+    _transcript.add({
+      'role': isUser ? 'user' : 'model',
+      'content': text,
+    });
+    
     onTranscription?.call(text, isUser);
   }
   
@@ -424,9 +456,10 @@ class VoiceSessionManager {
   }
 
   void _handleVoiceActivity(bool isActive) {
-     if (_isUserSpeaking != isActive) {
-       _isUserSpeaking = isActive;
-       onUserSpeakingChanged?.call(isActive);
+     // STRICT PTT: Ignore VAD signals to prevent "Green Pulse" when button is not held.
+     // Turn completion is now fully manual via commitUserTurn().
+     if (kDebugMode) {
+       // debugPrint('VoiceSessionManager: VAD detected but ignored (Strict PTT)');
      }
   }
 
@@ -440,6 +473,10 @@ class VoiceSessionManager {
         _voiceService.sendText(" ", turnComplete: true); 
       }
       _setState(VoiceSessionState.thinking);
+      
+      // Diagnostics: Start Timer
+      _lastUserTurnEnd = DateTime.now();
+      _turnLatencyStopwatch.start();
     }
   }
   
@@ -493,17 +530,10 @@ class VoiceSessionManager {
         },
       );
 
-      // === PHASE 55: THE AMBER UNLOCK ===
-      // Safety Mechanism: If AI goes silent after a tool call, we nudge it.
-      // This prevents the "Reasoning Amber Lock" where users stare at "Thinking..."
-      Timer(const Duration(seconds: 2), () {
-        // If we are still 'thinking' and the AI hasn't started speaking...
-        if (_state == VoiceSessionState.thinking && !_isAISpeaking) {
-          if (kDebugMode) debugPrint('🔓 Amber Unlock triggered: Nudging AI to speak after tool call...');
-          // Send an invisible space to force generation
-          _voiceService.sendText(" "); 
-        }
-      });
+      // === PHASE 55: THE AMBER UNLOCK (REMOVED) ===
+      // Logic removed: The "nudge" was interrupting the AI's natural tool response generation
+      // causing an infinite "Thinking" state. 
+      // We now rely on the model to self-recover or the user to manually interrupt if needed.
 
     } catch (e, stackTrace) {
       if (kDebugMode) {

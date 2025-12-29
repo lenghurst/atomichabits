@@ -147,6 +147,12 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     // 1. Finalize psychometric profile (ensure persisted)
     final psychometricProvider = context.read<PsychometricProvider>();
     await psychometricProvider.finalizeOnboarding();
+
+    // 2. Mark onboarding as complete (The Investment)
+    // This unlocks the "Side Door" if they restart the app
+    if (mounted) {
+       await context.read<UserProvider>().completeOnboarding();
+    }
     
     // 4. Navigate to Step 8: Goal Screening
     // "Now let's align your Future Self."

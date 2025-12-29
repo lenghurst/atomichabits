@@ -13,6 +13,22 @@
 
 ---
 
+## [6.8.0] - 2025-12-29 - Phase 58: "Deferred Intelligence & DeepSeek"
+
+### Architecture
+- **DeepSeek V3 Integration:** Switched post-session analysis from Gemini to **DeepSeek-V3** (`deepseek-chat`) via direct REST API.
+- **Deferred Intelligence:** Moved psychometric extraction from live tool calls to **Post-Session Transcript Analysis**.
+- **Zero-Dependency:** Removed `google_generative_ai` from `PsychometricProvider` in favor of raw `http` calls.
+- **Transcript Buffering:** `VoiceSessionManager` now buffers the entire conversation (`_transcript`) for batch processing.
+
+### Fixed
+- **Reasoning Lock:** "Amber Unlock" loops resolved by disabling live reasoning during voice.
+- **Deduction Flash:** Removed live "Yellow Flash" UI artifacts in favor of a clean "Sherlock is Analyzing..." loader state.
+
+### Changed
+- **PsychometricProvider:** `analyzeTranscript` now uses `deepseek-chat` with `response_format: json_object`.
+- **VoiceCoachScreen:** `_onSessionComplete` now triggers the analysis pipeline before navigation.
+
 ## [6.6.0] - 2025-12-28 - Phase 32.5: "The AEC Fix (Hardware Enforcement)"
 
 ### Architecture

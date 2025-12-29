@@ -46,7 +46,7 @@
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **Audio Stack** | **flutter_webrtc + record** | **Hybrid AEC** |
-| **AI (Tier 1)** | DeepSeek-V3 | Text Chat (JSON mode) |
+| **AI (Tier 1)** | DeepSeek-V3 | ✅ Analysis Pipeline (Active) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
 | **Voice Provider** | Gemini / OpenAI | Alternative Providers (Phase 46) |
 | **Voice Protocol** | WebSocket (Direct) | Removed Edge Function dependency |
@@ -60,7 +60,7 @@
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Text AI (DeepSeek)** | ⚠️ **Needs Funding** | Account balance empty |
+| **Text AI (DeepSeek)** | ✅ **WORKING** | **Phase 58**: Post-Session Analysis Pipeline |
 | **Voice AI (Gemini)** | ✅ **WORKING** | **Hardware AEC Enforced** (No Echo) |
 | **Soul Capture Onboarding** | ✅ **WORKING** | Sherlock Protocol with real-time tool calls |
 | **Pact Identity Card** | ✅ **WORKING** | Variable Reward - flip card reveal |
@@ -212,21 +212,21 @@ User → Voice Coach Screen
           ↓
      Audio Output (Speaker)
          ↓
-    AI Provider API
-    + Tool Calling Support
-         ↓
+     AI Provider API
+     + Voice Only (No Tools)
+          ↓
    ┌─────┴─────────────────┐
    │                       │
-Audio/Transcription    tool_call event
+Audio/Transcription     Session End
    │                       │
    │              PsychometricProvider
-   │              .updateFromToolCall()
+   │              .analyzeTranscript()
    │                       │
-   │              Hive (immediate save)
+   │              DeepSeek V3 (REST)
    │                       │
    └─────┬─────────────────┘
          ↓
-   sendToolResponse() → AI continues
+   Update Profile → Hive Save
 ```
 
 ### The Sherlock Protocol (Phase 42)
@@ -263,7 +263,7 @@ GeminiLiveService._addDebugLog()
 
 | Tier | Model | Status | Use Case |
 |------|-------|--------|----------|
-| **Tier 1** | `deepseek-chat` | ⚠️ Needs Funding | Text reasoning (JSON mode) |
+| **Tier 1** | `deepseek-chat` | ✅ **WORKING** | Post-Session Analysis |
 | **Tier 2** | `gemini-2.5-flash-native-audio-preview-12-2025` | ✅ **WORKING** | Voice coaching |
 
 ### WebSocket Endpoint

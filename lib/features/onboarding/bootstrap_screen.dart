@@ -27,6 +27,9 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
   }
 
   Future<void> _bootstrap() async {
+    // Wait for frame to avoid "Navigate during build" errors
+    await Future.delayed(Duration.zero);
+    
     // Safety 1: Authenticated users should never see this, but double-check
     final appState = context.read<AppState>();
     if (appState.hasCompletedOnboarding) {

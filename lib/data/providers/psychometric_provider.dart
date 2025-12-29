@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert'; // For jsonDecode
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/entities/psychometric_profile_extensions.dart';
 import '../../domain/services/psychometric_engine.dart';
@@ -9,6 +10,9 @@ import '../models/onboarding_data.dart' as onboarding;
 import '../sensors/biometric_sensor.dart';
 import '../sensors/digital_truth_sensor.dart';
 import '../sensors/environmental_sensor.dart';
+
+import 'package:http/http.dart' as http;
+import '../../config/ai_model_config.dart';
 
 /// PsychometricProvider: Manages the user's psychological profile for LLM context.
 /// 
@@ -323,6 +327,94 @@ class PsychometricProvider extends ChangeNotifier {
         debugPrint('PsychometricProvider: Error finalizing onboarding: $e');
       }
       return false;
+    }
+  }
+
+  // ============================================================
+  // DEFERRED INTELLIGENCE (Phase 58)
+  // ============================================================
+
+  /// Analyze the full session transcript to extract psychometric traits.
+  /// 
+  /// This replaces the live tool calls that were causing "Reasoning Lock".
+  /// It runs AFTER the voice session is complete.
+  Future<void> analyzeTranscript(List<Map<String, String>> transcript) async {
+    if (transcript.isEmpty) {
+      if (kDebugMode) debugPrint('PsychometricProvider: Empty transcript, skipping analysis.');
+      return;
+    }
+
+    if (kDebugMode) debugPrint('PsychometricProvider: Analyzing ${transcript.length} turns via DeepSeek V3...');
+    
+    try {
+      // 1. Construct Prompt
+      final buffer = StringBuffer();
+      buffer.writeln("Analyze this specialized coaching session transcript and extract the user's psychometric profile.");
+      buffer.writeln("Return ONLY a JSON object with the following schema:");
+      buffer.writeln("{");
+      buffer.writeln('  "anti_identity_label": "The specific identity they fear becoming (e.g. The Drifter, The Skeptic)",');
+      buffer.writeln('  "anti_identity_context": "Why they fear this (1 sentence)",');
+      buffer.writeln('  "failure_archetype": "Their specific failure pattern (e.g. Perfectionism, Procrastination, Overthinking)",');
+      buffer.writeln('  "failure_trigger_context": "What triggers this failure (1 sentence)",');
+      buffer.writeln('  "resistance_lie_label": "The lie they tell themselves to avoid change (e.g. I\'ll do it tomorrow, I need more research)",');
+      buffer.writeln('  "resistance_lie_context": "The deeper truth behind the lie (1 sentence)",');
+      buffer.writeln('  "inferred_fears": ["fear 1", "fear 2"]');
+      buffer.writeln("}");
+      buffer.writeln("\nTRANSCRIPT:");
+      
+      for (final turn in transcript) {
+        buffer.writeln("${turn['role']?.toUpperCase()}: ${turn['content']}");
+      }
+
+      // 2. Call DeepSeek V3 (REST API)
+      final url = Uri.parse('https://api.deepseek.com/chat/completions');
+      
+      final payload = {
+        'model': 'deepseek-chat',
+        'messages': [
+          {'role': 'system', 'content': 'You are an expert psychometrician. Extract the personality profile from the transcript. Return JSON only.'},
+          {'role': 'user', 'content': buffer.toString()}
+        ],
+        'response_format': {'type': 'json_object'},
+        'temperature': 1.0, // Recommended for DeepSeek V3
+        'stream': false,
+      };
+
+      if (kDebugMode) debugPrint('PsychometricProvider: Sending request to DeepSeek...');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${AIModelConfig.deepSeekApiKey}',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('DeepSeek API Error: ${response.statusCode} ${response.body}');
+      }
+
+      // 3. Parse JSON Response
+      final responseBody = jsonDecode(response.body);
+      final content = responseBody['choices'][0]['message']['content'] as String;
+      
+      if (kDebugMode) debugPrint('PsychometricProvider: Analysis complete. Parsing JSON...');
+      
+      // Clean potential markedown fences just in case
+      final cleanJson = content.replaceAll('```json', '').replaceAll('```', '').trim();
+      final Map<String, dynamic> data = jsonDecode(cleanJson);
+      
+      if (kDebugMode) {
+        debugPrint('PsychometricProvider: Extracted Data: $data');
+      }
+      
+      // 4. Update Profile
+      await updateFromToolCall(data);
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('PsychometricProvider: Analysis failed: $e');
+      // Non-blocking failure - we prefer to proceed with partial data than crash
     }
   }
   

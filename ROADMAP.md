@@ -39,6 +39,16 @@
 | A3 | Decouple Prompt Logic to `OnboardingOrchestrator` | ✅ |
 | A4 | Harden `AppState` Null Safety | ✅ |
 
+### Phase 58: Deferred Intelligence & DeepSeek (29 Dec 2025)
+**Goal:** Fix "Reasoning Lock" by moving analysis to post-session DeepSeek pipeline.
+
+| ID | Task | Status |
+|----|------|--------|
+| D1 | **DeepSeek V3 Integration**: Replace Gemini Flash with DeepSeek-V3 for analysis. | ✅ |
+| D2 | **Deferred Architecture**: Buffer transcript in `VoiceSessionManager`. | ✅ |
+| D3 | **Analysis Loader**: Add "Sherlock is Analyzing..." state to `VoiceCoachScreen`. | ✅ |
+| D4 | **Zero-Dependency**: Use raw `http` for `PsychometricProvider` (No SDK). | ✅ |
+
 ### Phase 32.5: Hardware AEC Enforcement (28 Dec 2025)
 **Goal:** Fix the "Echo Nightmare" by enforcing OS-level echo cancellation.
 

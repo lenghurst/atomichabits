@@ -31,18 +31,15 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   VoiceSessionManager? _sessionManager;
   VoiceState _voiceState = VoiceState.idle;
   
-  // VAD State (Visual Confidence)
-  bool _isUserSpeaking = false;
+
   
   double _audioLevel = 0.0;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
   bool _isConnected = false;
   
-  // Phase 55: Visual Deduction Feedback
-  String? _deductionStatus;
-  Timer? _deductionTimer;
+  // Phase 58: Deferred Intelligence (Post-Session Analysis)
+  bool _isAnalyzing = false;
 
   late PsychometricProvider _psychometricProvider;
 
@@ -85,27 +82,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     }
   }
 
-  // Phase 55: The Deduction Flash
-  void _handleTraitUpdated(String trait, dynamic value) {
-    if (!mounted) return;
-    
-    // 1. Haptic Feedback (Heavy Impact for "Locked In" feel)
-    context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
-    
-    setState(() {
-      // 2. Visual Status Override
-      _deductionStatus = "⚖️ DEDUCTION: $value";
-      
-      // 3. Visual Pulse (Green Flash)
-      // We momentarily speed up the pulse or change its color in _buildVisualizer
-    });
-    
-    // Clear the status after 3 seconds
-    _deductionTimer?.cancel();
-    _deductionTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _deductionStatus = null);
-    });
-  }
+
 
   Future<void> _initializeVoiceSession() async {
     setState(() => _voiceState = VoiceState.connecting);
@@ -133,7 +110,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         onAISpeakingChanged: _handleAISpeakingChanged,
         onUserSpeakingChanged: _handleUserSpeakingChanged,
         onTurnComplete: _handleTurnComplete,
-        onTraitUpdated: _handleTraitUpdated, // Wired for Coaching too (Feedback loop)
+        onTraitUpdated: null, // Deferred Intelligence: No live updates
       );
     } else {
       // Onboarding / Sherlock Mode
@@ -149,7 +126,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
         onAISpeakingChanged: _handleAISpeakingChanged,
         onUserSpeakingChanged: _handleUserSpeakingChanged,
         onTurnComplete: _handleTurnComplete,
-        onTraitUpdated: _handleTraitUpdated, // Phase 55: Wired for Sherlock
+        onTraitUpdated: null, // Deferred Intelligence: No live updates
       );
     }
 
@@ -184,7 +161,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     _psychometricProvider.removeListener(_onPsychometricUpdate);
     _pulseController.dispose();
     _sessionManager?.dispose();
-    _deductionTimer?.cancel();
     super.dispose();
   }
 
@@ -207,7 +183,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
           _voiceState = VoiceState.connecting;
           break;
         case VoiceSessionState.active:
-          _voiceState = VoiceState.listening;
+           _voiceState = VoiceState.listening;
           _pulseController.repeat(reverse: true);
           break;
         case VoiceSessionState.thinking:
@@ -232,20 +208,28 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
     setState(() {
       if (isSpeaking) {
         _voiceState = VoiceState.speaking;
-      } else if (_sessionManager?.isActive == true) {
-        _voiceState = VoiceState.listening;
+      } else {
+        // Cooldown Logic: Wait before showing "Ready"
+        _voiceState = VoiceState.cooldown;
+        // Strict Cooldown: 1.2s Grey Orb before Green/Cyan
+        Future.delayed(const Duration(milliseconds: 1200), () {
+          if (mounted && _voiceState == VoiceState.cooldown) {
+            setState(() => _voiceState = VoiceState.ready);
+          }
+        });
       }
     });
   }
   
   void _handleUserSpeakingChanged(bool isSpeaking) {
-    if (!mounted) return;
-    setState(() {
-      _isUserSpeaking = isSpeaking;
-      if (isSpeaking && _voiceState == VoiceState.speaking) {
-         _voiceState = VoiceState.listening;
-      }
-    });
+    // STRICT PTT: No UI reaction to passive VAD
+    // if (!mounted) return;
+    // setState(() {
+    //   _isUserSpeaking = isSpeaking;
+    //   if (isSpeaking && _voiceState == VoiceState.speaking) {
+    //      _voiceState = VoiceState.listening;
+    //   }
+    // });
   }
 
   void _handleTurnComplete() {
@@ -257,14 +241,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   // --- UI Helpers ---
 
   String _getInstructionText() {
-    // Phase 55: Deduction Override
-    if (_deductionStatus != null) return _deductionStatus!;
-
     switch (_voiceState) {
       case VoiceState.idle: return 'Initialize Link';
       case VoiceState.connecting: return 'Authenticating...';
-      case VoiceState.listening: return 'Listening...';
-      case VoiceState.thinking: return 'Thinking...';
+      case VoiceState.listening: return 'Recording...'; // Explicit text
+      case VoiceState.thinking: return 'Processing...';
+      case VoiceState.cooldown: return '...'; // Buffer state
       case VoiceState.speaking: return 'Sherlock Speaking';
       case VoiceState.error: return 'Signal Lost';
       case VoiceState.ready: return 'Ready';
@@ -273,22 +255,25 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   
   String _getMicButtonLabel() {
     if (_voiceState == VoiceState.speaking) return 'Locked (AI Speaking)';
+    if (_voiceState == VoiceState.cooldown) return 'Wait...';
     if (_voiceState == VoiceState.thinking) return 'Processing...';
-    if (_voiceState == VoiceState.listening) return 'Release to Send'; 
+    if (_voiceState == VoiceState.cooldown) return 'Wait...'; // Block during cooldown
+    if (_voiceState == VoiceState.listening) return 'Release to Send';   
     if (_voiceState == VoiceState.idle) return 'Tap to Connect'; 
     if (_voiceState == VoiceState.ready) return 'Hold to Speak';
     return 'Hold to Speak'; 
   }
 
   Color _getOrbColor() {
-    // Phase 55: Deduction Flash Color (Gold)
-    if (_deductionStatus != null) return const Color(0xFFFFD700);
-
     if (_voiceState == VoiceState.speaking) return Colors.purpleAccent;
     if (_voiceState == VoiceState.thinking) return Colors.amber;
-    if (_voiceState == VoiceState.listening || _isUserSpeaking) return Colors.greenAccent;
+    if (_voiceState == VoiceState.cooldown) return Colors.grey; 
+    
+    // Phase 57: Visual Distinction
+    if (_voiceState == VoiceState.listening) return Colors.greenAccent; // Only green when button held
+    if (_voiceState == VoiceState.cooldown) return Colors.grey; // Grey during cooldown
     if (_voiceState == VoiceState.connecting) return Colors.blue;
-    if (_voiceState == VoiceState.ready) return Colors.blueGrey;
+    if (_voiceState == VoiceState.ready) return Colors.cyanAccent; // Cyan for ready
     
     if (widget.mode == VoiceSessionMode.oracle) return const Color(0xFFFFD700); 
     
@@ -296,7 +281,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
   
   Color _getMicButtonColor() {
-    if (_voiceState == VoiceState.speaking) return Colors.white10; 
+    if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) return Colors.white10; 
     if (_voiceState == VoiceState.listening) return Colors.green; 
     return Colors.white; 
   }
@@ -306,7 +291,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   Future<void> _handleMicTap() async {
     context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
     
-    if (_voiceState == VoiceState.speaking) {
+    if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
        context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
        return; 
     }
@@ -326,11 +311,23 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
   }
 
   Future<void> _onSessionComplete() async {
+    // 1. End Voice Session
     await _sessionManager?.endSession();
-    if (mounted) {
-      await context.read<UserProvider>().completeOnboarding();
-      context.go(AppRoutes.pactReveal);
+    
+    if (!mounted) return;
+    
+    // 2. Show Analysis Loader (Deferred Intelligence)
+    setState(() => _isAnalyzing = true);
+    
+    // 3. Perform Post-Session Analysis (No Risk of Reasoning Lock)
+    if (_sessionManager != null) {
+      await _psychometricProvider.analyzeTranscript(_sessionManager!.transcript);
     }
+    
+    if (!mounted) return;
+    
+    // 4. Navigate
+    context.go(AppRoutes.pactReveal);
   }
 
   @override
@@ -399,11 +396,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
                   child: Text(
                     _getInstructionText(),
                     key: ValueKey(_getInstructionText()),
-                    style: TextStyle(
-                      color: _deductionStatus != null ? const Color(0xFFFFD700) : Colors.white70, 
+                    style: const TextStyle(
+                      color: Colors.white70, 
                       fontSize: 16, 
                       letterSpacing: 1.2,
-                      fontWeight: _deductionStatus != null ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
                 ),
@@ -426,6 +423,34 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
               ],
             ),
           ),
+          // Analysis Overlay (Deferred Intelligence)
+          if (_isAnalyzing)
+            Container(
+              color: Colors.black.withOpacity(0.9),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: Colors.cyanAccent),
+                    SizedBox(height: 20),
+                    Text(
+                      'SHERLOCK IS ANALYZING...',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        color: Colors.cyanAccent,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Building your profile from transcript',
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -463,16 +488,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
          } else if (_voiceState == VoiceState.thinking) {
            scale = 1.1;
            opacity = 0.8;
-         } else if (_isUserSpeaking) {
+         } else if (_voiceState == VoiceState.listening) {
+           // Strict PTT: Pulse only on active listening state, not VAD
            scale = 1.0 + (_audioLevel * 5).clamp(0.0, 0.5);
            opacity = 0.8;
          }
          
-         // Deduction Pulse (Boost)
-         if (_deductionStatus != null) {
-            scale = 1.3;
-            opacity = 1.0;
-         }
+         // Deduction Pulse (Boost) - REMOVED
+
          
          return Transform.scale(
            scale: scale,
@@ -501,14 +524,16 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
       children: [
         GestureDetector(
           onTap: () {
+            if (_voiceState == VoiceState.cooldown) return; // Ignore taps during buffer
+            
             if (_voiceState == VoiceState.idle || _voiceState == VoiceState.error) {
-               _handleMicTap(); 
-            } else if (_voiceState == VoiceState.speaking) {
+               _handleMicTap();  
+            } else if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
                context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
             }
           },
           onLongPressStart: (_) async {
-            if (_voiceState == VoiceState.speaking) {
+            if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
                context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
                return;
             }
@@ -539,7 +564,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen>
             ),
             child: Icon(
               isActive ? Icons.mic : Icons.mic_none,
-              color: isActive ? Colors.white : (_voiceState == VoiceState.speaking ? Colors.white24 : Colors.black),
+              color: isActive ? Colors.white : (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown ? Colors.white24 : Colors.black),
               size: 32,
             ),
           ),
@@ -560,6 +585,7 @@ enum VoiceState {
   connecting,
   listening,
   thinking,
+  cooldown,
   speaking,
   error,
   ready, 
