@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http; // Ensure http is in pubspec.yaml
+import 'package:http/http.dart' as http; 
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../config/ai_model_config.dart';
@@ -78,7 +78,7 @@ class GeminiVoiceNoteService {
   }
 
   /// ⚡ CORE FIX: Direct REST Call for TTS
-  /// Forces 'responseModalities': ['AUDIO'] which the SDK cannot do yet.
+  /// Forces 'responseModalities': ['AUDIO'] using correct JSON structure.
   Future<String?> _generateSpeechViaRest(String text) async {
     final url = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=$_apiKey'
@@ -92,8 +92,9 @@ class GeminiVoiceNoteService {
           "contents": [{
             "parts": [{"text": text}]
           }],
-          "generationConfig": { // 👈 Renamed from 'config' to 'generationConfig'
-            "responseModalities": ["AUDIO"],
+          // ✅ FIX: Use 'generationConfig', not 'config'
+          "generationConfig": {
+            "responseModalities": ["AUDIO"], 
             "speechConfig": {
               "voiceConfig": {
                 "prebuiltVoiceConfig": {
@@ -107,13 +108,12 @@ class GeminiVoiceNoteService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Extract Base64 Audio from the JSON response
+        
         if (data['candidates'] != null && (data['candidates'] as List).isNotEmpty) {
            final candidate = data['candidates'][0];
            final parts = candidate['content']['parts'] as List;
            
            // Look for the part that has 'inlineData'
-           // Note: The API might return text AND audio, or just audio. We scan for inlineData.
            for (var part in parts) {
              if (part.containsKey('inlineData')) {
                final base64Audio = part['inlineData']['data'];
