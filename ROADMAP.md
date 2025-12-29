@@ -39,6 +39,16 @@
 | A3 | Decouple Prompt Logic to `OnboardingOrchestrator` | ✅ |
 | A4 | Harden `AppState` Null Safety | ✅ |
 
+### Phase 59: Unified Low-Latency Audio (SoLoud) (29 Dec 2025)
+**Goal:** Deliver ultra-low latency (<50ms) voice interaction using C++ FFI.
+
+| ID | Task | Status |
+|----|------|--------|
+| L1 | **SoLoud Protocol**: Replace `audioplayers` with `flutter_soloud` (FFI). | ✅ |
+| L2 | **Direct Streaming**: Implement `addAudioDataStream` for raw PCM. | ✅ |
+| L3 | **Safety Fuse**: Retain `flutter_webrtc` as hardware AEC anchor for Android. | ✅ |
+| L4 | **Buffer Tuning**: Eliminate WAV header injection latency. | ✅ |
+
 ### Phase 58: Deferred Intelligence & DeepSeek (29 Dec 2025)
 **Goal:** Fix "Reasoning Lock" by moving analysis to post-session DeepSeek pipeline.
 

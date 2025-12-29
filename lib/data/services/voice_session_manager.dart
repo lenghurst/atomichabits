@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 import 'dart:math' as math;
 
 import '../../config/ai_prompts.dart';
@@ -16,23 +17,12 @@ import '../../config/ai_model_config.dart';
 import '../enums/voice_session_mode.dart';
 import 'stream_voice_player.dart';
 
-/// Voice Session Manager
-/// 
-/// Phase 32: FEAT-01 - Audio Recording Integration
-/// Phase 42: Soul Capture - Psychometric Engine Integration
-/// 
-/// Orchestrates the full voice conversation flow by integrating:
-/// - AudioRecordingService: Microphone input
-/// - GeminiLiveService: AI communication
-/// - PsychometricProvider: Trait persistence (Phase 42)
-/// - PromptFactory: Dynamic prompt generation (Phase 42)
+/// Voice Session Manager - Phase 59.2 (Sherlock Restored)
 class VoiceSessionManager {
   // === CONFIGURATION ===
   final VoiceSessionMode mode;
   final String? systemInstruction;
   final bool enableTranscription;
-  
-  // === PROVIDERS (Phase 42) ===
   final PsychometricProvider? psychometricProvider;
   final UserProfile? userProfile;
   final PsychometricProfile? psychometricProfile;
@@ -42,18 +32,12 @@ class VoiceSessionManager {
   late final VoiceApiService _voiceService;
   late final StreamVoicePlayer _voicePlayer;
   
-  // === DIAGNOSTICS ===
-  final Stopwatch _turnLatencyStopwatch = Stopwatch();
-  DateTime? _lastUserTurnEnd;
-  
-  VoiceApiService? get voiceService => _voiceService;
-  
   // === STATE ===
   VoiceSessionState _state = VoiceSessionState.idle;
   bool _isUserSpeaking = false;
   bool _isAISpeaking = false;
+  DateTime? _aiStartedSpeakingTime; // Safety Gate
   
-  // Transcript Buffer (Deferred Intelligence)
   final List<Map<String, String>> _transcript = [];
   List<Map<String, String>> get transcript => List.unmodifiable(_transcript);
 
@@ -158,7 +142,6 @@ class VoiceSessionManager {
     );
   }
   
-  // === PUBLIC GETTERS ===
   VoiceSessionState get state => _state;
   bool get isActive => _state == VoiceSessionState.active;
   bool get isConnecting => _state == VoiceSessionState.connecting;
@@ -199,14 +182,18 @@ class VoiceSessionManager {
     
     _voicePlayer = StreamVoicePlayer();
     _voicePlayer.isPlayingStream.listen((isPlaying) {
-      if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ AI Speaking STARTED' : 'VoiceSessionManager: 🤫 AI Speaking STOPPED');
-      _isAISpeaking = isPlaying;
+      if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ Player Reported Speaking' : 'VoiceSessionManager: 🤫 Player Reported Silence');
       
-      if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
-         _setState(VoiceSessionState.paused);
+      // Only update if we aren't already in that state (Debounce)
+      if (_isAISpeaking != isPlaying) {
+        _isAISpeaking = isPlaying;
+        if (isPlaying) _aiStartedSpeakingTime = DateTime.now();
+        onAISpeakingChanged?.call(isPlaying);
       }
       
-      onAISpeakingChanged?.call(isPlaying);
+      if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
+         _setState(VoiceSessionState.paused); // Or active depending on logic
+      }
     });
   }
   
@@ -232,79 +219,38 @@ class VoiceSessionManager {
   }
   
   bool _shouldEnableTools() {
-    // DEFERRED INTELLIGENCE PIVOT:
-    // Disable live tools to prevent "Reasoning Lock" (yellow flash -> connection lost).
-    // We now capture the transcript and process it post-session.
-    return false; // mode == VoiceSessionMode.onboarding;
+    // SHERLOCK RESTORATION:
+    // Onboarding (Sherlock) REQUIRES tools to function (it's how he "learns").
+    // Coaching/Legacy modes can use Deferred Intelligence (Post-Session Analysis) to reduce latency.
+    return mode == VoiceSessionMode.onboarding;
   }
   
   Map<String, dynamic>? _getToolsConfig() {
     if (!_shouldEnableTools()) return null;
     return AiToolsConfig.psychometricTool;
   }
-  
+
   Future<bool> startSession() async {
-    if (_state != VoiceSessionState.idle && _state != VoiceSessionState.error) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: Cannot start - already in state: $_state');
-      return false;
-    }
-    
+    if (_state != VoiceSessionState.idle && _state != VoiceSessionState.error) return false;
     _setState(VoiceSessionState.connecting);
     
     try {
-      final instruction = _generateSystemInstruction();
-      final tools = _getToolsConfig();
-      
-      if (kDebugMode) {
-        debugPrint('VoiceSessionManager: Connecting to AI service (${AIModelConfig.voiceProvider})...');
-      }
-      
       final connected = await _voiceService.connect(
-        systemInstruction: instruction,
+        systemInstruction: _generateSystemInstruction(),
         enableTranscription: enableTranscription,
-        tools: tools,
+        tools: _getToolsConfig(),
       );
-      
       if (!connected) {
         _setState(VoiceSessionState.error);
-        onError?.call('Failed to connect to AI service');
-        return false;
-      }
-
-      if (kDebugMode) {
-        // VoiceApiService interface includes sendText, so we can call it directly
-        _voiceService.sendText("Hello, can you hear me?");
-      }
-      
-      if (kDebugMode) debugPrint('VoiceSessionManager: Initialising audio recording...');
-      
-      final audioReady = await _audioService.initialize();
-      if (!audioReady) {
-        await _voiceService.disconnect();
-        _setState(VoiceSessionState.error);
-        onError?.call('Failed to initialise microphone');
         return false;
       }
       
-      if (kDebugMode) debugPrint('VoiceSessionManager: Starting audio recording...');
-      
-      final recordingStarted = await _audioService.startRecording();
-      if (!recordingStarted) {
-        await _voiceService.disconnect();
-        _setState(VoiceSessionState.error);
-        onError?.call('Failed to start recording');
-        return false;
-      }
-      
+      await _audioService.initialize();
+      await _audioService.startRecording();
       _setState(VoiceSessionState.active);
       return true;
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        debugPrint('VoiceSessionManager: Failed to start session: $e');
-        debugPrint('Stack trace: $stackTrace');
-      }
+    } catch (e) {
       _setState(VoiceSessionState.error);
-      onError?.call('Failed to start voice session: $e');
       return false;
     }
   }
@@ -312,43 +258,43 @@ class VoiceSessionManager {
   Future<void> saveProgression() async {
     if (kDebugMode) debugPrint('VoiceSessionManager: Stub saveProgression() called.');
   }
-  
+
   Future<void> endSession() async {
-    if (_state == VoiceSessionState.idle) return;
-    
-    if (kDebugMode) debugPrint('VoiceSessionManager: Ending session...');
-    _setState(VoiceSessionState.disconnecting);
-    
-    try {
-      await _audioService.stopRecording();
-      await _voicePlayer.stop();
-      await _voiceService.disconnect();
-    } catch (e) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: Error during disconnect: $e');
-    }
-    
+    await _audioService.stopRecording();
+    await _voicePlayer.stop();
+    await _voiceService.disconnect();
     _setState(VoiceSessionState.idle);
   }
   
   Future<void> pauseSession() async {
-    if (_state != VoiceSessionState.active) return;
     await _audioService.pauseRecording();
     await _voicePlayer.stop();
     _setState(VoiceSessionState.paused);
   }
   
   Future<void> resumeSession() async {
-    if (_state != VoiceSessionState.paused) return;
     await _audioService.resumeRecording();
-    await _voicePlayer.enforceSpeakerOutput();
     _setState(VoiceSessionState.active);
   }
 
   Future<void> startRecording() async {
-    if (_isAISpeaking) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: PTT Blocked - AI is Speaking');
-       return;
+    // === SAFETY GATE ===
+    // If AI started speaking less than 500ms ago, ignore this tap.
+    // This prevents the "Accidental Interrupt" when you and Sherlock speak at the same time.
+    if (_isAISpeaking && _aiStartedSpeakingTime != null) {
+      final timeSinceStart = DateTime.now().difference(_aiStartedSpeakingTime!);
+      if (timeSinceStart.inMilliseconds < 500) {
+        if (kDebugMode) debugPrint('VoiceSessionManager: 🛡️ Input Ignored (Safety Gate active)');
+        return;
+      }
     }
+
+    if (_isAISpeaking) {
+      if (kDebugMode) debugPrint('VoiceSessionManager: 🛑 Interrupting AI...');
+      await _voicePlayer.stop(); 
+      _voiceService.interrupt();
+    }
+    
     if (_state != VoiceSessionState.thinking && _state != VoiceSessionState.active && _state != VoiceSessionState.paused) return;
     await _audioService.resumeRecording();
     _setState(VoiceSessionState.active);
@@ -373,7 +319,6 @@ class VoiceSessionManager {
   
   void _setState(VoiceSessionState newState) {
     if (_state == newState) return;
-    if (kDebugMode) debugPrint('🕵️ [SHERLOCK_TRACE] State Transition: ${_state.name} -> ${newState.name}');
     _state = newState;
     onStateChanged?.call(newState);
   }
@@ -384,120 +329,58 @@ class VoiceSessionManager {
   }
   
   void _handleAIAudio(Uint8List audioData) {
-    if (kDebugMode) debugPrint('VoiceSessionManager: 🌉 Bridging ${audioData.length} bytes to UI');
-    
-    // Diagnostics: Measure Latency
-    if (_turnLatencyStopwatch.isRunning) {
-      _turnLatencyStopwatch.stop();
-      if (kDebugMode && _lastUserTurnEnd != null) {
-        final totalLatency = DateTime.now().difference(_lastUserTurnEnd!).inMilliseconds;
-        debugPrint('⏱️ [LATENCY] Response Time: ${_turnLatencyStopwatch.elapsedMilliseconds}ms (Total: ${totalLatency}ms)');
-      }
-      _turnLatencyStopwatch.reset();
+    // === UI OVERRIDE ===
+    // If we receive data, we ARE speaking. Don't wait for the player callback.
+    // This immediately fixes the "Amber Lock" by forcing the UI to Purple.
+    if (!_isAISpeaking) {
+      if (kDebugMode) debugPrint('VoiceSessionManager: ⚡ Force-Switching UI to Speaking (Data Received)');
+      _isAISpeaking = true;
+      _aiStartedSpeakingTime = DateTime.now();
+      onAISpeakingChanged?.call(true);
     }
     
     _voicePlayer.playChunk(audioData);
-    final level = _calculateRms(audioData);
-    onAudioLevelChanged?.call(level);
+    
+    // Minimal visualization using amplitude of received chunk
+    // (Optional: drive Orb radius here if Player is silent)
   }
 
-  double _calculateRms(Uint8List audioData) {
-    if (audioData.isEmpty) return 0.0;
-    double sum = 0;
-    for (int i = 0; i < audioData.length - 1; i += 2) {
-      int sample = audioData[i] | (audioData[i + 1] << 8);
-      if (sample > 32767) sample -= 65536;
-      final normalizedSample = sample / 32768.0;
-      sum += normalizedSample * normalizedSample;
-    }
-    final sampleCount = audioData.length ~/ 2;
-    if (sampleCount == 0) return 0.0;
-    final rms = math.sqrt(sum / sampleCount);
-    return (rms * 5.0).clamp(0.0, 1.0);
+  void _handleTurnComplete() {
+    if (kDebugMode) debugPrint('VoiceSessionManager: ✅ AI Turn Complete');
+    _voicePlayer.flush(); // Don't stop, let it drain
+    onTurnComplete?.call();
   }
-  
+
   void _handleTranscription(String text, bool isUser) {
-    if (kDebugMode) {
-      // debugPrint('VoiceSessionManager: Transcription ($isUser): $text');
-    }
-    
-    // Buffer for Deferred Intelligence
-    _transcript.add({
-      'role': isUser ? 'user' : 'model',
-      'content': text,
-    });
-    
+    _transcript.add({'role': isUser ? 'user' : 'model', 'content': text});
     onTranscription?.call(text, isUser);
   }
-  
-  void _handleAudioError(String error) {
-    if (kDebugMode) debugPrint('VoiceSessionManager: Audio error: $error');
-    onError?.call('Audio error: $error');
-  }
-  
-  void _handleGeminiError(String error) {
-    if (kDebugMode) debugPrint('VoiceSessionManager: Gemini error: $error');
-    onError?.call(error);
-  }
-  
-  void _handleRecordingStateChanged(bool isRecording) {
-    if (kDebugMode) debugPrint('VoiceSessionManager: Recording state: $isRecording');
-  }
+  void _handleAudioError(String error) => onError?.call(error);
+  void _handleGeminiError(String error) => onError?.call(error);
+  void _handleRecordingStateChanged(bool isRecording) {}
   
   Future<void> commitUserTurn() async {
     if (_state != VoiceSessionState.active) return;
-    if (kDebugMode) debugPrint('VoiceSessionManager: 👆 User manually committed turn');
     if (_voiceService is GeminiLiveService) {
       _voiceService.sendEndTurn();
     } else {
       _voiceService.sendText(" ", turnComplete: true);
     }
-    _handleSilenceTimeout(); 
+    _setState(VoiceSessionState.thinking);
   }
 
-  void _handleVoiceActivity(bool isActive) {
-     // STRICT PTT: Ignore VAD signals to prevent "Green Pulse" when button is not held.
-     // Turn completion is now fully manual via commitUserTurn().
-     if (kDebugMode) {
-       // debugPrint('VoiceSessionManager: VAD detected but ignored (Strict PTT)');
-     }
-  }
-
-  void _handleSilenceTimeout() {
-    bool canCommit = _state == VoiceSessionState.active;
-    if (canCommit) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: 🤫 Turn Ended (Manual/Silence), switching to thinking state');
-      if (_voiceService is GeminiLiveService) {
-        _voiceService.sendEndTurn();
-      } else {
-        _voiceService.sendText(" ", turnComplete: true); 
-      }
-      _setState(VoiceSessionState.thinking);
-      
-      // Diagnostics: Start Timer
-      _lastUserTurnEnd = DateTime.now();
-      _turnLatencyStopwatch.start();
-    }
-  }
+  void _handleVoiceActivity(bool isActive) {} // Strict PTT ignores this
   
   void _handleAISpeakingChanged(bool isSpeaking) {
-    // Driven by player
+    // Handled by player listener
   }
   
   void _handleConnectionStateChanged(LiveConnectionState connectionState) {
-    if (connectionState == LiveConnectionState.disconnected && 
-        _state == VoiceSessionState.active) {
+    if (connectionState == LiveConnectionState.disconnected && _state == VoiceSessionState.active) {
       _setState(VoiceSessionState.error);
-      onError?.call('Connection lost');
     }
   }
   
-  void _handleTurnComplete() {
-    _voicePlayer.flush();
-    onTurnComplete?.call();
-  }
-  
-  /// Handle tool calls from Gemini (Phase 42: Sherlock Protocol)
   Future<void> _handleToolCall(String functionName, Map<String, dynamic> args, String callId) async {
     if (kDebugMode) {
       debugPrint('VoiceSessionManager: Tool call received: $functionName');
@@ -529,12 +412,6 @@ class VoiceSessionManager {
           'updated_fields': args.keys.toList(),
         },
       );
-
-      // === PHASE 55: THE AMBER UNLOCK (REMOVED) ===
-      // Logic removed: The "nudge" was interrupting the AI's natural tool response generation
-      // causing an infinite "Thinking" state. 
-      // We now rely on the model to self-recover or the user to manually interrupt if needed.
-
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('VoiceSessionManager: Failed to update psychometric profile: $e');
@@ -578,6 +455,7 @@ class VoiceSessionManager {
     await _voicePlayer.dispose();
   }
 }
+
 
 enum VoiceSessionState {
   idle,

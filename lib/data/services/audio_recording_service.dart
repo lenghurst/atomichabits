@@ -33,6 +33,10 @@ class AudioRecordingService {
   // WebRTC "Anchor" Stream - Holds the hardware AEC lock
   MediaStream? _aecStream;
   
+  // === SAFETY FUSE ===
+  // If native audio_session fails on certain Android OEMs, this anchor forces AEC.
+  bool useWebRtcAnchor = true;
+  
   // === CALLBACKS ===
   final void Function(Uint8List audioData)? onAudioData;
   final void Function(String error)? onError;
@@ -55,7 +59,7 @@ class AudioRecordingService {
   /// Initialise the audio stack with Hardware AEC Enforcement.
   Future<bool> initialize() async {
     if (_isInitialised) return true;
-    if (kDebugMode) debugPrint('AudioRecordingService: 🚀 Initializing Hybrid AEC Stack...');
+    if (kDebugMode) debugPrint('AudioRecordingService: 🚀 Initializing Hybrid AEC Stack (Anchor: $useWebRtcAnchor)...');
     
     try {
       // 1. Permission Check
@@ -65,35 +69,35 @@ class AudioRecordingService {
         return false;
       }
       
-      // 2. ACTIVATE HARDWARE AEC (The "WebRTC Hack")
-      // We open a local media stream. We don't transmit it, but its presence
-      // forces the OS audio manager to enable Echo Cancellation.
-      final Map<String, dynamic> mediaConstraints = {
-        'audio': {
-          'echoCancellation': true,
-          'noiseSuppression': true,
-          'autoGainControl': true,
-          'googEchoCancellation': true,
-          'googNoiseSuppression': true,
-          'googHighpassFilter': true,
-        },
-        'video': false,
-      };
+      // 2. ACTIVATE HARDWARE AEC (The "WebRTC Hack" - Gated)
+      if (useWebRtcAnchor) {
+        final Map<String, dynamic> mediaConstraints = {
+          'audio': {
+            'echoCancellation': true,
+            'noiseSuppression': true,
+            'autoGainControl': true,
+            'googEchoCancellation': true,
+            'googNoiseSuppression': true,
+            'googHighpassFilter': true,
+          },
+          'video': false,
+        };
 
-      try {
-        _aecStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-        if (kDebugMode) debugPrint('AudioRecordingService: ✅ Hardware AEC Lock Acquired');
-      } catch (e) {
-        debugPrint('AudioRecordingService: ⚠️ Failed to acquire AEC lock: $e');
-        // We continue, but echo cancellation might degrade
+        try {
+          _aecStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          if (kDebugMode) debugPrint('AudioRecordingService: ✅ Hardware AEC Lock Acquired');
+        } catch (e) {
+          debugPrint('AudioRecordingService: ⚠️ Failed to acquire AEC lock: $e');
+          // We continue, as audio_session might still save us
+        }
       }
       
-      // 3. Configure Audio Session (Redundant safety net)
-      // Even though WebRTC handles this, we set it for the 'record' package too.
+      // 3. Configure Audio Session (The Native Foundation)
+      // This is now the Primary method, with WebRTC as the reinforcement.
       final session = await AudioSession.instance;
       await session.configure(AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-        avAudioSessionMode: AVAudioSessionMode.videoChat, // Critical for iOS AEC
+        avAudioSessionMode: AVAudioSessionMode.voiceChat, // Critical for iOS AEC
         avAudioSessionRouteSharingPolicy: AVAudioSessionRouteSharingPolicy.defaultPolicy,
         avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.defaultToSpeaker | 
                                        AVAudioSessionCategoryOptions.allowBluetooth |

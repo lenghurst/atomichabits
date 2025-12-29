@@ -45,7 +45,7 @@
 | **Mobile** | Flutter | 3.38.4 |
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
-| **Audio Stack** | **flutter_webrtc + record** | **Hybrid AEC** |
+| **Audio Stack** | **SoLoud (FFI) + WebRTC** | **Low Latency + AEC** |
 | **AI (Tier 1)** | DeepSeek-V3 | ✅ Analysis Pipeline (Active) |
 | **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
 | **Voice Provider** | Gemini / OpenAI | Alternative Providers (Phase 46) |
@@ -103,6 +103,7 @@
 
 | **50** | **WAV Header Buffering** (Split-chunk protection) | ✅ |
 | **50.1** | Config schema alignment (`v1beta` & `generationConfig`) | ✅ |
+| **59** | **SoLoud Protocol** (Ultra-Low Latency Audio Payload) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 
@@ -127,8 +128,8 @@
 | `lib/data/services/openai_live_service.dart` | NEW OpenAI implementation (Phase 46) |
 | `lib/data/services/gemini_live_service.dart` | Refactored to implement interface |
 | `lib/domain/services/voice_provider_selector.dart` | Real network diagnostics (Phase 46) |
-| `lib/data/services/voice_session_manager.dart` | Integrated `StreamVoicePlayer` |
-| `lib/data/services/stream_voice_player.dart` | NEW Service: Centralized audio playback (Phase 46.3) |
+| `lib/data/services/voice_session_manager.dart` | Restored Sherlock Logic (Phase 59.2) |
+| `lib/data/services/stream_voice_player.dart` | SoLoud + Force Playback Fix (Phase 59.2) |
 
 ---
 

@@ -13,6 +13,26 @@
 
 ---
 
+## [6.9.0] - 2025-12-29 - Phase 59: "Unified Low-Latency Audio (SoLoud)"
+
+### Architecture
+- **SoLoud Protocol:** Replaced `audioplayers` with `flutter_soloud` (C++ FFI) for audio playback. This bypasses the native platform channel overhead, reducing playback latency from ~300ms to <50ms.
+- **Direct PCM Streaming:** Implemented `StreamVoicePlayer` using `SoLoud.addAudioDataStream`, allowing raw PCM bytes from Gemini to be played immediately without WAV header injection or file buffering.
+
+### Fixed
+- **Sherlock Protocol Restoration (Phase 59.2):**
+    - Fixed regression where disabling tools globally broke the Sherlock onboarding interview.
+    - `VoiceSessionManager` now explicitly enables tools for `VoiceSessionMode.onboarding`.
+    - **Force Playback:** Implemented "Optimistic UI" in `StreamVoicePlayer` to switch the Orb to "Speaking" (Purple) immediately upon receiving audio data, resolving the "Amber Lock".
+    - **Input Safety Lock:** Added a 500ms safety gate to `startRecording` to prevent accidental user interruptions when the AI starts speaking.
+- **AEC Safety Fuse:** Retained `flutter_webrtc` as a "Safety Anchor" (gated by `useWebRtcAnchor`). It opens a dummy audio track to force Android OS into "Voice Communication" mode, ensuring hardware Echo Cancellation remains active even when using the custom SoLoud engine.
+
+### Changed
+- **StreamVoicePlayer:** Complete rewrite to utilize the SoLoud engine.
+- **AudioRecordingService:** Added `useWebRtcAnchor` flag to strictly manage the WebRTC sidecar.
+
+---
+
 ## [6.8.0] - 2025-12-29 - Phase 58: "Deferred Intelligence & DeepSeek"
 
 ### Architecture
