@@ -27,6 +27,9 @@ class VoiceSessionManager {
   final UserProfile? userProfile;
   final PsychometricProfile? psychometricProfile;
   
+  // === INTERNAL DI ===
+  final StreamVoicePlayer? _injectedVoicePlayer;
+  
   // === SERVICES ===
   late final AudioRecordingService _audioService;
   late final VoiceApiService _voiceService;
@@ -71,7 +74,8 @@ class VoiceSessionManager {
     this.onTurnComplete,
     this.onDebugLogUpdated,
     this.onTraitUpdated,
-  }) {
+    StreamVoicePlayer? voicePlayer, // DI for testing
+  }) : _injectedVoicePlayer = voicePlayer {
     _initializeServices();
   }
   
@@ -123,6 +127,7 @@ class VoiceSessionManager {
     void Function()? onTurnComplete,
     void Function(List<String> log)? onDebugLogUpdated,
     void Function(String traitName, dynamic value)? onTraitUpdated,
+    StreamVoicePlayer? voicePlayer,
   }) {
     return VoiceSessionManager(
       mode: VoiceSessionMode.coaching,
@@ -140,6 +145,7 @@ class VoiceSessionManager {
       onTurnComplete: onTurnComplete,
       onDebugLogUpdated: onDebugLogUpdated,
       onTraitUpdated: onTraitUpdated,
+      voicePlayer: voicePlayer, // Pass through
     );
   }
   
@@ -181,7 +187,7 @@ class VoiceSessionManager {
       );
     }
     
-    _voicePlayer = StreamVoicePlayer();
+    _voicePlayer = _injectedVoicePlayer ?? StreamVoicePlayer();
     _voicePlayer.isPlayingStream.listen(_handlePlayerStateChange);
   }
   
@@ -332,14 +338,12 @@ class VoiceSessionManager {
   }
   
   void _handleAIAudio(Uint8List audioData) {
-    // === UI OVERRIDE ===
-    // If we receive data, we ARE speaking. Don't wait for the player callback.
-    // This immediately fixes the "Amber Lock" by forcing the UI to Purple.
-    if (!_isAISpeaking) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: ⚡ Force-Switching UI to Speaking (Data Received)');
-      _isAISpeaking = true;
-      _aiSpeechStartTime = DateTime.now();
-      onAISpeakingChanged?.call(true);
+    // === UNIFIED SOURCE OF TRUTH ===
+    // We delegate ALL state management to StreamVoicePlayer.
+    // The player's playChunk() method will immediately emit 'true' (speaking)
+    // via its stream, which we listen to in _handlePlayerStateChange.
+    if (kDebugMode && !_isAISpeaking) {
+      debugPrint('VoiceSessionManager: 📥 Audio Data Received (Delegating state to Player)');
     }
     
     _voicePlayer.playChunk(audioData);

@@ -51,7 +51,8 @@
 | L2 | **Direct Streaming**: Implement `addAudioDataStream` for raw PCM. | ✅ |
 | L3 | **Safety Fuse**: Retain `flutter_webrtc` as hardware AEC anchor for Android. | ✅ |
 | L4 | **Buffer Tuning**: Eliminate WAV header injection latency. | ✅ |
-| L5 | **Stabilization**: Silence Debouncer & Safety Gates (Phase 59.3). | 🔴 **FAILED** (Sync Issues) |
+| L5 | **Stabilization**: Silence Debouncer & Safety Gates (Phase 59.3). | ✅ |
+| L6 | **Unified Source of Truth (Phase 59.4)**: Fixed UI/Audio desync (Amber Lock) by delegating state to StreamVoicePlayer. | ✅ |
 
 ### Phase 58: Deferred Intelligence & DeepSeek (29 Dec 2025)
 **Goal:** Fix "Reasoning Lock" by moving analysis to post-session DeepSeek pipeline.

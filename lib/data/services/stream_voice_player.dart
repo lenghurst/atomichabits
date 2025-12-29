@@ -25,8 +25,8 @@ class StreamVoicePlayer {
   final StreamController<bool> _playingStateController = StreamController<bool>.broadcast();
   Stream<bool> get isPlayingStream => _playingStateController.stream;
   
-  StreamVoicePlayer() {
-    _initialize();
+  StreamVoicePlayer({bool autoInit = true}) {
+    if (autoInit) _initialize();
   }
 
   Future<void> _initialize() async {
@@ -65,11 +65,13 @@ class StreamVoicePlayer {
     if (!_isInitialised || _streamSource == null) return;
 
     try {
+        if (kDebugMode) debugPrint('StreamVoicePlayer: [TRACE] 📥 Chunk Received (${audioData.length} bytes)');
+
         // 1. Cancel any pending silence timer (The Bridge)
         // We received data, so we are definitely still speaking.
         if (_silenceGraceTimer?.isActive ?? false) {
           _silenceGraceTimer!.cancel();
-          if (kDebugMode) debugPrint('StreamVoicePlayer: 🌉 Latency Bridge Active (Timer Cancelled)');
+          if (kDebugMode) debugPrint('StreamVoicePlayer: [TRACE] 🌉 Latency Bridge Active (Timer Cancelled)');
         }
 
         // 2. Feed the engine immediately (Zero Latency)
@@ -119,13 +121,13 @@ class StreamVoicePlayer {
     
     // Double check we didn't just restart in a race condition
     if (!_isStartingStream) {
-      if (kDebugMode) debugPrint('StreamVoicePlayer: ⏳ Buffer Drained. Starting Grace Period...');
+      if (kDebugMode) debugPrint('StreamVoicePlayer: [TRACE] ⏳ Buffer Drained. Starting Grace Period (${_gracePeriod.inMilliseconds}ms)...');
       
       // === GRACE PERIOD ===
       // Don't kill the UI state immediately. Wait to see if more packets arrive.
       _silenceGraceTimer?.cancel();
       _silenceGraceTimer = Timer(_gracePeriod, () {
-        if (kDebugMode) debugPrint('StreamVoicePlayer: 🤫 Silence Confirmed (Grace Period Expired)');
+        if (kDebugMode) debugPrint('StreamVoicePlayer: [TRACE] 🤫 Silence Confirmed (Grace Period Expired)');
         _setPlaying(false);
         _streamHandle = null; // Clean up the handle reference
       });
@@ -147,6 +149,7 @@ class StreamVoicePlayer {
   }
 
   void _setPlaying(bool playing) {
+    if (kDebugMode) debugPrint('StreamVoicePlayer: [TRACE] State Update -> $playing');
     _playingStateController.add(playing);
   }
   

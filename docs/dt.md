@@ -15,10 +15,15 @@ flutter run --debug --dart-define-from-file=secrets.json
 ## 2. Core Verification Matrix (Phase 59)
 
 ### 2.1. The "Amber Unlock" Test
-- **Action**: Speak a complex question to Sherlock.
-- **Success Criteria**: The Orb MUST transition from Amber (Thinking) to Purple (Speaking) within 100ms of audio starting.
-- **Log Indicators**: `VoiceSessionManager: ⚡ Force-Switching UI to Speaking`.
-- **Known Issue (Dec 29)**: Desynchronization observed. UI may flicker or get stuck in Amber if network latency > 200ms.
+
+* **Action**: Speak a complex question to Sherlock.
+* **Success Criteria**: The Orb MUST transition from Amber (Thinking) to Purple (Speaking) immediately when audio data arrives.
+* **Log Verification**:
+    1. `StreamVoicePlayer: [TRACE] 📥 Chunk Received` (Audio arrived)
+    2. `StreamVoicePlayer: [TRACE] State Update -> true` (UI signaled to switch)
+    3. `VoiceSessionManager: 🗣️ Player Reported Speaking` (UI switching)
+* **Pass**: All 3 logs appear within ~10-20ms of each other.
+* **Fail**: Log 3 appears significantly later than Log 1.
 
 ### 2.2. Interruption Snappiness Test
 - **Action**: Tap the microphone button while the AI is speaking.

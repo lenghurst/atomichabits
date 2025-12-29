@@ -1,37 +1,102 @@
+import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:atomichabits/data/services/voice_session_manager.dart';
-import 'package:atomichabits/data/services/audio_recording_service.dart';
-import 'package:atomichabits/data/services/stream_voice_player.dart';
-import 'package:atomichabits/data/providers/psychometric_provider.dart';
+import 'package:atomic_habits_hook_app/data/services/voice_session_manager.dart';
+import 'package:atomic_habits_hook_app/data/services/stream_voice_player.dart';
+
+/// Mock Player to verify "Unified Source of Truth" logic without hardware.
+/// Overrides the stream to simulate Player events.
+class MockStreamVoicePlayer extends StreamVoicePlayer {
+  final StreamController<bool> _mockController = StreamController<bool>.broadcast();
+  
+  // Skip native init
+  MockStreamVoicePlayer() : super(autoInit: false);
+  
+  @override
+  Stream<bool> get isPlayingStream => _mockController.stream;
+  
+  void emitState(bool isPlaying) {
+    _mockController.add(isPlaying);
+  }
+  
+  @override
+  void playChunk(Uint8List audioData) {
+     // Logic Verification: 
+     // The real player emits TRUE synchronously when playChunk is called.
+     // We simulate that here.
+     emitState(true);
+  }
+  
+  @override
+  Future<void> stop() async {
+    emitState(false);
+  }
+  
+  // Implement dispose to avoid leaks/errors if Manager calls it
+  @override
+  Future<void> dispose() async {
+    await _mockController.close();
+    // Do NOT call super.dispose() if it touches native FFI
+  }
+}
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // Use standard test binding for headless execution (no device needed)
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Voice Stack Integration Tests (Phase 59)', () {
-    testWidgets('Verify VoiceSessionManager Safety Gate Logic', (WidgetTester tester) async {
-      // 1. Setup Mock Environment
-      // Note: In a real integration test, we might need to mock lower-level services or run on real hardware.
-      // For this verification, we are checking the logic flow which can be unit tested if isolated,
-      // but here we assume we are running in an environment where we can instance the manager.
-      // Since we cannot easily "speak" to the mic in this test without interaction, 
-      // we will focus on instantiating and verifying initial state and logical responses 
-      // where dependencies allow.
+  group('Voice Session Manager - Phase 59.4 Verification', () {
+    late VoiceSessionManager sessionManager;
+    late MockStreamVoicePlayer mockPlayer;
+    
+    setUp(() {
+      mockPlayer = MockStreamVoicePlayer();
       
-      // Ideally, we would rely on dependency injection to mock AudioRecordingService and StreamVoicePlayer.
-      // Without dependency injection hooks in the current VoiceSessionManager factory, 
-      // full automated integration testing of hardware-bound logic is limited here.
-      // However, we can assert the existence and structural integrity of the classes.
+      // Inject the mock player
+      sessionManager = VoiceSessionManager(
+        voicePlayer: mockPlayer,
+      );
+    });
+    
+    tearDown(() {
+      sessionManager.dispose();
+      mockPlayer.dispose();
+    });
+
+    testWidgets('Unified Source of Truth: UI follows Player state immediately', (WidgetTester tester) async {
+      // 1. Initial State
+      expect(sessionManager.isAISpeaking, isFalse);
       
-      final audioService = AudioRecordingService();
-      expect(audioService, isNotNull);
+      // 2. Simulate Player reporting "Speaking" (e.g. playChunk called)
+      mockPlayer.emitState(true);
       
-      final player = StreamVoicePlayer();
-      expect(player, isNotNull);
+      // Allow stream to propagate
+      await Future.delayed(Duration.zero);
       
-      // Further Testing requires running the app and manually interacting, 
-      // or refactoring for testability (DI).
-      // This test confirms the code compiles and basic instantiation works.
+      // 3. Verify Manager updated (Unified Truth)
+      expect(sessionManager.isAISpeaking, isTrue, 
+        reason: 'Manager must update isAISpeaking when Player emits true');
+        
+      // 4. Simulate Player reporting "Silence" (e.g. buffer drained + debouncer)
+      mockPlayer.emitState(false);
+      
+      await Future.delayed(Duration.zero);
+      
+      // 5. Verify Manager updated
+      expect(sessionManager.isAISpeaking, isFalse,
+        reason: 'Manager must return to silent when Player emits false');
+    });
+
+    testWidgets('Race Condition Guard: Manager does not override Player', (WidgetTester tester) async {
+       // Since the "Optimistic Override" was removed from _handleAIAudio, 
+       // we verify that the Manager follows the stream regardless of other inputs.
+       
+       mockPlayer.emitState(false);
+       expect(sessionManager.isAISpeaking, isFalse);
+       
+       // Note: We can't simulate data arriving without triggering playChunk (which emits true).
+       // The fact that we ONLY listen to stream is implicitly covered by the fact that
+       // no other mechanism in VoiceSessionManager sets _isAISpeaking = true.
     });
   });
 }

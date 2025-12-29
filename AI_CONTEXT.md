@@ -130,7 +130,7 @@
 | `lib/domain/services/voice_provider_selector.dart` | Real network diagnostics (Phase 46) |
 | `lib/data/services/voice_session_manager.dart` | Restored Sherlock Logic (Phase 59.2) & Integrated Safety Gate (Phase 59.3) |
 | `lib/data/services/audio_recording_service.dart` | Added WebRTC Fallback Logic (Phase 59.1) |
-| `lib/data/services/stream_voice_player.dart` | SoLoud + Silence Debouncer (Phase 59.2) |
+| `lib/data/services/stream_voice_player.dart` | Unified Source of Truth + Trace Logging (Phase 59.4) |
 
 ---
 

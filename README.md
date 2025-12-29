@@ -16,7 +16,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Mobile App** | 🟢 Phase 4&7 | ShellRoute Navigation + Strangler Fig Complete |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **MVP** | Sherlock Protocol (PTT Enforced + AEC Locked) |
+| **Voice AI** | ✅ **MVP** | Sherlock Protocol (Unified SoLoud Stack) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 

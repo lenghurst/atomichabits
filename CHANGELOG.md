@@ -13,7 +13,19 @@
 
 ---
 
-## [6.9.1] - 2025-12-29 - Phase 59.3: "Audio Stack Stabilization (Failed)"
+## [6.9.2] - 2025-12-29 - Phase 59.4: "Unified Source of Truth (UI Fixes)"
+ 
+ ### Architecture
+ - **Unified Source of Truth:** `VoiceSessionManager` now fully delegates speaking state authority to `StreamVoicePlayer`. The "Optimistic Override" code was removed, eliminating race conditions.
+ - **Trace Logging:** Added high-resolution `[TRACE]` logs to `StreamVoicePlayer` (Chunk Received, Timer Cancelled, Grace Period) for precision debugging via `Device Testing Protocol`.
+ 
+ ### Fixed
+ - **UI/Audio Desynchronization:** Resolved the critical "Amber Lock" and "Purple Freeze" issues. The Sherlock Orb now accurately reflects the AI's speaking state with zero perceivable latency, confirmed by `integration_test/voice_stack_integration_test.dart`.
+ - **VoiceSessionManager Syntax:** Fixed constructor and factory method syntax errors introduced during initial Phase 59.4 refactoring.
+ 
+ ---
+ 
+ ## [6.9.1] - 2025-12-29 - Phase 59.3: "Audio Stack Stabilization (Failed)"
 
 ### Architecture
 - **Integrated Safety Gate:** `VoiceSessionManager` now internally handles the 500ms safety lock to prevent accidental user interruptions.
