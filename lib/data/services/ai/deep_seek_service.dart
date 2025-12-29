@@ -95,11 +95,8 @@ class DeepSeekService extends ChangeNotifier {
     
     try {
       // Add user message to conversation
-      final userMsg = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      final userMsg = ChatMessage.user(
         content: userMessage,
-        isUser: true,
-        timestamp: DateTime.now(),
       );
       conversation.messages.add(userMsg);
       
@@ -113,11 +110,8 @@ class DeepSeekService extends ChangeNotifier {
       final responseContent = await _makeApiRequest(messages);
       
       // Create assistant message
-      final assistantMsg = ChatMessage(
-        id: '${DateTime.now().millisecondsSinceEpoch}_response',
+      final assistantMsg = ChatMessage.assistant(
         content: responseContent,
-        isUser: false,
-        timestamp: DateTime.now(),
         status: MessageStatus.sent,
       );
       
@@ -135,11 +129,8 @@ class DeepSeekService extends ChangeNotifier {
       notifyListeners();
       
       // Return error message
-      return ChatMessage(
-        id: '${DateTime.now().millisecondsSinceEpoch}_error',
+      return ChatMessage.assistant(
         content: 'I encountered an issue. Please try again.',
-        isUser: false,
-        timestamp: DateTime.now(),
         status: MessageStatus.error,
       );
     }

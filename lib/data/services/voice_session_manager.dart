@@ -1,489 +1,139 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
-import 'dart:math' as math;
-
-import '../../config/ai_prompts.dart';
-import '../../config/ai_tools_config.dart';
-import '../../domain/entities/psychometric_profile.dart';
-import '../models/user_profile.dart';
-import '../providers/psychometric_provider.dart';
-import 'ai/prompt_factory.dart';
+import 'package:flutter/material.dart';
+import '../../data/models/chat_message.dart';
+import '../models/chat_message.dart'; // Ensure correct import if needed, assuming first one is enough or correct relative path
+import 'gemini_voice_note_service.dart';
 import 'audio_recording_service.dart';
-import 'gemini_live_service.dart';
-import 'openai_live_service.dart';
-import 'voice_api_service.dart';
-import '../../config/ai_model_config.dart';
-import '../enums/voice_session_mode.dart';
-import 'stream_voice_player.dart';
 
-/// Voice Session Manager - Phase 59.3 (Sherlock Restored & Integrated Safety Gate)
-class VoiceSessionManager {
-  // === CONFIGURATION ===
-  final VoiceSessionMode mode;
-  final String? systemInstruction;
-  final bool enableTranscription;
-  final PsychometricProvider? psychometricProvider;
-  final UserProfile? userProfile;
-  final PsychometricProfile? psychometricProfile;
+class VoiceSessionManager extends ChangeNotifier {
+  final GeminiVoiceNoteService _sherlockService = GeminiVoiceNoteService();
+  final AudioRecordingService _audioRecorder = AudioRecordingService();
   
-  // === INTERNAL DI ===
-  final StreamVoicePlayer? _injectedVoicePlayer;
+  List<ChatMessage> _messages = [];
+  List<ChatMessage> get messages => List.unmodifiable(_messages);
   
-  // === SERVICES ===
-  late final AudioRecordingService _audioService;
-  late final VoiceApiService _voiceService;
-  late final StreamVoicePlayer _voicePlayer;
+  bool _isRecording = false;
+  bool get isRecording => _isRecording;
   
-  // === STATE ===
-  VoiceSessionState _state = VoiceSessionState.idle;
-  bool _isUserSpeaking = false;
-  bool _isAISpeaking = false;
-  DateTime? _aiSpeechStartTime; // Renamed from _aiStartedSpeakingTime
-  static const Duration _safetyGateDuration = Duration(milliseconds: 500);
-  
-  final List<Map<String, String>> _transcript = [];
-  List<Map<String, String>> get transcript => List.unmodifiable(_transcript);
+  bool _isThinking = false;
+  bool get isThinking => _isThinking;
 
-  // === CALLBACKS ===
-  final void Function(String text, bool isUser)? onTranscription;
-  final void Function(Uint8List audioData)? onAudioReceived;
-  final void Function(VoiceSessionState state)? onStateChanged;
-  final void Function(String error)? onError;
-  final void Function(double level)? onAudioLevelChanged;
-  final void Function(bool isSpeaking)? onAISpeakingChanged;
-  final void Function(bool isSpeaking)? onUserSpeakingChanged;
-  final void Function()? onTurnComplete;
-  final void Function(List<String> log)? onDebugLogUpdated;
-  final void Function(String traitName, dynamic value)? onTraitUpdated;
-  
-  VoiceSessionManager({
-    this.mode = VoiceSessionMode.legacy,
-    this.systemInstruction,
-    this.enableTranscription = true,
-    this.psychometricProvider,
-    this.userProfile,
-    this.psychometricProfile,
-    this.onTranscription,
-    this.onAudioReceived,
-    this.onStateChanged,
-    this.onError,
-    this.onAudioLevelChanged,
-    this.onAISpeakingChanged,
-    this.onUserSpeakingChanged,
-    this.onTurnComplete,
-    this.onDebugLogUpdated,
-    this.onTraitUpdated,
-    StreamVoicePlayer? voicePlayer, // DI for testing
-  }) : _injectedVoicePlayer = voicePlayer {
-    _initializeServices();
-  }
-  
-  factory VoiceSessionManager.onboarding({
-    required PsychometricProvider psychometricProvider,
-    UserProfile? userProfile,
-    bool enableTranscription = true,
-    void Function(String text, bool isUser)? onTranscription,
-    void Function(Uint8List audioData)? onAudioReceived,
-    void Function(VoiceSessionState state)? onStateChanged,
-    void Function(String error)? onError,
-    void Function(double level)? onAudioLevelChanged,
-    void Function(bool isSpeaking)? onAISpeakingChanged,
-    void Function(bool isSpeaking)? onUserSpeakingChanged,
-    void Function()? onTurnComplete,
-    void Function(List<String> log)? onDebugLogUpdated,
-    void Function(String traitName, dynamic value)? onTraitUpdated,
-  }) {
-    return VoiceSessionManager(
-      mode: VoiceSessionMode.onboarding,
-      psychometricProvider: psychometricProvider,
-      userProfile: userProfile,
-      enableTranscription: enableTranscription,
-      onTranscription: onTranscription,
-      onAudioReceived: onAudioReceived,
-      onStateChanged: onStateChanged,
-      onError: onError,
-      onAudioLevelChanged: onAudioLevelChanged,
-      onAISpeakingChanged: onAISpeakingChanged,
-      onUserSpeakingChanged: onUserSpeakingChanged,
-      onTurnComplete: onTurnComplete,
-      onDebugLogUpdated: onDebugLogUpdated,
-      onTraitUpdated: onTraitUpdated,
-    );
-  }
-  
-  factory VoiceSessionManager.coaching({
-    required PsychometricProvider psychometricProvider,
-    required UserProfile userProfile,
-    required PsychometricProfile psychometricProfile,
-    bool enableTranscription = true,
-    void Function(String text, bool isUser)? onTranscription,
-    void Function(Uint8List audioData)? onAudioReceived,
-    void Function(VoiceSessionState state)? onStateChanged,
-    void Function(String error)? onError,
-    void Function(double level)? onAudioLevelChanged,
-    void Function(bool isSpeaking)? onAISpeakingChanged,
-    void Function(bool isSpeaking)? onUserSpeakingChanged,
-    void Function()? onTurnComplete,
-    void Function(List<String> log)? onDebugLogUpdated,
-    void Function(String traitName, dynamic value)? onTraitUpdated,
-    StreamVoicePlayer? voicePlayer,
-  }) {
-    return VoiceSessionManager(
-      mode: VoiceSessionMode.coaching,
-      psychometricProvider: psychometricProvider,
-      userProfile: userProfile,
-      psychometricProfile: psychometricProfile,
-      enableTranscription: enableTranscription,
-      onTranscription: onTranscription,
-      onAudioReceived: onAudioReceived,
-      onStateChanged: onStateChanged,
-      onError: onError,
-      onAudioLevelChanged: onAudioLevelChanged,
-      onAISpeakingChanged: onAISpeakingChanged,
-      onUserSpeakingChanged: onUserSpeakingChanged,
-      onTurnComplete: onTurnComplete,
-      onDebugLogUpdated: onDebugLogUpdated,
-      onTraitUpdated: onTraitUpdated,
-      voicePlayer: voicePlayer, // Pass through
-    );
-  }
-  
-  VoiceSessionState get state => _state;
-  bool get isActive => _state == VoiceSessionState.active;
-  bool get isConnecting => _state == VoiceSessionState.connecting;
-  bool get isUserSpeaking => _isUserSpeaking;
-  bool get isAISpeaking => _isAISpeaking;
-  
-  void _initializeServices() {
-    _audioService = AudioRecordingService(
-      onAudioData: _handleMicrophoneAudio,
-      onError: _handleAudioError,
-      onRecordingStateChanged: _handleRecordingStateChanged,
-      onAudioLevelChanged: onAudioLevelChanged,
-      onVoiceActivityDetected: _handleVoiceActivity,
-    );
+  DateTime? _recordingStartTime; // ⏱️ Added duration tracking
+
+  /// Sends a text message to Sherlock
+  Future<void> sendText(String text) async {
+    if (_isThinking || text.trim().isEmpty) return;
+
+    // 1. Add User Text Bubble (Optimistic UI)
+    _addMessage(ChatMessage.user(content: text));
     
-    if (AIModelConfig.voiceProvider == 'openai') {
-      _voiceService = OpenAILiveService(
-        onAudioReceived: _handleAIAudio,
-        onTranscription: _handleTranscription,
-        onModelSpeakingChanged: _handleAISpeakingChanged,
-        onError: _handleGeminiError,
-        onToolCall: _handleToolCall,
-        onDebugLogUpdated: onDebugLogUpdated,
-      );
-    } else {
-      _voiceService = GeminiLiveService(
-        onAudioReceived: _handleAIAudio,
-        onTranscription: _handleTranscription,
-        onModelSpeakingChanged: _handleAISpeakingChanged,
-        onConnectionStateChanged: _handleConnectionStateChanged,
-        onError: _handleGeminiError,
-        onTurnComplete: _handleTurnComplete,
-        onDebugLogUpdated: onDebugLogUpdated,
-        onToolCall: _handleToolCall, 
-        onThinkingChanged: _handleThinkingChanged,
-      );
-    }
-    
-    _voicePlayer = _injectedVoicePlayer ?? StreamVoicePlayer();
-    _voicePlayer.isPlayingStream.listen(_handlePlayerStateChange);
-  }
-  
-  String _generateSystemInstruction() {
-    switch (mode) {
-      case VoiceSessionMode.onboarding:
-        return AtomicHabitsReasoningPrompts.voiceOnboardingSystemPrompt;
-      case VoiceSessionMode.coaching:
-        if (userProfile != null && psychometricProfile != null) {
-          final isFirstSession = psychometricProfile!.antiIdentityLabel == null ||
-              psychometricProfile!.antiIdentityLabel!.isEmpty;
-          return PromptFactory.generateSessionPrompt(
-            user: userProfile!,
-            psychometrics: psychometricProfile!,
-            isFirstSession: isFirstSession,
-          );
-        }
-        return AtomicHabitsReasoningPrompts.voiceSession(userName: userProfile?.name);
-      case VoiceSessionMode.legacy:
-      default:
-        return systemInstruction ?? AtomicHabitsReasoningPrompts.voiceSession();
-    }
-  }
-  
-  bool _shouldEnableTools() {
-    // SHERLOCK RESTORATION:
-    // Onboarding (Sherlock) REQUIRES tools to function (it's how he "learns").
-    // Coaching/Legacy modes can use Deferred Intelligence (Post-Session Analysis) to reduce latency.
-    return mode == VoiceSessionMode.onboarding;
-  }
-  
-  Map<String, dynamic>? _getToolsConfig() {
-    if (!_shouldEnableTools()) return null;
-    return AiToolsConfig.psychometricTool;
+    // 2. Trigger AI
+    await _processTextNote(text);
   }
 
-  Future<bool> startSession() async {
-    if (_state != VoiceSessionState.idle && _state != VoiceSessionState.error) return false;
-    _setState(VoiceSessionState.connecting);
-    
+  /// Processes text input through the AI pipeline
+  Future<void> _processTextNote(String text) async {
+    _isThinking = true;
+    notifyListeners();
+
     try {
-      final connected = await _voiceService.connect(
-        systemInstruction: _generateSystemInstruction(),
-        enableTranscription: enableTranscription,
-        tools: _getToolsConfig(),
-      );
-      if (!connected) {
-        _setState(VoiceSessionState.error);
-        return false;
-      }
-      
-      await _audioService.initialize();
-      await _audioService.startRecording();
-      _setState(VoiceSessionState.active);
-      return true;
+      // Use the service to process text (Think -> Speak)
+      final responseMessage = await _sherlockService.processText(text);
+      _addMessage(responseMessage);
     } catch (e) {
-      _setState(VoiceSessionState.error);
-      return false;
+      _addMessage(ChatMessage(
+        id: 'error',
+        role: MessageRole.assistant,
+        content: "I couldn't process that text. ($e)",
+        timestamp: DateTime.now(),
+        status: MessageStatus.error,
+      ));
+    } finally {
+      // 🔓 CRITICAL: UNLOCK INPUT IMMEDIATELY Do not wait for audio playback to finish.
+      _isThinking = false;
+      notifyListeners();
     }
   }
 
-  Future<void> saveProgression() async {
-    if (kDebugMode) debugPrint('VoiceSessionManager: Stub saveProgression() called.');
-  }
-
-  Future<void> endSession() async {
-    await _audioService.stopRecording();
-    await _voicePlayer.stop();
-    await _voiceService.disconnect();
-    _setState(VoiceSessionState.idle);
-  }
-  
-  Future<void> pauseSession() async {
-    await _audioService.pauseRecording();
-    await _voicePlayer.stop();
-    _setState(VoiceSessionState.paused);
-  }
-  
-  Future<void> resumeSession() async {
-    await _audioService.resumeRecording();
-    _setState(VoiceSessionState.active);
-  }
-
-  /// Handles User Interaction (Tap to Speak / Interrupt).
-  /// Enforces the "Safety Gate" to prevent accidental interruptions.
   Future<void> startRecording() async {
-    // 1. Safety Gate Check
-    // We only guard if the AI is actively speaking (or we think it is).
-    // The gate is 500ms from the FIRST byte of audio received.
-    if (_isAISpeaking && _aiSpeechStartTime != null) {
-      final timeSinceStart = DateTime.now().difference(_aiSpeechStartTime!);
-      if (timeSinceStart < _safetyGateDuration) {
-        if (kDebugMode) debugPrint('VoiceSessionManager: 🛡️ Input Ignored (Safety Gate active: ${timeSinceStart.inMilliseconds}ms)');
-        return;
-      }
-    }
+    if (_isThinking) return;
 
-    // 2. Interrupt Logic
-    if (_isAISpeaking) {
-      if (kDebugMode) debugPrint('VoiceSessionManager: 🛑 Interrupting AI...');
-      
-      // Stop Output immediately
-      await _voicePlayer.stop(); 
-      
-      // Send Interrupt Signal to AI Service
-      _voiceService.interrupt();
-      
-      // Force state update immediately for UI responsiveness
-      _handlePlayerStateChange(false);
-    }
-    
-    // 3. Prevent "Double Tap" or invalid state re-entry
-    if (_state != VoiceSessionState.thinking && _state != VoiceSessionState.active && _state != VoiceSessionState.paused) {
-        return;
-    }
-    
-    // 4. Resume Input
-    await _audioService.resumeRecording();
-    _setState(VoiceSessionState.active);
-  }
-
-  Future<void> stopRecording() async {
-    if (_state != VoiceSessionState.active) return;
-    await _audioService.pauseRecording();
-    await commitUserTurn();
-  }
-  
-  void sendText(String text) {
-    if (_state != VoiceSessionState.active && _state != VoiceSessionState.paused) return;
-    _voiceService.sendText(text);
-  }
-  
-  void interruptAI() {
-    _voiceService.interrupt();
-  }
-  
-  // === PRIVATE HANDLERS ===
-  
-  void _setState(VoiceSessionState newState) {
-    if (_state == newState) return;
-    _state = newState;
-    onStateChanged?.call(newState);
-  }
-  
-  void _handleMicrophoneAudio(Uint8List audioData) {
-    if (_state != VoiceSessionState.active) return;
-    _voiceService.sendAudio(audioData);
-  }
-  
-  void _handleAIAudio(Uint8List audioData) {
-    // === UNIFIED SOURCE OF TRUTH ===
-    // We delegate ALL state management to StreamVoicePlayer.
-    // The player's playChunk() method will immediately emit 'true' (speaking)
-    // via its stream, which we listen to in _handlePlayerStateChange.
-    if (kDebugMode && !_isAISpeaking) {
-      debugPrint('VoiceSessionManager: 📥 Audio Data Received (Delegating state to Player)');
-    }
-    
-    _voicePlayer.playChunk(audioData);
-    
-    // Minimal visualization using amplitude of received chunk
-    // (Optional: drive Orb radius here if Player is silent)
-  }
-
-  void _handleTurnComplete() {
-    if (kDebugMode) debugPrint('VoiceSessionManager: ✅ AI Turn Complete');
-    _voicePlayer.flush(); // Don't stop, let it drain
-    onTurnComplete?.call();
-  }
-
-  void _handleTranscription(String text, bool isUser) {
-    _transcript.add({'role': isUser ? 'user' : 'model', 'content': text});
-    onTranscription?.call(text, isUser);
-  }
-  void _handleAudioError(String error) => onError?.call(error);
-  void _handleGeminiError(String error) => onError?.call(error);
-  void _handleRecordingStateChanged(bool isRecording) {}
-  
-  Future<void> commitUserTurn() async {
-    if (_state != VoiceSessionState.active) return;
-    if (_voiceService is GeminiLiveService) {
-      _voiceService.sendEndTurn();
-    } else {
-      _voiceService.sendText(" ", turnComplete: true);
-    }
-    _setState(VoiceSessionState.thinking);
-  }
-
-  void _handleVoiceActivity(bool isActive) {} // Strict PTT ignores this
-  
-  void _handleAISpeakingChanged(bool isSpeaking) {
-    // Handled by player listener
-  }
-  
-  void _handleConnectionStateChanged(LiveConnectionState connectionState) {
-    if (connectionState == LiveConnectionState.disconnected && _state == VoiceSessionState.active) {
-      _setState(VoiceSessionState.error);
-    }
-  }
-  
-  Future<void> _handleToolCall(String functionName, Map<String, dynamic> args, String callId) async {
-    if (kDebugMode) {
-      debugPrint('VoiceSessionManager: Tool call received: $functionName');
-      debugPrint('🕵️ [SHERLOCK_TRACE] Tool Exec START: $functionName (ID: $callId)');
-    }
-    
-    if (functionName != AiToolsConfig.psychometricToolName) {
-      _voiceService.sendToolResponse(functionName, callId, {'error': 'Unknown tool: $functionName'});
-      return;
-    }
-    
-    if (psychometricProvider == null) {
-      _voiceService.sendToolResponse(functionName, callId, {'error': 'Psychometric provider not configured'});
-      return;
-    }
-    
+    _isRecording = true;
+    _recordingStartTime = DateTime.now(); // Start clock
+    notifyListeners();
     try {
-      await psychometricProvider!.updateFromToolCall(args);
-      _notifyTraitUpdates(args);
-      
-      if (kDebugMode) debugPrint('VoiceSessionManager: Psychometric profile updated successfully');
-      
-      _voiceService.sendToolResponse(
-        functionName,
-        callId,
-        {
-          'status': 'success',
-          'message': 'Psychometric profile updated',
-          'updated_fields': args.keys.toList(),
-        },
-      );
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        debugPrint('VoiceSessionManager: Failed to update psychometric profile: $e');
-        debugPrint('Stack trace: $stackTrace');
-      }
-      _voiceService.sendToolResponse(functionName, callId, {
-          'status': 'error',
-          'message': 'Failed to update profile: $e',
-      });
+      await _audioRecorder.startRecording();
+    } catch (e) {
+      _isRecording = false;
+      notifyListeners();
+      _addMessage(ChatMessage(
+          id: 'error',
+          role: MessageRole.assistant,
+          content: "Failed to start recording: $e",
+          timestamp: DateTime.now(),
+          status: MessageStatus.error,
+        ));
+    }
+  }
+
+  Future<void> stopRecordingAndSend() async {
+    if (!_isRecording) return; 
+
+    _isRecording = false;
+    audioPath = null;
+    try {
+       audioPath = await _audioRecorder.stopRecording();
+    } catch (e) {
+      // Handle stop error
+    }
+    
+    // ⏱️ Calculate duration
+    final duration = _recordingStartTime != null 
+        ? DateTime.now().difference(_recordingStartTime!) 
+        : Duration.zero;
+
+    if (audioPath == null) {
+      notifyListeners(); // Update UI immediately
+       return; 
+    }
+
+    // 1. Add User Voice Bubble (Optimistic)
+    _addMessage(ChatMessage.userVoice(
+      audioPath: audioPath!,
+      duration: duration, // ✅ Pass duration to UI
+    ));
+
+    // 2. Trigger Sherlock
+    _processSherlockTurn(audioPath!);
+  }
+
+  Future<void> _processSherlockTurn(String audioPath) async {
+    _isThinking = true;
+    notifyListeners();
+
+    try {
+      final responseMessage = await _sherlockService.processVoiceNote(audioPath);
+      _addMessage(responseMessage);
+    } catch (e) {
+      _addMessage(ChatMessage(
+        id: 'error',
+        role: MessageRole.assistant,
+        content: "System Malfunction: $e",
+        timestamp: DateTime.now(),
+        status: MessageStatus.error,
+      ));
+    } finally {
+      // 🔓 CRITICAL: UNLOCK INPUT IMMEDIATELY Do not wait for audio playback to finish.
+      _isThinking = false;
+      notifyListeners();
     }
   }
   
-  void _notifyTraitUpdates(Map<String, dynamic> args) {
-    if (onTraitUpdated == null) return;
-    
-    final traitDisplayNames = {
-      'anti_identity_label': 'Anti-Identity',
-      'anti_identity_context': 'Anti-Identity Context',
-      'failure_archetype': 'Failure Archetype',
-      'failure_trigger_context': 'Failure Trigger',
-      'resistance_lie_label': 'Resistance Lie',
-      'resistance_lie_context': 'Resistance Context',
-      'inferred_fears': 'Inferred Fears',
-    };
-    
-    for (final entry in args.entries) {
-      final displayName = traitDisplayNames[entry.key] ?? entry.key;
-      onTraitUpdated?.call(displayName, entry.value);
-    }
+  void _addMessage(ChatMessage msg) {
+    _messages.add(msg);
+    notifyListeners();
   }
   
-  void _handleThinkingChanged(bool isThinking) {
-    if (_state == VoiceSessionState.thinking && !isThinking) {
-      _setState(VoiceSessionState.active);
-    }
-  }
-
-  void _handlePlayerStateChange(bool isPlaying) {
-    if (kDebugMode) debugPrint(isPlaying ? 'VoiceSessionManager: 🗣️ Player Reported Speaking' : 'VoiceSessionManager: 🤫 Player Reported Silence');
-    
-    // Only update if we aren't already in that state (Debounce)
-    if (_isAISpeaking != isPlaying) {
-      _isAISpeaking = isPlaying;
-      if (isPlaying) _aiSpeechStartTime = DateTime.now();
-      onAISpeakingChanged?.call(isPlaying);
-    }
-    
-    if (!isPlaying && (_state == VoiceSessionState.thinking || _state == VoiceSessionState.active)) {
-       _setState(VoiceSessionState.paused); 
-    }
-  }
-
-  Future<void> dispose() async {
-    await endSession();
-    await _audioService.dispose();
-    await _voicePlayer.dispose();
-  }
-}
-
-enum VoiceSessionState {
-  idle,
-  connecting,
-  active,
-  paused,
-  thinking,
-  disconnecting,
-  error,
+  // Scoping variable to fix build which would happen if I copied user code exactly
+  String? audioPath;
 }

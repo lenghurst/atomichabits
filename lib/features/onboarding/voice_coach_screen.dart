@@ -1,592 +1,294 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-import 'package:provider/provider.dart'; 
+import 'package:flutter/services.dart'; // For Haptics
+import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/router/app_routes.dart';
-
+import '../../data/enums/voice_session_mode.dart'; // Preserved for compatibility
 import '../../data/services/voice_session_manager.dart';
-import '../../data/providers/user_provider.dart'; 
-import '../../data/providers/psychometric_provider.dart'; 
-import '../../data/providers/settings_provider.dart'; 
-import '../../data/models/user_profile.dart'; 
-
-import '../../data/enums/voice_session_mode.dart'; 
+import 'widgets/chat_message_bubble.dart';
 
 class VoiceCoachScreen extends StatefulWidget {
-  final VoiceSessionMode mode;
-
+  final VoiceSessionMode mode; // Preserved parameter
+  
   const VoiceCoachScreen({
-    super.key,
-    this.mode = VoiceSessionMode.coaching,
+    super.key, 
+    this.mode = VoiceSessionMode.coaching, // Preserved default
   });
 
   @override
   State<VoiceCoachScreen> createState() => _VoiceCoachScreenState();
 }
 
-class _VoiceCoachScreenState extends State<VoiceCoachScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
+  final ScrollController _scrollController = ScrollController();
   
-  VoiceSessionManager? _sessionManager;
-  VoiceState _voiceState = VoiceState.idle;
-  
-
-  
-  double _audioLevel = 0.0;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-  bool _isConnected = false;
-  
-  // Phase 58: Deferred Intelligence (Post-Session Analysis)
-  bool _isAnalyzing = false;
-
-  late PsychometricProvider _psychometricProvider;
+  // -- Gesture State --
+  bool _isLocked = false;
+  double _dragOffset = 0.0;
+  Timer? _durationTimer;
+  Duration _recordDuration = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    
-    // Phase 55: Auto-Navigation Listener
-    _psychometricProvider = context.read<PsychometricProvider>();
-    _psychometricProvider.addListener(_onPsychometricUpdate);
-    
-    _initializePulseAnimation();
-    _initializeVoiceSession();
-  }
-
-  void _onPsychometricUpdate() {
-    if (!mounted) return;
-    if (_psychometricProvider.isOnboardingComplete) {
-       _onSessionComplete();
-    }
-  }
-
-  void _initializePulseAnimation() {
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
-      if (_sessionManager?.isActive == true) {
-        _sessionManager?.pauseSession();
-      }
-    }
-  }
-
-
-
-  Future<void> _initializeVoiceSession() async {
-    setState(() => _voiceState = VoiceState.connecting);
-    
-    // Phase 46: Dependency Injection
-    final userProvider = context.read<UserProvider>();
-    final psychometricProvider = context.read<PsychometricProvider>();
-    
-    // Safety check for user profile
-    final safeUser = userProvider.userProfile ?? 
-        UserProfile(name: 'Guest', identity: 'Achiever', createdAt: DateTime.now(), isPremium: true);
-
-    // Phase 42: unified session initialization
-    if (widget.mode == VoiceSessionMode.coaching) {
-      _sessionManager = VoiceSessionManager.coaching(
-        psychometricProvider: psychometricProvider,
-        userProfile: safeUser,
-        psychometricProfile: psychometricProvider.profile,
-        onStateChanged: _handleStateChanged,
-        onAudioReceived: null, 
-        onError: _handleError,
-        onAudioLevelChanged: (level) {
-          if (mounted) setState(() => _audioLevel = level);
-        },
-        onAISpeakingChanged: _handleAISpeakingChanged,
-        onUserSpeakingChanged: _handleUserSpeakingChanged,
-        onTurnComplete: _handleTurnComplete,
-        onTraitUpdated: null, // Deferred Intelligence: No live updates
-      );
-    } else {
-      // Onboarding / Sherlock Mode
-      _sessionManager = VoiceSessionManager.onboarding(
-        psychometricProvider: psychometricProvider,
-        userProfile: safeUser,
-        onStateChanged: _handleStateChanged,
-        onAudioReceived: null,
-        onError: _handleError,
-        onAudioLevelChanged: (level) {
-          if (mounted) setState(() => _audioLevel = level);
-        },
-        onAISpeakingChanged: _handleAISpeakingChanged,
-        onUserSpeakingChanged: _handleUserSpeakingChanged,
-        onTurnComplete: _handleTurnComplete,
-        onTraitUpdated: null, // Deferred Intelligence: No live updates
-      );
-    }
-
-    try {
-      final success = await _sessionManager!.startSession();
-      if (success) {
-        setState(() {
-          _isConnected = true;
-          _voiceState = VoiceState.idle;
-        });
-      } else {
-         if (mounted && !_isConnected) {
-            setState(() {
-              _isConnected = false;
-              _voiceState = VoiceState.error;
-            });
-         }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isConnected = false;
-          _voiceState = VoiceState.error;
-        });
-      }
-    }
+    // Auto-scroll on new messages
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       if (mounted) context.read<VoiceSessionManager>().addListener(_scrollToBottom);
+    });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _psychometricProvider.removeListener(_onPsychometricUpdate);
-    _pulseController.dispose();
-    _sessionManager?.dispose();
+    _durationTimer?.cancel();
+    // context.read... removeListener is risky in dispose, let Provider handle cleanup
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // --- Handlers ---
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+  }
 
-  void _handleStateChanged(VoiceSessionState state) {
-    if (!mounted) return;
+  // --- Recording Logic ---
+
+  void _startRecording(VoiceSessionManager session) {
+    HapticFeedback.lightImpact();
     setState(() {
-      switch (state) {
-        case VoiceSessionState.idle:
-          _voiceState = VoiceState.idle;
-          _pulseController.stop();
-          break;
-        case VoiceSessionState.paused:
-          _voiceState = VoiceState.ready;
-          _pulseController.stop();
-          break;
-        case VoiceSessionState.connecting:
-        case VoiceSessionState.disconnecting:
-          _voiceState = VoiceState.connecting;
-          break;
-        case VoiceSessionState.active:
-           _voiceState = VoiceState.listening;
-          _pulseController.repeat(reverse: true);
-          break;
-        case VoiceSessionState.thinking:
-           _voiceState = VoiceState.thinking;
-           _pulseController.repeat(reverse: true); 
-           break;
-        case VoiceSessionState.error:
-          _voiceState = VoiceState.error;
-          _pulseController.stop();
-          break;
-      }
+      _isLocked = false;
+      _dragOffset = 0.0;
+      _recordDuration = Duration.zero;
     });
+    
+    _durationTimer?.cancel();
+    _durationTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (mounted) setState(() => _recordDuration += const Duration(seconds: 1));
+    });
+
+    session.startRecording();
   }
 
-  void _handleError(String error) {
-    if (!mounted) return;
-    setState(() => _voiceState = VoiceState.error);
+  void _stopRecording(VoiceSessionManager session) {
+    _durationTimer?.cancel();
+    session.stopRecordingAndSend(); // This will use the internal timer in Manager
   }
 
-  void _handleAISpeakingChanged(bool isSpeaking) {
-    if (!mounted) return;
+  void _handleDragUpdate(LongPressMoveUpdateDetails details) { // Fixed type for gesture
+    if (_isLocked) return;
+
     setState(() {
-      if (isSpeaking) {
-        _voiceState = VoiceState.speaking;
-      } else {
-        // Cooldown Logic: Wait before showing "Ready"
-        _voiceState = VoiceState.cooldown;
-        // Strict Cooldown: 1.2s Grey Orb before Green/Cyan
-        Future.delayed(const Duration(milliseconds: 1200), () {
-          if (mounted && _voiceState == VoiceState.cooldown) {
-            setState(() => _voiceState = VoiceState.ready);
-          }
-        });
-      }
+      _dragOffset = details.localOffsetFromOrigin.dy; // Use localOffset
     });
-  }
-  
-  void _handleUserSpeakingChanged(bool isSpeaking) {
-    // STRICT PTT: No UI reaction to passive VAD
-    // if (!mounted) return;
-    // setState(() {
-    //   _isUserSpeaking = isSpeaking;
-    //   if (isSpeaking && _voiceState == VoiceState.speaking) {
-    //      _voiceState = VoiceState.listening;
-    //   }
-    // });
-  }
 
-  void _handleTurnComplete() {
-     if (_sessionManager?.isActive == true) {
-       if (mounted) setState(() => _voiceState = VoiceState.idle);
+    // Threshold: Drag up 80 pixels to lock
+    if (_dragOffset < -80) { 
+      HapticFeedback.heavyImpact(); // SNAP sensation
+      setState(() => _isLocked = true);
     }
   }
 
-  // --- UI Helpers ---
-
-  String _getInstructionText() {
-    switch (_voiceState) {
-      case VoiceState.idle: return 'Initialize Link';
-      case VoiceState.connecting: return 'Authenticating...';
-      case VoiceState.listening: return 'Recording...'; // Explicit text
-      case VoiceState.thinking: return 'Processing...';
-      case VoiceState.cooldown: return '...'; // Buffer state
-      case VoiceState.speaking: return 'Sherlock Speaking';
-      case VoiceState.error: return 'Signal Lost';
-      case VoiceState.ready: return 'Ready';
-    }
-  }
-  
-  String _getMicButtonLabel() {
-    if (_voiceState == VoiceState.speaking) return 'Locked (AI Speaking)';
-    if (_voiceState == VoiceState.cooldown) return 'Wait...';
-    if (_voiceState == VoiceState.thinking) return 'Processing...';
-    if (_voiceState == VoiceState.cooldown) return 'Wait...'; // Block during cooldown
-    if (_voiceState == VoiceState.listening) return 'Release to Send';   
-    if (_voiceState == VoiceState.idle) return 'Tap to Connect'; 
-    if (_voiceState == VoiceState.ready) return 'Hold to Speak';
-    return 'Hold to Speak'; 
+  void _handleCancel(VoiceSessionManager session) {
+    HapticFeedback.mediumImpact();
+    _durationTimer?.cancel();
+    setState(() {
+      _isLocked = false;
+      _recordDuration = Duration.zero;
+    });
+    // session.cancelRecording(); // TODO: Add cancel method to manager
   }
 
-  Color _getOrbColor() {
-    if (_voiceState == VoiceState.speaking) return Colors.purpleAccent;
-    if (_voiceState == VoiceState.thinking) return Colors.amber;
-    if (_voiceState == VoiceState.cooldown) return Colors.grey; 
-    
-    // Phase 57: Visual Distinction
-    if (_voiceState == VoiceState.listening) return Colors.greenAccent; // Only green when button held
-    if (_voiceState == VoiceState.cooldown) return Colors.grey; // Grey during cooldown
-    if (_voiceState == VoiceState.connecting) return Colors.blue;
-    if (_voiceState == VoiceState.ready) return Colors.cyanAccent; // Cyan for ready
-    
-    if (widget.mode == VoiceSessionMode.oracle) return const Color(0xFFFFD700); 
-    
-    return Colors.grey;
-  }
-  
-  Color _getMicButtonColor() {
-    if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) return Colors.white10; 
-    if (_voiceState == VoiceState.listening) return Colors.green; 
-    return Colors.white; 
-  }
-
-  // --- Input Handlers (New) ---
-
-  Future<void> _handleMicTap() async {
-    context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
-    
-    if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
-       context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
-       return; 
-    }
-    
-    if (_voiceState == VoiceState.listening) {
-       await _sessionManager?.commitUserTurn();
-       setState(() => _voiceState = VoiceState.thinking);
-       return;
-    }
-    
-    if (_sessionManager?.state == VoiceSessionState.paused) {
-      await _sessionManager?.resumeSession();
-    } else {
-      await _sessionManager?.startSession();
-    }
-    setState(() => _voiceState = VoiceState.listening);
-  }
-
-  Future<void> _onSessionComplete() async {
-    // 1. End Voice Session
-    await _sessionManager?.endSession();
-    
-    if (!mounted) return;
-    
-    // 2. Show Analysis Loader (Deferred Intelligence)
-    setState(() => _isAnalyzing = true);
-    
-    // 3. Perform Post-Session Analysis (No Risk of Reasoning Lock)
-    if (_sessionManager != null) {
-      await _psychometricProvider.analyzeTranscript(_sessionManager!.transcript);
-    }
-    
-    if (!mounted) return;
-    
-    // 4. Navigate
-    context.go(AppRoutes.pactReveal);
+  void _handleSendLocked(VoiceSessionManager session) {
+    HapticFeedback.selectionClick();
+    setState(() => _isLocked = false);
+    _stopRecording(session);
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<VoiceSessionManager>();
+    
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
+      backgroundColor: const Color(0xFF0B141A), // Deep Dark Background
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1F2C34),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white70),
+          onPressed: () => context.pop(),
+        ),
+        title: const Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: Color(0xFF00A884),
+              child: Icon(Icons.smart_toy, size: 20, color: Colors.white),
+            ),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Sherlock', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Habit Architect', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              ],
+            ),
+          ],
+        ),
+      ),
+      body: Column(
         children: [
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 1.5,
-                  colors: widget.mode == VoiceSessionMode.oracle 
-                      ? [
-                          const Color(0xFFB45309).withOpacity(0.3),
-                          Colors.black,
-                        ]
-                      : [
-                          Colors.deepPurple.shade900.withOpacity(0.4),
-                          Colors.black,
-                        ],
-                ),
-              ),
+          // 1. Chat List
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              itemCount: session.messages.length + (session.isThinking ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= session.messages.length) {
+                  return _buildThinkingIndicator();
+                }
+                return ChatMessageBubble(message: session.messages[index]);
+              },
             ),
           ),
-          
-          SafeArea(
-            child: Column(
+
+          // 2. Input Zone
+          _buildInputZone(session),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThinkingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, left: 10, bottom: 20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1F2C34),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.record_voice_over, color: Colors.white54, size: 20),
-                      const SizedBox(width: 12),
-                        Text(
-                        widget.mode == VoiceSessionMode.onboarding 
-                            ? 'THE PACT INTERVIEW' 
-                            : widget.mode == VoiceSessionMode.oracle
-                                ? 'ORACLE COACH'
-                                : 'VOICE COACH',
-                        style: TextStyle(
-                            color: widget.mode == VoiceSessionMode.oracle ? const Color(0xFFFFD700) : Colors.white70,
-                            fontSize: 14, 
-                            fontFamily: 'monospace', 
-                            letterSpacing: 2.0, 
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      const Spacer(),
-                      _buildStatusIndicator(),
-                    ],
-                  ),
-                ),
-
-                const Spacer(),
-
-                _buildVisualizer(),
-                
-                const SizedBox(height: 20),
-                
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Text(
-                    _getInstructionText(),
-                    key: ValueKey(_getInstructionText()),
-                    style: const TextStyle(
-                      color: Colors.white70, 
-                      fontSize: 16, 
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                ),
-
-                const Spacer(),
-
-                _buildMicControl(),
-
-                const SizedBox(height: 40),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(onPressed: () => context.go(AppRoutes.manualOnboarding), child: const Text('MANUAL OVERRIDE', style: TextStyle(color: Colors.white54))),
-                    if (_isConnected && _voiceState != VoiceState.connecting)
-                      TextButton(onPressed: _onSessionComplete, child: const Text('END LINK', style: TextStyle(color: Colors.white54))),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00A884))),
+                SizedBox(width: 12),
+                Text("Analysing...", style: TextStyle(color: Color(0xFF00A884), fontSize: 13, fontStyle: FontStyle.italic)),
               ],
             ),
           ),
-          // Analysis Overlay (Deferred Intelligence)
-          if (_isAnalyzing)
-            Container(
-              color: Colors.black.withOpacity(0.9),
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(color: Colors.cyanAccent),
-                    SizedBox(height: 20),
-                    Text(
-                      'SHERLOCK IS ANALYZING...',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        color: Colors.cyanAccent,
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.bold,
-                      ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputZone(VoiceSessionManager session) {
+    final isRecording = session.isRecording;
+    final durationStr = "${_recordDuration.inMinutes}:${(_recordDuration.inSeconds % 60).toString().padLeft(2, '0')}";
+
+    return Container(
+      color: const Color(0xFF1F2C34),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Lock UI (Floating)
+            if (isRecording && !_isLocked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Transform.translate(
+                  offset: Offset(0, _dragOffset),
+                  child: Opacity(
+                    opacity: (1.0 - (-_dragOffset / 80)).clamp(0.0, 1.0),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.lock_open, color: Colors.white54, size: 20),
+                        SizedBox(height: 4),
+                        Text("Swipe up to lock", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                      ],
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Building your profile from transcript',
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStatusIndicator() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: _isConnected ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _isConnected ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-           Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: _isConnected ? Colors.green : Colors.red)),
-           const SizedBox(width: 8),
-           Text(_isConnected ? 'LINK ACTIVE' : 'NO SIGNAL', style: TextStyle(color: _isConnected ? Colors.greenAccent : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildVisualizer() {
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-         double scale = 1.0;
-         double opacity = 0.5;
-         
-         if (_voiceState == VoiceState.speaking) {
-           scale = _pulseAnimation.value * 1.5;
-           opacity = 1.0;
-         } else if (_voiceState == VoiceState.thinking) {
-           scale = 1.1;
-           opacity = 0.8;
-         } else if (_voiceState == VoiceState.listening) {
-           // Strict PTT: Pulse only on active listening state, not VAD
-           scale = 1.0 + (_audioLevel * 5).clamp(0.0, 0.5);
-           opacity = 0.8;
-         }
-         
-         // Deduction Pulse (Boost) - REMOVED
 
-         
-         return Transform.scale(
-           scale: scale,
-           child: Container(
-             width: 150, height: 150,
-             decoration: BoxDecoration(
-               shape: BoxShape.circle,
-               color: _getOrbColor().withOpacity(opacity * 0.2),
-               boxShadow: [
-                 BoxShadow(color: _getOrbColor().withOpacity(opacity * 0.5), blurRadius: 40, spreadRadius: 10),
-               ],
-             ),
-             child: Center(
-               child: Icon(Icons.psychology, color: Colors.white.withOpacity(opacity), size: 64),
-             ),
-           ),
-         );
-      },
-    );
-  }
-  
-  Widget _buildMicControl() {
-    bool isActive = _voiceState == VoiceState.listening;
-    
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () {
-            if (_voiceState == VoiceState.cooldown) return; // Ignore taps during buffer
-            
-            if (_voiceState == VoiceState.idle || _voiceState == VoiceState.error) {
-               _handleMicTap();  
-            } else if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
-               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
-            }
-          },
-          onLongPressStart: (_) async {
-            if (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown) {
-               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.heavy);
-               return;
-            }
-            
-            if (_voiceState == VoiceState.idle) {
-               await _handleMicTap(); 
-            } else {
-               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
-               await _sessionManager?.startRecording();
-               setState(() => _voiceState = VoiceState.listening);
-            }
-          },
-          onLongPressEnd: (_) async {
-            if (_voiceState == VoiceState.listening) {
-               context.read<SettingsProvider>().triggerHaptic(HapticFeedbackType.selection);
-               await _sessionManager?.stopRecording();
-               setState(() => _voiceState = VoiceState.thinking);
-            }
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100), 
-            width: isActive ? 100 : 80, 
-            height: isActive ? 100 : 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _getMicButtonColor(),
-              boxShadow: isActive ? [BoxShadow(color: Colors.greenAccent.withOpacity(0.6), blurRadius: 30, spreadRadius: 8)] : [],
-            ),
-            child: Icon(
-              isActive ? Icons.mic : Icons.mic_none,
-              color: isActive ? Colors.white : (_voiceState == VoiceState.speaking || _voiceState == VoiceState.cooldown ? Colors.white24 : Colors.black),
-              size: 32,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          _getMicButtonLabel(),
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white54, fontSize: 12),
-        ),
-      ],
-    );
-  }
-}
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A3942),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: isRecording
+                        ? Row( // Recording Active UI
+                            children: [
+                              const Icon(Icons.mic, color: Colors.redAccent, size: 20),
+                              const SizedBox(width: 12),
+                              Text(durationStr, style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'monospace')),
+                              if (_isLocked) const Text(" (Locked)", style: TextStyle(color: Colors.white38, fontSize: 12)),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () => _handleCancel(session),
+                                child: const Text("Cancel", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                              )
+                            ],
+                          )
+                        : const Align( // Idle UI
+                            alignment: Alignment.centerLeft,
+                            child: Text("Hold mic to speak...", style: TextStyle(color: Colors.white38, fontSize: 16)),
+                          ),
+                  ),
+                ),
+                
+                const SizedBox(width: 8),
 
-enum VoiceState {
-  idle,
-  connecting,
-  listening,
-  thinking,
-  cooldown,
-  speaking,
-  error,
-  ready, 
+                // THE BUTTON
+                GestureDetector(
+                  onLongPressStart: (_) => _isLocked ? null : _startRecording(session),
+                  onLongPressEnd: (_) => _isLocked ? null : _stopRecording(session),
+                  onLongPressMoveUpdate: _handleDragUpdate,
+                  onTap: _isLocked ? () => _handleSendLocked(session) : null, // Tap to send if locked
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: isRecording ? 60 : 50,
+                    width: isRecording ? 60 : 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00A884),
+                      shape: BoxShape.circle,
+                      boxShadow: isRecording 
+                        ? [BoxShadow(color: const Color(0xFF00A884).withOpacity(0.4), blurRadius: 12, spreadRadius: 4)]
+                        : [],
+                    ),
+                    child: Icon(
+                      _isLocked ? Icons.send : (isRecording ? Icons.mic : Icons.mic_none),
+                      color: Colors.white,
+                      size: isRecording ? 32 : 24,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

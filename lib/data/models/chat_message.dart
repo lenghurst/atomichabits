@@ -33,12 +33,19 @@ enum MessageStatus {
 }
 
 /// A single chat message in a conversation
+/// A single chat message in a conversation
 class ChatMessage {
   final String id;
   final MessageRole role;
   String content;
   final DateTime timestamp;
   MessageStatus status;
+  
+  // --- NEW FIELDS FOR VOICE NOTE SUPPORT ---
+  final String? audioPath;        // Path to local file (User recording or Sherlock TTS)
+  final Duration? audioDuration;  // Length of the note
+  final bool isThinking;          // Triggers the "Sherlock is deducing..." UI
+
   final bool isVoiceInput;
   String? errorMessage;
   /// Phase 17: Metadata for specialized analysis (e.g., 'suspected_lie')
@@ -46,20 +53,54 @@ class ChatMessage {
 
   ChatMessage({
     required this.id,
-    MessageRole? role,
+    required this.role,
     required this.content,
     required this.timestamp,
     this.status = MessageStatus.complete,
+    this.audioPath,
+    this.audioDuration,
+    this.isThinking = false,
     this.isVoiceInput = false,
     this.errorMessage,
-    bool? isUser,
     this.metadata,
-  }) : role = role ?? (isUser == true ? MessageRole.user : MessageRole.assistant);
+  });
+
+  // Factory for User Voice Notes
+  factory ChatMessage.userVoice({
+    required String audioPath, 
+    Duration? duration
+  }) {
+    return ChatMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      role: MessageRole.user,
+      content: "", // Content filled later by transcription if needed
+      timestamp: DateTime.now(),
+      audioPath: audioPath,
+      audioDuration: duration,
+      isVoiceInput: true,
+    );
+  }
+
+  // Factory for Sherlock's Response
+  factory ChatMessage.sherlock({
+    required String text, 
+    String? audioPath
+  }) {
+    return ChatMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      role: MessageRole.assistant,
+      content: text,
+      timestamp: DateTime.now(),
+      audioPath: audioPath,
+    );
+  }
 
   /// Create a new user message
   factory ChatMessage.user({
     required String content,
     bool isVoiceInput = false,
+    String? audioPath,
+    Duration? audioDuration,
     Map<String, dynamic>? metadata,
   }) {
     return ChatMessage(
@@ -69,6 +110,8 @@ class ChatMessage {
       timestamp: DateTime.now(),
       status: MessageStatus.complete,
       isVoiceInput: isVoiceInput,
+      audioPath: audioPath,
+      audioDuration: audioDuration,
       metadata: metadata,
     );
   }
@@ -77,6 +120,9 @@ class ChatMessage {
   factory ChatMessage.assistant({
     String content = '',
     MessageStatus status = MessageStatus.streaming,
+    String? audioPath,
+    Duration? audioDuration,
+    bool isThinking = false,
     Map<String, dynamic>? metadata,
   }) {
     return ChatMessage(
@@ -85,6 +131,9 @@ class ChatMessage {
       content: content,
       timestamp: DateTime.now(),
       status: status,
+      audioPath: audioPath,
+      audioDuration: audioDuration,
+      isThinking: isThinking,
       metadata: metadata,
     );
   }
@@ -112,6 +161,9 @@ class ChatMessage {
       status: MessageStatus.fromJson(json['status'] as String),
       isVoiceInput: json['isVoiceInput'] as bool? ?? false,
       errorMessage: json['errorMessage'] as String?,
+      audioPath: json['audioPath'] as String?,
+      audioDuration: json['audioDuration'] != null ? Duration(milliseconds: json['audioDuration'] as int) : null,
+      isThinking: json['isThinking'] as bool? ?? false,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
@@ -126,6 +178,9 @@ class ChatMessage {
       'status': status.toJson(),
       'isVoiceInput': isVoiceInput,
       'errorMessage': errorMessage,
+      'audioPath': audioPath,
+      'audioDuration': audioDuration?.inMilliseconds,
+      'isThinking': isThinking,
       'metadata': metadata,
     };
   }

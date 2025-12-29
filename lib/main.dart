@@ -209,7 +209,7 @@ void main() async {
         ChangeNotifierProvider.value(value: onboardingState),
         
         // Phase 32: Voice Session Manager
-        Provider.value(value: voiceSessionManager),
+        ChangeNotifierProvider.value(value: voiceSessionManager),
         
         // ========== Phase 34: Shadow Providers (Dark Launch) ==========
         // These are available but not yet consumed by UI screens

@@ -120,6 +120,14 @@ class AIModelConfig {
   /// Used in the Component Stack architecture.
   static const String tier3ReasoningModel = 'gemini-2.5-flash'; // 3.0 via 2.5 endpoint for now
   
+  // ✅ NEW: The "Brain" (Audio -> Text + Reasoning)
+  // Supports 'thinking_level' parameter for deep coaching analysis.
+  static const String reasoningModel = 'gemini-3-flash-preview'; 
+
+  // ✅ NEW: The "Voice" (Text -> Audio)
+  // Specialized TTS endpoint (Low Latency). Use 'gemini-2.5-pro-preview-tts' for higher quality.
+  static const String ttsModel = 'gemini-2.5-flash-preview-tts'; 
+  
   /// Tier 3: Gemini 2.5 Pro "The Architect"
   /// - Marketing Name: "Gemini 3 Pro"
   /// - Technical Endpoint: gemini-2.5-pro
