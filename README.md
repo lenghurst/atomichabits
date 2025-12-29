@@ -101,11 +101,11 @@ Create `secrets.json` in project root:
 | Guide | Purpose |
 |-------|---------|
 | **[docs/BUILD_PIPELINE.md](./docs/BUILD_PIPELINE.md)** | Build commands and pipelines |
-| **[docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)** | Testing the Gemini Live connection |
+| **[docs/dt.md](./docs/dt.md)** | Testing the Gemini Live connection |
 | **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** | Provider architecture guide |
-| **[docs/DEVICE_TESTING.md](./docs/DEVICE_TESTING.md)** | **NEW** Device Testing & Hotfix Guide |
+| **[docs/dt.md](./docs/dt.md)** | **NEW** Device Testing & Golden Command Chain |
 
 ### Gemini Live API
 
@@ -243,7 +243,7 @@ flutter test
 
 ### Voice Connection Test
 
-See **[docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)** for the full testing protocol.
+See **[docs/dt.md](./docs/dt.md)** for the full testing protocol.
 
 ---
 
@@ -277,7 +277,7 @@ supabase secrets set GEMINI_API_KEY=your_key --project-ref lwzvvaqgvcmsxblcglxo
 1. **Check DevTools:** Is Premium Mode enabled?
 2. **Check API Key:** Is `GEMINI_API_KEY` in `secrets.json`?
 3. **Check Logs:** Open "View Gemini Logs" in DevTools
-4. **Follow Checklist:** See [docs/VERIFICATION_CHECKLIST.md](./docs/VERIFICATION_CHECKLIST.md)
+4. **Follow Checklist:** See [docs/dt.md](./docs/dt.md)
 
 ### Google Sign-In Failing
 
