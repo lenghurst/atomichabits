@@ -28,7 +28,8 @@ class GeminiVoiceNoteService {
 
       final prompt = Content.multi([
         TextPart("You are Sherlock, a high-performance habit coach. "
-            "Listen to the user. Analyze their emotional state and blocker. "
+            "Listen to the user's voice note. "
+            "Use your high-level reasoning to analyze their emotional state and blocker. "
             "Draft a concise, supportive response (max 3 sentences)."),
         DataPart('audio/mp4', audioBytes),
       ]);
@@ -36,18 +37,18 @@ class GeminiVoiceNoteService {
       final brainResponse = await _brain.generateContent([prompt]);
       final sherlockText = brainResponse.text ?? "I analyzed the audio but found no words.";
 
-      // --- STEP 2: SPEAK (REST API FIX) ---
+      // --- STEP 2: SPEAK (With MP3 Fix) ---
       final audioPath = await _generateSpeechViaRest(sherlockText);
 
       return ChatMessage.assistant(
         content: sherlockText,
-        audioPath: audioPath,
+        audioPath: audioPath, 
         status: MessageStatus.complete,
       );
 
     } catch (e) {
       return ChatMessage.assistant(
-        content: "Analysis Error: $e",
+        content: "System Error: $e",
         status: MessageStatus.error,
       );
     }
@@ -90,9 +91,10 @@ class GeminiVoiceNoteService {
           "contents": [{
             "parts": [{"text": text}]
           }],
-          // ✅ FIXED: Changed 'config' to 'generationConfig' to match API spec
+          // ✅ FIX: Explicitly request MP3 Format
           "generationConfig": { 
             "responseModalities": ["AUDIO"],
+            "responseMimeType": "audio/mp3", // <--- THE KEY FIX
             "speechConfig": {
               "voiceConfig": {
                 "prebuiltVoiceConfig": {
@@ -109,6 +111,7 @@ class GeminiVoiceNoteService {
         if (data['candidates'] != null && (data['candidates'] as List).isNotEmpty) {
            final candidate = data['candidates'][0];
            final parts = candidate['content']['parts'] as List;
+           
            for (var part in parts) {
              if (part.containsKey('inlineData')) {
                final base64Audio = part['inlineData']['data'];
@@ -128,9 +131,14 @@ class GeminiVoiceNoteService {
 
   Future<String> _saveAudioFile(List<int> bytes) async {
     final directory = await getApplicationDocumentsDirectory();
-    final fileName = 'sherlock_${DateTime.now().millisecondsSinceEpoch}.wav';
+    // ✅ Save with correct .mp3 extension so Android player works
+    final fileName = 'sherlock_${DateTime.now().millisecondsSinceEpoch}.mp3';
     final file = File('${directory.path}/$fileName');
     await file.writeAsBytes(bytes);
+    
+    if (kDebugMode) {
+      print("🔊 Saved Sherlock Audio (MP3): ${file.path} (${bytes.length} bytes)");
+    }
     return file.path;
   }
 }
