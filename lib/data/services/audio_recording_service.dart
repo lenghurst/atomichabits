@@ -99,10 +99,38 @@ class AudioRecordingService {
       ));
       
       _isInitialised = true;
+      
+      // ✅ PRIVACY: Clean up old recordings (older than 24h)
+      _cleanupOldRecordings();
+      
       return true;
     } catch (e) {
       onError?.call('Failed to initialize audio: $e');
       return false;
+    }
+  }
+  
+  Future<void> _cleanupOldRecordings() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final List<FileSystemEntity> files = tempDir.listSync();
+      final now = DateTime.now();
+      
+      int deletedCount = 0;
+      for (var file in files) {
+        if (file is File && file.path.endsWith('.m4a') && file.path.contains('voice_note_')) {
+          final stats = await file.stat();
+          if (now.difference(stats.modified).inHours > 24) {
+            await file.delete();
+            deletedCount++;
+          }
+        }
+      }
+      if (kDebugMode && deletedCount > 0) {
+        debugPrint('🧹 Cleaned up $deletedCount old voice recordings');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('⚠️ Cleanup failed: $e');
     }
   }
   

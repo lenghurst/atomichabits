@@ -16,12 +16,12 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Mobile App** | 🟢 Phase 4&7 | ShellRoute Navigation + Strangler Fig Complete |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
-| **Voice AI** | ✅ **MVP** | Sherlock Protocol (Unified SoLoud Stack) |
+| **Voice AI** | 🟢 **Stable** | Hybrid Stack: Gemini 3 (Brain) + Gemini 2.5 (Voice) |
 | **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
-> **Last Updated:** 28 December 2025  
-> **Current Phase:** Phase 52 - Audio Foundation MVP  
+> **Last Updated:** 29 December 2025  
+> **Current Phase:** Phase 60 - Voice Reliability  
 > **Target:** NYE 2025 Launch  
 > **Language:** UK English (Default)
 
@@ -49,10 +49,10 @@ Traditional habit apps fail because they rely on **you**.
 | **Mobile** | Flutter 3.38.4 | The Core Experience |
 | **Web** | React + Vite + Tailwind | The Landing Page |
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
-| **AI (Tier 1)** | DeepSeek-V3 | Text reasoning (JSON mode) |
-| **AI (Tier 2)** | Gemini 2.5 Flash | Real-time voice coaching |
-| **Voice** | OpenAI Realtime | Alternative voice provider |
-| **Voice Protocol** | WebSocket (Direct) | Removed Edge Function dependency |
+| **AI (Reasoning)** | Gemini 3 Flash | High-IQ analysis & persona adherence |
+| **AI (Voice)** | Gemini 2.5 Flash | Low-latency Text-to-Speech (REST) |
+| **AI (Text)** | DeepSeek-V3 | Post-session analysis (JSON mode) |
+| **Voice Protocol** | Hybrid (WS + REST) | WebSocket for Live, REST for Async TTS |
 | **Hosting** | Netlify | Web Deployment |
 
 ---

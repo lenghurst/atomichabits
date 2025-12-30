@@ -6,8 +6,11 @@ import 'gemini_voice_note_service.dart';
 import 'audio_recording_service.dart';
 
 class VoiceSessionManager extends ChangeNotifier {
-  final GeminiVoiceNoteService _sherlockService = GeminiVoiceNoteService();
+  final GeminiVoiceNoteService _sherlockService;
   final AudioRecordingService _audioRecorder = AudioRecordingService();
+  
+  VoiceSessionManager({GeminiVoiceNoteService? service}) 
+      : _sherlockService = service ?? GeminiVoiceNoteService();
   
   List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => List.unmodifiable(_messages);
@@ -112,8 +115,19 @@ class VoiceSessionManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final responseMessage = await _sherlockService.processVoiceNote(audioPath);
-      _addMessage(responseMessage);
+      final result = await _sherlockService.processVoiceNote(audioPath);
+      
+      // ✅ UX: Replace audio bubble with transcript (Privacy + Transparency)
+      // Since processing deletes the audio file, we must switch to text view.
+      // Note: Safe because _isThinking prevents concurrent message additions
+      if (_messages.isNotEmpty && _messages.last.role == MessageRole.user && _messages.last.audioPath != null) {
+          _messages.removeLast();
+      }
+      _messages.add(ChatMessage.user(content: result.userTranscript));
+
+      // ✅ Add Sherlock Response
+      _addMessage(result.toSherlockMessage());
+      
     } catch (e) {
       _addMessage(ChatMessage(
         id: 'error',
@@ -136,4 +150,18 @@ class VoiceSessionManager extends ChangeNotifier {
   
   // Scoping variable to fix build which would happen if I copied user code exactly
   String? audioPath;
+  
+  /// Cleans up TTS audio files generated during the session.
+  /// Call this when the user leaves the voice coach screen.
+  Future<void> cleanupSession() async {
+    await _sherlockService.cleanupSessionAudio();
+  }
+  
+  @override
+  void dispose() {
+    // ✅ PRIVACY: Cleanup TTS audio when session ends
+    _sherlockService.cleanupSessionAudio();
+    _audioRecorder.dispose();
+    super.dispose();
+  }
 }

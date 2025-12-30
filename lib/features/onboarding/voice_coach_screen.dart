@@ -21,6 +21,7 @@ class VoiceCoachScreen extends StatefulWidget {
 
 class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
   final ScrollController _scrollController = ScrollController();
+  late final VoiceSessionManager _voiceManager;
   
   // -- Gesture State --
   bool _isLocked = false;
@@ -31,17 +32,24 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
   @override
   void initState() {
     super.initState();
+    _voiceManager = context.read<VoiceSessionManager>();
     // Auto-scroll on new messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       if (mounted) context.read<VoiceSessionManager>().addListener(_scrollToBottom);
+       if (mounted) _voiceManager.addListener(_scrollToBottom);
     });
   }
 
   @override
   void dispose() {
     _durationTimer?.cancel();
-    // context.read... removeListener is risky in dispose, let Provider handle cleanup
     _scrollController.dispose();
+    
+    // ✅ PRIVACY: Clean up TTS audio when leaving voice coach
+    // Using stored reference guarantees this runs even if context is invalid
+    _voiceManager.cleanupSession().catchError((e) {
+      if (kDebugMode) debugPrint('Session cleanup failed: $e');
+    });
+
     super.dispose();
   }
 

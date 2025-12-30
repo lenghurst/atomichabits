@@ -46,10 +46,10 @@
 | **Web** | React + Vite + Tailwind | Latest |
 | **Backend** | Supabase | ^2.8.4 |
 | **Audio Stack** | **SoLoud (FFI) + WebRTC** | **Low Latency + AEC** |
-| **AI (Tier 1)** | DeepSeek-V3 | ✅ Analysis Pipeline (Active) |
-| **AI (Tier 2)** | Gemini 2.5 Flash | Voice + Text |
-| **Voice Provider** | Gemini / OpenAI | Alternative Providers (Phase 46) |
-| **Voice Protocol** | WebSocket (Direct) | Removed Edge Function dependency |
+| **AI (Reasoning)** | Gemini 3 Flash | ✅ Super-fast reasoning (SDK) |
+| **AI (Voice)** | Gemini 2.5 Flash | ✅ Native 24kHz Audio (REST) |
+| **Text AI** | DeepSeek-V3 | ✅ Analysis Pipeline (Active) |
+| **Voice Protocol** | Hybrid (WS + REST) | Optimized for specific task needs |
 | **Hosting** | Netlify | Auto-deploy |
 
 ---
@@ -104,6 +104,7 @@
 | **50** | **WAV Header Buffering** (Split-chunk protection) | ✅ |
 | **50.1** | Config schema alignment (`v1beta` & `generationConfig`) | ✅ |
 | **59** | **SoLoud Protocol** (Ultra-Low Latency Audio Payload) | ✅ |
+| **60** | **Hybrid Voice Stack** (Gemini 3 Reasoning + REST TTS) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 

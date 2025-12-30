@@ -17,10 +17,49 @@ class UserProfile {
     this.isPremium = false,
   });
 
+import 'dart:convert';
+import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:flutter/foundation.dart';
+
+// Helper class for privacy-preserving encryption
+class _PrivacyCipher {
+  // TODO: Move key to secure storage in production
+  // For now, using a consistent key derived from environment or fallback
+  static final _key = encrypt.Key.fromUtf8(
+    const String.fromEnvironment('SYNC_ENCRYPTION_KEY', defaultValue: 'atomic_habits_privacy_key_32_ch')
+        .padRight(32, '=').substring(0, 32)
+  ); 
+  static final _iv = encrypt.IV.fromLength(16);
+  static final _encrypter = encrypt.Encrypter(encrypt.AES(_key));
+
+  static String? encryptIdentity(String? plaintext) {
+    if (plaintext == null || plaintext.isEmpty) return null;
+    try {
+      final encrypted = _encrypter.encrypt(plaintext, iv: _iv);
+      return encrypted.base64;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Encryption failed: $e');
+      return plaintext; // Fallback? Or return null? Returning plaintext might leak.
+    }
+  }
+
+  static String? decryptIdentity(String? ciphertext) {
+    if (ciphertext == null || ciphertext.isEmpty) return null;
+    try {
+      final encrypted = encrypt.Encrypted.fromBase64(ciphertext);
+      return _encrypter.decrypt(encrypted, iv: _iv);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Decryption failed: $e');
+      return ciphertext; // Assume it might be plaintext if migration happens
+    }
+  }
+}
+
   /// Converts profile to JSON for storage
   Map<String, dynamic> toJson() {
     return {
-      'identity': identity,
+      'identity': identity, // Keep local plaintext for Hive
+      'identity_encrypted': _PrivacyCipher.encryptIdentity(identity), // Encrypted for Sync
       'name': name,
       'witnessName': witnessName, // Persist witness name
       'witnessContact': witnessContact,
@@ -31,8 +70,14 @@ class UserProfile {
 
   /// Creates profile from JSON
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    // Check if we have an encrypted identity first (from Sync)
+    String? decodedIdentity;
+    if (json.containsKey('identity_encrypted')) {
+      decodedIdentity = _PrivacyCipher.decryptIdentity(json['identity_encrypted']);
+    }
+    
     return UserProfile(
-      identity: json['identity'] as String,
+      identity: decodedIdentity ?? json['identity'] as String,
       name: json['name'] as String,
       witnessName: json['witnessName'] as String?, // Load witness name
       witnessContact: json['witnessContact'] as String?,

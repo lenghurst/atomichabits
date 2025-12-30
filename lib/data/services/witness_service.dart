@@ -303,6 +303,10 @@ class WitnessService extends ChangeNotifier {
         final eventType = isMilestone 
             ? WitnessEventType.streakMilestone 
             : WitnessEventType.habitCompleted;
+            
+        // ✅ PRIVACY: Use contract-specific identity if set (e.g. "Sober Person" vs "Productive Employee")
+        // otherwise fall back to the one passed in (which is likely the builder's default)
+        final effectiveIdentity = contract.alternativeIdentity ?? identity;
         
         final event = WitnessEvent(
           id: eventId,
@@ -312,7 +316,7 @@ class WitnessService extends ChangeNotifier {
           targetId: contract.witnessId!,
           habitId: habitId,
           habitName: habitName,
-          identity: identity,
+          identity: effectiveIdentity,
           metadata: isMilestone ? {
             'streak': currentStreak,
             'milestone_emoji': StreakMilestones.getMilestoneEmoji(currentStreak),
@@ -329,6 +333,7 @@ class WitnessService extends ChangeNotifier {
         
         if (kDebugMode) {
           debugPrint('WitnessService: Sent completion ping to witness ${contract.witnessId}');
+          debugPrint('  Identity: $effectiveIdentity');
           if (isMilestone) {
             debugPrint('  Milestone: $currentStreak days!');
           }

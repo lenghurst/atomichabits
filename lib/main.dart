@@ -24,6 +24,9 @@ import 'data/services/feedback_service.dart';
 import 'data/services/deep_link_service.dart';
 import 'data/services/witness_service.dart';
 // Phase 41: Witness screen imports moved to app_router.dart
+import 'data/services/audio_cleanup_service.dart';
+import 'data/services/gemini_voice_note_service.dart';
+import 'data/services/psychometric_extraction_service.dart';
 
 // Phase 34: Shadow Wiring - New Architecture (Dark Launch)
 // These providers are initialized but not yet consumed by UI
@@ -43,6 +46,11 @@ import 'features/onboarding/state/onboarding_state.dart'; // Phase 7: Strangler 
 void main() async {
   // Ensure Flutter is initialized before async operations
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Phase 4: Background cleanup for orphaned audio files
+  AudioCleanupService.cleanupOldTTSFiles().catchError((e) {
+    if (kDebugMode) debugPrint('Startup cleanup failed: $e');
+  });
   
   // Phase 6: Setup global error handling
   setupGlobalErrorHandling();
@@ -81,8 +89,36 @@ void main() async {
   // Phase 24: Initialize AI Service Manager (The Brain Transplant)
   final aiServiceManager = AIServiceManager();
 
+  // 1. Initialize Repositories (Infrastructure Layer)
+  final settingsRepository = HiveSettingsRepository();
+  final userRepository = HiveUserRepository();
+  final habitRepository = HiveHabitRepository();
+  final psychometricRepository = HivePsychometricRepository();
+  
+  // 2. Initialize Domain Services
+  final psychometricEngine = PsychometricEngine();
+  
+  // 3. Initialize Domain Providers (consuming Repositories)
+  final settingsProvider = SettingsProvider(settingsRepository);
+  final userProvider = UserProvider(userRepository);
+  final notificationService = NotificationService();
+  final habitProvider = HabitProvider(habitRepository, notificationService);
+  final psychometricProvider = PsychometricProvider(
+    psychometricRepository,
+    psychometricEngine,
+  );
+
+  // Phase 4.5: Initialize Psychometric Extraction Service
+  final psychometricExtractionService = PsychometricExtractionService(psychometricProvider);
+  
+  // Initialize Gemini Service with Psychometrics
+  final geminiVoiceNoteService = GeminiVoiceNoteService(
+    psychometricService: psychometricExtractionService,
+    authService: authService,
+  );
+
   // Phase 32: Initialize Voice Session Manager (The Silent Coach)
-  final voiceSessionManager = VoiceSessionManager();
+  final voiceSessionManager = VoiceSessionManager(service: geminiVoiceNoteService);
   
   // Phase 15: Initialize Auth service
   final authService = AuthService(supabaseClient: supabaseClient);
@@ -143,25 +179,7 @@ void main() async {
   // These share the same Hive box - no conflict, just different access patterns
   // UI still consumes AppState; these are "shadow" providers for testing
   
-  // 1. Initialize Repositories (Infrastructure Layer)
-  final settingsRepository = HiveSettingsRepository();
-  final userRepository = HiveUserRepository();
-  final habitRepository = HiveHabitRepository();
-  final psychometricRepository = HivePsychometricRepository();
-  
-  // 2. Initialize Domain Services
-  final psychometricEngine = PsychometricEngine();
-  
-  // 3. Initialize Domain Providers (consuming Repositories)
-  // Note: These are initialized but NOT yet used by UI screens
-  final settingsProvider = SettingsProvider(settingsRepository);
-  final userProvider = UserProvider(userRepository);
-  final notificationService = NotificationService();
-  final habitProvider = HabitProvider(habitRepository, notificationService);
-  final psychometricProvider = PsychometricProvider(
-    psychometricRepository,
-    psychometricEngine,
-  );
+  // Repositories and Providers moved up for dependency injection (Phase 4.5)
   
   // Initialize providers (async operations)
   // These run in parallel with AppState, reading from same Hive box

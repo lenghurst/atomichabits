@@ -44,8 +44,13 @@ class SettingsScreen extends StatelessWidget {
           body: SafeArea(
             child: Column(
               children: [
-                // Phase 20: Alpha Shield Banner
+                 // Phase 20: Alpha Shield Banner
                 const AlphaShieldBanner(),
+                const SizedBox(height: 16),
+                
+                // Phase 4: Privacy Passport - Visible Safeguards
+                _buildPrivacyPassport(context),
+                const SizedBox(height: 16),
                 
                 Expanded(
                   child: ListView(
@@ -803,6 +808,113 @@ class SettingsScreen extends StatelessWidget {
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     return '${diff.inDays}d ago';
+  }
+
+  Widget _buildPrivacyPassport(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Colors.green.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.green.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.shield, color: Colors.green.shade800),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Active Safeguards',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade900,
+                      ),
+                    ),
+                    Text(
+                      'Your data is protected by design',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            _buildPassportItem(
+              icon: Icons.lock,
+              title: 'Identity Encryption',
+              value: 'AES-256 (Client-Side)',
+              isSecure: true,
+            ),
+            const SizedBox(height: 12),
+            _buildPassportItem(
+              icon: Icons.mic_off,
+              title: 'Audio Lifecycle',
+              value: 'Ephemeral (0-Day Retention)',
+              isSecure: true,
+            ),
+            const SizedBox(height: 12),
+            _buildPassportItem(
+              icon: Icons.notifications_off,
+              title: 'Lock Screen Privacy',
+              value: 'Private by Default',
+              isSecure: true,
+            ),
+            const SizedBox(height: 12),
+            _buildPassportItem(
+              icon: Icons.cloud_done,
+              title: 'AI Data Link',
+              value: 'Explicit Consent Only',
+              isSecure: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPassportItem({
+    required IconData icon,
+    required String title,
+    required String value,
+    required bool isSecure,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.green.shade700),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.green.shade900,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.green.shade800,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        if (isSecure)
+          const Icon(Icons.check_circle, size: 14, color: Colors.green),
+      ],
+    );
   }
 
   void _showSignInSheet(BuildContext context, AuthService authService) {

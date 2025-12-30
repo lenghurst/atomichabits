@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/material.dart';
 
 /// Habit Contract Model
 /// 
@@ -75,6 +76,11 @@ class HabitContract {
   
   String? get builderName => builderDisplayName ?? "The Builder";
   
+  // Phase 4: Identity Privacy (Alternative Identity)
+  // Allows user to use a different identity for specific pacts
+  // to prevent forced disclosure of sensitive global identity.
+  final String? alternativeIdentity;
+  
   // Phase 21.3: Nudge Effectiveness Tracking
   // These fields enable building a "Behavior Model" by tracking
   // how nudges influence completion behavior
@@ -82,6 +88,23 @@ class HabitContract {
   final DateTime? lastNudgeResponseAt; // When builder completed after nudge
   final int nudgesReceivedCount;       // Total nudges received
   final int nudgesRespondedCount;      // Nudges that led to completion
+  
+  // Phase 61: Safety by Design
+  final bool sharePsychometrics;       // Explicit consent for psychometric data
+  final bool allowNudges;              // Global nudge toggle
+  
+  // Nudge rate limiting (Fairness Algorithm)
+  final Map<String, List<DateTime>> nudgeHistory;  // witnessId -> list of nudge times
+  final TimeOfDay? nudgeQuietStart;               // Quiet hours start
+  final TimeOfDay? nudgeQuietEnd;                 // Quiet hours end
+  
+  // Boundary controls
+  final List<String> blockedWitnessIds;           // Users blocked by owner
+  final bool allowEmergencyExit;                  // Can leave without penalty
+  
+  // Emergency override (admin use)
+  final bool isUnderReview;                       // Flagged for admin review
+  final DateTime? reportedAt;                     // When abuse was reported
   
   const HabitContract({
     required this.id,
@@ -115,11 +138,23 @@ class HabitContract {
     this.witnessMessage,
     this.builderDisplayName,
     this.habitEmoji,
+    // Phase 4 Privacy
+    this.alternativeIdentity,
     // Phase 21.3: Nudge Effectiveness Tracking
     this.lastNudgeSentAt,
     this.lastNudgeResponseAt,
     this.nudgesReceivedCount = 0,
     this.nudgesRespondedCount = 0,
+    // Safety Defaults
+    this.sharePsychometrics = false,
+    this.allowNudges = true,
+    this.nudgeHistory = const {},
+    this.nudgeQuietStart,
+    this.nudgeQuietEnd,
+    this.blockedWitnessIds = const [],
+    this.allowEmergencyExit = true,
+    this.isUnderReview = false,
+    this.reportedAt,
   });
   
   /// Generate a unique invite code (8 characters, alphanumeric)
@@ -153,6 +188,12 @@ class HabitContract {
       createdAt: now,
       updatedAt: now,
       builderMessage: builderMessage,
+      sharePsychometrics: false,
+      allowNudges: true,
+      nudgeHistory: const {},
+      blockedWitnessIds: const [],
+      allowEmergencyExit: true,
+      isUnderReview: false,
     );
   }
   
@@ -248,12 +289,25 @@ class HabitContract {
     DateTime? lastNudgeResponseAt,
     int? nudgesReceivedCount,
     int? nudgesRespondedCount,
+    // Safety fields
+    bool? sharePsychometrics,
+    bool? allowNudges,
+    Map<String, List<DateTime>>? nudgeHistory,
+    TimeOfDay? nudgeQuietStart,
+    TimeOfDay? nudgeQuietEnd,
+    List<String>? blockedWitnessIds,
+    bool? allowEmergencyExit,
+    bool? isUnderReview,
+    DateTime? reportedAt,
+    // Special flags
+    bool clearWitness = false,
   }) {
     return HabitContract(
       id: id ?? this.id,
       builderId: builderId ?? this.builderId,
-      witnessId: witnessId ?? this.witnessId,
       habitId: habitId ?? this.habitId,
+      // If clearWitness is true, set to null. Otherwise use new val or keep existing.
+      witnessId: clearWitness ? null : (witnessId ?? this.witnessId),
       inviteCode: inviteCode ?? this.inviteCode,
       inviteUrl: inviteUrl ?? this.inviteUrl,
       title: title ?? this.title,
@@ -285,6 +339,15 @@ class HabitContract {
       lastNudgeResponseAt: lastNudgeResponseAt ?? this.lastNudgeResponseAt,
       nudgesReceivedCount: nudgesReceivedCount ?? this.nudgesReceivedCount,
       nudgesRespondedCount: nudgesRespondedCount ?? this.nudgesRespondedCount,
+      sharePsychometrics: sharePsychometrics ?? this.sharePsychometrics,
+      allowNudges: allowNudges ?? this.allowNudges,
+      nudgeHistory: nudgeHistory ?? this.nudgeHistory,
+      nudgeQuietStart: nudgeQuietStart ?? this.nudgeQuietStart,
+      nudgeQuietEnd: nudgeQuietEnd ?? this.nudgeQuietEnd,
+      blockedWitnessIds: blockedWitnessIds ?? this.blockedWitnessIds,
+      allowEmergencyExit: allowEmergencyExit ?? this.allowEmergencyExit,
+      isUnderReview: isUnderReview ?? this.isUnderReview,
+      reportedAt: reportedAt ?? this.reportedAt,
     );
   }
   
@@ -325,6 +388,19 @@ class HabitContract {
       'last_nudge_response_at': lastNudgeResponseAt?.toIso8601String(),
       'nudges_received_count': nudgesReceivedCount,
       'nudges_responded_count': nudgesRespondedCount,
+      // Safety Fields
+      'share_psychometrics': sharePsychometrics,
+      'allow_nudges': allowNudges,
+      'nudge_history': nudgeHistory.map((key, value) => 
+          MapEntry(key, value.map((e) => e.toIso8601String()).toList())),
+      'nudge_quiet_start': nudgeQuietStart != null 
+          ? '${nudgeQuietStart!.hour}:${nudgeQuietStart!.minute}' : null,
+      'nudge_quiet_end': nudgeQuietEnd != null 
+          ? '${nudgeQuietEnd!.hour}:${nudgeQuietEnd!.minute}' : null,
+      'blocked_witness_ids': blockedWitnessIds,
+      'allow_emergency_exit': allowEmergencyExit,
+      'is_under_review': isUnderReview,
+      'reported_at': reportedAt?.toIso8601String(),
     };
   }
   
@@ -383,6 +459,39 @@ class HabitContract {
           : null,
       nudgesReceivedCount: json['nudges_received_count'] as int? ?? 0,
       nudgesRespondedCount: json['nudges_responded_count'] as int? ?? 0,
+      
+      // Safety Fields
+      sharePsychometrics: json['share_psychometrics'] as bool? ?? false,
+      allowNudges: json['allow_nudges'] as bool? ?? true, // Default ON
+      
+      nudgeHistory: (json['nudge_history'] as Map<String, dynamic>?)?.map(
+        (key, value) => MapEntry(
+          key,
+          (value as List).map((e) => DateTime.parse(e as String)).toList(),
+        ),
+      ) ?? {},
+      
+      nudgeQuietStart: json['nudge_quiet_start'] != null
+          ? TimeOfDay(
+              hour: int.parse((json['nudge_quiet_start'] as String).split(':')[0]),
+              minute: int.parse((json['nudge_quiet_start'] as String).split(':')[1]))
+          : null,
+          
+      nudgeQuietEnd: json['nudge_quiet_end'] != null
+          ? TimeOfDay(
+              hour: int.parse((json['nudge_quiet_end'] as String).split(':')[0]),
+              minute: int.parse((json['nudge_quiet_end'] as String).split(':')[1]))
+          : null,
+          
+      blockedWitnessIds: (json['blocked_witness_ids'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ?? [],
+          
+      allowEmergencyExit: json['allow_emergency_exit'] as bool? ?? true,
+      isUnderReview: json['is_under_review'] as bool? ?? false,
+      reportedAt: json['reported_at'] != null 
+          ? DateTime.parse(json['reported_at'] as String) 
+          : null,
     );
   }
 }

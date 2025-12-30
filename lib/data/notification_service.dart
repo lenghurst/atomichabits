@@ -28,8 +28,31 @@ class NotificationService {
 
   bool _initialized = false;
   
+  // ✅ PRIVACY: Default to FALSE (Safe Mode)
+  bool _showSensitiveNotifications = false;
+  
   // Callback for when notification actions are tapped
   Function(String action)? onNotificationAction;
+  
+  // Helper method for safe, generic encouragements
+  String _getRandomEncouragement() {
+    final encouragements = [
+      'Time to build your future self.',
+      'Small steps lead to big changes.',
+      'Your discipline is growing.',
+      'Ready for today\'s progress?',
+      'Consistency is key. You\'ve got this!',
+    ];
+    return encouragements[DateTime.now().millisecond % encouragements.length];
+  }
+
+  // Update privacy preference (Call from Settings Screen)
+  void updateNotificationPrivacy(bool showSensitive) {
+    _showSensitiveNotifications = showSensitive;
+    if (kDebugMode) {
+      debugPrint('🔒 Notification Privacy Updated: ShowSensitive = $showSensitive');
+    }
+  }
 
   /// Initialize notification system
   /// Called once when app starts in main.dart
@@ -162,6 +185,10 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         ticker: 'Time for your habit!',
+        // ✅ CRITICAL: Lock screen visibility (Default to PRIVATE)
+        visibility: _showSensitiveNotifications 
+            ? NotificationVisibility.public // User opted in
+            : NotificationVisibility.secret, // Default safe
         // Action buttons
         actions: <AndroidNotificationAction>[
           const AndroidNotificationAction(
@@ -181,21 +208,27 @@ class NotificationService {
 
       final notificationDetails = NotificationDetails(android: androidDetails);
 
-      // Build notification body (include temptation bundle if present)
+      // Build notification body (Safeguard Identity)
       final String notificationBody;
-      if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
+      if (_showSensitiveNotifications) {
+        // User opted-in to sensitive content
+        if (habit.temptationBundle != null && habit.temptationBundle!.isNotEmpty) {
+          notificationBody = 
+              'You\'re becoming the type of person who ${profile.identity} (and ${habit.temptationBundle}).';
+        } else {
+          notificationBody = 
+              'You\'re becoming the type of person who ${profile.identity}.';
+        }
       } else {
-        notificationBody = 
-            'You\'re becoming the type of person who ${profile.identity}.';
+        // ✅ DEFAULT: Safe, generic encouragement
+        notificationBody = _getRandomEncouragement();
       }
 
       // Schedule repeating daily notification
       await _notifications.zonedSchedule(
         0, // Notification ID
         'Time for your 2-minute ${habit.name}', // Title
-        notificationBody, // Body (with optional temptation bundle)
+        notificationBody, // Body (Safe or Sensitive based on preference)
         scheduledDate,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

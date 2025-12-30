@@ -13,10 +13,11 @@
 
 ---
 
-## [6.9.4] - 2025-12-29 - Phase 61: "Strategic Trust Audit"
-
-### Security
-- **Nightmare Scenario Protocol (P0):** Executed a "Red Team" audit against the Social Layer.
+## [6.9.4] - 2025-12-29 - Phase 61:- **Strategic Trust Audit (Phase 61)**:
+    - Implemented "Fairness Algorithm" to rate-limit nudges (3/day/witness, 6/day/total).
+    - Added "Safety by Design" fields to `HabitContract` (Psychometric Consent, Quiet Hours, Block Lists).
+    - Created `ContractSafetySettings` UI for granular control.
+    - Verified security with `nightmare_scenario_test.dart`.
 - **CRITICAL FAILURE:** `ContractService.sendNudge` lacks rate limiting, allowing for infinite harassment loops (Nudge Spam).
 - **Architecture Freeze:** All feature development halted until remediation is complete.
 

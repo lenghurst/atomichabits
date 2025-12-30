@@ -6,6 +6,8 @@ import '../../data/models/habit_contract.dart';
 import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../widgets/animated_nudge_button.dart';
+import '../../ui/components/contract_safety_settings.dart';
+import '../../ui/components/emergency_exit_dialog.dart';
 
 /// Contracts List Screen
 /// 
@@ -395,6 +397,8 @@ class _ContractsListScreenState extends State<ContractsListScreen>
     bool isBuilder,
     ScrollController scrollController,
   ) {
+    final currentUserId = context.read<AuthService>().userId;
+    
     return Container(
       padding: const EdgeInsets.all(16),
       child: ListView(
@@ -507,6 +511,48 @@ class _ContractsListScreenState extends State<ContractsListScreen>
               ),
             ),
           ),
+          const SizedBox(height: 24),
+
+          // Safety & Privacy Section (Available to ALL users)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ContractSafetySettings(
+                mode: isBuilder ? SafetySettingsMode.edit : SafetySettingsMode.view,
+                contract: contract,
+                currentUserId: currentUserId,
+                onSharePsychometricsChanged: isBuilder 
+                    ? (val) => _updateContract(contract.copyWith(sharePsychometrics: val))
+                    : null,
+                onAllowNudgesChanged: isBuilder 
+                    ? (val) => _updateContract(contract.copyWith(allowNudges: val))
+                    : null,
+                onQuietHoursChanged: isBuilder 
+                    ? (start, end) => _updateContract(contract.copyWith(
+                        nudgeQuietStart: start,
+                        nudgeQuietEnd: end,
+                      ))
+                    : null,
+                onManageBlockedWitnesses: isBuilder
+                    ? () => _showBlockWitnessDialog(contract)
+                    : null,
+              ),
+            ),
+          ),
+          
+          // Emergency Exit (Builder Only)
+          if (isBuilder && contract.isActive) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => _showEmergencyExitDialog(contract),
+              icon: const Icon(Icons.emergency, color: Colors.red),
+              label: const Text('Emergency Exit', style: TextStyle(color: Colors.red)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           
           // Actions
@@ -645,12 +691,20 @@ class _ContractsListScreenState extends State<ContractsListScreen>
               Navigator.pop(context);
               final message = controller.text.trim();
               if (message.isNotEmpty) {
-                final contractService = context.read<ContractService>();
-                await contractService.sendNudge(contract, message);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Nudge sent!')),
-                  );
+                try {
+                  final contractService = context.read<ContractService>();
+                  await contractService.sendNudge(contract, message);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Nudge sent!')),
+                    );
+                  }
+                } catch (e) {
+                   if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                    );
+                  }
                 }
               }
             },
@@ -661,6 +715,45 @@ class _ContractsListScreenState extends State<ContractsListScreen>
     );
   }
   
+  void _showEmergencyExitDialog(HabitContract contract) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => EmergencyExitDialog(contract: contract),
+    );
+  }
+  
+  void _updateContract(HabitContract updated) {
+    context.read<ContractService>().updateContract(updated);
+  }
+  
+  void _showBlockWitnessDialog(HabitContract contract) {
+     // Placeholder for proper block management UI
+     // For now, could show a list of current witness IDs?
+     // Since contract.witnessId is currently single, we can just block active witness.
+     if (contract.witnessId != null) {
+       showDialog(
+         context: context,
+         builder: (ctx) => AlertDialog(
+           title: const Text('Block Witness?'),
+           content: Text('Block ${contract.witnessId} from this pact? They will be removed.'),
+           actions: [
+             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+             TextButton(
+               onPressed: () {
+                 Navigator.pop(ctx);
+                 context.read<ContractService>().blockWitnesses(contract, [contract.witnessId!]);
+               }, 
+               child: const Text('Block', style: TextStyle(color: Colors.red))
+             ),
+           ],
+         )
+       );
+     } else {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No active witness to block.')));
+     }
+  }
+
   String _getNudgeHint(NudgeStyle style) {
     switch (style) {
       case NudgeStyle.encouraging:

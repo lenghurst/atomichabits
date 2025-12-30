@@ -37,6 +37,9 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
   NudgeFrequency _nudgeFrequency = NudgeFrequency.daily;
   NudgeStyle _nudgeStyle = NudgeStyle.encouraging;
   
+  // Phase 4: Identity Privacy
+  String? _alternativeIdentity;
+  
   bool _isCreating = false;
   HabitContract? _createdContract;
   
@@ -219,6 +222,14 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
             
             // Personal Message
             _buildMessageField(),
+            const SizedBox(height: 32),
+            
+            // Personal Message
+            _buildMessageField(),
+            const SizedBox(height: 24),
+
+            // Phase 4: Identity Disclosure Warning
+            _buildIdentityDisclosureWarning(),
             const SizedBox(height: 32),
             
             // Create Button
@@ -514,6 +525,162 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
     );
   }
   
+  Widget _buildIdentityDisclosureWarning() {
+    final appState = context.watch<AppState>();
+    final profile = appState.userProfile;
+    
+    // If no identity set, nothing to warn about
+    if (profile == null || profile.identity.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    final identityToShow = _alternativeIdentity ?? profile.identity;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        border: Border.all(color: Colors.orange.shade300, width: 2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.visibility, color: Colors.orange.shade700, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Identity Sharing',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange.shade900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          Text(
+            'When you complete this habit, your witnesses will receive:',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+          ),
+          const SizedBox(height: 8),
+          
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Text(
+              '"${profile.name} just cast a vote for $identityToShow"',
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.grey.shade900,
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'This powerfully reinforces your identity.',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Option to use alternative identity
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showAlternativeIdentityDialog(profile.identity),
+              icon: const Icon(Icons.edit_outlined),
+              label: Text(_alternativeIdentity == null 
+                  ? 'Use different identity for this pact'
+                  : 'Revert to default identity'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.orange.shade700,
+                side: BorderSide(color: Colors.orange.shade300),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAlternativeIdentityDialog(String defaultIdentity) async {
+    final controller = TextEditingController(text: _alternativeIdentity);
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Alternative Identity'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Choose how you want to be identified in this specific contract.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'I am a person who...',
+                hintText: 'e.g., values health',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          if (_alternativeIdentity != null)
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'REVERT'),
+              child: const Text('Revert to Default'),
+            ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Set Identity'),
+          ),
+        ],
+      ),
+    );
+    
+    if (result != null) {
+      setState(() {
+        if (result == 'REVERT' || result.isEmpty) {
+          _alternativeIdentity = null;
+        } else {
+          _alternativeIdentity = result;
+        }
+      });
+    }
+  }
+  
   Future<void> _createContract() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedHabitId == null) return;
@@ -534,6 +701,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
           : null,
       nudgeFrequency: _nudgeFrequency,
       nudgeStyle: _nudgeStyle,
+      alternativeIdentity: _alternativeIdentity, // Phase 4 Privacy
     );
     
     setState(() => _isCreating = false);
