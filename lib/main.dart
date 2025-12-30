@@ -108,6 +108,10 @@ void main() async {
     psychometricEngine,
   );
 
+  // Phase 15: Initialize Auth service
+  final authService = AuthService(supabaseClient: supabaseClient);
+  await authService.initialize();
+
   // Phase 4.5: Initialize Psychometric Extraction Service
   final psychometricExtractionService = PsychometricExtractionService(psychometricProvider);
   
@@ -119,10 +123,6 @@ void main() async {
 
   // Phase 32: Initialize Voice Session Manager (The Silent Coach)
   final voiceSessionManager = VoiceSessionManager(service: geminiVoiceNoteService);
-  
-  // Phase 15: Initialize Auth service
-  final authService = AuthService(supabaseClient: supabaseClient);
-  await authService.initialize();
   
   // Phase 15: Initialize Sync service
   final syncService = SyncService(

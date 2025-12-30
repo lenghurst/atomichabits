@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/supabase_config.dart';
@@ -411,6 +412,10 @@ class ContractService extends ChangeNotifier {
     }
     
     final userId = _authService.userId;
+    if (userId == null) {
+      return ContractResult.failure('User not authenticated');
+    }
+    
     if (userId != contract.witnessId) {
       return ContractResult.failure('Only witness can send nudges');
     }
@@ -424,7 +429,7 @@ class ContractService extends ChangeNotifier {
       // Throws SocialContractException if violated
       NudgeSafetyValidator.validateNudge(
         contract: contract, 
-        witnessId: userId
+        witnessId: userId,
       );
 
       final now = DateTime.now();
@@ -833,7 +838,7 @@ class ContractService extends ChangeNotifier {
     
     try {
       final currentBlocked = List<String>.from(contract.blockedWitnessIds);
-      final currentWitnesses = List<String>.from(contract.witnessIds ?? []); // Assuming witnessIds exists or we use single witness model? 
+      // Removed unused currentWitnesses 
       // Note: The current model supports single 'witnessId'. Phase 2 implies multi-witness support?
       // The user request shows: witnessIds: ['w1', 'w2', 'w3'].
       // CHECK: Does HabitContract have witnessIds (List) or just witnessId (String)?

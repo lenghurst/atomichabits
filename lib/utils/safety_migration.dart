@@ -24,7 +24,7 @@ class SafetyMigration {
     final response = await supabase
         .from(SupabaseTables.contracts)
         .select('id')
-        .is_('share_psychometrics', null);
+        .filter('share_psychometrics', 'is', null);
         
     final List<dynamic> contractsToMigrate = response as List<dynamic>;
     

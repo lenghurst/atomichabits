@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // Added for kDebugMode
 import 'package:flutter/services.dart'; // For Haptics
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';

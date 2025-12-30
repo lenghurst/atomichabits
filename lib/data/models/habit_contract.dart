@@ -285,6 +285,9 @@ class HabitContract {
     String? witnessMessage,
     String? builderDisplayName,
     String? habitEmoji,
+    // Phase 4 Privacy
+    String? alternativeIdentity,
+    // Phase 21.3: Nudge Effectiveness Tracking
     DateTime? lastNudgeSentAt,
     DateTime? lastNudgeResponseAt,
     int? nudgesReceivedCount,
@@ -335,6 +338,9 @@ class HabitContract {
       witnessMessage: witnessMessage ?? this.witnessMessage,
       builderDisplayName: builderDisplayName ?? this.builderDisplayName,
       habitEmoji: habitEmoji ?? this.habitEmoji,
+      // Phase 4 Privacy
+      alternativeIdentity: alternativeIdentity ?? this.alternativeIdentity,
+      // Phase 21.3: Nudge Effectiveness Tracking
       lastNudgeSentAt: lastNudgeSentAt ?? this.lastNudgeSentAt,
       lastNudgeResponseAt: lastNudgeResponseAt ?? this.lastNudgeResponseAt,
       nudgesReceivedCount: nudgesReceivedCount ?? this.nudgesReceivedCount,
@@ -695,6 +701,7 @@ enum ContractEventType {
   completed,
   broken,
   cancelled,
+  updated,
   ;
   
   static ContractEventType fromString(String value) {
