@@ -1,7 +1,13 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 30 December 2025  
-> **Current Phase:** Phase 62 - Sherlock Protocol Refinement  
+> **Current Phase:** Phase 62 - Sherlock Protocol Refinement 🧱 = Blocked
+- 🔒 = **FROZEN / LOCKED** (Do not change)
+
+## 🔒 LOCKED CONFIGURATIONS (Stable)
+- **Reasoning Model:** `gemini-3-flash-preview` (Gemini 3 Flash)
+- **TTS Model:** `gemini-2.5-flash-preview-tts` (Flash TTS)
+- **Native Audio:** `gemini-2.5-flash-native-audio-preview-12-2025`
 > **Target:** NYE 2025 Launch  
 > **Status:** ✅ Sherlock Refined (v6.9.6)
 

@@ -31,7 +31,7 @@ class GeminiVoiceNoteService {
     
     // 2. The Ear: Dedicated transcription model (cheaper, faster)
     _transcriptionModel = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: AIModelConfig.transcriptionModel,
       apiKey: _apiKey,
     );
   }
@@ -164,6 +164,7 @@ class GeminiVoiceNoteService {
         userTranscript: transcript,
         sherlockResponse: sherlockText,
         sherlockAudioPath: sherlockAudioPath,
+        userAudioPath: userAudioPath, // ✅ Added for storage wrapper
         isError: sherlockText == "I'm having trouble responding.",
       );
       
@@ -222,7 +223,7 @@ class GeminiVoiceNoteService {
 
   /// Manually calls the Gemini 2.5 TTS endpoint via REST to bypass SDK constraints
   Future<String?> _generateSpeechViaRest(String text) async {
-    const String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent";
+    final String url = "https://generativelanguage.googleapis.com/v1beta/models/${AIModelConfig.ttsModel}:generateContent";
     // NOTE: Use System variable for API KEY in production!
     final String apiKey = AIModelConfig.geminiApiKey; 
 
@@ -344,12 +345,14 @@ class VoiceNoteResult {
   final String userTranscript;
   final String sherlockResponse;
   final String? sherlockAudioPath;
+  final String? userAudioPath;
   final bool isError;
   
   VoiceNoteResult({
     required this.userTranscript,
     required this.sherlockResponse,
     this.sherlockAudioPath,
+    this.userAudioPath,
     this.isError = false,
   });
   

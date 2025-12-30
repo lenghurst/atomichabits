@@ -7,6 +7,21 @@
 
 ---
 
+# AI Context & Architecture
+
+> **⚠️ STRICT CONFIGURATION LOCKS (DO NOT CHANGE)**
+> The following model configurations are **LOCKED** for stability and product definition. Do not modify these without explicit written authorization from the Architecture Lead.
+>
+> | Component | Model ID | Status | Reason |
+> | :--- | :--- | :--- | :--- |
+> | **Reasoning** | `gemini-3-flash-preview` | **🔒 LOCKED** | Required for "Thinking Level" capabilities. |
+> | **Native Audio** | `gemini-2.5-flash-native-audio-preview-12-2025` | **🔒 LOCKED** | Validated native audio endpoint for Dec 2025. |
+> | **TTS** | `gemini-2.5-flash-preview-tts` | **🔒 LOCKED** | Validated low-latency endpoint with "Aoede" voice. |
+>
+> **VIOLATION OF THESE LOCKS WILL CAUSE CRITICAL REGRESSIONS.**
+
+## 1. The "Component Stack" Architecture
+
 ## ⚠️ AI HANDOFF PROTOCOL (READ FIRST!)
 
 ### Mandatory Session Start Checklist

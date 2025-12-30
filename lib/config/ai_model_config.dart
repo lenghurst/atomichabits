@@ -122,7 +122,8 @@ class AIModelConfig {
   
   // ✅ NEW: The "Brain" (Audio -> Text + Reasoning)
   // Supports 'thinking_level' parameter for deep coaching analysis.
-  static const String reasoningModel = 'gemini-3-flash-preview'; 
+  // Technical: gemini-3-flash-preview (Marketing: "Gemini 3 Flash")
+  static const String reasoningModel = 'gemini-3-flash-preview';
 
   // ✅ NEW: The "Voice" (Text -> Audio)
   // Specialized TTS endpoint (Low Latency). Use 'gemini-2.5-pro-preview-tts' for higher quality.
@@ -199,6 +200,9 @@ class AIModelConfig {
   
   /// Get voice kill switch state
   static bool get isVoiceKillSwitchActive => _voiceKillSwitch;
+
+  // ✅ TRANSCRIPTION: Gemini 2.5 Flash
+  static const String transcriptionModel = 'gemini-2.5-flash';
   
   /// Activate global kill switch (disables all AI)
   static void activateGlobalKillSwitch() {

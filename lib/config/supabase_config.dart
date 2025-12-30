@@ -100,7 +100,7 @@ class SupabaseConfig {
 
 /// Database table names
 class SupabaseTables {
-  static const String users = 'users';
+  static const String users = 'profiles'; // Renamed from 'users' to match standard Supabase schema
   static const String habits = 'habits';
   static const String completions = 'habit_completions';
   static const String contracts = 'habit_contracts';
