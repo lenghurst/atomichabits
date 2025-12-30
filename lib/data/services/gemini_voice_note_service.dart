@@ -240,43 +240,22 @@ class GeminiVoiceNoteService {
             if (base64Audio.isNotEmpty) {
                // Decode base64 to bytes
                final audioBytes = base64Decode(base64Audio);
-               
-               // Generate file path
+
+               // 🛠️ CRITICAL FIX: Convert raw PCM to WAV before saving
+               final wavBytes = _pcmBytesToWav(audioBytes);
+
                final dir = await getApplicationDocumentsDirectory();
                final filePath = "${dir.path}/sherlock_reply_${DateTime.now().millisecondsSinceEpoch}.wav";
                final file = File(filePath);
-               
-               // Convert PCM to WAV (Crucial step!)
-               // The API returns raw PCM (24kHz, mono, 16-bit usually) wrapped in base64
-               // But wait - "inlineData" with mimeType? 
-               // Actually the API docs say it returns 'audio/wav' if requested? 
-               // Default seems to be raw or wav-containerized.
-               // Let's assume it's WAV or we just write bytes.
-               // Update: Experimental API returns 'audio/wav' or similar container.
-               // Just write bytes.
-               
-               // Wait, previous issue was MP3.
-               // Let's verify we need conversion.
-               // In previous successful test, we just wrote it.
-               
-               // Let's check if we need to wrap headers.
-               // The "PcmBytesToWav" helper was discussed.
-               // But for now, let's write directly.
-               
-               // ✅ FIX: Use helper if we have it, or write bytes.
-               // Assuming raw PCM for now based on "Flash Preview TTS".
-               // But let's stick to what worked or is standard.
-               // Actually, let's inject a proper WAV header just in case it's raw PCM.
-               // Or simpler: write bytes and hope player handles it (often works).
-               // FOR ROBUSTNESS: Let's assume the previous fix (helper function) is needed 
-               // if it's raw PCM. But I don't see the helper here.
-               // I'll stick to writing bytes directly.
-               
-               await file.writeAsBytes(audioBytes);
-               
-               // ✅ PRIVACY: Valid TTS file generated, track it
+
+               await file.writeAsBytes(wavBytes);
+
                _ttsAudioPaths.add(filePath);
-               
+
+               if (kDebugMode) {
+                 print("🔊 Saved Sherlock Audio (WAV): $filePath (${wavBytes.length} bytes)");
+               }
+
                return filePath;
             }
           }
