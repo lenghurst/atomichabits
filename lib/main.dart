@@ -28,6 +28,10 @@ import 'data/services/audio_cleanup_service.dart';
 import 'data/services/gemini_voice_note_service.dart';
 import 'data/services/psychometric_extraction_service.dart';
 
+// Phase 2: Storage Infrastructure
+import 'data/services/local_audio_service.dart';
+import 'data/repositories/conversation_repository.dart';
+
 // Phase 34: Shadow Wiring - New Architecture (Dark Launch)
 // These providers are initialized but not yet consumed by UI
 // They share the same Hive box as AppState for data consistency
@@ -57,6 +61,10 @@ void main() async {
   
   // Initialize Hive for local data persistence
   await Hive.initFlutter();
+  
+  // Phase 2: Initialize Local Audio Service (Hive)
+  final localAudioService = LocalAudioService();
+  await localAudioService.init();
   
   // Phase 15: Initialize Supabase for cloud sync (if configured)
   SupabaseClient? supabaseClient;
@@ -202,6 +210,17 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        // Phase 2: Storage Infrastructure Providers
+        Provider<LocalAudioService>(
+          create: (_) => localAudioService,
+          dispose: (_, service) => service.close(),
+        ),
+        Provider<ConversationRepository>(
+          create: (_) => ConversationRepository(
+            supabaseClient ?? Supabase.instance.client
+          ),
+        ),
+
         // App State (central state management)
         ChangeNotifierProvider.value(value: appState),
         // Phase 24: AI Service Manager (The Brain)

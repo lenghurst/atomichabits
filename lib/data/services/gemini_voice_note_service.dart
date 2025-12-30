@@ -51,6 +51,7 @@ class GeminiVoiceNoteService {
   Future<VoiceNoteResult> processVoiceNote(String userAudioPath, {
     List<Content>? history,
     String? systemInstruction,
+    bool deleteAudioAfter = true, // ✅ NEW: Control deletion (default true for backward compatibility)
   }) async {
     File? audioFile;
     try {
@@ -150,14 +151,19 @@ class GeminiVoiceNoteService {
         }
       }
       
-      // ✅ PRIVACY CLEANUP: Delete raw user audio immediately
-      try {
-        if (await audioFile.exists()) {
-          await audioFile.delete();
-          if (kDebugMode) print('🗑️ Deleted raw user audio: $userAudioPath');
+      // ✅ CONDITIONAL CLEANUP: Only delete if requested
+      // This prevents race condition with storage wrapper
+      if (deleteAudioAfter) {
+        try {
+          if (await audioFile.exists()) {
+            await audioFile.delete();
+            if (kDebugMode) print('🗑️ Deleted raw user audio: $userAudioPath');
+          }
+        } catch (e) {
+          if (kDebugMode) print('⚠️ Failed to cleanup raw audio: $e');
         }
-      } catch (e) {
-        if (kDebugMode) print('⚠️ Failed to cleanup raw audio: $e');
+      } else {
+        if (kDebugMode) print('📌 Keeping audio for storage: $userAudioPath');
       }
 
       return VoiceNoteResult(
