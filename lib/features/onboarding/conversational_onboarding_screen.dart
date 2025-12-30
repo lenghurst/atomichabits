@@ -572,6 +572,7 @@ class _ConversationalOnboardingScreenState
                 IconButton(
                   onPressed: _isLoading ? null : _sendMessage,
                   icon: const Icon(Icons.send),
+                  tooltip: 'Send message',
                 ),
               ],
             ),
