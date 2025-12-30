@@ -12,6 +12,9 @@ import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/onboarding/conversation_guardrails.dart';
 import '../../data/services/experimentation_service.dart';
 import '../../config/ai_model_config.dart';
+import 'package:uuid/uuid.dart'; // REQUIRED: For Supabase IDs
+import 'package:supabase_flutter/supabase_flutter.dart'; // REQUIRED: For direct evidence logging
+import '../../data/services/sync_service.dart';
 import 'widgets/chat_message_bubble.dart';
 import '../dev/dev_tools_overlay.dart';
 
@@ -365,49 +368,134 @@ class _ConversationalOnboardingScreenState
     );
   }
 
-  /// Save habit and complete onboarding
+  /// Save identity seed and complete onboarding
+  /// 
+  /// IMPLEMENTS "THE THIRD WAY" (Path A):
+  /// 1. Maps 'Shadow' -> 'rootCause' & 'Vision' -> 'motivation' (Pragmatic Layering).
+  /// 2. Creates 'Identity Evidence' immediately for the Daemon.
+  /// 3. Syncs to Cloud so the AI Coach has context for the next session.
   Future<void> _saveAndComplete(onboarding.OnboardingData data) async {
+    // 0. CAPTURE PROVIDERS (Before async gaps)
+    // Fixes 'use_build_context_synchronously' lints
+    final appState = context.read<AppState>();
+    final syncService = context.read<SyncService>();
+    final psychometricProvider = context.read<PsychometricProvider>();
+    
+    // 0. VALIDATION: Don't save garbage
+    if (data.identity == null || data.identity!.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not capture identity. Please try again.')),
+        );
+      }
+      return;
+    }
+
+    // 1. GENERATE ID: Use UUID v4 (Critical for Postgres compatibility)
+    final habitId = const Uuid().v4();
+    final supabase = Supabase.instance.client;
+    
     try {
-      // 1. Convert OnboardingData to Habit
-      // Phase 27.3: Fixed field names (tinyVersion, implementationTime, implementationLocation)
+      // 2. MAP IDENTITY: Chat Data -> Domain Model
       final habit = Habit(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: data.name ?? 'New Habit',
-        identity: data.identity ?? 'New Identity',
+        id: habitId,
+        // SEMANTIC LAYERING: The 'Name' is the Identity Archetype
+        name: data.identity!.trim(), 
+        identity: data.identity!.trim(),
+        
+        // THE ATOMIC UNIT: The first small vote for this identity
         tinyVersion: data.tinyVersion ?? 'Start small',
+        
+        // CONTEXT FOR DAEMON
         implementationTime: data.implementationTime ?? '09:00',
         implementationLocation: data.implementationLocation ?? 'At home',
+        
+        // PHILOSOPHICAL MAPPING (The Bridge)
+        // We reuse existing fields to store the "User Vector"
+        rootCause: data.rootCause, // Stores the SHADOW archetype/trigger
+        motivation: data.motivation, // Stores the VISION
+        
+        // STRATEGY
+        substitutionPlan: data.substitutionPlan,
+        recoveryPlan: data.recoveryPlan, 
+        habitEmoji: data.habitEmoji ?? '🌱',
+        
+        // INITIAL STATE
+        createdAt: DateTime.now(),
+        isPrimaryHabit: true, // Focus Engine highlights this immediately
+        difficultyLevel: 1, // HEXIS SCORE starts at 1
+        
+        // ATOMIC HABITS FIELDS
         environmentCue: data.environmentCue,
         temptationBundle: data.temptationBundle,
-        createdAt: DateTime.now(),
+        environmentDistraction: data.environmentDistraction,
+        preHabitRitual: data.preHabitRitual,
+        isBreakHabit: data.habitType == onboarding.HabitType.breakHabit,
+        replacesHabit: data.replacesHabit,
       );
 
-      // 2. Save to AppState
-      // Phase 27.3: Fixed method name (addHabit -> createHabit)
-      final appState = context.read<AppState>();
+      // 3. PERSIST LOCAL (Hive)
+      // Immediate UI update for momentum
       await appState.createHabit(habit);
       
-      // 3. Persist Sherlock Intelligence (Holy Trinity)
-      // Phase 42: Capture the deep insights for the Pact Reveal
-      // This ensures the "Magic Moment" uses real data, not fallbacks.
-      final psychometricProvider = context.read<PsychometricProvider>();
-      await psychometricProvider.updateFromOnboardingData(data);
+      // 4. CREATE FIRST EVIDENCE (Critical for Hexis)
+      // We do this immediately so the "Garden" isn't empty.
+      // We use a direct insert to include the philosophical metadata.
+      try {
+        await supabase.from('habit_completions').insert({
+          'habit_id': habitId,
+          'user_id': supabase.auth.currentUser?.id,
+          'completion_date': DateTime.now().toIso8601String(), // Legacy field
+          // PHILOSOPHICAL COLUMNS (The "Identity Evidence")
+          'narrative': 'Planted the seed of ${habit.identity}',
+          'effort_score': 0.8, // High intent
+          'shadow_present': false,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+        
+        // Also update local state so UI shows the tick
+        await appState.completeHabitForToday(habitId: habitId);
+      } catch (e) {
+        debugPrint('⚠️ First evidence creation failed (non-fatal): $e');
+      }
       
-      // 4. Mark onboarding complete (only if in onboarding mode)
-      // Phase 43: Defer completion to PactRevealScreen
-      // if (widget.isOnboarding) {
-      //   await appState.completeOnboarding();
-      // }
+      // 5. SYNC SEED TO CLOUD (Fire-and-Forget)
+      // The Daemon needs this to run Gap Analysis later.
+      try {
+        syncService.syncHabit(habit).then((result) {
+           if (!result.success) debugPrint('⚠️ Cloud sync queued: ${result.error}');
+        });
+      } catch (e) {
+        debugPrint('⚠️ SyncService unavailable: $e');
+      }
+      
+      // 6. PERSIST PSYCHOMETRICS
+      // This saves the "Context Window" for future AI chats.
+      try {
+        await psychometricProvider.updateFromOnboardingData(data);
+      } catch (e) {
+        debugPrint('⚠️ Psychometrics update failed: $e');
+      }
       
       if (!mounted) return;
       
-      // 5. Navigate to the Magic Moment (Pact Reveal)
-      context.go(AppRoutes.pactReveal);
-      
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving habit: $e')),
+      // 7. MAGIC MOMENT
+      // Navigate to the Pact Reveal to seal the contract.
+      context.go(
+        AppRoutes.pactReveal, 
+        extra: {'habitId': habitId}
       );
+      
+    } catch (e, stack) {
+      debugPrint('❌ CRITICAL ERROR in _saveAndComplete: $e\n$stack');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving identity: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

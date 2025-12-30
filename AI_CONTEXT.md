@@ -232,6 +232,31 @@ Audio/Transcription     Session End
    Update Profile → Hive Save
 ```
 
+### Voice Note Functionality (Phase 60: Hybrid Stack)
+
+**Status:** ✅ Stable (v6.9.5)
+
+To solve the "Reasoning vs. Speed" trade-off, we utilize a **Hybrid Architecture** for Voice Notes/Voice Coach:
+
+1.  **The Ear (Transcription)**: `Gemini 1.5 Flash` (via SDK)
+    *   **Reason:** Extremely fast, low cost, handles audio bytes natively.
+2.  **The Brain (Reasoning)**: `Gemini 3 Flash` (via SDK)
+    *   **Reason:** Superior reasoning capabilities, adheres strictly to "Sherlock" persona.
+    *   **Input:** Receives *both* transcript (text) and audio (multimodal) to detect tone/emotion.
+3.  **The Mouth (TTS)**: `Gemini 2.5 Flash TTS` (via **REST API**)
+    *   **Reason:** The Flutter SDK implementation of `responseModalities: ["AUDIO"]` is currently constrained/buggy. We generally bypass it for TTS.
+    *   **Mechanism:** Direct HTTP POST to `generativelanguage.googleapis.com`.
+    *   **Critical Constraint:** The API returns **RAW PCM** bytes (24kHz, 16-bit, Mono).
+
+> [!CAUTION]
+> **DO NOT TOUCH THE WAV HEADER LOGIC IN `gemini_voice_note_service.dart`**
+>
+> The method `_generateSpeechViaRest` relies on `_pcmBytesToWav` to manually construct a RIFF/WAVE header around the raw PCM bytes.
+>
+> **Why?** Flutter's audio players (like `flutter_soloud` or native `audioplayers`) cannot guess the format of a raw stream. Without this header, the file is interpreted as noise or silence.
+>
+> **The Golden Rule:** Always verify `_pcmBytesToWav(audioBytes)` is called before `file.writeAsBytes()`.
+
 ### The Sherlock Protocol (Phase 42)
 
 AI extracts 3 psychological traits through deduction:

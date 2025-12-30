@@ -1,3 +1,11 @@
+## [6.9.5] - 2025-12-30 - Phase 60.1: "WAV Header Fix"
+
+### Fixed
+- **TTS Audio Playback:** Solved the "Silent Audio" issue on mobile devices. The Gemini REST API returns raw PCM bytes (24kHz, 16-bit, Mono) without a container. We now explicitly wrap these bytes with a valid WAV header (`_pcmBytesToWav`) before writing to disk, ensuring `flutter_soloud` and native players can recognize the format.
+- **Verification:** Confirmed fix on Xiaomi Xiaomi 14 Ultra (Android 14) via Golden Command Chain.
+
+---
+
 ## [6.7.0] - 2025-12-28 - Phase 4 & 7: "Architecture Modernization"
 
 ### Architecture

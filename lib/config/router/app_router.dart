@@ -253,7 +253,10 @@ class AppRouter {
       // Phase 43: Pact Reveal Screen (Variable Reward)
       GoRoute(
         path: AppRoutes.pactReveal,
-        builder: (context, state) => const PactRevealScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return PactRevealScreen(habitId: extra?['habitId']);
+        },
       ),
 
       // Step 8: Goal Screening
