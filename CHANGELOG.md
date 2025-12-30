@@ -1,3 +1,16 @@
+## [6.9.6] - 2025-12-30 - Phase 62: "Sherlock Protocol Refinement"
+
+### Architecture
+- **Protector Parts Protocol:** Discarded the aggressive "Anti-Identity" attack vector in favor of **Internal Family Systems (IFS)**. Sherlock now acts as a "Parts Detective," helping users identify identifying "Protector Parts" (Anxiety, Perfectionism) that block their true Self.
+- **Autonomy-First Approval:** Replaced the automated "Approval Gate" with a user-declared commitment. Sherlock now asks: *"Are you ready to seal this Pact?"* The `[APPROVED]` token is only emitted after explicit user consent, respecting Self-Determination Theory.
+
+### Fixed
+- **Candidate Type System:** Resolved a critical `int` vs `FinishReason?` type mismatch in `GeminiVoiceNoteService` error handling that caused build warnings.
+- **Privacy Leak (Race Condition):** Fixed a race condition in `VoiceCoachScreen.dispose()` where audio cleanup could fail if the widget unmounted too quickly. Implemented `Future.microtask` to ensure safe, asynchronous deletion of sensitive TTS files.
+- **Navigation Flow:** `VoiceCoachScreen` now correctly listens for the `[APPROVED]` token and auto-navigates to `PactRevealScreen`, closing the loop on the onboarding journey.
+
+---
+
 ## [6.9.5] - 2025-12-30 - Phase 60.1: "WAV Header Fix"
 
 ### Fixed

@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 30 December 2025  
-> **Current Phase:** Phase 61 - Data Architecture Audit (Paused for Phase 60.1 Hotfix)  
+> **Current Phase:** Phase 62 - Sherlock Protocol Refinement  
 > **Target:** NYE 2025 Launch  
-> **Status:** ✅ Audio Stack Fixed (v6.9.5)
+> **Status:** ✅ Sherlock Refined (v6.9.6)
 
 ---
 
@@ -44,6 +44,16 @@
 ## 🎯 Current Focus: Navigation Audit (Phase A)
 
 ## ✅ Completed Phases
+
+### Phase 62: Sherlock Protocol Refinement (30 Dec 2025)
+**Goal:** Align Sherlock with IFS therapy principles and fix privacy leaks.
+
+| ID | Task | Status |
+|----|------|--------|
+| S1 | **IFS Protocol**: Retrain Sherlock as "Parts Detective" (Protector Parts). | ✅ |
+| S2 | **Autonomy Gate**: Replace AI approval with User Declaration. | ✅ |
+| S3 | **Privacy Fix**: Thread-safe audio cleanup in `VoiceCoachScreen`. | ✅ |
+| S4 | **Type Safety**: Fix `Candidate` constructor in `GeminiVoiceNoteService`. | ✅ |
 
 ### Phase 4 & 7: Architecture Modernization (28 Dec 2025)
 **Goal:** Implement persistent navigation and decouple legacy state logic.

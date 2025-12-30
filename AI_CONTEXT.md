@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 28 December 2025  
-> **Current Phase:** Phase 32.5 - Hardware AEC Enforcement  
+> **Current Phase:** Phase 62 - Sherlock Protocol Refinement  
 > **Identity:** The Pact  
 > **Domain:** thepact.co
 
@@ -54,7 +54,7 @@
 
 ---
 
-## Current State: Phase 49
+## Current State: Phase 62
 
 ### What's Working
 
@@ -70,7 +70,7 @@
 | **Onboarding Flow** | ✅ Working | Unified: Voice/Manual/Chat → Reveal → Dashboard |
 | **Dashboard** | ✅ Working | Habit tracking |
 
-### Recent Fixes (Phases 35-45)
+### Recent Fixes (Phases 35-62)
 
 | Phase | Fix | Status |
 |-------|-----|--------|
@@ -100,11 +100,12 @@
 | **47.4** | **Manual Turn-Taking** (Tap-to-Talk) | ✅ |
 | **48** | **Voice Note UI** (Hold-to-Talk / Tap-to-Lock) | ✅ |
 | **49** | **Sherlock Screening** (Amnesia Fix / Thinking Mode) | ✅ |
-
 | **50** | **WAV Header Buffering** (Split-chunk protection) | ✅ |
 | **50.1** | Config schema alignment (`v1beta` & `generationConfig`) | ✅ |
 | **59** | **SoLoud Protocol** (Ultra-Low Latency Audio Payload) | ✅ |
 | **60** | **Hybrid Voice Stack** (Gemini 3 Reasoning + REST TTS) | ✅ |
+| **60.1** | **WAV Header Fix** (Manual PCM Wrapping for Mobile) | ✅ |
+| **62** | **Sherlock Protocol** (IFS Refinement + Privacy Fixes) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 
