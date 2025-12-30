@@ -23,9 +23,8 @@ class GeminiVoiceNoteService {
   }) : _psychometricService = psychometricService,
        _authService = authService {
     // 1. The Brain: Use the SDK for text/multimodal analysis
-    // KEEPING Gemini 3 as the reasoning brain as requested.
     _reasoningModel = GenerativeModel(
-      model: AIModelConfig.reasoningModel, // 'gemini-3-flash-preview'
+      model: AIModelConfig.reasoningModel, // 'gemini-3-flash-preview' or similar
       apiKey: _apiKey,
       generationConfig: GenerationConfig(responseMimeType: 'text/plain'),
     );
@@ -49,7 +48,10 @@ class GeminiVoiceNoteService {
   Set<String> get ttsAudioPaths => Set.unmodifiable(_ttsAudioPaths);
 
 
-  Future<VoiceNoteResult> processVoiceNote(String userAudioPath) async {
+  Future<VoiceNoteResult> processVoiceNote(String userAudioPath, {
+    List<Content>? history,
+    String? systemInstruction,
+  }) async {
     File? audioFile;
     try {
       // 1. Create a reference to the file
@@ -74,24 +76,53 @@ class GeminiVoiceNoteService {
           ])
         ]).catchError((e) {
           if (kDebugMode) debugPrint('⚠️ Transcription failed: $e');
-          // Return empty content to handle gracefully
-          return GenerateContentResponse([], null);
+          // Return empty content to handle gracefully using correct 5-arg constructor
+          return GenerateContentResponse(
+            [
+              Candidate(
+                Content.text(''),
+                null, // averageScore
+                null, // safetyRatings
+                null, // index/finishReason? (Fixed type mismatch)
+                null  // finishReason
+              )
+            ], 
+            null // promptFeedback
+          );
         }),
         
         // Call 2: REASONING (Gemini 3)
-        // We still send AUDIO to reasoning to preserve tone/emotion
-        _reasoningModel.generateContent([
-          Content.multi([
-             TextPart("You are Sherlock, a high-performance habit coach. "
-                "Analyze the user's voice note. "
-                "Be incisive, supportive, and analytical. "
-                "Keep your response concise (under 3 sentences) and conversational."),
-            DataPart('audio/mp4', audioBytes),
-          ])
-        ]).catchError((e) {
+        // We inject history and the specific system instruction here.
+        () async {
+          final promptContent = [
+             // System Instruction
+             if (systemInstruction != null) Content.text(systemInstruction),
+             
+             // History (Context Injection)
+             if (history != null) ...history,
+             
+             // Current Turn
+             Content.multi([
+                TextPart("Here is the user's latest response:"),
+                DataPart('audio/mp4', audioBytes),
+             ])
+          ];
+          
+          return _reasoningModel.generateContent(promptContent);
+        }().catchError((e) {
           if (kDebugMode) debugPrint('⚠️ Reasoning failed: $e');
-          // Return empty content to handle gracefully
-           return GenerateContentResponse([], null);
+           return GenerateContentResponse(
+            [
+              Candidate(
+                Content.text("I'm having trouble responding."),
+                null, // averageScore
+                null, // safetyRatings
+                null,    // index
+                null  // finishReason
+              )
+            ], 
+            null // promptFeedback
+          );
         }),
       ]);
 
@@ -102,7 +133,7 @@ class GeminiVoiceNoteService {
       // Doesn't block the UI response
       if (_psychometricService != null) {
         final userId = _authService?.currentUser?.id ?? 'anonymous';
-        unawaited(_psychometricService!.analyzeTranscript(
+        unawaited(_psychometricService.analyzeTranscript(
           transcript: transcript,
           userId: userId, 
         ));
@@ -139,7 +170,7 @@ class GeminiVoiceNoteService {
     } catch (e) {
       // ✅ Ensure cleanup even on error
       if (audioFile != null && await audioFile.exists()) {
-        await audioFile.delete().catchError((_) {});
+        await audioFile.delete().catchError((_) => audioFile!); // Return dummy FS entity
       }
       return VoiceNoteResult.error("My audio processing circuits are jammed. ($e)");
     }
@@ -162,7 +193,8 @@ class GeminiVoiceNoteService {
   // Cleanup all TTS from session
   Future<void> cleanupSessionAudio() async {
     if (kDebugMode) debugPrint('🧹 Cleaning branch session audio (${_ttsAudioPaths.length} files)...');
-    for (final path in List.from(_ttsAudioPaths)) {
+    // Copy list to avoid concurrent modification during async delete
+    for (final path in List<String>.from(_ttsAudioPaths)) {
       await cleanupTTSAudio(path);
     }
   }
@@ -199,7 +231,6 @@ class GeminiVoiceNoteService {
         Uri.parse("$url?key=$apiKey"),
         headers: {
           "Content-Type": "application/json",
-          // ✅ Security: Move key to header if possible, but query param is standard for this beta
         },
         body: jsonEncode({
           "contents": [
@@ -226,7 +257,6 @@ class GeminiVoiceNoteService {
         final data = jsonDecode(response.body);
         
         // Extract base64 audio
-        // Structure: candidates[0].content.parts[0].inlineData.data
         if (data['candidates'] != null && 
             data['candidates'].isNotEmpty &&
             data['candidates'][0]['content'] != null &&
@@ -271,7 +301,6 @@ class GeminiVoiceNoteService {
   }
 
   /// Wraps raw PCM data with a WAV header
-  /// Gemini returns: PCM 24kHz, 1 channel, 16-bit (s16le)
   Uint8List _pcmBytesToWav(List<int> pcmBytes) {
     if (pcmBytes.isEmpty) {
       throw ArgumentError('Cannot create WAV from empty PCM data');
@@ -338,6 +367,3 @@ class VoiceNoteResult {
     audioPath: sherlockAudioPath,
   );
 }
-
-
-

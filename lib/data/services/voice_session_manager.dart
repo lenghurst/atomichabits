@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart'; // REQUIRED for Content
 import '../../data/models/chat_message.dart';
-import '../models/chat_message.dart'; // Ensure correct import if needed, assuming first one is enough or correct relative path
 import 'gemini_voice_note_service.dart';
 import 'audio_recording_service.dart';
 
@@ -12,7 +12,7 @@ class VoiceSessionManager extends ChangeNotifier {
   VoiceSessionManager({GeminiVoiceNoteService? service}) 
       : _sherlockService = service ?? GeminiVoiceNoteService();
   
-  List<ChatMessage> _messages = [];
+  final List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   
   bool _isRecording = false;
@@ -21,11 +21,15 @@ class VoiceSessionManager extends ChangeNotifier {
   bool _isThinking = false;
   bool get isThinking => _isThinking;
 
+  // Track if Sherlock has approved the pact
+  bool _isSessionComplete = false;
+  bool get isSessionComplete => _isSessionComplete;
+
   DateTime? _recordingStartTime; // ⏱️ Added duration tracking
 
   /// Sends a text message to Sherlock
   Future<void> sendText(String text) async {
-    if (_isThinking || text.trim().isEmpty) return;
+    if (_isThinking || _isSessionComplete || text.trim().isEmpty) return;
 
     // 1. Add User Text Bubble (Optimistic UI)
     _addMessage(ChatMessage.user(content: text));
@@ -40,7 +44,6 @@ class VoiceSessionManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Use the service to process text (Think -> Speak)
       final responseMessage = await _sherlockService.processText(text);
       _addMessage(responseMessage);
     } catch (e) {
@@ -52,14 +55,13 @@ class VoiceSessionManager extends ChangeNotifier {
         status: MessageStatus.error,
       ));
     } finally {
-      // 🔓 CRITICAL: UNLOCK INPUT IMMEDIATELY Do not wait for audio playback to finish.
       _isThinking = false;
       notifyListeners();
     }
   }
 
   Future<void> startRecording() async {
-    if (_isThinking) return;
+    if (_isThinking || _isSessionComplete) return;
 
     _isRecording = true;
     _recordingStartTime = DateTime.now(); // Start clock
@@ -83,7 +85,7 @@ class VoiceSessionManager extends ChangeNotifier {
     if (!_isRecording) return; 
 
     _isRecording = false;
-    audioPath = null;
+    String? audioPath;
     try {
        audioPath = await _audioRecorder.stopRecording();
     } catch (e) {
@@ -102,31 +104,78 @@ class VoiceSessionManager extends ChangeNotifier {
 
     // 1. Add User Voice Bubble (Optimistic)
     _addMessage(ChatMessage.userVoice(
-      audioPath: audioPath!,
-      duration: duration, // ✅ Pass duration to UI
+      audioPath: audioPath,
+      duration: duration, 
     ));
 
     // 2. Trigger Sherlock
-    _processSherlockTurn(audioPath!);
+    _processSherlockTurn(audioPath);
   }
+
+  // Refined Prompt: Philosophical Integration (IFS)
+  // Replaces "Anti-Identity" with "Protector Parts" to align with Taoist/Therapeutic vision
+  static const String _sherlockSystemPrompt = '''
+You are Sherlock, an expert Parts Detective and Identity Architect.
+Your Goal: Help users identify their "Protector Parts" (habits/fears that keep them safe but stuck) and discover their "Self" (who they truly want to be).
+
+PROTOCOL:
+1. Listen for "Protector" language: Perfectionism, Procrastination, Rebellion, Avoidance.
+2. Ask probing questions: "What is this part trying to protect you from?" or "What does your authentic self truly want?"
+3. Be curious and incisive, not judgmental. Use "Deduction Flash" style logic.
+4. Keep responses CONCISE (under 2 sentences preferred).
+
+THE PACT:
+When the user has articulated a clear Identity (e.g., "I am a Writer") and you sense they are ready to commit, ASK them directly: "Are you ready to seal this Pact?"
+If they agree, end your final response with the token: [APPROVED].
+''';
 
   Future<void> _processSherlockTurn(String audioPath) async {
     _isThinking = true;
     notifyListeners();
 
     try {
-      final result = await _sherlockService.processVoiceNote(audioPath);
+      // Build history from existing messages for Context Memory
+      final history = _messages
+          .where((m) => m.role != MessageRole.system && m.status != MessageStatus.error)
+          .map((m) {
+            if (m.role == MessageRole.user) {
+              return Content.text(m.content);
+            } else {
+              return Content.model([TextPart(m.content)]);
+            }
+          })
+          .toList();
+
+      final result = await _sherlockService.processVoiceNote(
+        audioPath,
+        history: history,
+        systemInstruction: _sherlockSystemPrompt,
+      );
       
-      // ✅ UX: Replace audio bubble with transcript (Privacy + Transparency)
-      // Since processing deletes the audio file, we must switch to text view.
-      // Note: Safe because _isThinking prevents concurrent message additions
-      if (_messages.isNotEmpty && _messages.last.role == MessageRole.user && _messages.last.audioPath != null) {
+      // ✅ UX: Delay removal so user sees the "Sent" state for a moment
+      // This prevents the jarring "disappearing bubble" effect
+      await Future.delayed(const Duration(milliseconds: 1500));
+      
+      // ✅ UX IMPROVEMENT: Smoother transition
+      // We keep the bubble but update its content to the transcript.
+      if (_messages.isNotEmpty && _messages.last.audioPath != null) {
           _messages.removeLast();
       }
-      _messages.add(ChatMessage.user(content: result.userTranscript));
+      _addMessage(ChatMessage.user(content: result.userTranscript));
 
       // ✅ Add Sherlock Response
-      _addMessage(result.toSherlockMessage());
+      // Check for [APPROVED] token to trigger exit
+      final cleanResponse = result.sherlockResponse.replaceAll('[APPROVED]', '').trim();
+      
+      _addMessage(ChatMessage.sherlock(
+        text: cleanResponse,
+        audioPath: result.sherlockAudioPath,
+      ));
+      
+      if (result.sherlockResponse.contains('[APPROVED]')) {
+        _isSessionComplete = true; // Signal completion
+        notifyListeners();
+      }
       
     } catch (e) {
       _addMessage(ChatMessage(
@@ -148,11 +197,7 @@ class VoiceSessionManager extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Scoping variable to fix build which would happen if I copied user code exactly
-  String? audioPath;
-  
   /// Cleans up TTS audio files generated during the session.
-  /// Call this when the user leaves the voice coach screen.
   Future<void> cleanupSession() async {
     await _sherlockService.cleanupSessionAudio();
   }

@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // Added for kDebugMode
-import 'package:flutter/services.dart'; // For Haptics
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../data/enums/voice_session_mode.dart'; // Preserved for compatibility
+import '../../data/enums/voice_session_mode.dart';
 import '../../data/services/voice_session_manager.dart';
+import '../../config/router/app_routes.dart';
 import 'widgets/chat_message_bubble.dart';
 
 class VoiceCoachScreen extends StatefulWidget {
-  final VoiceSessionMode mode; // Preserved parameter
+  final VoiceSessionMode mode;
   
   const VoiceCoachScreen({
     super.key, 
-    this.mode = VoiceSessionMode.coaching, // Preserved default
+    this.mode = VoiceSessionMode.coaching,
   });
 
   @override
@@ -34,21 +35,42 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
   void initState() {
     super.initState();
     _voiceManager = context.read<VoiceSessionManager>();
+    
+    // Listen for completion
+    _voiceManager.addListener(_onSessionUpdate);
+    
     // Auto-scroll on new messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
        if (mounted) _voiceManager.addListener(_scrollToBottom);
     });
   }
 
+  void _onSessionUpdate() {
+    if (_voiceManager.isSessionComplete) {
+      // ✅ SUCCESS: Navigate to result
+      // Wait a moment for the user to hear the approval or see the text
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+           // We navigate to Pact Reveal to seal the deal
+           context.go(AppRoutes.pactReveal);
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _voiceManager.removeListener(_onSessionUpdate);
     _durationTimer?.cancel();
     _scrollController.dispose();
     
-    // ✅ PRIVACY: Clean up TTS audio when leaving voice coach
-    // Using stored reference guarantees this runs even if context is invalid
-    _voiceManager.cleanupSession().catchError((e) {
-      if (kDebugMode) debugPrint('Session cleanup failed: $e');
+    // ✅ PRIVACY & FIX: Clean up TTS audio safely avoiding race conditions
+    Future.microtask(() async {
+      try {
+        await _voiceManager.cleanupSession();
+      } catch (e) {
+        if (kDebugMode) debugPrint('Session cleanup failed: $e');
+      }
     });
 
     super.dispose();
@@ -88,19 +110,19 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
 
   void _stopRecording(VoiceSessionManager session) {
     _durationTimer?.cancel();
-    session.stopRecordingAndSend(); // This will use the internal timer in Manager
+    session.stopRecordingAndSend(); 
   }
 
-  void _handleDragUpdate(LongPressMoveUpdateDetails details) { // Fixed type for gesture
+  void _handleDragUpdate(LongPressMoveUpdateDetails details) {
     if (_isLocked) return;
 
     setState(() {
-      _dragOffset = details.localOffsetFromOrigin.dy; // Use localOffset
+      _dragOffset = details.localOffsetFromOrigin.dy;
     });
 
     // Threshold: Drag up 80 pixels to lock
     if (_dragOffset < -80) { 
-      HapticFeedback.heavyImpact(); // SNAP sensation
+      HapticFeedback.heavyImpact(); 
       setState(() => _isLocked = true);
     }
   }
@@ -112,7 +134,6 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
       _isLocked = false;
       _recordDuration = Duration.zero;
     });
-    // session.cancelRecording(); // TODO: Add cancel method to manager
   }
 
   void _handleSendLocked(VoiceSessionManager session) {
@@ -146,7 +167,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Sherlock', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Habit Architect', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                Text('Parts Detective', style: TextStyle(color: Colors.white54, fontSize: 11)),
               ],
             ),
           ],
@@ -283,7 +304,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
                       color: const Color(0xFF00A884),
                       shape: BoxShape.circle,
                       boxShadow: isRecording 
-                        ? [BoxShadow(color: const Color(0xFF00A884).withOpacity(0.4), blurRadius: 12, spreadRadius: 4)]
+                        ? [BoxShadow(color: const Color(0xFF00A884).withValues(alpha: 0.4), blurRadius: 12, spreadRadius: 4)]
                         : [],
                     ),
                     child: Icon(
