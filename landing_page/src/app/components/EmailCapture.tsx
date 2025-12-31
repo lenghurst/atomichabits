@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
@@ -186,7 +186,9 @@ export function EmailCapture() {
               onBlur={() => setIsFocused(false)}
               placeholder={placeholders[placeholderIndex]}
               required
-              className={`w-full backdrop-blur-sm border-2 rounded-none px-6 py-4 pr-14 transition-all duration-500 tracking-wider uppercase text-sm font-light focus:outline-none ${
+              disabled={isSubmitting}
+              aria-label="Email address"
+              className={`w-full backdrop-blur-sm border-2 rounded-none px-6 py-4 pr-14 transition-all duration-500 tracking-wider uppercase text-sm font-light focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed ${
                 isUtopian
                   ? 'bg-white/60 border-amber-400/40 text-amber-900 placeholder:text-amber-600/50 focus:border-amber-500'
                   : 'bg-black/50 border-cyan-400/30 text-white placeholder:text-cyan-600/50 focus:border-cyan-400'
@@ -200,9 +202,11 @@ export function EmailCapture() {
             
             <motion.button
               type="submit"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`absolute right-2 w-10 h-10 backdrop-blur-sm border flex items-center justify-center transition-all duration-500 group ${
+              disabled={isSubmitting}
+              aria-label={isSubmitting ? "Submitting..." : "Submit email"}
+              whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
+              whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
+              className={`absolute right-2 w-10 h-10 backdrop-blur-sm border flex items-center justify-center transition-all duration-500 group disabled:opacity-70 disabled:cursor-not-allowed ${
                 isUtopian
                   ? 'bg-amber-400/10 border-amber-400/50 hover:bg-amber-400/20 hover:border-amber-500'
                   : 'bg-cyan-400/10 border-cyan-400/50 hover:bg-cyan-400/20 hover:border-cyan-400'
@@ -213,9 +217,15 @@ export function EmailCapture() {
                   : '0 0 10px rgba(0,255,255,0.3)',
               }}
             >
-              <ArrowRight className={`w-4 h-4 transition-colors ${
-                isUtopian ? 'text-amber-500 group-hover:text-amber-400' : 'text-cyan-400 group-hover:text-cyan-300'
-              }`} />
+              {isSubmitting ? (
+                <Loader2 className={`w-4 h-4 animate-spin ${
+                  isUtopian ? 'text-amber-500' : 'text-cyan-400'
+                }`} />
+              ) : (
+                <ArrowRight className={`w-4 h-4 transition-colors ${
+                  isUtopian ? 'text-amber-500 group-hover:text-amber-400' : 'text-cyan-400 group-hover:text-cyan-300'
+                }`} />
+              )}
             </motion.button>
           </div>
           
