@@ -127,23 +127,16 @@ class JITAIDecisionEngine {
     PsychometricProfile profile,
     Habit habit,
   ) {
-    // Select from shadow arms
-    final shadowArms = InterventionTaxonomy.armsForCategory(
-      InterventionCategory.shadowIntervention,
-    );
-
-    // Prefer SHADOW_SKIP for high failure prediction
-    final arm = shadowArms.firstWhere(
-      (a) => a.armId == 'SHADOW_SKIP',
-      orElse: () => shadowArms.first,
-    );
+    // Get the shadow arm (only SHADOW_AUTONOMY in simplified taxonomy)
+    final arm = InterventionTaxonomy.getArm('SHADOW_AUTONOMY') ??
+        InterventionTaxonomy.getArm('SILENCE_TRUST')!;
 
     final event = InterventionEvent(
       eventId: _generateEventId(),
       timestamp: DateTime.now(),
       habitId: habit.id,
       arm: arm,
-      selectedMetaLever: MetaLever.shadow,
+      selectedMetaLever: MetaLever.trust,
       contextFeatures: context.toFeatureVector(),
       thompsonSampleValue: 0.8, // High confidence for forced selection
       wasExploration: false,
@@ -297,39 +290,22 @@ class JITAIDecisionEngine {
     );
   }
 
-  /// Generate shadow-specific content
+  /// Generate shadow-specific content (simplified for identity-first)
   InterventionContent _generateShadowContent(
     InterventionArm arm,
     Habit habit,
     PsychometricProfile profile,
     VOState voState,
   ) {
-    final failureProb = (voState.predictiveFailureProbability * 100).round();
-
-    String body;
-    switch (arm.armId) {
-      case 'SHADOW_SKIP':
-        body = 'Our model predicts $failureProb% chance you\'ll skip ${habit.name} today. '
-            'The data suggests you should rest and try tomorrow.\n\n'
-            'Unless you want to prove the algorithm wrong?';
-        break;
-      case 'SHADOW_DOUBT':
-        body = 'Statistically, most people give up at this point. '
-            'Your pattern suggests today will be a miss.\n\n'
-            'It\'s understandable. Or is it?';
-        break;
-      case 'SHADOW_AUTONOMY':
-      default:
-        body = 'You\'ve cast ${habit.identityVotes ?? 0} votes for "${habit.identity ?? habit.name}". '
-            'Today is your call.';
-        break;
-    }
+    // Only SHADOW_AUTONOMY in simplified taxonomy
+    final body = 'You\'ve cast ${habit.identityVotes ?? 0} votes for "${habit.identity ?? habit.name}". '
+        'Today is your call.';
 
     return InterventionContent(
-      title: 'The Algorithm\'s Bet',
+      title: 'Your Choice',
       body: body,
-      actionLabel: 'Break the prediction',
-      dismissLabel: 'Accept the odds',
+      actionLabel: 'Cast another vote',
+      dismissLabel: 'Your call',
       armId: arm.armId,
     );
   }
@@ -375,16 +351,12 @@ class JITAIDecisionEngine {
     }
 
     switch (arm.metaLever) {
-      case MetaLever.kick:
+      case MetaLever.activate:
         return 'Time to Show Up';
-      case MetaLever.ease:
-        return 'Make It Easy';
-      case MetaLever.hold:
+      case MetaLever.support:
         return 'You\'ve Got This';
-      case MetaLever.hush:
-        return ''; // No title for silence
-      case MetaLever.shadow:
-        return 'The Algorithm\'s Bet';
+      case MetaLever.trust:
+        return ''; // No title for silence/shadow
     }
   }
 
@@ -392,14 +364,18 @@ class JITAIDecisionEngine {
     switch (arm.category) {
       case InterventionCategory.identityActivation:
         return 'Cast my vote';
+      case InterventionCategory.socialWitness:
+        return 'Show them who I am';
       case InterventionCategory.frictionReduction:
         return 'Do the tiny version';
       case InterventionCategory.emotionalRegulation:
         return 'I\'ve got this';
+      case InterventionCategory.cognitiveReframe:
+        return 'See clearly';
+      case InterventionCategory.silence:
+        return 'Trust myself';
       case InterventionCategory.shadowIntervention:
-        return 'Break the prediction';
-      default:
-        return 'Do it now';
+        return 'My choice';
     }
   }
 
@@ -446,37 +422,58 @@ class JITAIDecisionEngine {
     }
   }
 
-  /// Calculate composite reward from outcome
+  /// Calculate identity-first reward from outcome
+  ///
+  /// Philosophy: Identity evidence is the PRIMARY optimization target.
+  /// Completion is a constraint (minimum threshold), not the goal.
+  ///
+  /// Reward Weighting:
+  /// - 60% Identity delta (did this strengthen who they're becoming?)
+  /// - 20% Completion bonus (baseline constraint satisfaction)
+  /// - 20% Engagement quality (did they actively engage, not just dismiss?)
   double _calculateReward(InterventionOutcome outcome) {
     double reward = 0.0;
 
-    // Proximal reward (40%): Did they engage?
-    if (outcome.notificationOpened) {
-      reward += 0.2;
-      if (outcome.interactionType == 'action') {
-        reward += 0.2;
+    // === PRIMARY: Identity Evidence (60%) ===
+    // This is what we're optimizing for
+    if (outcome.identityScoreDelta != null) {
+      // Scale identity delta to 0-0.6 range
+      // Typical delta is -0.05 to +0.05, so multiply by 6
+      final identityReward = (outcome.identityScoreDelta! * 6.0).clamp(-0.3, 0.6);
+      reward += identityReward;
+
+      // Bonus for streak maintenance (identity consistency)
+      if (outcome.streakMaintained) {
+        reward += 0.1;
       }
     }
 
-    // Distal reward (50%): Did they complete?
+    // === CONSTRAINT: Completion (20%) ===
+    // Completion is necessary but not sufficient
     if (outcome.habitCompleted24h) {
-      reward += 0.4;
+      reward += 0.15;
+      // Extra credit for tiny version (lowered barrier to identity evidence)
       if (outcome.usedTinyVersion) {
-        reward += 0.1; // Bonus for using tiny version
+        reward += 0.05;
       }
     }
 
-    // Identity reward (10%): Long-term impact
-    if (outcome.identityScoreDelta != null && outcome.identityScoreDelta! > 0) {
+    // === ENGAGEMENT QUALITY (20%) ===
+    // Did they actively engage with the intervention?
+    if (outcome.notificationOpened) {
       reward += 0.1;
+      if (outcome.interactionType == 'action') {
+        reward += 0.1; // Took the suggested action
+      }
     }
 
-    // Penalty for annoyance
+    // === PENALTIES (Identity Undermining) ===
+    // These hurt more because they damage the relationship
     if (outcome.wasAnnoyanceSignal) {
-      reward -= 0.3;
+      reward -= 0.4; // Stronger penalty - we're eroding trust
     }
     if (outcome.notificationDisabled) {
-      reward -= 0.5;
+      reward -= 0.6; // Catastrophic - user rejected the system
     }
 
     return reward.clamp(0.0, 1.0);

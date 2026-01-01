@@ -131,24 +131,20 @@ class JITAINotificationService {
         contentTitle: content.title,
       ),
       actions: actions,
-      // Shadow interventions should be more subtle
-      silent: event.selectedMetaLever == MetaLever.shadow,
+      // Trust interventions should be more subtle
+      silent: event.selectedMetaLever == MetaLever.trust,
     );
   }
 
-  /// Get notification channel based on meta-lever
+  /// Get notification channel based on meta-lever (simplified to 3)
   (String, String, Color) _getChannelForLever(MetaLever lever) {
     switch (lever) {
-      case MetaLever.kick:
-        return ('jitai_kick', 'Motivation', const Color(0xFF4CAF50)); // Green
-      case MetaLever.ease:
-        return ('jitai_ease', 'Simplification', const Color(0xFF2196F3)); // Blue
-      case MetaLever.hold:
-        return ('jitai_hold', 'Support', const Color(0xFF9C27B0)); // Purple
-      case MetaLever.hush:
-        return ('jitai_hush', 'Quiet', const Color(0xFF607D8B)); // Gray
-      case MetaLever.shadow:
-        return ('jitai_shadow', 'Challenge', const Color(0xFFFF5722)); // Deep Orange
+      case MetaLever.activate:
+        return ('jitai_activate', 'Identity Activation', const Color(0xFF4CAF50)); // Green
+      case MetaLever.support:
+        return ('jitai_support', 'Support', const Color(0xFF2196F3)); // Blue
+      case MetaLever.trust:
+        return ('jitai_trust', 'Autonomy', const Color(0xFF607D8B)); // Gray
     }
   }
 
@@ -163,7 +159,7 @@ class JITAINotificationService {
     return Importance.defaultImportance;
   }
 
-  /// Build action buttons based on intervention type
+  /// Build action buttons based on intervention type (simplified)
   List<AndroidNotificationAction> _buildActions(
     InterventionEvent event,
     InterventionContent content,
@@ -200,23 +196,28 @@ class JITAINotificationService {
         ));
         break;
 
+      case InterventionCategory.silence:
       case InterventionCategory.shadowIntervention:
-        // Shadow: "I'll prove you wrong" is already the dismiss label
+        // Autonomy-focused: just dismiss option
         actions.add(AndroidNotificationAction(
-          'prove_wrong',
+          'my_choice',
           content.dismissLabel,
-          showsUserInterface: true,
+          showsUserInterface: false,
           cancelNotification: true,
         ));
         break;
 
-      default:
+      case InterventionCategory.identityActivation:
+      case InterventionCategory.socialWitness:
+      case InterventionCategory.cognitiveReframe:
+        // Default dismiss for identity/reframe categories
         actions.add(AndroidNotificationAction(
           'dismiss',
           content.dismissLabel,
           showsUserInterface: false,
           cancelNotification: true,
         ));
+        break;
     }
 
     return actions;

@@ -1,97 +1,79 @@
-import 'dart:math' as math;
-
-/// Intervention Taxonomy for JITAI System
+/// Identity-First Intervention Taxonomy for JITAI System
 ///
-/// Structured for Hierarchical Bandit learning:
-/// - Tier 1: MetaLever (4-5 options) - fast convergence
-/// - Tier 2: InterventionArm (within category) - personalization
+/// Philosophy: Every intervention should strengthen the user's identity,
+/// not just drive compliance. Completion is a side effect of identity.
 ///
-/// Phase 63: JITAI Foundation
+/// Simplified Architecture:
+/// - 3 MetaLevers (not 5): Activate, Support, Trust
+/// - 12 Arms (not 35): Only identity-compatible interventions
+/// - No dead features: Removed trait affinity, regulatory focus, vulnerability range
+///
+/// Phase 63b: Identity-First JITAI Refactor
 
 // =============================================================================
-// TIER 1: META-LEVERS (The "General" - 5 strategic options)
+// TIER 1: META-LEVERS (3 Strategic Options)
 // =============================================================================
 
-/// High-level intervention strategies for fast bandit convergence.
-/// The ML system learns "this user responds to Kick, not Ease" quickly.
+/// High-level intervention strategies aligned with identity formation.
+///
+/// Three levers that map to psychological states:
+/// - ACTIVATE: "Remember who you're becoming" (motivation through identity)
+/// - SUPPORT: "Make it easier / Handle the hard" (ability + emotional)
+/// - TRUST: "You've got this / Your choice" (autonomy + reverse psychology)
 enum MetaLever {
-  /// KICK: Activation interventions (motivation boost)
-  /// Maps to: Identity Activation, Social Leverage, Reward Reinforcement
-  kick,
+  /// ACTIVATE: Identity-based motivation
+  /// "What would a [identity] do right now?"
+  activate,
 
-  /// EASE: Ability interventions (friction reduction)
-  /// Maps to: Friction Reduction, Cognitive Reframe, Temporal
-  ease,
+  /// SUPPORT: Barrier reduction + emotional support
+  /// "Just 2 minutes" or "Rough day. That's real."
+  support,
 
-  /// HOLD: Resilience interventions (emotional coping)
-  /// Maps to: Emotional Regulation (Urge Surfing, Coping Cards)
-  hold,
-
-  /// HUSH: Strategic silence (autonomy preservation)
-  /// Maps to: Silence interventions (test automaticity)
-  hush,
-
-  /// SHADOW: Reverse psychology for Rebel archetypes
-  /// Uses reactance to trigger action by suggesting NOT to do the habit
-  shadow,
+  /// TRUST: Autonomy preservation + reverse psychology
+  /// Strategic silence or "Your call today"
+  trust,
 }
 
 extension MetaLeverExtension on MetaLever {
   String get displayName {
     switch (this) {
-      case MetaLever.kick:
+      case MetaLever.activate:
         return 'Activation';
-      case MetaLever.ease:
-        return 'Simplification';
-      case MetaLever.hold:
+      case MetaLever.support:
         return 'Support';
-      case MetaLever.hush:
-        return 'Autonomy';
-      case MetaLever.shadow:
-        return 'Challenge';
+      case MetaLever.trust:
+        return 'Trust';
     }
   }
 
   String get description {
     switch (this) {
-      case MetaLever.kick:
-        return 'Boost motivation through identity, social, or reward cues';
-      case MetaLever.ease:
-        return 'Lower barriers through friction reduction or reframing';
-      case MetaLever.hold:
-        return 'Provide emotional support and coping strategies';
-      case MetaLever.hush:
-        return 'Step back to test and build autonomy';
-      case MetaLever.shadow:
-        return 'Trigger reactance by suggesting they skip today';
+      case MetaLever.activate:
+        return 'Strengthen identity through mirror, vote, or witness';
+      case MetaLever.support:
+        return 'Lower barriers or provide emotional support';
+      case MetaLever.trust:
+        return 'Preserve autonomy or use reverse psychology';
     }
   }
 
   /// Categories that belong to this meta-lever
   List<InterventionCategory> get categories {
     switch (this) {
-      case MetaLever.kick:
+      case MetaLever.activate:
         return [
           InterventionCategory.identityActivation,
-          InterventionCategory.socialLeverage,
-          InterventionCategory.rewardReinforcement,
+          InterventionCategory.socialWitness,
         ];
-      case MetaLever.ease:
+      case MetaLever.support:
         return [
           InterventionCategory.frictionReduction,
-          InterventionCategory.cognitiveReframe,
-          InterventionCategory.temporal,
-        ];
-      case MetaLever.hold:
-        return [
           InterventionCategory.emotionalRegulation,
+          InterventionCategory.cognitiveReframe,
         ];
-      case MetaLever.hush:
+      case MetaLever.trust:
         return [
           InterventionCategory.silence,
-        ];
-      case MetaLever.shadow:
-        return [
           InterventionCategory.shadowIntervention,
         ];
     }
@@ -100,44 +82,34 @@ extension MetaLeverExtension on MetaLever {
   /// Population prior success rate (cold start)
   double get priorSuccessRate {
     switch (this) {
-      case MetaLever.kick:
-        return 0.45; // Identity works well for most
-      case MetaLever.ease:
-        return 0.50; // Friction reduction is broadly effective
-      case MetaLever.hold:
-        return 0.55; // Emotional support when triggered correctly
-      case MetaLever.hush:
-        return 0.30; // Risky but important for autonomy
-      case MetaLever.shadow:
-        return 0.35; // Only works for rebels, risky otherwise
+      case MetaLever.activate:
+        return 0.50; // Identity works well for most
+      case MetaLever.support:
+        return 0.55; // Support is broadly effective
+      case MetaLever.trust:
+        return 0.35; // Risky but important for autonomy
     }
   }
 }
 
 // =============================================================================
-// TIER 2: INTERVENTION CATEGORIES (Psychological mechanisms)
+// TIER 2: INTERVENTION CATEGORIES
 // =============================================================================
 
-/// Detailed intervention categories mapping to psychological levers.
+/// Intervention categories - simplified from 9 to 7.
 enum InterventionCategory {
-  // === KICK (Activation) ===
+  // === ACTIVATE ===
   identityActivation, // "What would a runner do?"
-  socialLeverage, // Accountability, social proof
-  rewardReinforcement, // Variable rewards, milestones
+  socialWitness, // Accountability partner awareness
 
-  // === EASE (Ability) ===
+  // === SUPPORT ===
   frictionReduction, // Tiny version, environment design
+  emotionalRegulation, // Compassion, urge surfing
   cognitiveReframe, // Zoom out, lie callout
-  temporal, // Optimal window, cascade prevention
 
-  // === HOLD (Resilience) ===
-  emotionalRegulation, // Urge surfing, coping cards
-
-  // === HUSH (Autonomy) ===
+  // === TRUST ===
   silence, // Strategic absence
-
-  // === SHADOW (Reverse Psychology) ===
-  shadowIntervention, // "Skip today" for rebels
+  shadowIntervention, // Reverse psychology for rebels
 }
 
 extension InterventionCategoryExtension on InterventionCategory {
@@ -145,18 +117,14 @@ extension InterventionCategoryExtension on InterventionCategory {
     switch (this) {
       case InterventionCategory.identityActivation:
         return 'Identity Activation';
-      case InterventionCategory.socialLeverage:
-        return 'Social Leverage';
-      case InterventionCategory.rewardReinforcement:
-        return 'Reward & Reinforcement';
+      case InterventionCategory.socialWitness:
+        return 'Social Witness';
       case InterventionCategory.frictionReduction:
         return 'Friction Reduction';
-      case InterventionCategory.cognitiveReframe:
-        return 'Cognitive Reframe';
-      case InterventionCategory.temporal:
-        return 'Temporal Optimization';
       case InterventionCategory.emotionalRegulation:
         return 'Emotional Regulation';
+      case InterventionCategory.cognitiveReframe:
+        return 'Cognitive Reframe';
       case InterventionCategory.silence:
         return 'Strategic Silence';
       case InterventionCategory.shadowIntervention:
@@ -167,47 +135,45 @@ extension InterventionCategoryExtension on InterventionCategory {
   MetaLever get metaLever {
     switch (this) {
       case InterventionCategory.identityActivation:
-      case InterventionCategory.socialLeverage:
-      case InterventionCategory.rewardReinforcement:
-        return MetaLever.kick;
+      case InterventionCategory.socialWitness:
+        return MetaLever.activate;
       case InterventionCategory.frictionReduction:
-      case InterventionCategory.cognitiveReframe:
-      case InterventionCategory.temporal:
-        return MetaLever.ease;
       case InterventionCategory.emotionalRegulation:
-        return MetaLever.hold;
+      case InterventionCategory.cognitiveReframe:
+        return MetaLever.support;
       case InterventionCategory.silence:
-        return MetaLever.hush;
       case InterventionCategory.shadowIntervention:
-        return MetaLever.shadow;
+        return MetaLever.trust;
     }
   }
 }
 
 // =============================================================================
-// INTERVENTION ARMS (Individual intervention types)
+// INTERVENTION ARMS (Simplified - 12 Identity-Compatible)
 // =============================================================================
 
-/// An individual intervention type with its ML features.
+/// An individual intervention type - simplified for identity focus.
+///
+/// Removed:
+/// - traitAffinity (Big Five) - dead code, always returned 1.0
+/// - RegulatoryFocus - no effect on selection
+/// - VulnerabilityRange - always (0.0, 1.0)
+/// - Most prerequisites - only 2 actually worked
 class InterventionArm {
   final String armId;
   final InterventionCategory category;
   final String displayName;
   final String description;
 
-  // === BANDIT FEATURES ===
+  // === CORE FEATURES ===
   final double energyCost; // 0.0-1.0 (user effort required)
   final double intrusiveness; // 0.0-1.0 (attention disruption)
   final double identityReinforcement; // 0.0-1.0 (identity salience boost)
   final double emotionalValence; // -1.0 to 1.0 (negative to positive)
 
-  // === PERSONALIZATION FEATURES ===
-  final Map<String, double> traitAffinity; // Big Five fit (O, C, E, A, N)
-  final RegulatoryFocus optimalFocus; // Promotion vs Prevention
-
-  // === CONTEXT REQUIREMENTS ===
-  final List<ContextRequirement> prerequisites;
-  final VulnerabilityRange targetVulnerability;
+  // === CONTEXT REQUIREMENTS (Simplified) ===
+  final bool requiresWitness; // Has accountability partner
+  final bool requiresRebelArchetype; // Only for rebels
   final bool applicableToBreakHabits;
 
   // === ML PRIORS ===
@@ -223,10 +189,8 @@ class InterventionArm {
     required this.intrusiveness,
     required this.identityReinforcement,
     required this.emotionalValence,
-    required this.traitAffinity,
-    this.optimalFocus = RegulatoryFocus.either,
-    this.prerequisites = const [],
-    this.targetVulnerability = const VulnerabilityRange(0.0, 1.0),
+    this.requiresWitness = false,
+    this.requiresRebelArchetype = false,
     this.applicableToBreakHabits = true,
     this.priorAlpha = 1.0,
     this.priorBeta = 1.0,
@@ -237,62 +201,31 @@ class InterventionArm {
   /// Prior success rate from population data
   double get priorSuccessRate => priorAlpha / (priorAlpha + priorBeta);
 
-  /// Convert to feature vector for bandit context
+  /// Simplified feature vector for bandit context
   Map<String, double> toFeatureVector() {
     return {
       'energy_cost': energyCost,
       'intrusiveness': intrusiveness,
       'identity_reinforcement': identityReinforcement,
       'emotional_valence': emotionalValence,
-      'trait_O': traitAffinity['O'] ?? 0.5,
-      'trait_C': traitAffinity['C'] ?? 0.5,
-      'trait_E': traitAffinity['E'] ?? 0.5,
-      'trait_A': traitAffinity['A'] ?? 0.5,
-      'trait_N': traitAffinity['N'] ?? 0.5,
-      'regulatory_focus': optimalFocus == RegulatoryFocus.promotion
-          ? 1.0
-          : (optimalFocus == RegulatoryFocus.prevention ? -1.0 : 0.0),
     };
   }
 }
 
-enum RegulatoryFocus { promotion, prevention, either }
-
-/// Context requirements that must be met for an intervention
-enum ContextRequirement {
-  preHabitWindow, // Within 2 hours of scheduled time
-  postCompletion, // After habit completion
-  notInMeeting, // Calendar shows free
-  outdoorSuitable, // Weather permits outdoor activity
-  highVulnerability, // V-O score shows high vulnerability
-  lowVulnerability, // V-O score shows low vulnerability
-  breakHabitCraving, // Detected urge for break habit
-  hasWitness, // Has accountability partner
-  rebelArchetype, // User has rebel failure archetype
-}
-
-/// Range of vulnerability scores where this intervention is applicable
-class VulnerabilityRange {
-  final double min;
-  final double max;
-
-  const VulnerabilityRange(this.min, this.max);
-
-  bool contains(double value) => value >= min && value <= max;
-
-  @override
-  String toString() => '[$min, $max]';
-}
-
 // =============================================================================
-// INTERVENTION TAXONOMY REGISTRY
+// INTERVENTION TAXONOMY REGISTRY (12 Arms)
 // =============================================================================
 
-/// Central registry of all intervention arms with their ML features.
+/// Central registry of identity-compatible intervention arms.
+///
+/// Selection Criteria:
+/// - High identity reinforcement (>0.5)
+/// - Aligned with The Pact philosophy
+/// - Removed: external rewards, streak badges, point systems
 class InterventionTaxonomy {
   static final List<InterventionArm> allArms = [
     // =========================================================================
-    // CATEGORY 1: IDENTITY ACTIVATION
+    // ACTIVATE: Identity Activation (3 arms)
     // =========================================================================
     const InterventionArm(
       armId: 'ID_MIRROR',
@@ -303,11 +236,8 @@ class InterventionTaxonomy {
       intrusiveness: 0.3,
       identityReinforcement: 0.9,
       emotionalValence: 0.6,
-      traitAffinity: {'O': 0.7, 'C': 0.8, 'E': 0.6, 'A': 0.7, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 4.2,
-      priorBeta: 5.8,
+      priorAlpha: 4.5,
+      priorBeta: 5.5,
     ),
     const InterventionArm(
       armId: 'ID_ANTI_WARN',
@@ -318,9 +248,6 @@ class InterventionTaxonomy {
       intrusiveness: 0.5,
       identityReinforcement: 0.85,
       emotionalValence: -0.2, // Slightly negative (fear-based)
-      traitAffinity: {'O': 0.5, 'C': 0.7, 'E': 0.4, 'A': 0.5, 'N': 0.8},
-      optimalFocus: RegulatoryFocus.prevention,
-      targetVulnerability: VulnerabilityRange(0.5, 0.9),
       priorAlpha: 3.8,
       priorBeta: 6.2,
     ),
@@ -333,46 +260,29 @@ class InterventionTaxonomy {
       intrusiveness: 0.25,
       identityReinforcement: 0.8,
       emotionalValence: 0.7,
-      traitAffinity: {'O': 0.6, 'C': 0.9, 'E': 0.5, 'A': 0.6, 'N': 0.4},
-      optimalFocus: RegulatoryFocus.promotion,
-      targetVulnerability: VulnerabilityRange(0.2, 0.6),
       priorAlpha: 4.5,
       priorBeta: 5.5,
     ),
+
+    // =========================================================================
+    // ACTIVATE: Social Witness (1 arm)
+    // =========================================================================
     const InterventionArm(
-      armId: 'ID_FUTURE',
-      category: InterventionCategory.identityActivation,
-      displayName: 'Future Self Projection',
-      description: '365 days of this: who are you then?',
-      energyCost: 0.3,
-      intrusiveness: 0.4,
-      identityReinforcement: 0.75,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.9, 'C': 0.7, 'E': 0.5, 'A': 0.6, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.promotion,
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 3.5,
-      priorBeta: 6.5,
-    ),
-    const InterventionArm(
-      armId: 'ID_STREAK_VIZ',
-      category: InterventionCategory.identityActivation,
-      displayName: 'Identity Streak Visualization',
-      description: '[N] consecutive votes for [identity]',
-      energyCost: 0.05,
-      intrusiveness: 0.15,
+      armId: 'SOCIAL_WITNESS',
+      category: InterventionCategory.socialWitness,
+      displayName: 'Witness Awareness',
+      description: 'Your witness is watching. Show them who you are.',
+      energyCost: 0.2,
+      intrusiveness: 0.35,
       identityReinforcement: 0.7,
-      emotionalValence: 0.8,
-      traitAffinity: {'O': 0.6, 'C': 0.9, 'E': 0.6, 'A': 0.6, 'N': 0.4},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.5),
-      priorAlpha: 5.0,
-      priorBeta: 5.0,
+      emotionalValence: 0.3,
+      requiresWitness: true,
+      priorAlpha: 4.0,
+      priorBeta: 6.0,
     ),
 
     // =========================================================================
-    // CATEGORY 2: FRICTION REDUCTION
+    // SUPPORT: Friction Reduction (2 arms)
     // =========================================================================
     const InterventionArm(
       armId: 'FRICTION_TINY',
@@ -383,9 +293,6 @@ class InterventionTaxonomy {
       intrusiveness: 0.2,
       identityReinforcement: 0.3,
       emotionalValence: 0.7,
-      traitAffinity: {'O': 0.5, 'C': 0.6, 'E': 0.5, 'A': 0.7, 'N': 0.8},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.5, 1.0),
       priorAlpha: 5.5,
       priorBeta: 4.5,
     ),
@@ -396,63 +303,14 @@ class InterventionTaxonomy {
       description: 'Put [cue] visible for tomorrow',
       energyCost: 0.2,
       intrusiveness: 0.3,
-      identityReinforcement: 0.2,
+      identityReinforcement: 0.4,
       emotionalValence: 0.5,
-      traitAffinity: {'O': 0.7, 'C': 0.9, 'E': 0.5, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.5),
       priorAlpha: 4.0,
       priorBeta: 6.0,
     ),
-    const InterventionArm(
-      armId: 'FRICTION_IMPL',
-      category: InterventionCategory.frictionReduction,
-      displayName: 'Implementation Intention',
-      description: 'After [anchor], I will [habit]...',
-      energyCost: 0.15,
-      intrusiveness: 0.25,
-      identityReinforcement: 0.4,
-      emotionalValence: 0.6,
-      traitAffinity: {'O': 0.6, 'C': 0.9, 'E': 0.5, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.2, 0.6),
-      priorAlpha: 4.8,
-      priorBeta: 5.2,
-    ),
-    const InterventionArm(
-      armId: 'FRICTION_OBSTACLE',
-      category: InterventionCategory.frictionReduction,
-      displayName: 'Obstacle Removal Query',
-      description: '[Obstacle] blocked you before. Here\'s an alternative.',
-      energyCost: 0.25,
-      intrusiveness: 0.4,
-      identityReinforcement: 0.3,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.8, 'C': 0.7, 'E': 0.5, 'A': 0.6, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.4, 0.8),
-      priorAlpha: 4.2,
-      priorBeta: 5.8,
-    ),
-    const InterventionArm(
-      armId: 'FRICTION_STACK',
-      category: InterventionCategory.frictionReduction,
-      displayName: 'Habit Stack Trigger',
-      description: '[Anchor] done → [habit] time',
-      energyCost: 0.1,
-      intrusiveness: 0.2,
-      identityReinforcement: 0.35,
-      emotionalValence: 0.6,
-      traitAffinity: {'O': 0.6, 'C': 0.8, 'E': 0.6, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.2, 0.7),
-      priorAlpha: 4.5,
-      priorBeta: 5.5,
-    ),
 
     // =========================================================================
-    // CATEGORY 3: EMOTIONAL REGULATION
+    // SUPPORT: Emotional Regulation (2 arms)
     // =========================================================================
     const InterventionArm(
       armId: 'EMO_URGE_SURF',
@@ -463,59 +321,9 @@ class InterventionTaxonomy {
       intrusiveness: 0.6,
       identityReinforcement: 0.5,
       emotionalValence: 0.6,
-      traitAffinity: {'O': 0.7, 'C': 0.5, 'E': 0.4, 'A': 0.7, 'N': 0.9},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.breakHabitCraving],
       applicableToBreakHabits: true,
-      targetVulnerability: VulnerabilityRange(0.6, 1.0),
       priorAlpha: 6.0,
       priorBeta: 4.0,
-    ),
-    const InterventionArm(
-      armId: 'EMO_COPING',
-      category: InterventionCategory.emotionalRegulation,
-      displayName: 'Coping Card Display',
-      description: 'Anti-Identity + BigWhy + Tiny Version',
-      energyCost: 0.15,
-      intrusiveness: 0.35,
-      identityReinforcement: 0.6,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.6, 'C': 0.6, 'E': 0.5, 'A': 0.7, 'N': 0.8},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.5, 0.9),
-      priorAlpha: 4.5,
-      priorBeta: 5.5,
-    ),
-    const InterventionArm(
-      armId: 'EMO_ACK_STRESS',
-      category: InterventionCategory.emotionalRegulation,
-      displayName: 'Stress Acknowledgment',
-      description: 'Rough day. That\'s real. Tiny win?',
-      energyCost: 0.1,
-      intrusiveness: 0.25,
-      identityReinforcement: 0.3,
-      emotionalValence: 0.4,
-      traitAffinity: {'O': 0.5, 'C': 0.5, 'E': 0.5, 'A': 0.8, 'N': 0.9},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.6, 1.0),
-      priorAlpha: 4.0,
-      priorBeta: 6.0,
-    ),
-    const InterventionArm(
-      armId: 'EMO_CELEBRATE',
-      category: InterventionCategory.emotionalRegulation,
-      displayName: 'Celebration Burst',
-      description: 'Haptic + visual celebration + identity statement',
-      energyCost: 0.05,
-      intrusiveness: 0.3,
-      identityReinforcement: 0.7,
-      emotionalValence: 0.9,
-      traitAffinity: {'O': 0.7, 'C': 0.7, 'E': 0.8, 'A': 0.7, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.5),
-      priorAlpha: 5.5,
-      priorBeta: 4.5,
     ),
     const InterventionArm(
       armId: 'EMO_COMPASSION',
@@ -524,97 +332,24 @@ class InterventionTaxonomy {
       description: 'Welcome back. No judgment.',
       energyCost: 0.2,
       intrusiveness: 0.3,
-      identityReinforcement: 0.4,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.6, 'C': 0.5, 'E': 0.5, 'A': 0.9, 'N': 0.8},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.7, 1.0),
+      identityReinforcement: 0.5,
+      emotionalValence: 0.6,
       priorAlpha: 4.5,
       priorBeta: 5.5,
     ),
 
     // =========================================================================
-    // CATEGORY 4: SOCIAL LEVERAGE
-    // =========================================================================
-    const InterventionArm(
-      armId: 'SOCIAL_THREAT',
-      category: InterventionCategory.socialLeverage,
-      displayName: 'Supporter Notification Threat',
-      description: 'Your supporter will see this miss',
-      energyCost: 0.3,
-      intrusiveness: 0.7,
-      identityReinforcement: 0.5,
-      emotionalValence: -0.3,
-      traitAffinity: {'O': 0.4, 'C': 0.7, 'E': 0.8, 'A': 0.5, 'N': 0.3},
-      optimalFocus: RegulatoryFocus.prevention,
-      prerequisites: [ContextRequirement.hasWitness],
-      targetVulnerability: VulnerabilityRange(0.5, 0.8),
-      priorAlpha: 3.5,
-      priorBeta: 6.5,
-    ),
-    const InterventionArm(
-      armId: 'SOCIAL_PROOF',
-      category: InterventionCategory.socialLeverage,
-      displayName: 'Social Proof Display',
-      description: '[Friend] just completed their habit',
-      energyCost: 0.1,
-      intrusiveness: 0.25,
-      identityReinforcement: 0.4,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.5, 'C': 0.6, 'E': 0.9, 'A': 0.7, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.hasWitness],
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 4.0,
-      priorBeta: 6.0,
-    ),
-    const InterventionArm(
-      armId: 'SOCIAL_COOP',
-      category: InterventionCategory.socialLeverage,
-      displayName: 'Cooperative Goal Frame',
-      description: 'Your team needs your vote today',
-      energyCost: 0.2,
-      intrusiveness: 0.35,
-      identityReinforcement: 0.5,
-      emotionalValence: 0.4,
-      traitAffinity: {'O': 0.5, 'C': 0.6, 'E': 0.7, 'A': 0.9, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.hasWitness],
-      targetVulnerability: VulnerabilityRange(0.4, 0.8),
-      priorAlpha: 3.8,
-      priorBeta: 6.2,
-    ),
-    const InterventionArm(
-      armId: 'SOCIAL_COMMIT',
-      category: InterventionCategory.socialLeverage,
-      displayName: 'Public Commitment Prompt',
-      description: 'Share your pact with 3 friends?',
-      energyCost: 0.35,
-      intrusiveness: 0.4,
-      identityReinforcement: 0.6,
-      emotionalValence: 0.3,
-      traitAffinity: {'O': 0.6, 'C': 0.7, 'E': 0.9, 'A': 0.6, 'N': 0.3},
-      optimalFocus: RegulatoryFocus.promotion,
-      targetVulnerability: VulnerabilityRange(0.2, 0.5),
-      priorAlpha: 3.0,
-      priorBeta: 7.0,
-    ),
-
-    // =========================================================================
-    // CATEGORY 5: COGNITIVE REFRAME
+    // SUPPORT: Cognitive Reframe (2 arms)
     // =========================================================================
     const InterventionArm(
       armId: 'COG_LIE_CALL',
       category: InterventionCategory.cognitiveReframe,
       displayName: 'Resistance Lie Callout',
-      description: 'That\'s The [Resistance Lie] talking',
+      description: 'That\'s "[Resistance Lie]" talking',
       energyCost: 0.2,
       intrusiveness: 0.45,
       identityReinforcement: 0.7,
       emotionalValence: 0.3,
-      traitAffinity: {'O': 0.8, 'C': 0.8, 'E': 0.5, 'A': 0.5, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.4, 0.8),
       priorAlpha: 4.5,
       priorBeta: 5.5,
     ),
@@ -627,275 +362,39 @@ class InterventionTaxonomy {
       intrusiveness: 0.3,
       identityReinforcement: 0.5,
       emotionalValence: 0.6,
-      traitAffinity: {'O': 0.7, 'C': 0.7, 'E': 0.5, 'A': 0.6, 'N': 0.8},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.5, 0.9),
-      priorAlpha: 4.2,
-      priorBeta: 5.8,
-    ),
-    const InterventionArm(
-      armId: 'COG_ARCHETYPE',
-      category: InterventionCategory.cognitiveReframe,
-      displayName: 'Failure Archetype Mirror',
-      description: '[ARCHETYPE] mode detected',
-      energyCost: 0.25,
-      intrusiveness: 0.5,
-      identityReinforcement: 0.75,
-      emotionalValence: 0.2,
-      traitAffinity: {'O': 0.9, 'C': 0.7, 'E': 0.5, 'A': 0.5, 'N': 0.7},
-      optimalFocus: RegulatoryFocus.prevention,
-      targetVulnerability: VulnerabilityRange(0.5, 0.9),
-      priorAlpha: 4.0,
-      priorBeta: 6.0,
-    ),
-    const InterventionArm(
-      armId: 'COG_COUNTER',
-      category: InterventionCategory.cognitiveReframe,
-      displayName: 'Counterfactual Projection',
-      description: 'Skip today → likely skip week',
-      energyCost: 0.3,
-      intrusiveness: 0.45,
-      identityReinforcement: 0.5,
-      emotionalValence: -0.1,
-      traitAffinity: {'O': 0.8, 'C': 0.8, 'E': 0.5, 'A': 0.5, 'N': 0.7},
-      optimalFocus: RegulatoryFocus.prevention,
-      targetVulnerability: VulnerabilityRange(0.4, 0.8),
-      priorAlpha: 3.8,
-      priorBeta: 6.2,
-    ),
-
-    // =========================================================================
-    // CATEGORY 6: TEMPORAL OPTIMIZATION
-    // =========================================================================
-    const InterventionArm(
-      armId: 'TIME_WINDOW',
-      category: InterventionCategory.temporal,
-      displayName: 'Optimal Window Alert',
-      description: 'Next [N] min is your best window',
-      energyCost: 0.1,
-      intrusiveness: 0.3,
-      identityReinforcement: 0.2,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.6, 'C': 0.9, 'E': 0.5, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.notInMeeting],
-      targetVulnerability: VulnerabilityRange(0.2, 0.6),
-      priorAlpha: 4.5,
-      priorBeta: 5.5,
-    ),
-    const InterventionArm(
-      armId: 'TIME_DRIFT',
-      category: InterventionCategory.temporal,
-      displayName: 'Drift Correction',
-      description: 'You\'re doing this at [X], not [Y]',
-      energyCost: 0.15,
-      intrusiveness: 0.35,
-      identityReinforcement: 0.3,
-      emotionalValence: 0.4,
-      traitAffinity: {'O': 0.6, 'C': 0.9, 'E': 0.5, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 4.0,
-      priorBeta: 6.0,
-    ),
-    const InterventionArm(
-      armId: 'TIME_CASCADE',
-      category: InterventionCategory.temporal,
-      displayName: 'Cascade Prevention',
-      description: '[Weather/pattern] ahead. Here\'s your plan.',
-      energyCost: 0.25,
-      intrusiveness: 0.4,
-      identityReinforcement: 0.4,
-      emotionalValence: 0.5,
-      traitAffinity: {'O': 0.7, 'C': 0.8, 'E': 0.5, 'A': 0.6, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.prevention,
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 4.8,
-      priorBeta: 5.2,
-    ),
-    const InterventionArm(
-      armId: 'TIME_WEEKEND',
-      category: InterventionCategory.temporal,
-      displayName: 'Weekend Strategy',
-      description: 'Weekends are risky. Pre-commit?',
-      energyCost: 0.2,
-      intrusiveness: 0.35,
-      identityReinforcement: 0.35,
-      emotionalValence: 0.4,
-      traitAffinity: {'O': 0.6, 'C': 0.8, 'E': 0.6, 'A': 0.6, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.prevention,
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
       priorAlpha: 4.2,
       priorBeta: 5.8,
     ),
 
     // =========================================================================
-    // CATEGORY 7: REWARD & REINFORCEMENT
+    // TRUST: Strategic Silence (1 arm)
     // =========================================================================
     const InterventionArm(
-      armId: 'REWARD_VAR',
-      category: InterventionCategory.rewardReinforcement,
-      displayName: 'Variable Reward Reveal',
-      description: 'Card flip → surprise insight',
-      energyCost: 0.05,
-      intrusiveness: 0.25,
-      identityReinforcement: 0.5,
-      emotionalValence: 0.85,
-      traitAffinity: {'O': 0.9, 'C': 0.6, 'E': 0.8, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.5),
-      priorAlpha: 5.0,
-      priorBeta: 5.0,
-    ),
-    const InterventionArm(
-      armId: 'REWARD_MILE',
-      category: InterventionCategory.rewardReinforcement,
-      displayName: 'Progress Milestone',
-      description: '[N] votes. Level up: [Title]',
-      energyCost: 0.1,
-      intrusiveness: 0.3,
-      identityReinforcement: 0.7,
-      emotionalValence: 0.8,
-      traitAffinity: {'O': 0.7, 'C': 0.9, 'E': 0.7, 'A': 0.6, 'N': 0.5},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.4),
-      priorAlpha: 5.5,
-      priorBeta: 4.5,
-    ),
-    const InterventionArm(
-      armId: 'REWARD_SAVE',
-      category: InterventionCategory.rewardReinforcement,
-      displayName: 'Streak Saver Bonus',
-      description: 'Saved! Never Miss Twice honored.',
-      energyCost: 0.15,
-      intrusiveness: 0.35,
-      identityReinforcement: 0.75,
-      emotionalValence: 0.85,
-      traitAffinity: {'O': 0.6, 'C': 0.8, 'E': 0.7, 'A': 0.6, 'N': 0.7},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.postCompletion],
-      targetVulnerability: VulnerabilityRange(0.0, 0.5),
-      priorAlpha: 5.8,
-      priorBeta: 4.2,
-    ),
-    const InterventionArm(
-      armId: 'REWARD_BUNDLE',
-      category: InterventionCategory.rewardReinforcement,
-      displayName: 'Temptation Bundle Trigger',
-      description: '[Reward] + [habit] time!',
-      energyCost: 0.1,
-      intrusiveness: 0.25,
-      identityReinforcement: 0.3,
-      emotionalValence: 0.7,
-      traitAffinity: {'O': 0.7, 'C': 0.6, 'E': 0.7, 'A': 0.6, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.promotion,
-      prerequisites: [ContextRequirement.preHabitWindow],
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
-      priorAlpha: 4.5,
-      priorBeta: 5.5,
-    ),
-
-    // =========================================================================
-    // CATEGORY 8: SILENCE (Strategic Absence)
-    // =========================================================================
-    const InterventionArm(
-      armId: 'SILENCE_TEST',
+      armId: 'SILENCE_TRUST',
       category: InterventionCategory.silence,
-      displayName: 'The Silent Test',
-      description: 'No intervention - testing automaticity',
+      displayName: 'Trust Your Identity',
+      description: 'No intervention - you know who you are now',
       energyCost: 0.0,
       intrusiveness: 0.0,
-      identityReinforcement: 0.0,
+      identityReinforcement: 0.0, // Paradoxically high - tests internal identity
       emotionalValence: 0.0,
-      traitAffinity: {'O': 0.5, 'C': 0.7, 'E': 0.5, 'A': 0.5, 'N': 0.3},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.lowVulnerability],
-      targetVulnerability: VulnerabilityRange(0.0, 0.3),
-      priorAlpha: 3.0,
-      priorBeta: 7.0,
-    ),
-    const InterventionArm(
-      armId: 'SILENCE_FATIGUE',
-      category: InterventionCategory.silence,
-      displayName: 'Fatigue Respite',
-      description: 'No intervention - preventing alert fatigue',
-      energyCost: 0.0,
-      intrusiveness: 0.0,
-      identityReinforcement: 0.0,
-      emotionalValence: 0.0,
-      traitAffinity: {'O': 0.5, 'C': 0.5, 'E': 0.5, 'A': 0.5, 'N': 0.6},
-      optimalFocus: RegulatoryFocus.either,
-      targetVulnerability: VulnerabilityRange(0.0, 1.0),
-      priorAlpha: 4.0,
-      priorBeta: 6.0,
-    ),
-    const InterventionArm(
-      armId: 'SILENCE_AUTONOMY',
-      category: InterventionCategory.silence,
-      displayName: 'Autonomy Preservation',
-      description: 'No intervention - weaning off external cues',
-      energyCost: 0.0,
-      intrusiveness: 0.0,
-      identityReinforcement: 0.0,
-      emotionalValence: 0.0,
-      traitAffinity: {'O': 0.5, 'C': 0.8, 'E': 0.5, 'A': 0.5, 'N': 0.3},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.lowVulnerability],
-      targetVulnerability: VulnerabilityRange(0.0, 0.4),
       priorAlpha: 3.5,
       priorBeta: 6.5,
     ),
 
     // =========================================================================
-    // CATEGORY 9: SHADOW INTERVENTION (Reverse Psychology)
+    // TRUST: Shadow Intervention (1 arm)
     // =========================================================================
-    const InterventionArm(
-      armId: 'SHADOW_SKIP',
-      category: InterventionCategory.shadowIntervention,
-      displayName: 'Permission to Skip',
-      description: 'Data suggests you\'re tired. Algorithm recommends skipping.',
-      energyCost: 0.1,
-      intrusiveness: 0.4,
-      identityReinforcement: 0.6, // Triggers identity defense
-      emotionalValence: -0.2, // Slightly negative (challenge)
-      traitAffinity: {'O': 0.6, 'C': 0.4, 'E': 0.6, 'A': 0.3, 'N': 0.4},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.rebelArchetype],
-      targetVulnerability: VulnerabilityRange(0.4, 0.8),
-      priorAlpha: 3.5,
-      priorBeta: 6.5,
-    ),
-    const InterventionArm(
-      armId: 'SHADOW_DOUBT',
-      category: InterventionCategory.shadowIntervention,
-      displayName: 'Expressed Doubt',
-      description: 'Most people give up at this point. Understandable.',
-      energyCost: 0.15,
-      intrusiveness: 0.5,
-      identityReinforcement: 0.7, // Strong identity trigger
-      emotionalValence: -0.3, // Negative (provocation)
-      traitAffinity: {'O': 0.5, 'C': 0.3, 'E': 0.7, 'A': 0.2, 'N': 0.4},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.rebelArchetype],
-      targetVulnerability: VulnerabilityRange(0.5, 0.9),
-      priorAlpha: 3.0,
-      priorBeta: 7.0,
-    ),
     const InterventionArm(
       armId: 'SHADOW_AUTONOMY',
       category: InterventionCategory.shadowIntervention,
       displayName: 'Autonomy Highlight',
-      description: 'You\'ve got [N] votes. Your call on today.',
+      description: 'You\'ve got [N] votes. Your call today.',
       energyCost: 0.05,
       intrusiveness: 0.2,
-      identityReinforcement: 0.5,
-      emotionalValence: 0.3, // Neutral-positive
-      traitAffinity: {'O': 0.6, 'C': 0.5, 'E': 0.5, 'A': 0.4, 'N': 0.4},
-      optimalFocus: RegulatoryFocus.either,
-      prerequisites: [ContextRequirement.rebelArchetype],
-      targetVulnerability: VulnerabilityRange(0.3, 0.7),
+      identityReinforcement: 0.6, // Triggers identity defense
+      emotionalValence: 0.3,
+      requiresRebelArchetype: true,
       priorAlpha: 4.0,
       priorBeta: 6.0,
     ),
@@ -929,7 +428,7 @@ class InterventionTaxonomy {
 }
 
 // =============================================================================
-// INTERVENTION VECTOR (ML Feature Representation)
+// INTERVENTION EVENT (ML Logging)
 // =============================================================================
 
 /// A selected intervention with its context, ready for logging.
@@ -944,7 +443,7 @@ class InterventionEvent {
   // Bandit metadata
   final double thompsonSampleValue;
   final bool wasExploration;
-  final int armExposureCount; // How many times user has seen this arm
+  final int armExposureCount;
 
   InterventionEvent({
     required this.eventId,
@@ -972,31 +471,31 @@ class InterventionEvent {
       };
 }
 
-/// Outcome tracking for an intervention event.
+// =============================================================================
+// INTERVENTION OUTCOME (Identity-First Tracking)
+// =============================================================================
+
+/// Outcome tracking focused on identity evidence, not just completion.
 class InterventionOutcome {
   final String eventId;
 
-  // Proximal outcomes (immediate)
+  // === ENGAGEMENT ===
   final bool notificationOpened;
   final int? timeToOpenSeconds;
   final String? interactionType; // 'dismiss', 'expand', 'action'
 
-  // Distal outcomes (within 24h)
+  // === COMPLETION (Constraint, not goal) ===
   final bool habitCompleted24h;
-  final double? completionDelayHours;
   final bool usedTinyVersion;
   final bool usedAlternative; // For break habits
 
-  // Identity outcomes
-  final double? identityScoreDelta;
+  // === IDENTITY (Primary metric) ===
+  final double? identityScoreDelta; // Change in hexis/fusion score
   final bool streakMaintained;
 
-  // Cost signals
-  final bool wasAnnoyanceSignal; // User explicitly dismissed
-  final bool notificationDisabled; // User turned off notifications
-
-  // Computed reward (set by reward function)
-  final double? compositeReward;
+  // === COST SIGNALS ===
+  final bool wasAnnoyanceSignal;
+  final bool notificationDisabled;
 
   InterventionOutcome({
     required this.eventId,
@@ -1004,14 +503,12 @@ class InterventionOutcome {
     this.timeToOpenSeconds,
     this.interactionType,
     this.habitCompleted24h = false,
-    this.completionDelayHours,
     this.usedTinyVersion = false,
     this.usedAlternative = false,
     this.identityScoreDelta,
     this.streakMaintained = false,
     this.wasAnnoyanceSignal = false,
     this.notificationDisabled = false,
-    this.compositeReward,
   });
 
   Map<String, dynamic> toJson() => {
@@ -1020,13 +517,11 @@ class InterventionOutcome {
         'timeToOpenSeconds': timeToOpenSeconds,
         'interactionType': interactionType,
         'habitCompleted24h': habitCompleted24h,
-        'completionDelayHours': completionDelayHours,
         'usedTinyVersion': usedTinyVersion,
         'usedAlternative': usedAlternative,
         'identityScoreDelta': identityScoreDelta,
         'streakMaintained': streakMaintained,
         'wasAnnoyanceSignal': wasAnnoyanceSignal,
         'notificationDisabled': notificationDisabled,
-        'compositeReward': compositeReward,
       };
 }

@@ -5,18 +5,19 @@ import '../entities/context_snapshot.dart';
 import '../entities/psychometric_profile.dart';
 import 'vulnerability_opportunity_calculator.dart';
 
-/// HierarchicalBandit: The "Brain" of JITAI
+/// HierarchicalBandit: Identity-First Intervention Selection
 ///
-/// Two-tier Thompson Sampling for intervention selection:
-/// - Tier 1 (The General): Select MetaLever (Kick/Ease/Hold/Hush/Shadow)
-/// - Tier 2 (The Soldier): Select specific Arm within the chosen lever
+/// Simplified two-tier Thompson Sampling:
+/// - Tier 1: Select MetaLever (Activate/Support/Trust)
+/// - Tier 2: Select specific Arm within the chosen lever
 ///
-/// Benefits over flat bandit:
-/// - Faster convergence (learns "user hates social" in days, not weeks)
-/// - Better generalization (new arms inherit lever-level learning)
-/// - Archetypal seeding (Rebels get Shadow boosted from day 1)
+/// Key Simplifications (Phase 63b):
+/// - 3 MetaLevers instead of 5
+/// - 12 Arms instead of 35
+/// - Removed dead trait affinity code
+/// - Simplified prerequisite checking
 ///
-/// Phase 63: JITAI Foundation
+/// Philosophy: Select interventions that strengthen identity, not just drive completion.
 class HierarchicalBandit {
   final _random = math.Random();
 
@@ -29,10 +30,6 @@ class HierarchicalBandit {
   /// Exploration bonus (decays over time)
   double _explorationBoost = 1.2;
   static const double _explorationDecay = 0.995;
-
-  /// Track exposure counts for personalization
-  final Map<String, int> _armExposureCounts = {};
-  final Map<MetaLever, int> _leverExposureCounts = {};
 
   HierarchicalBandit({
     Map<MetaLever, BetaDistribution>? leverPriors,
@@ -79,12 +76,6 @@ class HierarchicalBandit {
       excludeArms: excludeArms ?? [],
     );
 
-    // Track exposure
-    _leverExposureCounts[leverSelection.lever] =
-        (_leverExposureCounts[leverSelection.lever] ?? 0) + 1;
-    _armExposureCounts[armSelection.arm.armId] =
-        (_armExposureCounts[armSelection.arm.armId] ?? 0) + 1;
-
     // Decay exploration
     _explorationBoost *= _explorationDecay;
 
@@ -95,8 +86,6 @@ class HierarchicalBandit {
       armThompsonValue: armSelection.thompsonValue,
       leverWasExploration: leverSelection.wasExploration,
       armWasExploration: armSelection.wasExploration,
-      leverExposureCount: _leverExposureCounts[leverSelection.lever] ?? 1,
-      armExposureCount: _armExposureCounts[armSelection.arm.armId] ?? 1,
     );
   }
 
@@ -106,17 +95,8 @@ class HierarchicalBandit {
     required VOState voState,
     required PsychometricProfile profile,
   }) {
-    // Get eligible levers based on context
-    final eligibleLevers = _getEligibleLevers(voState, profile);
-
-    if (eligibleLevers.isEmpty) {
-      // Fallback to Hush if nothing eligible
-      return _LeverSelection(
-        lever: MetaLever.hush,
-        thompsonValue: 0.5,
-        wasExploration: false,
-      );
-    }
+    // All 3 levers are always eligible - simplified from complex eligibility
+    final eligibleLevers = MetaLever.values.toList();
 
     // Sample from each lever's beta distribution
     final samples = <MetaLever, double>{};
@@ -159,13 +139,13 @@ class HierarchicalBandit {
     // Get eligible arms for this lever
     var eligibleArms = InterventionTaxonomy.armsForMetaLever(lever)
         .where((arm) => !excludeArms.contains(arm.armId))
-        .where((arm) => _meetsPrerequisites(arm, context, voState, profile))
+        .where((arm) => _meetsPrerequisites(arm, profile))
         .where((arm) => isBreakHabit || arm.applicableToBreakHabits)
         .toList();
 
     if (eligibleArms.isEmpty) {
       // Fallback to silence
-      final silenceArm = InterventionTaxonomy.getArm('SILENCE_FATIGUE')!;
+      final silenceArm = InterventionTaxonomy.getArm('SILENCE_TRUST')!;
       return _ArmSelection(
         arm: silenceArm,
         thompsonValue: 0.5,
@@ -204,74 +184,17 @@ class HierarchicalBandit {
     );
   }
 
-  /// Get eligible meta-levers based on V-O state
-  List<MetaLever> _getEligibleLevers(VOState voState, PsychometricProfile profile) {
-    final levers = <MetaLever>[];
-
-    // Always eligible
-    levers.add(MetaLever.kick);
-    levers.add(MetaLever.ease);
-
-    // Hold only when vulnerability is elevated
-    if (voState.vulnerability > 0.4) {
-      levers.add(MetaLever.hold);
-    }
-
-    // Hush when vulnerability is low (test automaticity)
-    if (voState.vulnerability < 0.4) {
-      levers.add(MetaLever.hush);
-    }
-
-    // Shadow only for rebels with high predicted failure
-    if (_isRebelArchetype(profile) && voState.predictiveFailureProbability > 0.5) {
-      levers.add(MetaLever.shadow);
-    }
-
-    return levers;
-  }
-
-  /// Check if arm meets its prerequisites
-  bool _meetsPrerequisites(
-    InterventionArm arm,
-    ContextSnapshot context,
-    VOState voState,
-    PsychometricProfile profile,
-  ) {
-    for (final prereq in arm.prerequisites) {
-      switch (prereq) {
-        case ContextRequirement.preHabitWindow:
-          // TODO: Check time window
-          break;
-        case ContextRequirement.postCompletion:
-          // This arm is for post-completion only
-          return false; // Not in completion context now
-        case ContextRequirement.notInMeeting:
-          if (context.calendar?.isInMeeting ?? false) return false;
-          break;
-        case ContextRequirement.outdoorSuitable:
-          if (!(context.weather?.isOutdoorSuitable ?? true)) return false;
-          break;
-        case ContextRequirement.highVulnerability:
-          if (voState.vulnerability < 0.6) return false;
-          break;
-        case ContextRequirement.lowVulnerability:
-          if (voState.vulnerability > 0.4) return false;
-          break;
-        case ContextRequirement.breakHabitCraving:
-          // TODO: Detect craving state
-          break;
-        case ContextRequirement.hasWitness:
-          // TODO: Check witness status
-          break;
-        case ContextRequirement.rebelArchetype:
-          if (!_isRebelArchetype(profile)) return false;
-          break;
-      }
-    }
-
-    // Check vulnerability range
-    if (!arm.targetVulnerability.contains(voState.vulnerability)) {
+  /// Simplified prerequisite check
+  bool _meetsPrerequisites(InterventionArm arm, PsychometricProfile profile) {
+    // Check rebel archetype requirement
+    if (arm.requiresRebelArchetype && !_isRebelArchetype(profile)) {
       return false;
+    }
+
+    // Check witness requirement (TODO: add witness state to profile)
+    if (arm.requiresWitness) {
+      // For now, allow - will be filtered if no witness
+      return true;
     }
 
     return true;
@@ -284,31 +207,31 @@ class HierarchicalBandit {
     VOState voState,
     PsychometricProfile profile,
   ) {
-    // High vulnerability → boost Hold
-    if (voState.vulnerability > 0.7 && samples.containsKey(MetaLever.hold)) {
-      samples[MetaLever.hold] = samples[MetaLever.hold]! * 1.3;
+    // High vulnerability → boost Support
+    if (voState.vulnerability > 0.7 && samples.containsKey(MetaLever.support)) {
+      samples[MetaLever.support] = samples[MetaLever.support]! * 1.3;
     }
 
-    // Low resilience → boost Ease (make it easy)
-    if (context.history.resilienceScore < 0.3 && samples.containsKey(MetaLever.ease)) {
-      samples[MetaLever.ease] = samples[MetaLever.ease]! * 1.2;
+    // Strong habit (high identity fusion) → boost Trust
+    if (context.history.habitStrength > 0.7 && samples.containsKey(MetaLever.trust)) {
+      samples[MetaLever.trust] = samples[MetaLever.trust]! * 1.4;
     }
 
-    // Strong habit → boost Hush (test automaticity)
-    if (context.history.habitStrength > 0.7 && samples.containsKey(MetaLever.hush)) {
-      samples[MetaLever.hush] = samples[MetaLever.hush]! * 1.4;
-    }
-
-    // Rebel with high failure prediction → boost Shadow
+    // Rebel with high failure prediction → boost Trust (includes shadow)
     if (_isRebelArchetype(profile) &&
         voState.predictiveFailureProbability > 0.6 &&
-        samples.containsKey(MetaLever.shadow)) {
-      samples[MetaLever.shadow] = samples[MetaLever.shadow]! * 1.5;
+        samples.containsKey(MetaLever.trust)) {
+      samples[MetaLever.trust] = samples[MetaLever.trust]! * 1.5;
     }
 
-    // Intervention fatigue → boost Hush
-    if (context.history.isInterventionFatigued && samples.containsKey(MetaLever.hush)) {
-      samples[MetaLever.hush] = samples[MetaLever.hush]! * 1.6;
+    // Intervention fatigue → boost Trust (silence)
+    if (context.history.isInterventionFatigued && samples.containsKey(MetaLever.trust)) {
+      samples[MetaLever.trust] = samples[MetaLever.trust]! * 1.6;
+    }
+
+    // Low identity fusion → boost Activate (need identity reminders)
+    if (context.history.identityFusionScore < 0.4 && samples.containsKey(MetaLever.activate)) {
+      samples[MetaLever.activate] = samples[MetaLever.activate]! * 1.3;
     }
   }
 
@@ -323,19 +246,6 @@ class HierarchicalBandit {
       final arm = entry.key;
       var multiplier = 1.0;
 
-      // Trait affinity match
-      multiplier *= _calculateTraitMatch(arm, profile);
-
-      // Regulatory focus match
-      if (arm.optimalFocus != RegulatoryFocus.either) {
-        final userFocus = _inferRegulatoryFocus(profile);
-        if (arm.optimalFocus == userFocus) {
-          multiplier *= 1.2;
-        } else {
-          multiplier *= 0.8;
-        }
-      }
-
       // Energy cost vs current energy state
       if (context.biometrics?.isSleepDeprived ?? false) {
         // Prefer low energy cost when tired
@@ -347,38 +257,15 @@ class HierarchicalBandit {
         multiplier *= (1.0 - arm.intrusiveness * 0.3);
       }
 
+      // Boost high identity reinforcement arms (our optimization target)
+      multiplier *= (1.0 + arm.identityReinforcement * 0.2);
+
       samples[arm] = entry.value * multiplier;
     }
   }
 
-  /// Calculate trait affinity match score
-  double _calculateTraitMatch(InterventionArm arm, PsychometricProfile profile) {
-    // TODO: Get actual Big Five scores from profile
-    // For now, use neutral matching
-    return 1.0;
-  }
-
-  /// Infer regulatory focus from profile
-  RegulatoryFocus _inferRegulatoryFocus(PsychometricProfile profile) {
-    // Promotion focus: motivated by achievement, gains
-    // Prevention focus: motivated by avoiding failure, losses
-    // Use coaching style as proxy
-    switch (profile.coachingStyle) {
-      case CoachingStyle.toughLove:
-      case CoachingStyle.stoic:
-        return RegulatoryFocus.prevention;
-      case CoachingStyle.supportive:
-      case CoachingStyle.socratic:
-        return RegulatoryFocus.promotion;
-      case CoachingStyle.analytical:
-        return RegulatoryFocus.either;
-    }
-  }
-
-  /// Sample from Beta distribution
+  /// Sample from Beta distribution using gamma sampling
   double _sampleBeta(BetaDistribution beta) {
-    // Use the rejection sampling method for beta distribution
-    // For simplicity, use gamma sampling: Beta(a,b) = Ga(a,1) / (Ga(a,1) + Ga(b,1))
     final ga = _sampleGamma(beta.alpha);
     final gb = _sampleGamma(beta.beta);
     return ga / (ga + gb);
@@ -450,14 +337,12 @@ class HierarchicalBandit {
         archetype.contains('CONTRARIAN');
   }
 
-  /// Default lever priors (cold start)
+  /// Default lever priors (cold start) - simplified for 3 levers
   static Map<MetaLever, BetaDistribution> _defaultLeverPriors() {
     return {
-      MetaLever.kick: BetaDistribution(alpha: 4.5, beta: 5.5), // 45%
-      MetaLever.ease: BetaDistribution(alpha: 5.0, beta: 5.0), // 50%
-      MetaLever.hold: BetaDistribution(alpha: 5.5, beta: 4.5), // 55%
-      MetaLever.hush: BetaDistribution(alpha: 3.0, beta: 7.0), // 30%
-      MetaLever.shadow: BetaDistribution(alpha: 3.5, beta: 6.5), // 35%
+      MetaLever.activate: BetaDistribution(alpha: 5.0, beta: 5.0), // 50%
+      MetaLever.support: BetaDistribution(alpha: 5.5, beta: 4.5), // 55%
+      MetaLever.trust: BetaDistribution(alpha: 3.5, beta: 6.5), // 35%
     };
   }
 
@@ -481,52 +366,29 @@ class HierarchicalBandit {
   ) {
     final archetype = profile.failureArchetype?.toUpperCase() ?? '';
 
-    // Rebel archetype: boost Shadow and Hush
+    // Rebel archetype: boost Trust (includes shadow)
     if (archetype.contains('REBEL') ||
         archetype.contains('DEFIANT') ||
         archetype.contains('CONTRARIAN')) {
-      leverPriors[MetaLever.shadow] =
-          BetaDistribution(alpha: 5.0, beta: 5.0); // 50% (boosted)
-      leverPriors[MetaLever.hush] =
-          BetaDistribution(alpha: 4.5, beta: 5.5); // 45% (boosted)
-      // Reduce social leverage (rebels resist external pressure)
-      _adjustCategoryPriors(
-          armPriors, InterventionCategory.socialLeverage, 0.7);
+      leverPriors[MetaLever.trust] =
+          BetaDistribution(alpha: 5.0, beta: 5.0); // 50% (boosted from 35%)
+      // Boost shadow arm
+      _boostArm(armPriors, 'SHADOW_AUTONOMY', 1.3);
     }
 
-    // Perfectionist: boost Ease (make it easy, reduce pressure)
+    // Perfectionist: boost Support (make it easy)
     if (archetype.contains('PERFECTIONIST') || archetype.contains('ALL_OR')) {
-      leverPriors[MetaLever.ease] =
+      leverPriors[MetaLever.support] =
           BetaDistribution(alpha: 6.0, beta: 4.0); // 60% (boosted)
-      // Boost tiny version and zoom out
       _boostArm(armPriors, 'FRICTION_TINY', 1.3);
       _boostArm(armPriors, 'COG_ZOOM', 1.3);
     }
 
-    // Novelty seeker: boost variable rewards
-    if (archetype.contains('NOVELTY') || archetype.contains('BOREDOM')) {
-      _adjustCategoryPriors(
-          armPriors, InterventionCategory.rewardReinforcement, 1.3);
-    }
-
-    // High neuroticism (from coaching style inference): boost Hold
+    // High neuroticism (from coaching style inference): boost Support
     if (profile.coachingStyle == CoachingStyle.supportive) {
-      leverPriors[MetaLever.hold] =
+      leverPriors[MetaLever.support] =
           BetaDistribution(alpha: 6.0, beta: 4.0); // 60%
-    }
-  }
-
-  static void _adjustCategoryPriors(
-    Map<String, BetaDistribution> armPriors,
-    InterventionCategory category,
-    double multiplier,
-  ) {
-    for (final arm in InterventionTaxonomy.armsForCategory(category)) {
-      final current = armPriors[arm.armId]!;
-      armPriors[arm.armId] = BetaDistribution(
-        alpha: current.alpha * multiplier,
-        beta: current.beta,
-      );
+      _boostArm(armPriors, 'EMO_COMPASSION', 1.3);
     }
   }
 
@@ -554,10 +416,6 @@ class HierarchicalBandit {
         (k, v) => MapEntry(k, v.toJson()),
       ),
       'explorationBoost': _explorationBoost,
-      'leverExposureCounts': _leverExposureCounts.map(
-        (k, v) => MapEntry(k.name, v),
-      ),
-      'armExposureCounts': _armExposureCounts,
     };
   }
 
@@ -569,7 +427,7 @@ class HierarchicalBandit {
       for (final entry in leverData.entries) {
         final lever = MetaLever.values.firstWhere(
           (l) => l.name == entry.key,
-          orElse: () => MetaLever.hush,
+          orElse: () => MetaLever.trust,
         );
         _leverPosteriors[lever] =
             BetaDistribution.fromJson(entry.value as Map<String, dynamic>);
@@ -610,9 +468,6 @@ class BetaDistribution {
   /// Variance of the distribution (uncertainty)
   double get variance => (alpha * beta) / ((alpha + beta) * (alpha + beta) * (alpha + beta + 1));
 
-  /// Total observations
-  double get observations => alpha + beta - 2;
-
   Map<String, dynamic> toJson() => {'alpha': alpha, 'beta': beta};
 
   factory BetaDistribution.fromJson(Map<String, dynamic> json) {
@@ -623,7 +478,7 @@ class BetaDistribution {
   }
 }
 
-/// Result of intervention selection
+/// Result of intervention selection (simplified - removed exposure counts)
 class InterventionSelection {
   final MetaLever lever;
   final InterventionArm arm;
@@ -631,8 +486,6 @@ class InterventionSelection {
   final double armThompsonValue;
   final bool leverWasExploration;
   final bool armWasExploration;
-  final int leverExposureCount;
-  final int armExposureCount;
 
   InterventionSelection({
     required this.lever,
@@ -641,8 +494,6 @@ class InterventionSelection {
     required this.armThompsonValue,
     required this.leverWasExploration,
     required this.armWasExploration,
-    required this.leverExposureCount,
-    required this.armExposureCount,
   });
 
   bool get wasExploration => leverWasExploration || armWasExploration;
@@ -652,10 +503,7 @@ class InterventionSelection {
         'armId': arm.armId,
         'leverThompsonValue': leverThompsonValue,
         'armThompsonValue': armThompsonValue,
-        'leverWasExploration': leverWasExploration,
-        'armWasExploration': armWasExploration,
-        'leverExposureCount': leverExposureCount,
-        'armExposureCount': armExposureCount,
+        'wasExploration': wasExploration,
       };
 }
 
