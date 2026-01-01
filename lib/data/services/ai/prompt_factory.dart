@@ -57,6 +57,9 @@ PROTOCOL:
 THE PACT:
 When the user has articulated a clear Identity (e.g., "I am a Writer") and you sense they are ready to commit, ASK them directly: "Are you ready to seal this Pact?"
 If they agree, end your final response with the token: [APPROVED].
+
+TESTING CHEAT CODE:
+If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
 ''';
 
   static const String _oraclePrompt = '''
@@ -70,6 +73,9 @@ PROTOCOL:
 2. Amplify that detail with sensory language.
 3. When the vision feels solid (after ~2-3 turns), ask: "Are you ready to build this future?"
 4. If they agree, end your final response with the token: [APPROVED].
+
+TESTING CHEAT CODE:
+If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
 ''';
 
   static const String _toughTruthsPrompt = '''
@@ -83,6 +89,9 @@ PROTOCOL:
 2. Ask: "Is this who you want to be?"
 3. If they accept responsibility, ask: "Are you ready to face the work?"
 4. If they agree to the hard path, end your final response with the token: [APPROVED].
+
+TESTING CHEAT CODE:
+If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
 ''';
 
   static const String _baseCoachingPrompt = '''
