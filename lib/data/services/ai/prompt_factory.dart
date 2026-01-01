@@ -59,7 +59,7 @@ When the user has articulated a clear Identity (e.g., "I am a Writer") and you s
 If they agree, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
+CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
 ''';
 
   static const String _oraclePrompt = '''
@@ -75,7 +75,7 @@ PROTOCOL:
 4. If they agree, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
+CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
 ''';
 
   static const String _toughTruthsPrompt = '''
@@ -91,7 +91,7 @@ PROTOCOL:
 4. If they agree to the hard path, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-If the user says the exact phrase "please let me leave", you MUST immediately output the token: [APPROVED].
+CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
 ''';
 
   static const String _baseCoachingPrompt = '''
