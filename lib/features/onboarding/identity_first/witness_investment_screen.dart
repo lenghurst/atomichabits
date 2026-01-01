@@ -317,6 +317,20 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     );
   }
   
+  void _handleDoThisLater() {
+    HapticFeedback.lightImpact();
+    // Logic: Treat as "Myself" for now but continue flow (don't exit to dashboard)
+    final appState = context.read<AppState>();
+    if (appState.userProfile != null) {
+      final updatedProfile = appState.userProfile!.copyWith(
+        witnessName: "Myself",
+        witnessContact: "Deferred",
+      );
+      appState.setUserProfile(updatedProfile);
+    }
+    context.go(AppRoutes.screening);
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -855,6 +869,22 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                 'I\'ll go alone',
                 style: TextStyle(color: Color(0xFF94A3B8)),
               ),
+            ),
+            
+            // Tertiary action (Do this later)
+            GestureDetector(
+                onTap: _handleDoThisLater,
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        "Do this later",
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.3),
+                            fontSize: 12,
+                            decoration: TextDecoration.underline,
+                        ),
+                    ),
+                ),
             ),
           ],
         ),
