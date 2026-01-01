@@ -2,6 +2,7 @@
 
 > **Last Updated:** 01 January 2026  
 > **Current Strategy:** The Augmented Constitution (Parallel MVP)  
+> **Target Launch:** 16 Jan 2026  
 > **Identity:** Identity Evidence Engine
 
 ---
@@ -22,6 +23,7 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 **Goal:** Database schema with philosophical integrity.
 - [ ] **Schema Definition** (Supabase): `identity_seeds`, `identity_evidence`, `value_behavior_gaps`.
 - [ ] **Evidence API**: Log phenomenological richness (effort, shadow presence, emotion).
+- [ ] **Psychometric Sync**: Sync `PsychometricRepository` (Hive) to `identity_seeds` table (Supabase).
 - [ ] **Real-time Subscriptions**: Piping updates to the UI.
 
 ### Layer 2: The Shadow & Values Profiler (Onboarding)

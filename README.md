@@ -9,7 +9,7 @@ Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
 
 ---
 
-## 📊 Current Status (December 2025)
+## 📊 Current Status (January 2026)
 
 | Component | Status | Details |
 |-----------|--------|---------|
@@ -17,12 +17,12 @@ Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟢 **Stable** | Hybrid Stack: Gemini 3 (Brain) + Gemini 2.5 (Voice) |
-| **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
+| **Text AI** | 🟢 **Ready** | DeepSeek V3 (Analysis Pipeline Active) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
-> **Last Updated:** 29 December 2025  
-> **Current Phase:** Phase 60 - Voice Reliability  
-> **Target:** NYE 2025 Launch  
+> **Last Updated:** 01 January 2026  
+> **Current Phase:** The Augmented Constitution  
+> **Target:** Launch 16 Jan 2026  
 > **Language:** UK English (Default)
 
 ---

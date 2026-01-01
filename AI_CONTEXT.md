@@ -159,6 +159,7 @@
 - **Role:** Database Core.
 - **Atomic Unit:** `Identity Evidence` (not habits).
 - **Structure:** `identity_seeds`, `identity_evidence`, `value_behavior_gaps`.
+- **Sync:** `PsychometricRepository` (Hive) ⮕ `identity_seeds` (Supabase) for Analyst access.
 
 **Layer 2: The Shadow & Values Profiler (Onboarding)**
 - **Role:** Magic Wand Onboarding.
