@@ -114,6 +114,7 @@ class _MisalignmentScreenState extends State<MisalignmentScreen> {
                     ),
                   ),
                 ),
+              ],
             ),
           ),
         ),
