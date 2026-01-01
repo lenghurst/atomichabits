@@ -6,20 +6,28 @@
 
 When the user says **"run gcc"**, they are instructing the AI Agent to execute the following strictly defined process:
 
-1.  **Execute Command**:
+1.  **Commit to Main** (CRITICAL):
+    *   The Agent MUST commit all current changes to the `main` branch *before* running any build commands.
+    *   This ensures version control safety and a clean state for the pull operation.
+2.  **Execute Command**:
     ```bash
     git pull origin main && flutter clean && flutter pub get && flutter run --debug --dart-define-from-file=secrets.json
     ```
-2.  **Monitor Build**: Wait for the Gradle/Xcode build to complete.
-3.  **Handle Installation**: 
+3.  **Monitor Build**: Wait for the Gradle/Xcode build to complete.
+4.  **Handle Installation**:
     *   **Xiaomi Devices**: The Agent must explicitly warn the user to **watch their phone screen** for the "Install via USB" prompt and tap "Allow".
-4.  **Stream Logs**: Once launched, the Agent must monitor the stdout logs for relevant tags.
+5.  **Live Logging**: Once launched, the Agent must monitor and stream the stdout logs for relevant tags.
 
-**Agent Response Template for "run gcc":**
-> "Running Golden Command Chain...
-> Build successful. APK is installing on the [Device Name].
+**Agent Response Template (Chain of Thought):**
+> "Initiating Golden Command Chain (GCC)...
+>
+> 1.  **Committing Changes**: [Status: Done] - Secured latest work to `main`.
+> 2.  **Environment Sync**: [Status: Running] - Pulling, Cleaning, and Resolving Dependencies...
+> 3.  **Build & Install**: [Status: Pending] - Building APK for [Device Name].
+>
 > **ACTION REQUIRED:** Please unlock your device and tap 'Allow' / 'Install' if prompted.
-> The app should launch momentarily. Logs will begin streaming."
+>
+> **Live Logs:** Streaming application output..."
 
 ---
 

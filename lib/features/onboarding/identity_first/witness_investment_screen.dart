@@ -241,8 +241,8 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     if (witnessContact.isNotEmpty) {
       _inviteWitness(witnessName, witnessContact);
     } else {
-      // Navigate to tier selection if no contact info
-      context.go(AppRoutes.tierOnboarding);
+      // Navigate to Goal Screening (Step 8)
+      context.go(AppRoutes.screening);
     }
   }
 
@@ -263,7 +263,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     }
     
     // Navigate regardless of success (don't block user)
-    if (mounted) context.go(AppRoutes.tierOnboarding);
+    if (mounted) context.go(AppRoutes.screening);
   }
   
   /// Continue without a witness.
@@ -287,7 +287,7 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go(AppRoutes.tierOnboarding);
+              context.go(AppRoutes.screening);
             },
             child: const Text('Continue Solo'),
           ),

@@ -1,9 +1,9 @@
 # The Pact
 
-> **"Don't rely on willpower. Rely on your friends."**
+> **"The Atomic Unit is Identity Evidence."**
 
-A social habit-tracking app that turns personal goals into socially binding contracts.  
-Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
+A philosophical identity engine that turns daily actions into evidence of who you are becoming.
+Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
 
 **Live URL:** [thepact.co](https://thepact.co)
 
@@ -27,18 +27,17 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 ---
 
-## 🎯 The Core Philosophy
+## 🎯 The Augmented Constitution
 
-Traditional habit apps fail because they rely on **you**.  
-**The Pact** relies on **us**.
+We are not building a habit tracker. We are building an **Identity Evidence Engine**.
 
 | Principle | Description |
 |-----------|-------------|
-| **The Contract** | You don't just "set a goal." You sign a **Pact** with a friend (Witness). |
-| **The Wax Seal** | A haptic-heavy, ceremonial UI that makes commitment feel weighty. |
-| **The Witness** | Your friend gets notified when you succeed (or fail). |
-| **Graceful Consistency** | We measure rolling consistency, not fragile streaks. |
-| **Voice First** | Talk to your AI coach like a friend, not a form. |
+| **Atomic Unit** | **Identity Evidence**. Not "Checkboxes". |
+| **Analysis** | **Gap Analysis**. The AI detects dissonance between your Stated Values and your Observed Behavior. |
+| **Interaction** | **Conversational CLI**. Talk to your Shadow (Jungian Archetypes). |
+| **Visuals** | **Living Garden**. A user interface that responds to your Hexis score (seasons, weather, growth). |
+| **Voice First** | **Magic Wand Onboarding**. 3 Minutes to extract your Core Values and Shadow. |
 
 ---
 
@@ -49,11 +48,10 @@ Traditional habit apps fail because they rely on **you**.
 | **Mobile** | Flutter 3.38.4 | The Core Experience |
 | **Web** | React + Vite + Tailwind | The Landing Page |
 | **Backend** | Supabase | Auth, Database, Realtime, Edge Functions |
-| **AI (Reasoning)** | Gemini 3 Flash | High-IQ analysis & persona adherence |
-| **AI (Voice)** | Gemini 2.5 Flash | Low-latency Text-to-Speech (REST) |
-| **AI (Text)** | DeepSeek-V3 | Post-session analysis (JSON mode) |
-| **Voice Protocol** | Hybrid (WS + REST) | WebSocket for Live, REST for Async TTS |
-| **Hosting** | Netlify | Web Deployment |
+| **AI (Interactive)** | Gemini 3 Flash | **The Actor:** Sherlock, Shadow Dialogues, Real-time Interaction. |
+| **AI (Voice)** | Gemini 2.5 Flash | **The Mouth:** Lazy TTS (On-Demand Generation). |
+| **AI (Analysis)** | DeepSeek-V3 | **The Analyst:** Async Gap Analysis & Psychometrics. |
+| **Visualization** | Rive | **The Garden:** Living ecosystem engine. |
 
 ---
 

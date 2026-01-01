@@ -1,9 +1,10 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 28 December 2025  
-> **Current Phase:** Phase 62 - Sherlock Protocol Refinement  
+> **Current Phase:** The Augmented Constitution (Layers 1-5)  
 > **Identity:** The Pact  
-> **Domain:** thepact.co
+> **Domain:** thepact.co  
+> **Core Concept:** Identity Evidence Engine
 
 ---
 
@@ -45,9 +46,10 @@
 
 ## Project Overview
 
-**The Pact** — A social habit-tracking app that turns personal goals into socially binding contracts.
+**The Pact** — An Identity Evidence Engine. The atomic unit is Identity Evidence.
 
-**Core Philosophy:** `Graceful Consistency > Fragile Streaks`
+**Core Philosophy:**
+"We are building an app where the Atomic Unit is Identity Evidence. Through Magic Wand Voice Onboarding, the AI constructs a Dynamic Profile of the user's Shadow Archetypes and Core Values. Returning users encounter a Living Garden Visualization and interact via a Conversational Command Line, receiving Socratic Insights derived from real-time Gap Analysis between professed values and behavioral patterns."
 
 **Live URL:** [thepact.co](https://thepact.co)
 
@@ -151,102 +153,46 @@
 
 ---
 
-## Architecture Overview
+### The 5-Layer MVP Architecture
 
-### Directory Structure
+**Layer 1: The Evidence Engine (Supabase)**
+- **Role:** Database Core.
+- **Atomic Unit:** `Identity Evidence` (not habits).
+- **Structure:** `identity_seeds`, `identity_evidence`, `value_behavior_gaps`.
 
-```
-lib/
-├── config/                     # Configuration
-│   ├── ai_model_config.dart        # AI model settings
-│   ├── ai_prompts.dart             # Sherlock Protocol prompts (Phase 42)
-│   ├── ai_tools_config.dart        # Tool schemas (Phase 42)
-│   ├── niche_config.dart           # Target niches
-│   └── router/                     # Navigation (Phase 41)
-│       ├── app_routes.dart             # Route constants
-│       └── app_router.dart             # GoRouter config
-│
-├── core/                       # Core utilities
-│   └── logging/
-│       └── log_buffer.dart         # Centralized logging
-│
-├── data/
-│   ├── repositories/           # Infrastructure (Repository Pattern)
-│   │   ├── settings_repository.dart
-│   │   ├── hive_settings_repository.dart
-│   │   ├── user_repository.dart
-│   │   ├── habit_repository.dart
-│   │   └── psychometric_repository.dart
-│   │
-│   ├── providers/              # State Management (Riverpod-style)
-│   │   ├── settings_provider.dart
-│   │   ├── user_provider.dart
-│   │   ├── habit_provider.dart
-│   │   └── psychometric_provider.dart
-│   │
-│   ├── services/               # External Services
-│   │   ├── voice_api_service.dart      # NEW Interface (Phase 46)
-│   │   ├── gemini_live_service.dart    # Gemini implementation
-│   │   ├── openai_live_service.dart    # OpenAI implementation (Phase 46) 
-│   │   ├── audio_recording_service.dart
-│   │   ├── voice_session_manager.dart  # Session Orchestration
-│   │   ├── stream_voice_player.dart    # Audio Playback (V2)
-│   │   ├── ai/
-│   │       └── prompt_factory.dart     # Dynamic Prompts
-│   │
-│   └── app_state.dart          # Legacy (being strangled)
-│
-├── domain/
-│   ├── entities/               # Pure Domain Models
-│   │   └── psychometric_profile.dart
-│   │
-│   └── services/               # Domain Logic
-│       └── psychometric_engine.dart
-│
-└── features/
-    ├── dev/                    # Developer Tools
-    │   ├── dev_tools_overlay.dart
-    │   └── debug_console_view.dart
-    │
-    ├── onboarding/             # Onboarding Flow
-    │   ├── voice_coach_screen.dart
-    │   └── identity_first/
-    │
-    └── dashboard/              # Main Dashboard
-        └── habit_list_screen.dart
-```
+**Layer 2: The Shadow & Values Profiler (Onboarding)**
+- **Role:** Magic Wand Onboarding.
+- **Engine:** **Sherlock (Gemini 3 Flash)**.
+- **Process:** 3-minute voice recording → Socratic Dialogue → Extract Values & Shadow Archetypes.
 
-### Voice Architecture (Phase 42: Tool Calling)
+**Layer 3: The Living Garden Visualization (UI)**
+- **Role:** Responsive Ecosystem (Not static charts).
+- **Engine:** **Rive**.
+- **Inputs:** Hexis Score, Shadow Presence, Time of Day, Season.
 
-```
-User → Voice Coach Screen
-         ↓
-     Voice Session Manager
-         ↓
-     VoiceApiService (Interface)
-     (Gemini / OpenAI)
-          ↓
-     StreamVoicePlayer (V2)
-     (Buffering + Speaker Enforcement)
-          ↓
-     Audio Output (Speaker)
-         ↓
-     AI Provider API
-     + Voice Only (No Tools)
-          ↓
-   ┌─────┴─────────────────┐
-   │                       │
-Audio/Transcription     Session End
-   │                       │
-   │              PsychometricProvider
-   │              .analyzeTranscript()
-   │                       │
-   │              DeepSeek V3 (REST)
-   │                       │
-   └─────┬─────────────────┘
-         ↓
-   Update Profile → Hive Save
-```
+**Layer 4: The Conversational Command Line (Interaction)**
+- **Role:** Interface.
+- **Engine:** **Voice Note UI (Gemini 2.5 Flash)**.
+- **Commands:** `log`, `check`, `gap`, `shadow`, `ritual`.
+
+**Layer 5: Philosophical Intelligence (Gap Analysis)**
+- **Role:** The Brain.
+- **Engine:** **DeepSeek V3** (Async Analysis).
+- **Function:** Detects dissonance between Stated Values and Observed Behavior.
+
+---
+
+### Voice Architecture (Hybrid Roles)
+
+**1. The Actor (Interactive): Gemini 3 Flash**
+- **Role:** Sherlock, Shadow Archetypes (Rebel, Perfectionist).
+- **Interface:** Voice Coach Screen.
+- **Capability:** Real-time persona switching, voice synthesis (via Gemini 2.5 TTS).
+
+**2. The Analyst (Async): DeepSeek V3**
+- **Role:** Gap Analysis Engine.
+- **Interface:** Background Pipeline (`PsychometricProvider`).
+- **Capability:** JSON-based extraction of "Deep Insights" and "Value Gaps".
 
 ### Voice Note Functionality (Phase 60: Hybrid Stack)
 

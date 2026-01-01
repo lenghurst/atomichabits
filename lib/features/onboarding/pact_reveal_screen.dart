@@ -114,12 +114,11 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     if (!mounted) return;
     
     // Phase 43: Navigation Logic Update (Dec 2025)
-    // We do NOT finalize onboarding here. This is Step 7.
-    // We proceed to Step 8: Goal Screening.
+    // We proceed to Step 7.5: Witness Investment
     // The "Pact" is the psychological commitment, but the "Protocol" (Screening/Coach) follows.
     
     if (mounted) {
-      context.go(AppRoutes.screening);
+      context.go(AppRoutes.witnessOnboarding);
     }
   }
 

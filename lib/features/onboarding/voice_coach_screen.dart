@@ -142,9 +142,52 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     _stopRecording(session);
   }
 
+  // --- Polymorphic Theming Helpers ---
+
+  Color _getThemeColor() {
+    switch (widget.mode) {
+      case VoiceSessionMode.oracle:
+        return const Color(0xFFD4AF37); // Gold
+      case VoiceSessionMode.onboarding:
+      default:
+        return const Color(0xFF00A884); // Sherlock Green
+    }
+  }
+
+  String _getTitle() {
+    switch (widget.mode) {
+      case VoiceSessionMode.oracle:
+        return 'The Oracle';
+      case VoiceSessionMode.onboarding:
+      default:
+        return 'Sherlock';
+    }
+  }
+
+  String _getSubtitle() {
+    switch (widget.mode) {
+      case VoiceSessionMode.oracle:
+        return 'Future Architect';
+      case VoiceSessionMode.onboarding:
+      default:
+        return 'Parts Detective';
+    }
+  }
+
+  IconData _getIcon() {
+    switch (widget.mode) {
+      case VoiceSessionMode.oracle:
+        return Icons.auto_awesome;
+      case VoiceSessionMode.onboarding:
+      default:
+        return Icons.smart_toy;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<VoiceSessionManager>();
+    final themeColor = _getThemeColor();
     
     return Scaffold(
       backgroundColor: const Color(0xFF0B141A), // Deep Dark Background
@@ -155,19 +198,19 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white70),
           onPressed: () => context.pop(),
         ),
-        title: const Row(
+        title: Row(
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: Color(0xFF00A884),
-              child: Icon(Icons.smart_toy, size: 20, color: Colors.white),
+              backgroundColor: themeColor,
+              child: Icon(_getIcon(), size: 20, color: Colors.white),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Sherlock', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Parts Detective', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                Text(_getTitle(), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(_getSubtitle(), style: const TextStyle(color: Colors.white54, fontSize: 11)),
               ],
             ),
           ],
@@ -183,7 +226,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
               itemCount: session.messages.length + (session.isThinking ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index >= session.messages.length) {
-                  return _buildThinkingIndicator();
+                  return _buildThinkingIndicator(themeColor);
                 }
                 return ChatMessageBubble(message: session.messages[index]);
               },
@@ -191,13 +234,13 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
           ),
 
           // 2. Input Zone
-          _buildInputZone(session),
+          _buildInputZone(session, themeColor),
         ],
       ),
     );
   }
 
-  Widget _buildThinkingIndicator() {
+  Widget _buildThinkingIndicator(Color themeColor) {
     return Padding(
       padding: const EdgeInsets.only(top: 10, left: 10, bottom: 20),
       child: Row(
@@ -213,12 +256,12 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
                 bottomRight: Radius.circular(12),
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00A884))),
-                SizedBox(width: 12),
-                Text("Analysing...", style: TextStyle(color: Color(0xFF00A884), fontSize: 13, fontStyle: FontStyle.italic)),
+                SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: themeColor)),
+                const SizedBox(width: 12),
+                Text("Analysing...", style: TextStyle(color: themeColor, fontSize: 13, fontStyle: FontStyle.italic)),
               ],
             ),
           ),
@@ -227,7 +270,7 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     );
   }
 
-  Widget _buildInputZone(VoiceSessionManager session) {
+  Widget _buildInputZone(VoiceSessionManager session, Color themeColor) {
     final isRecording = session.isRecording;
     final durationStr = "${_recordDuration.inMinutes}:${(_recordDuration.inSeconds % 60).toString().padLeft(2, '0')}";
 
@@ -270,15 +313,15 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
                     child: isRecording
                         ? Row( // Recording Active UI
                             children: [
-                              const Icon(Icons.mic, color: Colors.redAccent, size: 20),
-                              const SizedBox(width: 12),
-                              Text(durationStr, style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'monospace')),
-                              if (_isLocked) const Text(" (Locked)", style: TextStyle(color: Colors.white38, fontSize: 12)),
-                              const Spacer(),
-                              GestureDetector(
-                                onTap: () => _handleCancel(session),
-                                child: const Text("Cancel", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                              )
+                               const Icon(Icons.mic, color: Colors.redAccent, size: 20),
+                               const SizedBox(width: 12),
+                               Text(durationStr, style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'monospace')),
+                               if (_isLocked) const Text(" (Locked)", style: TextStyle(color: Colors.white38, fontSize: 12)),
+                               const Spacer(),
+                               GestureDetector(
+                                 onTap: () => _handleCancel(session),
+                                 child: const Text("Cancel", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                               )
                             ],
                           )
                         : const Align( // Idle UI
@@ -301,10 +344,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
                     height: isRecording ? 60 : 50,
                     width: isRecording ? 60 : 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00A884),
+                      color: themeColor,
                       shape: BoxShape.circle,
                       boxShadow: isRecording 
-                        ? [BoxShadow(color: const Color(0xFF00A884).withValues(alpha: 0.4), blurRadius: 12, spreadRadius: 4)]
+                        ? [BoxShadow(color: themeColor.withOpacity(0.4), blurRadius: 12, spreadRadius: 4)]
                         : [],
                     ),
                     child: Icon(
