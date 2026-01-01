@@ -9,7 +9,7 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 
 ---
 
-## 📊 Current Status (December 2025)
+## 📊 Current Status (January 2026)
 
 | Component | Status | Details |
 |-----------|--------|---------|
@@ -17,12 +17,12 @@ Built on **Flutter** (Mobile) with **Voice-First AI Coaching**.
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟢 **Stable** | Hybrid Stack: Gemini 3 (Brain) + Gemini 2.5 (Voice) |
-| **Text AI** | ⚠️ **Needs Funding** | DeepSeek V3 (account balance empty) |
+| **Text AI** | 🟢 **Ready** | DeepSeek V3 (Funded) |
 | **Cloud Sync** | 🟢 **Stable** | Auth Reset & Sign-Out fixed (Phase 45.4) |
 
-> **Last Updated:** 29 December 2025  
-> **Current Phase:** Phase 60 - Voice Reliability  
-> **Target:** NYE 2025 Launch  
+> **Last Updated:** 1 January 2026
+> **Current Phase:** Phase 62 - Sherlock Protocol Refinement
+> **Target:** 16 Jan 2026 Launch
 > **Language:** UK English (Default)
 
 ---
