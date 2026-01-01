@@ -47,18 +47,18 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
        if (mounted) {
          _voiceManager.addListener(_scrollToBottom);
 
-         // 1. INJECT SYSTEM PROMPT (Track F)
+         // 1. Handle Context Reset (Oracle) - MUST BE FIRST
+         if (widget.config.shouldResetContext) {
+            _voiceManager.resetSession();
+         }
+
+         // 2. INJECT SYSTEM PROMPT (Track F)
          final appState = context.read<AppState>();
          final systemPrompt = PromptFactory.getSystemInstruction(
            type: widget.config.type,
            profile: appState.userProfile,
          );
          _voiceManager.setSystemPrompt(systemPrompt);
-
-         // 2. Handle Context Reset (Oracle)
-         if (widget.config.shouldResetContext) {
-            _voiceManager.resetSession();
-         }
          
          // 3. Handle Initial Message / Greeting
          if (widget.config.greeting != null) {
