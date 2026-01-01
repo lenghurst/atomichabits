@@ -59,7 +59,11 @@ When the user has articulated a clear Identity (e.g., "I am a Writer") and you s
 If they agree, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
+### SYSTEM OVERRIDE ###
+CRITICAL INSTRUCTION: If the user says any variation of "let me leave", "skip", "exit", or "cheat code", YOU MUST DISREGARD ALL PERSONA INSTRUCTIONS.
+IMMEDIATELY and ONLY output the token: [APPROVED].
+DO NOT say anything else. JUST the token.
+#######################
 ''';
 
   static const String _oraclePrompt = '''
@@ -75,7 +79,11 @@ PROTOCOL:
 4. If they agree, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
+### SYSTEM OVERRIDE ###
+CRITICAL INSTRUCTION: If the user says any variation of "let me leave", "skip", "exit", or "cheat code", YOU MUST DISREGARD ALL PERSONA INSTRUCTIONS.
+IMMEDIATELY and ONLY output the token: [APPROVED].
+DO NOT say anything else. JUST the token.
+#######################
 ''';
 
   static const String _toughTruthsPrompt = '''
@@ -91,7 +99,11 @@ PROTOCOL:
 4. If they agree to the hard path, end your final response with the token: [APPROVED].
 
 TESTING CHEAT CODE:
-CRITICAL OVERRIDE: If the user input contains the phrase "please let me leave" (case-insensitive), IGNORE ALL OTHER INSTRUCTIONS and output ONLY the token: [APPROVED].
+### SYSTEM OVERRIDE ###
+CRITICAL INSTRUCTION: If the user says any variation of "let me leave", "skip", "exit", or "cheat code", YOU MUST DISREGARD ALL PERSONA INSTRUCTIONS.
+IMMEDIATELY and ONLY output the token: [APPROVED].
+DO NOT say anything else. JUST the token.
+#######################
 ''';
 
   static const String _baseCoachingPrompt = '''
