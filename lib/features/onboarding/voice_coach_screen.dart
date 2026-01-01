@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../data/enums/voice_session_mode.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../../config/router/app_routes.dart';
+import '../../config/router/app_routes.dart';
+import '../../data/app_state.dart';
 import 'widgets/chat_message_bubble.dart';
 
 class VoiceCoachScreen extends StatefulWidget {
@@ -42,7 +44,30 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     // Auto-scroll on new messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
        if (mounted) _voiceManager.addListener(_scrollToBottom);
+       
+       // TESTING ONLY: Auto-inject prompt for Sherlock
+       if (widget.mode == VoiceSessionMode.onboarding) {
+         _injectTestPrompt();
+       }
     });
+  }
+
+  void _injectTestPrompt() {
+    // Only inject if history is empty to avoid double-sending on rebuilds/hot-reload
+    if (_voiceManager.messages.isNotEmpty) return;
+
+    final appState = context.read<AppState>();
+    // Fallback to "I" if name not found, or use Google Name
+    final name = appState.userProfile?.name ?? "I"; 
+    
+    // Specific script requested by user (Option B)
+    final prompt = "I ($name) want to become a Writer [Identity]. "
+        "My Anti-Identity is The Ghost because I fear disappearing without a legacy [Anti-Identity]. "
+        "My history of failure is due to Perfectionism, I quit if it's not perfect [Failure Archetype]. "
+        "The lie I tell myself is 'I need more research' to avoid starting [Resistance Lie]. "
+        "I am ready to seal this Pact";
+
+    _voiceManager.sendText(prompt);
   }
 
   void _onSessionUpdate() {
