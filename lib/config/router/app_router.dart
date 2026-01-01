@@ -19,7 +19,7 @@ import '../../features/onboarding/state/onboarding_state.dart'; // Added for Str
 import '../../data/app_state.dart';
 import '../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../data/services/voice_session_manager.dart';
-import '../../data/enums/voice_session_mode.dart'; // Added for Unification
+
 import '../../data/providers/psychometric_provider.dart'; // Added for Commitment Checks
 import '../../core/logging/app_logger.dart'; // Robust Logging
 import '../../features/navigation/scaffold_with_navbar.dart'; // Phase 4: ShellRoute
@@ -52,7 +52,7 @@ import '../../features/witness/witness_dashboard.dart';
 import '../../features/onboarding/pact_reveal_screen.dart';
 import '../../features/onboarding/identity_first/sherlock_permission_screen.dart';
 import '../../features/onboarding/screens/goal_screening_screen.dart';
-import '../../features/onboarding/screens/oracle_coach_screen.dart';
+
 import '../../features/onboarding/screens/misalignment_screen.dart';
 import '../../features/onboarding/identity_first/value_proposition_screen.dart';
 import '../../features/onboarding/bootstrap_screen.dart';
@@ -277,7 +277,7 @@ class AppRouter {
       // Step 9: Oracle Coach
       GoRoute(
         path: AppRoutes.oracle,
-        builder: (context, state) => const OracleCoachScreen(),
+        builder: (context, state) => const VoiceCoachScreen(config: VoiceSessionConfig.oracle),
       ),
 
       // Step 10: Misalignment

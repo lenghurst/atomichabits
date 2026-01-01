@@ -289,16 +289,21 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           TextButton(
              onPressed: () {
                Navigator.pop(context);
-               // Navigate to Tough Truths AI Coach
-               Navigator.of(context).push(
-                 MaterialPageRoute(
-                   builder: (context) => VoiceCoachScreen(
-                     config: VoiceSessionConfig.toughTruths,
-                   ),
-                 ),
-               );
+               
+               // "Go Solo" means being your own witness (Internal Locus of Control)
+               final appState = context.read<AppState>();
+               if (appState.userProfile != null) {
+                 final updatedProfile = appState.userProfile!.copyWith(
+                   witnessName: "Myself",
+                   witnessContact: "Internal",
+                 );
+                 appState.setUserProfile(updatedProfile);
+               }
+
+               // Go directly to Dashboard (Bypass Voice Coach)
+               context.go(AppRoutes.dashboard);
              },
-             child: const Text('Use AI Coach', style: TextStyle(color: Color(0xFF64748B))),
+             child: const Text('Go Solo', style: TextStyle(color: Color(0xFF64748B))),
           ),
           FilledButton(
             onPressed: () {

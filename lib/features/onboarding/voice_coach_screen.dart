@@ -57,12 +57,17 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
 
          // 2. Handle Context Reset (Oracle)
          if (widget.config.shouldResetContext) {
-            // TODO: Implement resetSession() if needed, for now manual clearance or new instance strategy
-            // _voiceManager.reset(); 
+            _voiceManager.resetSession();
          }
          
-         // 3. Handle Initial Message Injection
-         if (widget.config.initialMessage != null) {
+         // 3. Handle Initial Message / Greeting
+         if (widget.config.greeting != null) {
+           // Sherlock speaks first (Assistant Message)
+           if (_voiceManager.messages.isEmpty) {
+              _voiceManager.addSystemGreeting(widget.config.greeting!);
+           }
+         } else if (widget.config.initialMessage != null) {
+           // Legacy / Scripted User Message
            _injectInitialMessage(widget.config.initialMessage!);
          }
        }

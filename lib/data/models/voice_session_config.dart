@@ -14,6 +14,9 @@ class VoiceSessionConfig {
   /// Optional: Message to inject immediately on session start
   final String? initialMessage;
 
+  /// Optional: Initial greeting from the Assistant (Sherlock speaks first)
+  final String? greeting;
+
   /// Optional: Whether to reset session context (true for Oracle)
   final bool shouldResetContext;
 
@@ -29,6 +32,7 @@ class VoiceSessionConfig {
     required this.icon,
     required this.nextRoute,
     this.initialMessage,
+    this.greeting,
     this.shouldResetContext = false,
   });
 
@@ -42,6 +46,7 @@ class VoiceSessionConfig {
     themeColor: Color(0xFF00A884), // Green
     icon: Icons.smart_toy,
     nextRoute: AppRoutes.pactReveal,
+    greeting: "Hello, I'm Sherlock. I'm here to help you identify the parts of yourself that are holding you back. Shall we begin?",
     // initialMessage can be overridden in UI if needed, but not here as const
   );
 
@@ -54,6 +59,7 @@ class VoiceSessionConfig {
     icon: Icons.auto_awesome,
     shouldResetContext: true,
     nextRoute: AppRoutes.dashboard, // Confirmed Step 9 destination
+    greeting: "Welcome back. I am the Oracle. Let us architect your future.",
   );
 
   /// Tough Truths: Non-Human Witness (Step 7.5 Option)
@@ -80,6 +86,7 @@ class VoiceSessionConfig {
       nextRoute: nextRoute,
       shouldResetContext: shouldResetContext,
       initialMessage: initialMessage ?? this.initialMessage,
+      greeting: greeting,
     );
   }
 }

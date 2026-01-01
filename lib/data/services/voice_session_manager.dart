@@ -34,6 +34,19 @@ class VoiceSessionManager extends ChangeNotifier {
 
   DateTime? _recordingStartTime; // ⏱️ Added duration tracking
 
+  /// Resets the session state (clears messages, flags, etc.)
+  void resetSession() {
+    _messages.clear();
+    _isSessionComplete = false;
+    _currentSystemPrompt = null;
+    notifyListeners();
+  }
+
+  /// Adds a greeting message from the System/Assistant
+  void addSystemGreeting(String greeting) {
+    _addMessage(ChatMessage.sherlock(text: greeting));
+  }
+
   /// Sends a text message to Sherlock
   Future<void> sendText(String text) async {
     if (_isThinking || _isSessionComplete || text.trim().isEmpty) return;
