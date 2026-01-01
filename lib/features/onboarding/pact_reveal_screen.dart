@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart'; // Phase 43: Social Accountability
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart'; // Import AppState to load the specific habit
 import '../../data/models/habit.dart'; // Import Habit model
@@ -108,20 +109,36 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     setState(() => _showCard = true);
   }
 
-  Future<void> _navigateToDashboard() async {
+  Future<void> _continueToScreening() async {
     HapticFeedback.heavyImpact();
     if (!mounted) return;
     
-    final psychometricProvider = context.read<PsychometricProvider>();
-    await psychometricProvider.finalizeOnboarding();
-
-    if (mounted) {
-       await context.read<UserProvider>().completeOnboarding();
-    }
+    // Phase 43: Navigation Logic Update (Dec 2025)
+    // We do NOT finalize onboarding here. This is Step 7.
+    // We proceed to Step 8: Goal Screening.
+    // The "Pact" is the psychological commitment, but the "Protocol" (Screening/Coach) follows.
     
-    // Go to Dashboard/Home instead of screening, as we just finished the loop
     if (mounted) {
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.screening);
+    }
+  }
+
+  Future<void> _sharePact(Color accentColor) async {
+    HapticFeedback.mediumImpact();
+    final userProvider = context.read<UserProvider>();
+    final identity = userProvider.identity;
+    
+    // Create a compelling share text that triggers curiosity
+    final text = "I just sealed my pact to become a $identity with Atomic Habits. The protocol begins now.";
+    
+    try {
+      // Use share_plus to invoke native share sheet
+      await Share.share(text);
+    } catch (e) {
+      debugPrint("Share failed: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Could not launch share: $e")),
+      );
     }
   }
 
@@ -265,10 +282,9 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     );
   }
 
-  // ... _buildShareButton remains the same ...
   Widget _buildShareButton(PsychometricProfile profile, Color accentColor) {
     return TextButton.icon(
-      onPressed: () {}, // Implement share logic
+      onPressed: () => _sharePact(accentColor),
       icon: Icon(Icons.share, color: accentColor, size: 18),
       label: Text(
         "SHARE MY PACT",
@@ -281,7 +297,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _navigateToDashboard,
+        onTap: _continueToScreening,
         borderRadius: BorderRadius.circular(30),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -299,7 +315,7 @@ class _PactRevealScreenState extends State<PactRevealScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                "ENTER THE GARDEN", // Changed to match "Garden" concept
+                "CONTINUE PROTOCOL", // Changed from ENTER THE GARDEN to match linear flow
                 style: TextStyle(
                   color: Colors.white,
                   letterSpacing: 2,
