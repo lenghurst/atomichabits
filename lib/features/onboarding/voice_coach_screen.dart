@@ -92,6 +92,13 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
   void _onSessionUpdate() {
     if (_voiceManager.isSessionComplete) {
       // ✅ SUCCESS: Navigate to result (Configurable)
+      
+      // CRITICAL FIX: If this is Oracle, we MUST complete onboarding in AppState
+      // BEFORE navigating, otherwise the Router will bounce us back to Start.
+      if (widget.config.type == VoiceSessionType.oracle) {
+        context.read<AppState>().completeOnboarding();
+      }
+
       // Wait a moment for the user to hear the approval or see the text
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
