@@ -21,6 +21,13 @@ class VoiceSessionManager extends ChangeNotifier {
   bool _isThinking = false;
   bool get isThinking => _isThinking;
 
+  // Dynamic System Prompt (injected by VoiceCoachScreen)
+  String? _currentSystemPrompt;
+  
+  void setSystemPrompt(String prompt) {
+    _currentSystemPrompt = prompt;
+  }
+
   // Track if Sherlock has approved the pact
   bool _isSessionComplete = false;
   bool get isSessionComplete => _isSessionComplete;
@@ -114,20 +121,8 @@ class VoiceSessionManager extends ChangeNotifier {
 
   // Refined Prompt: Philosophical Integration (IFS)
   // Replaces "Anti-Identity" with "Protector Parts" to align with Taoist/Therapeutic vision
-  static const String _sherlockSystemPrompt = '''
-You are Sherlock, an expert Parts Detective and Identity Architect.
-Your Goal: Help users identify their "Protector Parts" (habits/fears that keep them safe but stuck) and discover their "Self" (who they truly want to be).
-
-PROTOCOL:
-1. Listen for "Protector" language: Perfectionism, Procrastination, Rebellion, Avoidance.
-2. Ask probing questions: "What is this part trying to protect you from?" or "What does your authentic self truly want?"
-3. Be curious and incisive, not judgmental. Use "Deduction Flash" style logic.
-4. Keep responses CONCISE (under 2 sentences preferred).
-
-THE PACT:
-When the user has articulated a clear Identity (e.g., "I am a Writer") and you sense they are ready to commit, ASK them directly: "Are you ready to seal this Pact?"
-If they agree, end your final response with the token: [APPROVED].
-''';
+  // DEPRECATED: Now injected via setSystemPrompt()
+  // static const String _sherlockSystemPrompt = ...
 
   Future<void> _processSherlockTurn(String audioPath) async {
     _isThinking = true;
@@ -149,7 +144,7 @@ If they agree, end your final response with the token: [APPROVED].
       final result = await _sherlockService.processVoiceNote(
         audioPath,
         history: history,
-        systemInstruction: _sherlockSystemPrompt,
+        systemInstruction: _currentSystemPrompt,
       );
       
       // ✅ UX: Delay removal so user sees the "Sent" state for a moment

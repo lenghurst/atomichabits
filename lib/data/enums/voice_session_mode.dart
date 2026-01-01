@@ -1,4 +1,5 @@
 /// Session modes for the voice coach
+@Deprecated('Use VoiceSessionType and VoiceSessionConfig instead')
 enum VoiceSessionMode {
   /// Onboarding mode: Sherlock Protocol with tool calls
   /// Used for initial psychometric profiling

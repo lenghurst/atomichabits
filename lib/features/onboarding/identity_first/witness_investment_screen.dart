@@ -12,6 +12,8 @@ import '../../../data/app_state.dart';
 import '../../../data/services/voice_session_manager.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../components/permission_glass_pane.dart';
+import '../voice_coach_screen.dart';
+import '../../../data/models/voice_session_config.dart';
 
 /// Witness Investment Screen
 /// 
@@ -283,6 +285,20 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Add a Witness'),
+          ),
+          TextButton(
+             onPressed: () {
+               Navigator.pop(context);
+               // Navigate to Tough Truths AI Coach
+               Navigator.of(context).push(
+                 MaterialPageRoute(
+                   builder: (context) => VoiceCoachScreen(
+                     config: VoiceSessionConfig.toughTruths,
+                   ),
+                 ),
+               );
+             },
+             child: const Text('Use AI Coach', style: TextStyle(color: Color(0xFF64748B))),
           ),
           FilledButton(
             onPressed: () {

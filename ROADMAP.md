@@ -85,6 +85,11 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] Connect CLI commands to Evidence Engine.
 - [ ] "Dogfooding" build distribution.
 
+### Track F: Social & Protocol Refinements (User Priority)
+- [ ] **Witness Investment**: deep dive into "Deep Link" vs "Web Landing" for WhatsApp share.
+- [ ] **Betting Logic**: Inverse confidence slider (£5 vs High Stakes) + "Tough Truths AI" fallback.
+- [ ] **The Oracle**: Separate `VoiceSessionManager` state + Context Injection from Sherlock.
+
 ---
 
 ## ✅ Completed Legacy Phases (Reference)

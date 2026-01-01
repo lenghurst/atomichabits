@@ -4,19 +4,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../data/enums/voice_session_mode.dart';
+import '../../data/enums/voice_session_type.dart';
 import '../../data/services/voice_session_manager.dart';
-import '../../config/router/app_routes.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import 'widgets/chat_message_bubble.dart';
+import '../../data/services/ai/prompt_factory.dart';
+import '../../data/models/voice_session_config.dart';
 
 class VoiceCoachScreen extends StatefulWidget {
-  final VoiceSessionMode mode;
+  final VoiceSessionConfig config;
   
   const VoiceCoachScreen({
     super.key, 
-    this.mode = VoiceSessionMode.coaching,
+    this.config = VoiceSessionConfig.sherlock, // Default to Sherlock
   });
 
   @override
@@ -43,41 +44,53 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     
     // Auto-scroll on new messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       if (mounted) _voiceManager.addListener(_scrollToBottom);
-       
-       // TESTING ONLY: Auto-inject prompt for Sherlock
-       if (widget.mode == VoiceSessionMode.onboarding) {
-         _injectTestPrompt();
+       if (mounted) {
+         _voiceManager.addListener(_scrollToBottom);
+
+         // 1. INJECT SYSTEM PROMPT (Track F)
+         final appState = context.read<AppState>();
+         final systemPrompt = PromptFactory.getSystemInstruction(
+           type: widget.config.type,
+           profile: appState.userProfile,
+         );
+         _voiceManager.setSystemPrompt(systemPrompt);
+
+         // 2. Handle Context Reset (Oracle)
+         if (widget.config.shouldResetContext) {
+            // TODO: Implement resetSession() if needed, for now manual clearance or new instance strategy
+            // _voiceManager.reset(); 
+         }
+         
+         // 3. Handle Initial Message Injection
+         if (widget.config.initialMessage != null) {
+           _injectInitialMessage(widget.config.initialMessage!);
+         }
        }
     });
   }
 
-  void _injectTestPrompt() {
-    // Only inject if history is empty to avoid double-sending on rebuilds/hot-reload
+  void _injectInitialMessage(String message) {
+    // Only inject if history is empty to avoid double-sending
     if (_voiceManager.messages.isNotEmpty) return;
-
-    final appState = context.read<AppState>();
-    // Fallback to "I" if name not found, or use Google Name
-    final name = appState.userProfile?.name ?? "I"; 
     
-    // Specific script requested by user (Option B)
-    final prompt = "I ($name) want to become a Writer [Identity]. "
-        "My Anti-Identity is The Ghost because I fear disappearing without a legacy [Anti-Identity]. "
-        "My history of failure is due to Perfectionism, I quit if it's not perfect [Failure Archetype]. "
-        "The lie I tell myself is 'I need more research' to avoid starting [Resistance Lie]. "
-        "I am ready to seal this Pact";
-
-    _voiceManager.sendText(prompt);
+    // FOR BACKWARD COMPATIBILITY with the test prompt:
+    if (widget.config.type == VoiceSessionType.sherlock && message.contains("{Name}")) {
+        final appState = context.read<AppState>();
+        final name = appState.userProfile?.name ?? "I";
+        final interpolated = message.replaceAll("{Name}", name);
+        _voiceManager.sendText(interpolated);
+    } else {
+        _voiceManager.sendText(message);
+    }
   }
 
   void _onSessionUpdate() {
     if (_voiceManager.isSessionComplete) {
-      // ✅ SUCCESS: Navigate to result
+      // ✅ SUCCESS: Navigate to result (Configurable)
       // Wait a moment for the user to hear the approval or see the text
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-           // We navigate to Pact Reveal to seal the deal
-           context.go(AppRoutes.pactReveal);
+           context.go(widget.config.nextRoute);
         }
       });
     }
@@ -167,52 +180,10 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     _stopRecording(session);
   }
 
-  // --- Polymorphic Theming Helpers ---
-
-  Color _getThemeColor() {
-    switch (widget.mode) {
-      case VoiceSessionMode.oracle:
-        return const Color(0xFFD4AF37); // Gold
-      case VoiceSessionMode.onboarding:
-      default:
-        return const Color(0xFF00A884); // Sherlock Green
-    }
-  }
-
-  String _getTitle() {
-    switch (widget.mode) {
-      case VoiceSessionMode.oracle:
-        return 'The Oracle';
-      case VoiceSessionMode.onboarding:
-      default:
-        return 'Sherlock';
-    }
-  }
-
-  String _getSubtitle() {
-    switch (widget.mode) {
-      case VoiceSessionMode.oracle:
-        return 'Future Architect';
-      case VoiceSessionMode.onboarding:
-      default:
-        return 'Parts Detective';
-    }
-  }
-
-  IconData _getIcon() {
-    switch (widget.mode) {
-      case VoiceSessionMode.oracle:
-        return Icons.auto_awesome;
-      case VoiceSessionMode.onboarding:
-      default:
-        return Icons.smart_toy;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final session = context.watch<VoiceSessionManager>();
-    final themeColor = _getThemeColor();
+    // Use config for theme
+    final themeColor = widget.config.themeColor;
     
     return Scaffold(
       backgroundColor: const Color(0xFF0B141A), // Deep Dark Background
@@ -228,14 +199,14 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: themeColor,
-              child: Icon(_getIcon(), size: 20, color: Colors.white),
+              child: Icon(widget.config.icon, size: 20, color: Colors.white),
             ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_getTitle(), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                Text(_getSubtitle(), style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                Text(widget.config.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(widget.config.subtitle, style: const TextStyle(color: Colors.white54, fontSize: 11)),
               ],
             ),
           ],

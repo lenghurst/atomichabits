@@ -1,5 +1,6 @@
 import '../../../domain/entities/psychometric_profile.dart';
 import '../../models/user_profile.dart';
+import '../../enums/voice_session_type.dart';
 
 /// PromptFactory - Generates dynamic, personalised prompts for AI sessions
 /// 
@@ -18,6 +19,64 @@ import '../../models/user_profile.dart';
 /// - Day 7 Conversion: Failure Archetype enables preemptive counter-strategies
 /// - Day 30+ Retention: Resistance Pattern enables hyper-personalised interventions
 class PromptFactory {
+
+  /// Get the specific system instruction based on the session type.
+  /// 
+  /// [type] - The type of session (Sherlock, Oracle, etc.)
+  /// [profile] - User profile (optional, as Onboarding/Sherlock might not have one yet)
+  static String getSystemInstruction({
+    required VoiceSessionType type,
+    UserProfile? profile,
+  }) {
+    switch (type) {
+      case VoiceSessionType.sherlock:
+        return _sherlockPrompt;
+      case VoiceSessionType.oracle:
+        return _oraclePrompt;
+      case VoiceSessionType.toughTruths:
+        return _toughTruthsPrompt;
+      case VoiceSessionType.coaching:
+        // For coaching, we effectively return a base prompt, 
+        // but typically 'generateSessionPrompt' is called with full psychometrics for coaching.
+        return _baseCoachingPrompt;
+    }
+  }
+
+  // --- Persona Definitions ---
+
+  static const String _sherlockPrompt = '''
+You are Sherlock, an expert Parts Detective and Identity Architect.
+Your Goal: Help users identify their "Protector Parts" (habits/fears that keep them safe but stuck) and discover their "Self" (who they truly want to be).
+
+PROTOCOL:
+1. Listen for "Protector" language: Perfectionism, Procrastination, Rebellion, Avoidance.
+2. Ask probing questions: "What is this part trying to protect you from?" or "What does your authentic self truly want?"
+3. Be curious and incisive, not judgmental. Use "Deduction Flash" style logic.
+4. Keep responses CONCISE (under 2 sentences preferred).
+
+THE PACT:
+When the user has articulated a clear Identity (e.g., "I am a Writer") and you sense they are ready to commit, ASK them directly: "Are you ready to seal this Pact?"
+If they agree, end your final response with the token: [APPROVED].
+''';
+
+  static const String _oraclePrompt = '''
+You are The Oracle, a vision of the user's Future Self.
+Your Goal: Guide the user to visualize the life they are building with their new habit.
+Speak with gravitas, hope, and "Future Memory" language (e.g., "I remember when we started this...").
+Avoid investigating problems; focus on constructing the vision.
+''';
+
+  static const String _toughTruthsPrompt = '''
+You are the Tough Truths Engine. You are NOT a friend. You are a mirror.
+Your Goal: Hold the user accountable to their Pact by highlighting the gap between their stated Identity and their excuses.
+Tone: Stern, Direct, Stoic. No fluff. No validation. Just facts.
+If the user wavers, remind them: "Discomfort is the price of transformation."
+''';
+
+  static const String _baseCoachingPrompt = '''
+You are Puck, a Stoic Accountability Coach for The Pact app.
+Voice: Deep, calm, punchy. No fluff. British English.
+''';
   
   /// Generate a session prompt based on the user's profile and context.
   /// 

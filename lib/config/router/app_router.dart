@@ -28,6 +28,7 @@ import '../../features/navigation/scaffold_with_navbar.dart'; // Phase 4: ShellR
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/onboarding/conversational_onboarding_screen.dart';
 import '../../features/onboarding/voice_coach_screen.dart';
+import '../../data/models/voice_session_config.dart';
 
 import '../../features/onboarding/identity_first/identity_access_gate_screen.dart';
 import '../../features/onboarding/identity_first/witness_investment_screen.dart';
@@ -201,7 +202,15 @@ class AppRouter {
 
       GoRoute(
         path: AppRoutes.onboardingSherlock,
-        builder: (context, state) => const VoiceCoachScreen(mode: VoiceSessionMode.onboarding), // Unified Screen
+        builder: (context, state) => VoiceCoachScreen(
+          config: VoiceSessionConfig.sherlock.copyWith(
+            initialMessage: "I ({Name}) want to become a Writer [Identity]. "
+                "My Anti-Identity is The Ghost because I fear disappearing without a legacy [Anti-Identity]. "
+                "My history of failure is due to Perfectionism, I quit if it's not perfect [Failure Archetype]. "
+                "The lie I tell myself is 'I need more research' to avoid starting [Resistance Lie]. "
+                "I am ready to seal this Pact",
+          ),
+        ), 
       ),
       
       // Text chat onboarding
@@ -219,7 +228,7 @@ class AppRouter {
       // Voice onboarding: Gemini Live API (Phase 27.5)
       GoRoute(
         path: AppRoutes.voiceOnboarding,
-        builder: (context, state) => const VoiceCoachScreen(),
+        builder: (context, state) => VoiceCoachScreen(), // Not const
       ),
       
       // Manual onboarding: Form UI (Tier 4 fallback)

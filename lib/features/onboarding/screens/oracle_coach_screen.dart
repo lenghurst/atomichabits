@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/enums/voice_session_mode.dart';
+import '../../../data/models/voice_session_config.dart';
 import '../voice_coach_screen.dart';
 
 /// Step 9: Oracle Coach Screen (Gold/White Theme)
@@ -12,8 +12,8 @@ class OracleCoachScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const VoiceCoachScreen(
-      mode: VoiceSessionMode.oracle,
+    return VoiceCoachScreen(
+      config: VoiceSessionConfig.oracle,
     );
   }
 }
