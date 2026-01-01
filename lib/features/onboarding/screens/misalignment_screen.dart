@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:go_router/go_router.dart';
+import '../../../../config/router/app_routes.dart';
 import '../../../../data/services/sound_service.dart';
 
 class MisalignmentScreen extends StatefulWidget {
@@ -84,7 +86,34 @@ class _MisalignmentScreenState extends State<MisalignmentScreen> {
                     ),
                   ),
                 ),
-              ],
+                const SizedBox(height: 40),
+                OutlinedButton(
+                  onPressed: () {
+                    // Phase 18: Sound Design - Click
+                    HapticFeedback.lightImpact();
+                    if (context.canPop()) {
+                       context.pop();
+                    } else {
+                       // Fallback if there is no history (e.g. deep link)
+                       // In this case, we might want to restart onboarding or go home
+                       context.go(AppRoutes.bootstrap); 
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54, width: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text(
+                    "RE-ALIGN (GO BACK)",
+                    style: TextStyle(
+                      fontSize: 14, 
+                      fontWeight: FontWeight.bold, 
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
             ),
           ),
         ),
