@@ -5,30 +5,38 @@
 This document maps the complete data flow from storage to UI for a returning user's landing page experience. It identifies cache invalidation points, async boundaries, and potential strangler fig seams for future refactoring.
 
 > **Primary Data Source:** Local Hive Box (`habit_data`)
-> **Sync Strategy:** Write-Aside / Backup (One-Way)
-> **Critical Gap:** No "Read-Repair" mechanism on launch - multi-device use leads to state drift
+> **Sync Strategy:** Local-First with Cloud Hydration
+> **Status:** ✅ P0 Sync Gap FIXED (2026-01-02)
 
 ---
 
-## ⚠️ CRITICAL GAP: Data Persistence Risk
+## ✅ RESOLVED: Cloud Hydration Implemented
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        🚨 REINSTALL = DATA LOSS 🚨                           │
+│                     ✅ REINSTALL = DATA RESTORED ✅                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  Currently, sync is WRITE-ONLY (Backup). A user who deletes and reinstalls  │
-│  the app will lose all local Hive data.                                     │
+│  FIXED: SyncService.hydrateFromCloud() now restores habits on fresh install │
 │                                                                              │
-│  The SyncService creates backups in Supabase, but AppState has NO           │
-│  mechanism to RESTORE this data on a fresh install.                         │
+│  TRIGGER CONDITIONS:                                                         │
+│  1. Local Hive is empty (no habits)                                         │
+│  2. User is authenticated                                                    │
+│  3. SyncService and AuthService are available                               │
 │                                                                              │
-│  SCENARIO: User gets new phone → Installs App → Logs in → Dashboard EMPTY   │
+│  SCENARIO (NOW): User gets new phone → Installs → Logs in → Data Restored!  │
 │                                                                              │
-│  SEVERITY: P0 (Critical)                                                     │
+│  IMPLEMENTATION:                                                             │
+│  - SyncService.hydrateFromCloud() fetches active habits from Supabase       │
+│  - Maps snake_case (cloud) → camelCase (Habit model)                        │
+│  - Persists to Hive immediately for fast future launches                    │
+│  - 10-second timeout to avoid blocking UI                                   │
+│  - Graceful fallback if network fails                                        │
 │                                                                              │
-│  REMEDIATION: Implement "Hydrate from Cloud" strategy in                    │
-│  AppState.initialize() when local Hive is empty but user is authenticated   │
+│  FILES CHANGED:                                                              │
+│  - lib/data/services/sync_service.dart (hydrateFromCloud, field mapping)    │
+│  - lib/data/app_state.dart (hydration check in initialize())                │
+│  - lib/main.dart (pass syncService/authService to AppState)                 │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -152,19 +160,20 @@ graph TD
     Landing -.->|"(3) Complete Habit"| AppState
     AppState -.->|"(4) Persist"| Hive
 
-    %% Cloud Flows (Disconnected from Read Loop)
+    %% Cloud Flows
     AppState -.->|"(5) Trigger Backup"| SyncService
     SyncService -.->|"(6) Upsert (Async)"| Supabase
     Supabase -.->|"(7) Realtime Events"| WitnessService
 
-    %% CRITICAL MISSING LINK
-    Supabase -.-x|"(8) ❌ NO READ PATH"| AppState
+    %% NEW: Cloud Hydration (P0 Fix)
+    Supabase ==|"(8) ✅ hydrateFromCloud()\n(if local empty)"| SyncService
+    SyncService ==|"(9) Restore habits"| AppState
 ```
 
 **Legend:**
 - **Solid green lines** = Critical path (blocking)
 - **Dashed orange lines** = Background/async operations
-- **Red X** = Missing read-path (the sync gap)
+- **Double green lines (8-9)** = NEW: Cloud hydration path (only triggers when local is empty)
 
 ---
 
@@ -376,16 +385,19 @@ TodayScreen
 
 ## 7. Identified Pain Points
 
-### 7.1 The Sync Gap (P0)
+### 7.1 The Sync Gap (P0) - ✅ RESOLVED
 
 ```
-🔴 ZERO read-path from Supabase to AppState for Habits
+✅ READ PATH NOW EXISTS: SyncService.hydrateFromCloud()
 
-Consequence: Reinstall, Factory Reset, or second device = Empty/stale Dashboard
-             despite data existing in Supabase backups
+Implementation:
+- Triggers only when: local empty AND user authenticated
+- Fetches habits from Supabase with 10-second timeout
+- Maps snake_case → camelCase automatically
+- Persists to Hive immediately after restore
+- Graceful fallback if network fails
 
-Fix: Need SyncService.pullFromCloud() on startup, or a "Strangler Fig"
-     Repository that checks Cloud vs Local timestamps
+Remaining limitation: No continuous two-way sync yet (Phase 16 scope)
 ```
 
 ### 7.2 Over-Fetching
@@ -565,3 +577,4 @@ Dual-write pattern established:
 |---------|------|--------|---------|
 | 1.0 | 2026-01-02 | Claude | Initial data flow mapping |
 | 1.1 | 2026-01-02 | Claude | Added: Critical Gap warning, Mermaid diagram, WitnessService over-fetching, Drift Analysis latency (consolidated from Gemini analysis) |
+| 1.2 | 2026-01-02 | Claude | **P0 FIX**: Implemented cloud hydration - SyncService.hydrateFromCloud() + AppState integration. Sync gap RESOLVED. |
