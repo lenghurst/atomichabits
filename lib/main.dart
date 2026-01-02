@@ -181,7 +181,11 @@ void main() async {
   final onboardingState = OnboardingState();
 
   // Initialize AppState (moved from MultiProvider to main to prevent router recreation loops)
-  final appState = AppState(onboardingState: onboardingState); // Inject dependency
+  final appState = AppState(
+    onboardingState: onboardingState,
+    syncService: syncService,
+    authService: authService,
+  ); // Inject dependency
   await appState.initialize();
 
   // Initialize dependent services

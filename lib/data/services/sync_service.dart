@@ -463,6 +463,193 @@ class SyncService extends ChangeNotifier {
     _pendingChanges = 0;
     notifyListeners();
   }
+
+  // ============================================================
+  // CLOUD HYDRATION (P0 Sync Gap Fix)
+  // ============================================================
+
+  /// Hydrate habits from cloud storage.
+  ///
+  /// This is the READ path from Supabase, used ONLY when:
+  /// 1. Local Hive is empty (no habits)
+  /// 2. User is authenticated
+  ///
+  /// This avoids merge conflicts because we only hydrate into an empty state.
+  ///
+  /// Returns empty list if:
+  /// - Sync is not available
+  /// - User is not authenticated
+  /// - Network error (with timeout)
+  /// - No habits found in cloud
+  Future<List<Habit>> hydrateFromCloud({
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    if (!isSyncAvailable) {
+      if (kDebugMode) {
+        debugPrint('SyncService.hydrateFromCloud: Sync not available');
+      }
+      return [];
+    }
+
+    final userId = _authService.userId;
+    if (userId == null) {
+      if (kDebugMode) {
+        debugPrint('SyncService.hydrateFromCloud: No user ID');
+      }
+      return [];
+    }
+
+    try {
+      _syncState = SyncState.syncing;
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('SyncService.hydrateFromCloud: Fetching habits for user $userId...');
+      }
+
+      // Fetch active habits from cloud with timeout
+      final response = await _supabase!
+          .from(SupabaseTables.habits)
+          .select()
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .timeout(timeout);
+
+      if (response == null || (response as List).isEmpty) {
+        if (kDebugMode) {
+          debugPrint('SyncService.hydrateFromCloud: No habits found in cloud');
+        }
+        _syncState = SyncState.idle;
+        notifyListeners();
+        return [];
+      }
+
+      // Map Supabase (snake_case) to Habit (camelCase)
+      final habits = <Habit>[];
+      for (final row in response) {
+        try {
+          final habit = _mapSupabaseRowToHabit(row as Map<String, dynamic>);
+          habits.add(habit);
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('SyncService.hydrateFromCloud: Error mapping habit: $e');
+          }
+          // Continue with other habits
+        }
+      }
+
+      _syncState = SyncState.idle;
+      _lastSyncTime = DateTime.now();
+      _lastError = null;
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('SyncService.hydrateFromCloud: Restored ${habits.length} habits from cloud');
+      }
+
+      return habits;
+
+    } catch (e) {
+      _syncState = SyncState.error;
+      _lastError = e.toString();
+      notifyListeners();
+
+      if (kDebugMode) {
+        debugPrint('SyncService.hydrateFromCloud: Error fetching from cloud: $e');
+      }
+
+      return [];
+    }
+  }
+
+  /// Map a Supabase row (snake_case) to a Habit object (camelCase)
+  ///
+  /// Handles missing fields gracefully with defaults.
+  Habit _mapSupabaseRowToHabit(Map<String, dynamic> row) {
+    // Parse completion history (stored as JSON array of ISO strings)
+    List<DateTime> completionHistory = [];
+    if (row['completion_history'] != null) {
+      try {
+        final historyList = row['completion_history'] as List;
+        completionHistory = historyList
+            .map((d) => DateTime.parse(d.toString()))
+            .toList();
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('SyncService: Error parsing completion_history: $e');
+        }
+      }
+    }
+
+    // Parse created_at
+    DateTime createdAt;
+    try {
+      createdAt = DateTime.parse(row['created_at'].toString());
+    } catch (e) {
+      createdAt = DateTime.now();
+    }
+
+    // Build the Habit using the existing fromJson factory where possible,
+    // but we need to map snake_case keys to camelCase
+    final mappedJson = <String, dynamic>{
+      'id': row['id'] ?? _generateId(),
+      'name': row['name'] ?? 'Unnamed Habit',
+      'identity': row['identity'] ?? '',
+      'tinyVersion': row['tiny_version'] ?? '',
+      'currentStreak': row['current_streak'] ?? 0,
+      'lastCompletedDate': row['last_completed_date'],
+      'createdAt': createdAt.toIso8601String(),
+      'implementationTime': row['implementation_time'] ?? row['scheduled_time'] ?? '09:00',
+      'implementationLocation': row['implementation_location'] ?? '',
+      'temptationBundle': row['temptation_bundle'],
+      'preHabitRitual': row['pre_habit_ritual'],
+      'environmentCue': row['environment_cue'],
+      'environmentDistraction': row['environment_distraction'],
+      'completionHistory': completionHistory.map((d) => d.toIso8601String()).toList(),
+      'recoveryHistory': [], // Not stored in cloud yet
+      'lastMissReason': row['last_miss_reason'],
+      'missHistory': [], // Not stored in cloud yet
+      'failurePlaybooks': [], // Not stored in cloud yet
+      'identityVotes': row['identity_votes'] ?? completionHistory.length,
+      'longestStreak': row['longest_streak'] ?? 0,
+      'isPaused': row['is_active'] == false, // Inverted: is_active=false means paused
+      'pausedAt': row['paused_at'],
+      'anchorHabitId': row['anchor_habit_id'],
+      'anchorEvent': row['anchor_event'],
+      'stackPosition': row['stack_position'] ?? 'after',
+      'daysShowedUp': row['days_showed_up'] ?? completionHistory.length,
+      'minimumVersionCount': row['minimum_version_count'] ?? 0,
+      'singleMissRecoveries': row['single_miss_recoveries'] ?? 0,
+      'fullCompletionCount': row['full_completion_count'] ?? completionHistory.length,
+      'brightLineRule': row['bright_line_rule'],
+      'brightLineActive': row['bright_line_active'] ?? false,
+      'brightLineStreak': row['bright_line_streak'] ?? 0,
+      'isPrimaryHabit': row['is_primary_habit'] ?? false,
+      'focusCycleStart': row['focus_cycle_start'],
+      'targetCycleDays': row['target_cycle_days'] ?? 66,
+      'hasGraduated': row['has_graduated'] ?? false,
+      'graduatedAt': row['graduated_at'],
+      'category': row['category'],
+      'tags': row['tags'] ?? [],
+      'difficultyLevel': row['difficulty_level'] ?? 1,
+      'currentDifficultyDescription': row['current_difficulty_description'],
+      'milestones': [], // Not stored in cloud yet
+      'isBreakHabit': row['is_break_habit'] ?? false,
+      'replacesHabit': row['replaces_habit'],
+      'rootCause': row['root_cause'],
+      'substitutionPlan': row['substitution_plan'],
+      'habitEmoji': row['habit_emoji'],
+      'motivation': row['motivation'],
+      'recoveryPlan': row['recovery_plan'],
+    };
+
+    return Habit.fromJson(mappedJson);
+  }
+
+  /// Generate a UUID-like ID for habits missing an ID
+  String _generateId() {
+    return DateTime.now().millisecondsSinceEpoch.toString();
+  }
   
   @override
   void dispose() {

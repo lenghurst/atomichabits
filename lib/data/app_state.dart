@@ -13,6 +13,8 @@ import 'notification_service.dart';
 import 'ai_suggestion_service.dart';
 import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
+import 'services/sync_service.dart';
+import 'services/auth_service.dart';
 import '../core/logging/app_logger.dart';
 
 import '../features/onboarding/state/onboarding_state.dart';
@@ -51,9 +53,16 @@ enum HapticFeedbackType {
 class AppState extends ChangeNotifier {
   // Dependency
   final OnboardingState _onboardingState;
+  final SyncService? _syncService;
+  final AuthService? _authService;
 
-  AppState({OnboardingState? onboardingState}) 
-      : _onboardingState = onboardingState ?? OnboardingState() {
+  AppState({
+    OnboardingState? onboardingState,
+    SyncService? syncService,
+    AuthService? authService,
+  }) : _onboardingState = onboardingState ?? OnboardingState(),
+       _syncService = syncService,
+       _authService = authService {
     // Listen to onboarding state changes to notify AppState listeners (Router refresh)
     _onboardingState.addListener(notifyListeners);
   }
@@ -419,6 +428,66 @@ class AppState extends ChangeNotifier {
       // Load saved data from Hive
       await _loadFromStorage();
       
+      // ============================================================
+      // P0 FIX: Cloud Hydration (Sync Gap)
+      // If local is empty but user is authenticated, restore from cloud
+      // This handles: reinstall, factory reset, new device scenarios
+      // ============================================================
+      if (_habits.isEmpty && _syncService != null && _authService != null) {
+        if (_authService!.isAuthenticated) {
+          if (kDebugMode) {
+            debugPrint('🌩️ HYDRATION: Local empty, user authenticated - attempting cloud restore...');
+          }
+          try {
+            final cloudHabits = await _syncService!.hydrateFromCloud(
+              timeout: const Duration(seconds: 10),
+            );
+            if (cloudHabits.isNotEmpty) {
+              _habits = cloudHabits;
+
+              // Mark the first habit as primary if none are
+              if (!_habits.any((h) => h.isPrimaryHabit) && _habits.isNotEmpty) {
+                _habits[0] = _habits[0].copyWith(
+                  isPrimaryHabit: true,
+                  focusCycleStart: _habits[0].focusCycleStart ?? DateTime.now(),
+                );
+              }
+
+              // Persist to Hive immediately so future launches are fast
+              await _saveToStorage();
+
+              // User had habits, so they've completed onboarding
+              if (!_hasCompletedOnboarding) {
+                _hasCompletedOnboarding = true;
+                await _dataBox?.put('hasCompletedOnboarding', true);
+              }
+
+              if (kDebugMode) {
+                debugPrint('🌩️ HYDRATION SUCCESS: Restored ${cloudHabits.length} habits from cloud');
+                for (final h in _habits) {
+                  debugPrint('  - ${h.name} (completions: ${h.completionHistory.length})');
+                }
+              }
+            } else {
+              if (kDebugMode) {
+                debugPrint('🌩️ HYDRATION: No habits found in cloud (new user or never synced)');
+              }
+            }
+          } catch (e) {
+            // Network error or timeout - continue with empty local state
+            // User can still use the app, just won't have their old data
+            if (kDebugMode) {
+              debugPrint('🌩️ HYDRATION FAILED: $e (continuing with empty local state)');
+            }
+          }
+        } else {
+          if (kDebugMode) {
+            debugPrint('🌩️ HYDRATION: Skipped (user not authenticated)');
+          }
+        }
+      }
+      // ============================================================
+
       // Schedule notifications if onboarding completed
       if (_hasCompletedOnboarding && hasHabits && _userProfile != null) {
         await _scheduleNotifications();
