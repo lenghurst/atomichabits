@@ -98,11 +98,11 @@ class WitnessService extends ChangeNotifier {
     }
     
     try {
-      // Load recent events
-      await _loadRecentEvents();
+      // Load recent events (Fire-and-forget: background loading)
+      unawaited(_loadRecentEvents());
       
-      // Subscribe to realtime events
-      await _subscribeToEvents();
+      // Subscribe to realtime events (Fire-and-forget)
+      unawaited(_subscribeToEvents());
       
       // Listen for auth changes (reconnect on auth change)
       _authSubscription = _authService.addListener(() {
