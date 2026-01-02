@@ -186,12 +186,12 @@ Accountability partnerships between Builders and Witnesses.
 
 ```sql
 CREATE TABLE habit_contracts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY DEFAULT ('contract_' || gen_random_uuid()::text),
   
   -- Parties
   builder_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
   witness_id UUID REFERENCES users(id) ON DELETE SET NULL,  -- NULL until witness joins
-  habit_id UUID REFERENCES habits(id) ON DELETE CASCADE NOT NULL,
+  habit_id TEXT REFERENCES habits(id) ON DELETE CASCADE NOT NULL,
   
   -- Invite mechanism (Phase 16.4 Deep Links)
   invite_code TEXT UNIQUE NOT NULL,  -- Short code for URL: /invite?c=ABC123
@@ -223,6 +223,30 @@ CREATE TABLE habit_contracts (
   nudge_frequency TEXT DEFAULT 'daily' CHECK (nudge_frequency IN ('never', 'daily', 'on_miss', 'weekly')),
   nudge_style TEXT DEFAULT 'encouraging' CHECK (nudge_style IN ('encouraging', 'firm', 'playful', 'data_only')),
   
+  -- Phase 21.3: Nudge Effectiveness columns
+  last_nudge_sent_at TIMESTAMPTZ,
+  last_nudge_response_at TIMESTAMPTZ,
+  nudges_received_count INTEGER DEFAULT 0,
+  nudges_responded_count INTEGER DEFAULT 0,
+
+  -- Phase 61: Safety & Boundaries
+  share_psychometrics BOOLEAN DEFAULT FALSE,
+  allow_nudges BOOLEAN DEFAULT TRUE, 
+  nudge_history JSONB DEFAULT '[]'::jsonb,
+  nudge_quiet_start TEXT, -- e.g. "22:00"
+  nudge_quiet_end TEXT,   -- e.g. "08:00"
+  blocked_witness_ids TEXT[], 
+  allow_emergency_exit BOOLEAN DEFAULT TRUE,
+  is_under_review BOOLEAN DEFAULT FALSE,
+  reported_at TIMESTAMPTZ,
+
+  -- Phase 4: Identity Privacy
+  alternative_identity TEXT, -- For public display if distinct from profile
+
+  -- Display fields
+  builder_display_name TEXT,
+  habit_emoji TEXT,
+
   -- Progress tracking (denormalized for quick access)
   days_completed INTEGER DEFAULT 0,
   days_missed INTEGER DEFAULT 0,
@@ -288,7 +312,7 @@ Activity log for contracts (nudges, completions, messages).
 ```sql
 CREATE TABLE contract_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  contract_id UUID REFERENCES habit_contracts(id) ON DELETE CASCADE NOT NULL,
+  contract_id TEXT REFERENCES habit_contracts(id) ON DELETE CASCADE NOT NULL,
   
   -- Event type
   event_type TEXT NOT NULL CHECK (event_type IN (
@@ -507,4 +531,4 @@ String generateInviteCode() {
 ---
 
 *Schema version: 2.0.0*
-*Last updated: December 2025 (Phase 16.2 + 16.4)*
+*Last updated: 02 January 2026 (Phase 16.2 repaired + 63)*

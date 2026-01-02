@@ -15,8 +15,8 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/onboarding_data.dart';
 import '../../config/niche_config.dart';
 import 'jitai/context_snapshot.dart';
-import 'jitai/weather_service.dart';
-import 'jitai/calendar_service.dart';
+import '../../data/services/weather_service.dart';
+import '../../data/services/context/calendar_service.dart';
 import 'population_learning.dart';
 
 /// Signal categories captured during onboarding
@@ -572,15 +572,15 @@ class OnboardingInsightsService {
         insight = 'Creative rhythm understood';
         detail = 'We\'ll respect your creative process and avoid interrupting flow.';
         break;
-      case UserNiche.scholar:
+      case UserNiche.academic:
         insight = 'Academic patterns detected';
         detail = 'Deadline-aware interventions. We know exam weeks hit different.';
         break;
-      case UserNiche.linguist:
+      case UserNiche.languageLearner:
         insight = 'Language learning context set';
         detail = 'Consistency over intensity. Daily contact with the language matters most.';
         break;
-      case UserNiche.maker:
+      case UserNiche.indieMaker:
         insight = 'Builder mindset recognized';
         detail = 'Progress visibility will be key. We\'ll celebrate shipped work.';
         break;

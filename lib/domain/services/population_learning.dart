@@ -465,10 +465,8 @@ class PopulationLearningService {
             'userHash': userHash,
             'archetype': archetype,
             'outcomes': outcomes.map((o) => {
-              return {
-                'armId': o.armId,
-                'success': o.success,
-              };
+              'armId': o.armId,
+              'success': o.success,
             }).toList(),
           }),
         );

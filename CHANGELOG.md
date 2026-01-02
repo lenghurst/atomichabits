@@ -1,3 +1,23 @@
+## [6.10.0] - 2026-01-02 - Phase 63: "Psychometric Cloud Sync & Schema Repair"
+
+### Architecture
+- **Hybrid Storage Model:** Implemented `SupabasePsychometricRepository` to sync `Identity Evidence` (Archetypes, Values, Big Why) to the cloud (`identity_seeds` table) while maintaining Hive as the offline "Source of Truth".
+- **Dual-Write Protocol:** `PsychometricProvider` now writes to Hive (Blocking) and Supabase (Async/Fire-and-Forget) simultaneously, ensuring zero-latency UI interaction with eventual cloud consistency.
+- **Data Governance:** Implemented "Cloud Wins" conflict resolution strategy based on `last_updated` timestamps (1-minute tolerance).
+
+### Fixed
+- **Critical Schema Alignment:** Resolved the `UUID` vs `TEXT` type mismatch in `public.habit_contracts`.
+  - **The Fix:** Altered `id` and `habit_id` columns to `TEXT` to match Dart's local ID generation (`contract_${hashcode}`).
+  - **Parity:** Added missing columns from Phases 21.3 (Nudge Effectiveness), 61 (Safety/Blocking), and 4 (Alternative Identity).
+- **Compilation Errors:** Fixed `UserNiche` enum mismatches (`scholar` -> `academic`) in `onboarding_insights_service.dart`.
+- **Syntax Error:** Resolved specific map/block ambiguity in `population_learning.dart`.
+
+### Added
+- **Identity Seeds Table:** New `identity_seeds` table with strict Row Level Security (RLS) policies. Only the authenticated user can VIEW/EDIT their own psychometric data.
+- **Migration Repair:** Retroactive migration files (`20241215_fix_habit_contracts.sql`, `20260104_align_habit_contracts.sql`) to reconstruct broken migration history.
+
+---
+
 ## [6.9.6] - 2025-12-30 - Phase 62: "Sherlock Protocol Refinement"
 
 ### Architecture

@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 01 January 2026  
+> **Last Updated:** 02 January 2026  
 > **Current Strategy:** The Augmented Constitution (Parallel MVP)  
 > **Target Launch:** 16 Jan 2026  
 > **Identity:** Identity Evidence Engine
@@ -24,11 +24,11 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 
 | ID | Task | Status |
 |----|------|--------|
-| E1 | **Schema Definition**: Create `identity_seeds` table in Supabase. | [ ] |
-| E2 | **RLS Policies**: Enforce user-only access (psychometric data is sensitive). | [ ] |
-| E3 | **Supabase Repository**: Create `SupabasePsychometricRepository` class. | [ ] |
-| E4 | **Hybrid Provider**: Update `PsychometricProvider` to write Hive + Supabase. | [ ] |
-| E5 | **Sync-on-Login**: Pull cloud profile on authentication. | [ ] |
+| E1 | **Schema Definition**: Create `identity_seeds` table in Supabase. | [x] |
+| E2 | **RLS Policies**: Enforce user-only access (psychometric data is sensitive). | [x] |
+| E3 | **Supabase Repository**: Create `SupabasePsychometricRepository` class. | [x] |
+| E4 | **Hybrid Provider**: Update `PsychometricProvider` to write Hive + Supabase. | [x] |
+| E5 | **Sync-on-Login**: Pull cloud profile on authentication. | [x] |
 | E6 | **Evidence API**: Log observable signals (emotion, tone) + AI-inferred constructs. | [ ] |
 
 ### Layer 2: The Shadow & Values Profiler (Onboarding)
@@ -98,6 +98,12 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 ---
 
 ## ✅ Completed Legacy Phases (Reference)
+
+### Phase 63: Psychometric Cloud Sync (02 Jan 2026)
+**Goal:** Hybrid storage model for Identity Evidence.
+- [x] **Schema Alignment**: `habit_contracts` UUID -> TEXT migration.
+- [x] **Identity Seeds**: `identity_seeds` table with RLS.
+- [x] **Dual Write**: Hive (Local) + Supabase (Cloud) sync in `PsychometricProvider`.
 
 ### Phase 62: Sherlock Protocol Refinement (30 Dec 2025)
 **Goal:** Align Sherlock with IFS therapy principles and fix privacy leaks.
