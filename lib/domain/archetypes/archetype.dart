@@ -1,6 +1,9 @@
 import '../entities/context_snapshot.dart';
 import '../entities/psychometric_profile.dart';
 
+// Re-export CoachingStyle for convenience
+export '../entities/psychometric_profile.dart' show CoachingStyle;
+
 /// Base class for all Behavioral Archetypes
 ///
 /// Encapsulates the logic for how different personality types respond to:

@@ -7,6 +7,7 @@ import 'hierarchical_bandit.dart';
 import 'optimal_timing_predictor.dart';
 import 'cascade_pattern_detector.dart';
 import 'population_learning.dart';
+import 'archetype_registry.dart';
 
 /// JITAIDecisionEngine: The Orchestrator
 ///
@@ -179,7 +180,7 @@ class JITAIDecisionEngine {
     return JITAIDecision.intervene(
       event: event,
       voState: voState,
-      content: _generateContent(selection.arm, habit, profile, voState),
+      content: _generateContent(selection.arm, habit, profile, voState, context: context),
       burdenType: _classifyBurden(selection.arm),
     );
   }
@@ -585,20 +586,30 @@ class JITAIDecisionEngine {
   }
 
   /// Generate intervention content
+  ///
+  /// Uses archetype-specific messaging when available.
   InterventionContent _generateContent(
     InterventionArm arm,
     Habit habit,
     PsychometricProfile profile,
-    VOState voState,
-  ) {
-    // Template-based content generation
-    // Will be enhanced with LLM personalization
-    final template = _getTemplate(arm.armId);
-    final filled = _fillTemplate(template, habit, profile, voState);
+    VOState voState, {
+    ContextSnapshot? context,
+  }) {
+    final archetype = _getArchetype(profile);
+
+    // Use archetype greeting for identity activation arms
+    String body;
+    if (arm.category == InterventionCategory.identityActivation && context != null) {
+      body = archetype.getGreeting(context, profile);
+    } else {
+      // Template-based content generation
+      final template = _getTemplate(arm.armId);
+      body = _fillTemplate(template, habit, profile, voState);
+    }
 
     return InterventionContent(
       title: _getTitle(arm, voState),
-      body: filled,
+      body: body,
       actionLabel: _getActionLabel(arm),
       dismissLabel: arm.category == InterventionCategory.shadowIntervention
           ? 'I\'ll prove you wrong'
@@ -701,10 +712,13 @@ class JITAIDecisionEngine {
   }
 
   bool _isRebelArchetype(PsychometricProfile profile) {
-    final archetype = profile.failureArchetype?.toUpperCase() ?? '';
-    return archetype.contains('REBEL') ||
-        archetype.contains('DEFIANT') ||
-        archetype.contains('CONTRARIAN');
+    final archetype = ArchetypeRegistry.forProfile(profile);
+    return archetype.id == 'REBEL';
+  }
+
+  /// Get the archetype object for a profile
+  Archetype _getArchetype(PsychometricProfile profile) {
+    return ArchetypeRegistry.forProfile(profile);
   }
 
   /// Record outcome and update learning systems
