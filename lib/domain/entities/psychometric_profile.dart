@@ -206,12 +206,50 @@ class PsychometricProfile {
 
   /// Quick O(1) check for weekend risk
   bool get isWeekendRisk => (riskBitmask & RiskFlags.weekend) != 0;
-  
+
   /// Quick O(1) check for travel risk
   bool get isTravelRisk => (riskBitmask & RiskFlags.travel) != 0;
-  
+
   /// Quick O(1) check for evening risk
   bool get isEveningRisk => (riskBitmask & RiskFlags.evening) != 0;
+
+  /// Quick O(1) check for morning risk
+  bool get isMorningRisk => (riskBitmask & RiskFlags.morning) != 0;
+
+  /// Quick O(1) check for social risk
+  bool get isSocialRisk => (riskBitmask & RiskFlags.social) != 0;
+
+  /// Quick O(1) check for stress risk
+  bool get isStressRisk => (riskBitmask & RiskFlags.stress) != 0;
+
+  /// Quick O(1) check for fatigue risk
+  bool get isFatigueRisk => (riskBitmask & RiskFlags.fatigue) != 0;
+
+  /// Calculate base vulnerability score from risk bitmask (O(1))
+  /// Returns 0.0-1.0 normalized score based on active risk flags
+  double get riskScore {
+    int activeFlags = 0;
+    int mask = riskBitmask;
+    while (mask > 0) {
+      activeFlags += mask & 1;
+      mask >>= 1;
+    }
+    // 7 possible flags, normalize to 0-1
+    // Each flag contributes ~0.14 to base vulnerability
+    return (activeFlags / 7.0).clamp(0.0, 1.0);
+  }
+
+  /// Get the dominant risk factor name for explainability
+  String? get dominantRiskFactor {
+    if (isWeekendRisk) return 'weekend';
+    if (isEveningRisk) return 'evening';
+    if (isMorningRisk) return 'morning';
+    if (isStressRisk) return 'stress';
+    if (isFatigueRisk) return 'fatigue';
+    if (isSocialRisk) return 'social';
+    if (isTravelRisk) return 'travel';
+    return null;
+  }
 
   /// Domain Logic: Can the user handle a challenge today?
   bool isResilientEnough(int difficultyLevel) {

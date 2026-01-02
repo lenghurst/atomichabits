@@ -425,52 +425,58 @@ class JITAIDecisionEngine {
   /// Calculate identity-first reward from outcome
   ///
   /// Philosophy: Identity evidence is the PRIMARY optimization target.
-  /// Completion is a constraint (minimum threshold), not the goal.
+  /// Since identityScoreDelta is async (DeepSeek analysis), we use
+  /// IDENTITY EVIDENCE PROXIES that work from day 1:
   ///
-  /// Reward Weighting:
-  /// - 60% Identity delta (did this strengthen who they're becoming?)
-  /// - 20% Completion bonus (baseline constraint satisfaction)
-  /// - 20% Engagement quality (did they actively engage, not just dismiss?)
+  /// - Completion = voting for identity (each rep is evidence)
+  /// - Streak = consistent identity (pattern of votes)
+  /// - Engagement = relationship with identity narrative
+  ///
+  /// Reward Structure:
+  /// - 50% Identity Evidence Proxy (completion + streak)
+  /// - 30% Engagement Quality (notification interaction)
+  /// - 15% Async Identity Bonus (when DeepSeek data available)
+  /// - Penalties for identity undermining signals
   double _calculateReward(InterventionOutcome outcome) {
     double reward = 0.0;
 
-    // === PRIMARY: Identity Evidence (60%) ===
-    // This is what we're optimizing for
-    if (outcome.identityScoreDelta != null) {
-      // Scale identity delta to 0-0.6 range
-      // Typical delta is -0.05 to +0.05, so multiply by 6
-      final identityReward = (outcome.identityScoreDelta! * 6.0).clamp(-0.3, 0.6);
-      reward += identityReward;
-
-      // Bonus for streak maintenance (identity consistency)
-      if (outcome.streakMaintained) {
-        reward += 0.1;
-      }
-    }
-
-    // === CONSTRAINT: Completion (20%) ===
-    // Completion is necessary but not sufficient
+    // === PRIMARY: Identity Evidence Proxy (50%) ===
+    // Each completion is a vote for identity - works from day 1
     if (outcome.habitCompleted24h) {
-      reward += 0.15;
-      // Extra credit for tiny version (lowered barrier to identity evidence)
+      reward += 0.35; // Completion = identity evidence
+
+      // Streak = consistent identity voting (big bonus)
+      if (outcome.streakMaintained) {
+        reward += 0.15; // Consistency is identity
+      }
+
+      // Tiny version still counts (lowered barrier)
       if (outcome.usedTinyVersion) {
-        reward += 0.05;
+        reward += 0.05; // Evidence is evidence, size doesn't matter
       }
     }
 
-    // === ENGAGEMENT QUALITY (20%) ===
-    // Did they actively engage with the intervention?
+    // === SECONDARY: Engagement Quality (30%) ===
+    // Did they engage with the identity narrative?
     if (outcome.notificationOpened) {
-      reward += 0.1;
+      reward += 0.15; // Opened = engaged with identity message
       if (outcome.interactionType == 'action') {
-        reward += 0.1; // Took the suggested action
+        reward += 0.15; // Took action = committed to identity
       }
+    }
+
+    // === ASYNC BONUS: Real Identity Delta (15% when available) ===
+    // When DeepSeek analysis is ready, add refinement
+    if (outcome.identityScoreDelta != null) {
+      // Scale delta (-0.05 to +0.05) to bonus range (-0.1 to +0.15)
+      final identityBonus = (outcome.identityScoreDelta! * 3.0).clamp(-0.1, 0.15);
+      reward += identityBonus;
     }
 
     // === PENALTIES (Identity Undermining) ===
     // These hurt more because they damage the relationship
     if (outcome.wasAnnoyanceSignal) {
-      reward -= 0.4; // Stronger penalty - we're eroding trust
+      reward -= 0.4; // Strong penalty - eroding trust
     }
     if (outcome.notificationDisabled) {
       reward -= 0.6; // Catastrophic - user rejected the system
