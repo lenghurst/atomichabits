@@ -4,6 +4,35 @@
 
 This document maps the complete data flow from storage to UI for a returning user's landing page experience. It identifies cache invalidation points, async boundaries, and potential strangler fig seams for future refactoring.
 
+> **Primary Data Source:** Local Hive Box (`habit_data`)
+> **Sync Strategy:** Write-Aside / Backup (One-Way)
+> **Critical Gap:** No "Read-Repair" mechanism on launch - multi-device use leads to state drift
+
+---
+
+## ⚠️ CRITICAL GAP: Data Persistence Risk
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        🚨 REINSTALL = DATA LOSS 🚨                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Currently, sync is WRITE-ONLY (Backup). A user who deletes and reinstalls  │
+│  the app will lose all local Hive data.                                     │
+│                                                                              │
+│  The SyncService creates backups in Supabase, but AppState has NO           │
+│  mechanism to RESTORE this data on a fresh install.                         │
+│                                                                              │
+│  SCENARIO: User gets new phone → Installs App → Logs in → Dashboard EMPTY   │
+│                                                                              │
+│  SEVERITY: P0 (Critical)                                                     │
+│                                                                              │
+│  REMEDIATION: Implement "Hydrate from Cloud" strategy in                    │
+│  AppState.initialize() when local Hive is empty but user is authenticated   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 1. What Data Does a Returning User Need?
@@ -94,7 +123,52 @@ The app currently runs **two parallel state systems**:
 
 ---
 
-## 3. Data Flow Diagram: App Launch to TodayScreen
+## 3. Core Data Flow Ecosystem (Mermaid)
+
+```mermaid
+graph TD
+    %% Subgraphs for Layers
+    subgraph Storage [Storage Layer]
+        Hive[("📦 Hive (Local)\nbox: habit_data")]
+        Supabase[("☁️ Supabase (Cloud)\ntables: habits, contracts")]
+    end
+
+    subgraph Service [Service Layer]
+        AppState[("🧠 AppState\n(ChangeNotifier)")]
+        SyncService["🔄 SyncService\n(Background Queue)"]
+        WitnessService["👁️ WitnessService\n(Realtime Channel)"]
+    end
+
+    subgraph UI [UI Layer]
+        Landing["📱 HabitListScreen\n(Dashboard)"]
+        Nav["🧭 AppRouter\n(Navigation)"]
+    end
+
+    %% Flows
+    Hive == "(1) Sync Load (Startup)" ==> AppState
+    AppState -- "(2) Provider Notification" --> Landing
+
+    %% User Actions
+    Landing -.->|"(3) Complete Habit"| AppState
+    AppState -.->|"(4) Persist"| Hive
+
+    %% Cloud Flows (Disconnected from Read Loop)
+    AppState -.->|"(5) Trigger Backup"| SyncService
+    SyncService -.->|"(6) Upsert (Async)"| Supabase
+    Supabase -.->|"(7) Realtime Events"| WitnessService
+
+    %% CRITICAL MISSING LINK
+    Supabase -.-x|"(8) ❌ NO READ PATH"| AppState
+```
+
+**Legend:**
+- **Solid green lines** = Critical path (blocking)
+- **Dashed orange lines** = Background/async operations
+- **Red X** = Missing read-path (the sync gap)
+
+---
+
+## 4. Data Flow Diagram: App Launch to TodayScreen
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -300,17 +374,30 @@ TodayScreen
 
 ---
 
-## 6. Identified Pain Points
+## 7. Identified Pain Points
 
-### 6.1 Over-Fetching
+### 7.1 The Sync Gap (P0)
+
+```
+🔴 ZERO read-path from Supabase to AppState for Habits
+
+Consequence: Reinstall, Factory Reset, or second device = Empty/stale Dashboard
+             despite data existing in Supabase backups
+
+Fix: Need SyncService.pullFromCloud() on startup, or a "Strangler Fig"
+     Repository that checks Cloud vs Local timestamps
+```
+
+### 7.2 Over-Fetching
 
 | Issue | Location | Impact |
 |-------|----------|--------|
 | `consistencyMetrics` computed on every access | `Habit.consistencyMetrics` getter | O(N) where N = completion history length |
 | Full habits list loaded even if viewing single habit | `AppState._loadFromStorage()` | Memory pressure with many habits |
 | All shadow providers initialize even if unused | `main.dart:208` | ~100ms extra startup time |
+| **WitnessService over-fetching** | `WitnessService.initialize()` | Loads 50 events on **every** startup, even if never viewing Witness Dashboard |
 
-### 6.2 Redundant Computations
+### 7.3 Redundant Computations
 
 | Computation | Frequency | Suggestion |
 |-------------|-----------|------------|
@@ -318,7 +405,14 @@ TodayScreen
 | `isHabitCompletedToday()` | Called multiple times per build | Cache in AppState |
 | `currentMissStreak` calculation | Every `needsRecovery` check | Precompute on habit update |
 
-### 6.3 Cache Invalidation Gaps
+### 7.4 UI Thread Latency Risks
+
+| Issue | Location | Impact |
+|-------|----------|--------|
+| **Drift Analysis on UI thread** | `TodayScreenController.checkForDriftSuggestion` | Processes entire completion history on `didChangeAppLifecycleState(resumed)` - causes frame drops for long-time users |
+| **Hive box corruption risk** | `AppState.initialize()` awaits `Hive.openBox` | If box is corrupted or large, delays `isLoading = false` and blocks UI |
+
+### 7.5 Cache Invalidation Gaps
 
 | Scenario | Current Behavior | Risk |
 |----------|------------------|------|
@@ -328,7 +422,7 @@ TodayScreen
 
 ---
 
-## 7. Strangler Fig Seams
+## 8. Strangler Fig Seams
 
 The following seams are available for incremental migration from AppState to new providers:
 
@@ -385,7 +479,7 @@ Dual-write pattern established:
 
 ---
 
-## 8. Recommended Optimizations
+## 9. Recommended Optimizations
 
 ### Short-Term (No Architecture Changes)
 
@@ -407,7 +501,7 @@ Dual-write pattern established:
 
 ---
 
-## 9. Summary Diagram
+## 10. Summary Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -470,3 +564,4 @@ Dual-write pattern established:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-02 | Claude | Initial data flow mapping |
+| 1.1 | 2026-01-02 | Claude | Added: Critical Gap warning, Mermaid diagram, WitnessService over-fetching, Drift Analysis latency (consolidated from Gemini analysis) |
