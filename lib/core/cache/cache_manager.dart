@@ -6,7 +6,7 @@ import 'dart:async';
 /// Replaces ad-hoc caching patterns scattered across services.
 class CacheManager<T> {
   final Duration ttl;
-  final Future<T> Function()? refresher;
+  Future<T> Function()? refresher;
   final Future<void> Function(T)? onRefresh;
   final String? debugLabel;
 
