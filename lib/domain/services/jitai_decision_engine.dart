@@ -4,6 +4,7 @@ import '../entities/psychometric_profile.dart';
 import '../../data/models/habit.dart';
 import 'vulnerability_opportunity_calculator.dart';
 import 'hierarchical_bandit.dart';
+import 'optimal_timing_predictor.dart';
 
 /// JITAIDecisionEngine: The Orchestrator
 ///
@@ -15,20 +16,27 @@ import 'hierarchical_bandit.dart';
 /// 5. Content generation (copy, audio)
 ///
 /// Phase 63: JITAI Foundation
+/// Phase 64: ML Workstreams (Optimal Timing + Cascade Prevention)
 class JITAIDecisionEngine {
   final HierarchicalBandit _bandit;
   final GottmanTracker _gottmanTracker;
+  final OptimalTimingPredictor _timingPredictor;
 
   /// Recent interventions for fatigue tracking
   final List<InterventionEvent> _recentInterventions = [];
   static const _fatigueWindow = Duration(hours: 24);
   static const _maxInterventionsPerDay = 8;
 
+  /// Minimum timing score to proceed (gates poor timing)
+  static const _minTimingScore = 0.35;
+
   JITAIDecisionEngine({
     HierarchicalBandit? bandit,
     GottmanTracker? gottmanTracker,
+    OptimalTimingPredictor? timingPredictor,
   })  : _bandit = bandit ?? HierarchicalBandit(),
-        _gottmanTracker = gottmanTracker ?? GottmanTracker();
+        _gottmanTracker = gottmanTracker ?? GottmanTracker(),
+        _timingPredictor = timingPredictor ?? OptimalTimingPredictor();
 
   /// Create engine personalized for a user profile
   factory JITAIDecisionEngine.forProfile(PsychometricProfile profile) {
@@ -50,6 +58,12 @@ class JITAIDecisionEngine {
       profile: profile,
     );
 
+    // === STEP 1.5: Optimal Timing Analysis (ML Workstream #1) ===
+    final timingScore = _timingPredictor.scoreCurrentTiming(
+      habit: habit,
+      context: context,
+    );
+
     // === STEP 2: Safety Gates ===
     final safetyResult = _checkSafetyGates(context, voState, profile);
     if (!safetyResult.proceed) {
@@ -57,6 +71,28 @@ class JITAIDecisionEngine {
         reason: safetyResult.reason!,
         voState: voState,
       );
+    }
+
+    // === STEP 2.5: Cascade Prevention Override (ML Workstream #2) ===
+    // If habit is at risk of cascade failure, override timing/VO gates
+    if (timingScore.window?.reason == TimingReason.cascadePrevention) {
+      return _handleCascadePrevention(context, voState, profile, habit, timingScore);
+    }
+
+    // === STEP 2.6: Timing Gate (poor timing = defer) ===
+    // Skip this gate for manual triggers or very high VO states
+    if (trigger != DecisionTrigger.manual && !voState.isCritical) {
+      if (timingScore.score < _minTimingScore) {
+        // Poor timing - defer to optimal window
+        final window = timingScore.window;
+        final retryMinutes = window != null
+            ? window.minutesUntilWindow(context.time).clamp(10, 120)
+            : 30;
+        return JITAIDecision.deferred(
+          voState: voState,
+          retryAfter: Duration(minutes: retryMinutes),
+        );
+      }
     }
 
     // === STEP 3: Quadrant-based Strategy ===
@@ -151,6 +187,123 @@ class JITAIDecisionEngine {
       content: _generateShadowContent(arm, habit, profile, voState),
       burdenType: BurdenType.withdrawal, // Shadow is a withdrawal
       isForcedShadow: true,
+    );
+  }
+
+  /// Handle cascade prevention (ML Workstream #2)
+  ///
+  /// When a habit is at risk of cascade failure (missing 2+ days),
+  /// we override normal gates and send a targeted recovery intervention.
+  ///
+  /// Philosophy: "Never Miss Twice" is the most critical moment.
+  /// A cascade failure (3+ days) often leads to permanent abandonment.
+  JITAIDecision _handleCascadePrevention(
+    ContextSnapshot context,
+    VOState voState,
+    PsychometricProfile profile,
+    Habit habit,
+    InterventionTimingScore timingScore,
+  ) {
+    // Calculate days since last completion
+    final daysSinceLast = habit.lastCompletedDate != null
+        ? context.time.difference(habit.lastCompletedDate!).inDays
+        : 999;
+
+    // Choose intervention based on cascade severity
+    InterventionArm arm;
+    String cascadeLevel;
+
+    if (daysSinceLast >= 3) {
+      // Critical cascade - use compassion (EMO_COMPASSION)
+      arm = InterventionTaxonomy.getArm('EMO_COMPASSION') ??
+          InterventionTaxonomy.getArm('FRICTION_TINY')!;
+      cascadeLevel = 'critical';
+    } else if (daysSinceLast >= 2) {
+      // Never Miss Twice moment - use friction reduction
+      arm = InterventionTaxonomy.getArm('FRICTION_TINY') ??
+          InterventionTaxonomy.getArm('ID_VOTE')!;
+      cascadeLevel = 'warning';
+    } else {
+      // Approaching risk - gentle identity reminder
+      arm = InterventionTaxonomy.getArm('ID_MIRROR') ??
+          InterventionTaxonomy.getArm('ID_VOTE')!;
+      cascadeLevel = 'watch';
+    }
+
+    final event = InterventionEvent(
+      eventId: _generateEventId(),
+      timestamp: DateTime.now(),
+      habitId: habit.id,
+      arm: arm,
+      selectedMetaLever: arm.metaLever,
+      contextFeatures: context.toFeatureVector(),
+      thompsonSampleValue: 0.9, // High confidence for cascade prevention
+      wasExploration: false,
+      armExposureCount: 0,
+    );
+
+    _trackIntervention(event);
+
+    // Generate cascade-specific content
+    final content = _generateCascadeContent(
+      arm: arm,
+      habit: habit,
+      profile: profile,
+      daysSinceLast: daysSinceLast,
+      cascadeLevel: cascadeLevel,
+    );
+
+    return JITAIDecision.intervene(
+      event: event,
+      voState: voState,
+      content: content,
+      burdenType: BurdenType.deposit, // Always supportive in cascade
+    );
+  }
+
+  /// Generate cascade-specific intervention content
+  InterventionContent _generateCascadeContent({
+    required InterventionArm arm,
+    required Habit habit,
+    required PsychometricProfile profile,
+    required int daysSinceLast,
+    required String cascadeLevel,
+  }) {
+    String title;
+    String body;
+    String actionLabel;
+
+    switch (cascadeLevel) {
+      case 'critical':
+        title = 'Welcome Back';
+        body = 'It\'s been ${daysSinceLast} days. That\'s okay. '
+            '${habit.identityVotes} votes for "${habit.identity}" still count. '
+            'Today is just the next one.';
+        actionLabel = 'Cast my vote';
+        break;
+
+      case 'warning':
+        title = 'Never Miss Twice';
+        body = 'Yesterday was a miss. Today is the comeback. '
+            'Just ${habit.tinyVersion}—that\'s all it takes.';
+        actionLabel = 'Do the tiny version';
+        break;
+
+      case 'watch':
+      default:
+        title = 'Quick Check-in';
+        body = 'A ${habit.identity.toLowerCase()} would do this. '
+            'Just a reminder.';
+        actionLabel = 'Show up';
+        break;
+    }
+
+    return InterventionContent(
+      title: title,
+      body: body,
+      actionLabel: actionLabel,
+      dismissLabel: 'I\'ll come back',
+      armId: arm.armId,
     );
   }
 
@@ -484,6 +637,57 @@ class JITAIDecisionEngine {
 
     return reward.clamp(0.0, 1.0);
   }
+
+  // =============================================================================
+  // TIMING API (for notification scheduler)
+  // =============================================================================
+
+  /// Get optimal intervention windows for a habit
+  ///
+  /// Used by notification scheduler to plan interventions at ideal times.
+  List<TimingWindow> getOptimalWindows({
+    required Habit habit,
+    required ContextSnapshot context,
+    int maxWindows = 3,
+  }) {
+    return _timingPredictor.predictOptimalWindows(
+      habit: habit,
+      context: context,
+      maxWindows: maxWindows,
+    );
+  }
+
+  /// Score whether NOW is a good time to intervene
+  InterventionTimingScore scoreCurrentTiming({
+    required Habit habit,
+    required ContextSnapshot context,
+  }) {
+    return _timingPredictor.scoreCurrentTiming(
+      habit: habit,
+      context: context,
+    );
+  }
+
+  /// Check if habit is at risk of cascade failure
+  bool isAtCascadeRisk(Habit habit) {
+    if (habit.lastCompletedDate == null) return false;
+    final daysSinceLast = DateTime.now().difference(habit.lastCompletedDate!).inDays;
+    return daysSinceLast >= 1;
+  }
+
+  /// Get cascade severity level (0=safe, 1=watch, 2=warning, 3=critical)
+  int getCascadeSeverity(Habit habit) {
+    if (habit.lastCompletedDate == null) return 3;
+    final daysSinceLast = DateTime.now().difference(habit.lastCompletedDate!).inDays;
+    if (daysSinceLast >= 3) return 3;
+    if (daysSinceLast >= 2) return 2;
+    if (daysSinceLast >= 1) return 1;
+    return 0;
+  }
+
+  // =============================================================================
+  // PERSISTENCE
+  // =============================================================================
 
   /// Export state for persistence
   Map<String, dynamic> exportState() {

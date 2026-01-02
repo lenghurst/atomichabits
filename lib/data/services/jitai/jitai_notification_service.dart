@@ -313,16 +313,12 @@ extension InAppIntervention on JITAINotificationService {
 
   InterventionStyle _styleForLever(MetaLever lever) {
     switch (lever) {
-      case MetaLever.kick:
+      case MetaLever.activate:
         return InterventionStyle.motivational;
-      case MetaLever.ease:
+      case MetaLever.support:
         return InterventionStyle.supportive;
-      case MetaLever.hold:
-        return InterventionStyle.calming;
-      case MetaLever.hush:
+      case MetaLever.trust:
         return InterventionStyle.minimal;
-      case MetaLever.shadow:
-        return InterventionStyle.challenging;
     }
   }
 }
