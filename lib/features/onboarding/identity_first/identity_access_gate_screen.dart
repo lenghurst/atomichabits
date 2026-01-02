@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
-import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/models/user_profile.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../core/logging/app_logger.dart';
@@ -108,10 +109,10 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
       if (result.success && mounted) {
         AppLogger.info('✅ Google Sign-In successful');
-        // Save identity to user profile
+        // Save identity to user profile via UserProvider (Strangler Fig)
         if (_identityController.text.isNotEmpty) {
-          final appState = context.read<AppState>();
-          final currentProfile = appState.userProfile;
+          final userProvider = context.read<UserProvider>();
+          final currentProfile = userProvider.userProfile;
           final profile = currentProfile?.copyWith(
             identity: _identityController.text.trim(),
           ) ?? UserProfile(
@@ -119,7 +120,7 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             name: '',
             createdAt: DateTime.now(),
           );
-          await appState.setUserProfile(profile);
+          await userProvider.setUserProfile(profile);
         }
         
         // Navigate to next onboarding screen
@@ -187,10 +188,10 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
       if (result.success && mounted) {
         AppLogger.info('✅ Email Auth successful');
-        // Save identity
+        // Save identity via UserProvider (Strangler Fig)
         if (_identityController.text.isNotEmpty) {
-          final appState = context.read<AppState>();
-          final currentProfile = appState.userProfile;
+          final userProvider = context.read<UserProvider>();
+          final currentProfile = userProvider.userProfile;
           final profile = currentProfile?.copyWith(
             identity: _identityController.text.trim(),
           ) ?? UserProfile(
@@ -198,9 +199,9 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             name: '',
             createdAt: DateTime.now(),
           );
-          await appState.setUserProfile(profile);
+          await userProvider.setUserProfile(profile);
         }
-        
+
         context.go(AppRoutes.onboardingPermissions);
       } else {
         setState(() {
@@ -223,17 +224,15 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
   }
 
   void _toggleDeveloperMode() {
-    final appState = context.read<AppState>();
-    final newSettings = appState.settings.copyWith(
-      developerMode: !appState.settings.developerMode,
-    );
-    appState.updateSettings(newSettings);
-    
+    final settingsProvider = context.read<SettingsProvider>();
+    final newMode = !settingsProvider.developerMode;
+    settingsProvider.setDeveloperMode(newMode);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          appState.settings.developerMode 
-              ? 'Developer Mode Enabled' 
+          newMode
+              ? 'Developer Mode Enabled'
               : 'Developer Mode Disabled',
         ),
         duration: const Duration(seconds: 2),
@@ -244,8 +243,8 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final isDeveloperMode = appState.settings.developerMode;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isDeveloperMode = settingsProvider.developerMode;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A), // slate-900

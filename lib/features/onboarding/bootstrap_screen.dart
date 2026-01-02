@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
-import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
 
 /// Bootstrap Screen (Phase 52)
 /// 
@@ -31,8 +31,8 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
     await Future.delayed(Duration.zero);
     
     // Safety 1: Authenticated users should never see this, but double-check
-    final appState = context.read<AppState>();
-    if (appState.hasCompletedOnboarding) {
+    final userProvider = context.read<UserProvider>();
+    if (userProvider.hasCompletedOnboarding) {
        if (mounted) context.go(AppRoutes.dashboard);
        return;
     }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
+import '../../data/providers/user_provider.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart';
@@ -726,6 +727,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _completeOnboarding() async {
     if (_formKey.currentState?.validate() ?? false) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
       final appState = Provider.of<AppState>(context, listen: false);
 
       // Create user profile
@@ -789,9 +791,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       // Save to state (now with persistence!)
-      await appState.setUserProfile(profile);
+      // User operations via UserProvider (Strangler Fig pattern)
+      await userProvider.setUserProfile(profile);
+      await userProvider.completeOnboarding();
+      // Habit creation via AppState (deferred to P4 migration)
       await appState.createHabit(habit);
-      await appState.completeOnboarding();
 
       // Navigate to Today screen
       if (mounted) {
