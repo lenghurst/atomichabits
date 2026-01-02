@@ -145,7 +145,9 @@ graph TD
     *   *Fix*: Need a `SyncService.pullFromCloud()` on startup or a "Strangler Fig" Repository that checks Cloud vs Local timestamps.
     *   **Status**: ✅ **RESOLVED** (v1.2) via `hydrateFromCloud()` implementation.
 *   **Over-Fetching (Witness)**: `WitnessService` loads 50 events on every startup (via `initialize()`), even if the user never navigates to the Witness Dashboard. This delays generic app startup performance.
+    *   **Status**: ✅ **OPTIMIZED** (v1.2.1) via Fire-and-Forget implementation in `initialize()`.
 *   **Drift Analysis Latency**: `TodayScreenController.checkForDriftSuggestion` runs on the UI thread and processes the entire completion history. For long-time users, this computation causes frame drops (jank) during the critical first render of the dashboard.
+    *   **Status**: ✅ **OPTIMIZED** (v1.2.2) via deferred execution (500ms post-resume).
 *   **Sync-Blocking-UI Risk**: While `AppState.initialize` is async, it awaits `Hive.openBox`. If Hive box is corrupted or large, it delays the `runApp` (or strictly speaking, the `isLoading` state in `MyApp`).
 
 ---
