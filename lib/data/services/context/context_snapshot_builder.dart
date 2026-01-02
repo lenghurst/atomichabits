@@ -20,6 +20,7 @@ import '../../../domain/entities/weather_context.dart';
 import 'calendar_service.dart';
 import 'biometrics_service.dart';
 
+@deprecated // Use ContextService instead
 class ContextSnapshotBuilder {
   final WeatherService _weatherService;
   final CalendarService _calendarService;

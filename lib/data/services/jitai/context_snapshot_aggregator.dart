@@ -14,6 +14,7 @@ import '../weather_service.dart';
 /// Handles graceful degradation when sensors are unavailable.
 ///
 /// Phase 63: JITAI Foundation
+@deprecated // Use JITAIContextService instead
 class ContextSnapshotAggregator {
   // Singleton
   static final ContextSnapshotAggregator _instance = ContextSnapshotAggregator._internal();
