@@ -15,7 +15,8 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../domain/entities/context_snapshot.dart';
 import '../../../data/models/habit.dart';
-import 'weather_service.dart';
+import '../weather_service.dart';
+import '../../../domain/entities/weather_context.dart';
 import 'calendar_service.dart';
 import 'biometrics_service.dart';
 
@@ -106,8 +107,8 @@ class ContextSnapshotBuilder {
       if (position == null) return null;
 
       return await _weatherService.getWeatherContext(
-        latitude: position.latitude,
-        longitude: position.longitude,
+        lat: position.latitude,
+        lon: position.longitude,
       );
     } catch (_) {
       return null;
