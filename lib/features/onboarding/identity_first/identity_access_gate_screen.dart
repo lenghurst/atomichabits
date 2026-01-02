@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
 import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/models/user_profile.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../core/logging/app_logger.dart';
@@ -120,6 +122,10 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             createdAt: DateTime.now(),
           );
           await appState.setUserProfile(profile);
+          
+          // Strangler Fig: Also update UserProvider
+          final userProvider = context.read<UserProvider>();
+          await userProvider.setUserProfile(profile);
         }
         
         // Navigate to next onboarding screen
@@ -199,6 +205,10 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
             createdAt: DateTime.now(),
           );
           await appState.setUserProfile(profile);
+          
+          // Strangler Fig: Also update UserProvider
+          final userProvider = context.read<UserProvider>();
+          await userProvider.setUserProfile(profile);
         }
         
         context.go(AppRoutes.onboardingPermissions);
@@ -223,16 +233,19 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
   }
 
   void _toggleDeveloperMode() {
-    final appState = context.read<AppState>();
-    final newSettings = appState.settings.copyWith(
-      developerMode: !appState.settings.developerMode,
-    );
-    appState.updateSettings(newSettings);
+    final settingsProvider = context.read<SettingsProvider>();
+    final newMode = !settingsProvider.developerMode;
+    settingsProvider.setDeveloperMode(newMode);
+    
+    // Legacy support: sync to AppState just in case
+    // final appState = context.read<AppState>();
+    // final newSettings = appState.settings.copyWith(developerMode: newMode);
+    // appState.updateSettings(newSettings);
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          appState.settings.developerMode 
+          newMode
               ? 'Developer Mode Enabled' 
               : 'Developer Mode Disabled',
         ),
@@ -244,8 +257,9 @@ class _IdentityAccessGateScreenState extends State<IdentityAccessGateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final isDeveloperMode = appState.settings.developerMode;
+    // Strangler Fig: Watch SettingsProvider instead
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isDeveloperMode = settingsProvider.developerMode;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A), // slate-900

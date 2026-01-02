@@ -9,6 +9,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
 import '../../../data/services/voice_session_manager.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../components/permission_glass_pane.dart';
@@ -237,6 +238,9 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
         witnessContact: witnessContact,
       );
       appState.setUserProfile(updatedProfile);
+      
+      // Strangler Fig: Update UserProvider
+      context.read<UserProvider>().setUserProfile(updatedProfile);
     }
 
     // --- NEW: INVITE THE WITNESS (Brain Surgery 2.5) ---
@@ -249,8 +253,9 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
   }
 
   Future<void> _inviteWitness(String name, String contact) async {
-    final appState = context.read<AppState>();
-    final myName = appState.userProfile?.name ?? "I";
+    // Strangler Fig: Use UserProvider for name
+    final userProvider = context.read<UserProvider>();
+    final myName = userProvider.userProfile?.name ?? "I";
     final habitName = context.read<OnboardingOrchestrator>().extractedData?.name ?? "a new habit";
     
     // Polished Copy (Brain Surgery 2.5)
@@ -292,13 +297,16 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                
                // "Go Solo" means being your own witness (Internal Locus of Control)
                final appState = context.read<AppState>();
-               if (appState.userProfile != null) {
-                 final updatedProfile = appState.userProfile!.copyWith(
-                   witnessName: "Myself",
-                   witnessContact: "Internal",
-                 );
-                 appState.setUserProfile(updatedProfile);
-               }
+                 if (appState.userProfile != null) {
+                   final updatedProfile = appState.userProfile!.copyWith(
+                     witnessName: "Myself",
+                     witnessContact: "Internal",
+                   );
+                   appState.setUserProfile(updatedProfile);
+                   
+                   // Strangler Fig: Update UserProvider
+                   context.read<UserProvider>().setUserProfile(updatedProfile);
+                 }
 
                // Go directly to Dashboard (Bypass Voice Coach)
                context.go(AppRoutes.dashboard);
@@ -327,18 +335,22 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
         witnessContact: "Deferred",
       );
       appState.setUserProfile(updatedProfile);
+      
+      // Strangler Fig: Update UserProvider
+      context.read<UserProvider>().setUserProfile(updatedProfile);
     }
     context.go(AppRoutes.screening);
   }
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final userName = appState.userProfile?.name.isNotEmpty == true
-        ? appState.userProfile!.name
+    // Strangler Fig: Watch UserProvider for updates
+    final userProvider = context.watch<UserProvider>();
+    final userName = userProvider.userProfile?.name.isNotEmpty == true
+        ? userProvider.userProfile!.name
         : 'You';
-    final identity = appState.userProfile?.identity.isNotEmpty == true
-        ? appState.userProfile!.identity
+    final identity = userProvider.userProfile?.identity.isNotEmpty == true
+        ? userProvider.userProfile!.identity
         : 'A Better Version of Yourself';
     final currentDate = DateFormat('MMMM d, y').format(DateTime.now());
     

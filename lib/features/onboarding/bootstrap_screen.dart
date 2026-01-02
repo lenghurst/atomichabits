@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/router/app_routes.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
 
 /// Bootstrap Screen (Phase 52)
 /// 
@@ -32,7 +33,10 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
     
     // Safety 1: Authenticated users should never see this, but double-check
     final appState = context.read<AppState>();
-    if (appState.hasCompletedOnboarding) {
+    // Strangler Fig: Check UserProvider as well (Preferred Source)
+    final userProvider = context.read<UserProvider>();
+    
+    if (appState.hasCompletedOnboarding || userProvider.hasCompletedOnboarding) {
        if (mounted) context.go(AppRoutes.dashboard);
        return;
     }

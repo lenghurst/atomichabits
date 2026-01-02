@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
+import '../../data/providers/user_provider.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/onboarding_data.dart';
@@ -790,6 +791,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       // Save to state (now with persistence!)
       await appState.setUserProfile(profile);
+      
+      // Strangler Fig Phase 2: Save to UserProvider as well
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.setUserProfile(profile);
+      await userProvider.completeOnboarding();
+      
       await appState.createHabit(habit);
       await appState.completeOnboarding();
 

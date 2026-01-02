@@ -8,6 +8,7 @@ import '../../data/enums/voice_session_type.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
+import '../../data/providers/user_provider.dart';
 import 'widgets/chat_message_bubble.dart';
 import '../../data/services/ai/prompt_factory.dart';
 import '../../data/models/voice_session_config.dart';
@@ -53,10 +54,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
          }
 
          // 2. INJECT SYSTEM PROMPT (Track F)
-         final appState = context.read<AppState>();
+         // Strangler Fig: Use UserProvider for profile
+         final userProvider = context.read<UserProvider>();
          final systemPrompt = PromptFactory.getSystemInstruction(
            type: widget.config.type,
-           profile: appState.userProfile,
+           profile: userProvider.userProfile,
          );
          _voiceManager.setSystemPrompt(systemPrompt);
          
@@ -80,8 +82,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     
     // FOR BACKWARD COMPATIBILITY with the test prompt:
     if (widget.config.type == VoiceSessionType.sherlock && message.contains("{Name}")) {
-        final appState = context.read<AppState>();
-        final name = appState.userProfile?.name ?? "I";
+        // Strangler Fig: Use UserProvider for name
+        final userProvider = context.read<UserProvider>();
+        final name = userProvider.userProfile?.name ?? "I";
         final interpolated = message.replaceAll("{Name}", name);
         _voiceManager.sendText(interpolated);
     } else {
@@ -96,7 +99,9 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
       // CRITICAL FIX: If this is Oracle, we MUST complete onboarding in AppState
       // BEFORE navigating, otherwise the Router will bounce us back to Start.
       if (widget.config.type == VoiceSessionType.oracle) {
+        // Strangler Fig: Complete on both for safety
         context.read<AppState>().completeOnboarding();
+        context.read<UserProvider>().completeOnboarding();
       }
 
       // Wait a moment for the user to hear the approval or see the text
