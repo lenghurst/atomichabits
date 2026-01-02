@@ -30,10 +30,13 @@ class TodayScreenController {
   
   /// Phase 19: Drift detector for smart notifications
   final OptimizedTimeFinder _driftDetector = OptimizedTimeFinder();
-  
+
+  /// Flag to prevent concurrent drift checks
+  bool _isDriftCheckInProgress = false;
+
   /// Key for storing drift prompt dismissal preference
   static const String _driftPromptDismissedKey = 'drift_prompt_dismissed_';
-  
+
   /// Key for storing last drift prompt date
   static const String _lastDriftPromptKey = 'last_drift_prompt_';
   
@@ -43,7 +46,7 @@ class TodayScreenController {
   });
   
   // ========== Lifecycle Callbacks ==========
-  
+
   /// Called when screen loads or app comes to foreground
   /// Checks if any dialogs should be shown
   void onScreenResumed() {
@@ -52,11 +55,32 @@ class TodayScreenController {
     } else if (appState.shouldShowRecoveryPrompt) {
       showRecoveryDialog();
     }
+
+    // Phase 19: Deferred drift analysis - runs after first frame to avoid UI jank
+    // Delay ensures the critical first render completes before any heavy computation
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_isContextMounted) {
+        checkForDriftSuggestion();
+      }
+    });
   }
   
   /// Phase 19: Check for drift and show suggestion dialog if appropriate
-  /// Called during screen initialization or data refresh
+  /// Called during screen initialization or data refresh (deferred by 500ms)
   Future<void> checkForDriftSuggestion() async {
+    // Guard against concurrent checks (e.g., rapid lifecycle changes)
+    if (_isDriftCheckInProgress) return;
+    _isDriftCheckInProgress = true;
+
+    try {
+      await _performDriftCheck();
+    } finally {
+      _isDriftCheckInProgress = false;
+    }
+  }
+
+  /// Internal drift check implementation
+  Future<void> _performDriftCheck() async {
     final habit = appState.currentHabit;
     if (habit == null) return;
     
