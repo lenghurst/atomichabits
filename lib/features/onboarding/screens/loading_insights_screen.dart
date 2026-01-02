@@ -55,12 +55,22 @@ class _LoadingInsightsScreenState extends State<LoadingInsightsScreen>
       duration: const Duration(milliseconds: 400),
     );
 
-    _runInsightsCapture();
+    // Use addPostFrameCallback to safely access Provider after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _runInsightsCapture();
+    });
   }
 
   Future<void> _runInsightsCapture() async {
-    // Get onboarding data from orchestrator
-    final orchestrator = context.read<OnboardingOrchestrator?>();
+    if (!mounted) return;
+
+    // Safely get onboarding data from orchestrator after widget is built
+    OnboardingOrchestrator? orchestrator;
+    try {
+      orchestrator = context.read<OnboardingOrchestrator?>();
+    } catch (e) {
+      // Provider not found - proceed without orchestrator data
+    }
     final habitData = orchestrator?.extractedData;
 
     // Build habits list from available data

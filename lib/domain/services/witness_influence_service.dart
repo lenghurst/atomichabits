@@ -361,13 +361,21 @@ class WitnessInfluenceService {
   Map<String, dynamic> getInfluenceSummary() {
     final witnesses = getRankedWitnesses();
 
+    // Calculate average score safely
+    double avgScore = 0.0;
+    if (witnesses.isNotEmpty) {
+      final totalScore = witnesses.fold<double>(
+        0.0,
+        (sum, w) => sum + w.overallScore,
+      );
+      avgScore = totalScore / witnesses.length;
+    }
+
     return {
       'totalWitnesses': witnesses.length,
       'champions': witnesses.where((w) => w.tier == InfluenceTier.champion).length,
       'supporters': witnesses.where((w) => w.tier == InfluenceTier.supporter).length,
-      'avgOverallScore': witnesses.isEmpty
-          ? 0.0
-          : witnesses.map((w) => w.overallScore).reduce((a, b) => a + b) / witnesses.length,
+      'avgOverallScore': avgScore,
       'mostEffective': witnesses.isNotEmpty ? witnesses.first.witnessId : null,
     };
   }

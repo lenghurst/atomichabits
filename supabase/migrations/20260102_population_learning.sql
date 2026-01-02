@@ -16,21 +16,24 @@ CREATE TABLE IF NOT EXISTS archetype_priors (
     CONSTRAINT unique_archetype_arm UNIQUE (archetype, arm_id)
 );
 
--- Create index for fast lookups
+-- Create indexes for fast lookups
 CREATE INDEX IF NOT EXISTS idx_archetype_priors_archetype ON archetype_priors(archetype);
 CREATE INDEX IF NOT EXISTS idx_archetype_priors_arm ON archetype_priors(arm_id);
+-- Composite index for the common query pattern (archetype + arm_id lookup)
+CREATE INDEX IF NOT EXISTS idx_archetype_priors_composite ON archetype_priors(archetype, arm_id);
 
 -- Create contribution_log for rate limiting and privacy
 -- Stores hashed user IDs to prevent duplicate contributions
+-- Rate limit is per user+archetype (not per arm) to prevent gaming
 CREATE TABLE IF NOT EXISTS contribution_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_hash TEXT NOT NULL,
     archetype TEXT NOT NULL,
-    arm_id TEXT NOT NULL,
+    arm_id TEXT NOT NULL DEFAULT '_session_', -- Session marker for archetype-level rate limiting
     contributed_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
 
-    -- Prevent duplicate contributions within 24 hours
-    CONSTRAINT unique_contribution_24h UNIQUE (user_hash, archetype, arm_id)
+    -- Prevent duplicate contribution sessions within 24 hours (per user+archetype)
+    CONSTRAINT unique_contribution_session_24h UNIQUE (user_hash, archetype)
 );
 
 -- Create index for cleanup

@@ -238,21 +238,14 @@ class OnboardingInsightsService {
 
     yield 'Reading environmental context...';
 
-    // Weather (if service available and configured)
+    // Weather (if service available and configured) with retry logic
     String? weatherCondition;
     double? temperature;
     if (_weatherService != null) {
-      try {
-        final weather = await _weatherService!.getCurrentWeather().timeout(
-              const Duration(seconds: 3),
-              onTimeout: () => null,
-            );
-        if (weather != null) {
-          weatherCondition = weather.condition;
-          temperature = weather.temperature;
-        }
-      } catch (e) {
-        if (kDebugMode) debugPrint('Weather fetch failed: $e');
+      final weather = await _fetchWeatherWithRetry();
+      if (weather != null) {
+        weatherCondition = weather.condition;
+        temperature = weather.temperature;
       }
     }
 
@@ -705,5 +698,39 @@ class OnboardingInsightsService {
       n >>= 1;
     }
     return count;
+  }
+
+  /// Fetch weather with exponential backoff retry (up to 3 attempts)
+  Future<dynamic> _fetchWeatherWithRetry() async {
+    const maxRetries = 3;
+    const baseDelayMs = 1000; // 1 second base delay
+
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        final weather = await _weatherService!.getCurrentWeather().timeout(
+              const Duration(seconds: 5), // Increased from 3s to 5s
+              onTimeout: () => null,
+            );
+        if (weather != null) {
+          return weather;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('Weather fetch attempt ${attempt + 1} failed: $e');
+        }
+
+        // Don't retry on last attempt
+        if (attempt < maxRetries - 1) {
+          // Exponential backoff: 1s, 2s, 4s
+          final delayMs = baseDelayMs * (1 << attempt);
+          await Future.delayed(Duration(milliseconds: delayMs));
+        }
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('Weather fetch failed after $maxRetries attempts');
+    }
+    return null;
   }
 }

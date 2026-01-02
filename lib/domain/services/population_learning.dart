@@ -338,6 +338,28 @@ class PopulationLearningService {
     };
   }
 
+  /// Seed cache with research-based default priors for an archetype
+  void _seedDefaultPriors(String archetype) {
+    final normalizedArchetype = archetype.toUpperCase();
+    final defaults = _defaultPriors[normalizedArchetype] ?? _compositePriors;
+
+    _priorCache.putIfAbsent(normalizedArchetype, () => {});
+
+    for (final entry in defaults.entries) {
+      final armId = entry.key;
+      final (alpha, beta) = entry.value;
+
+      _priorCache[normalizedArchetype]![armId] = PopulationPrior(
+        archetype: normalizedArchetype,
+        armId: armId,
+        alpha: alpha,
+        beta: beta,
+        contributorCount: 0, // Research prior, not population data
+        updatedAt: DateTime.now(),
+      );
+    }
+  }
+
   // ============================================================
   // SUPABASE EDGE FUNCTION INTEGRATION
   // ============================================================
@@ -376,6 +398,16 @@ class PopulationLearningService {
 
       // Update cache
       _priorCache.putIfAbsent(archetype, () => {});
+
+      // If Edge Function returns empty priors, seed from research-based defaults
+      if (priors.isEmpty) {
+        if (kDebugMode) {
+          debugPrint('PopulationLearning: No population data for $archetype, using research defaults');
+        }
+        _seedDefaultPriors(archetype);
+        return;
+      }
+
       priors.forEach((armId, values) {
         final v = values as Map<String, dynamic>;
         _priorCache[archetype]![armId] = PopulationPrior(
@@ -433,8 +465,10 @@ class PopulationLearningService {
             'userHash': userHash,
             'archetype': archetype,
             'outcomes': outcomes.map((o) => {
-              'armId': o.armId,
-              'success': o.success,
+              return {
+                'armId': o.armId,
+                'success': o.success,
+              };
             }).toList(),
           }),
         );

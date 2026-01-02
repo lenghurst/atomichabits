@@ -326,7 +326,7 @@ class VoiceAffectDetectionService {
   /// Analyze voice recording for emotional affect
   ///
   /// Uses Gemini to analyze the transcript + speech patterns.
-  /// Falls back to transcript-only analysis if audio analysis fails.
+  /// Falls back to local heuristic analysis if Gemini fails.
   Future<VoiceAffect?> analyzeVoice({
     required String transcript,
     String? audioPath,
@@ -334,7 +334,11 @@ class VoiceAffectDetectionService {
     if (!_isEnabled || transcript.isEmpty) return null;
 
     try {
-      final affect = await _analyzeWithGemini(transcript);
+      // Try Gemini first
+      var affect = await _analyzeWithGemini(transcript);
+
+      // Fall back to local heuristics if Gemini fails
+      affect ??= _analyzeWithLocalHeuristics(transcript);
 
       if (affect != null) {
         _affectHistory.add(affect);
@@ -348,8 +352,116 @@ class VoiceAffectDetectionService {
       if (kDebugMode) {
         debugPrint('VoiceAffect: Analysis failed: $e');
       }
-      return null;
+      // Last resort: return heuristic analysis
+      return _analyzeWithLocalHeuristics(transcript);
     }
+  }
+
+  /// Local heuristic fallback when Gemini is unavailable
+  ///
+  /// Uses simple keyword and pattern matching to estimate affect.
+  /// Less accurate than Gemini but provides reasonable defaults.
+  VoiceAffect? _analyzeWithLocalHeuristics(String transcript) {
+    if (transcript.isEmpty) return null;
+
+    final lowerTranscript = transcript.toLowerCase();
+    final words = lowerTranscript.split(RegExp(r'\s+'));
+    final wordCount = words.length;
+
+    // Energy indicators
+    final exclamationCount = transcript.split('!').length - 1;
+    final hasEnergetic = _containsAny(lowerTranscript, [
+      'excited', 'amazing', 'awesome', 'great', 'love', 'fantastic',
+      'ready', 'pumped', 'energized', 'motivated',
+    ]);
+    final hasTired = _containsAny(lowerTranscript, [
+      'tired', 'exhausted', 'sleepy', 'drained', 'worn out', 'beat',
+      'barely', 'struggling', 'hard to', 'can\'t',
+    ]);
+    final energyLevel = hasTired
+        ? 0.3
+        : hasEnergetic
+            ? 0.8
+            : 0.5 + (exclamationCount * 0.1).clamp(0.0, 0.3);
+
+    // Stress indicators
+    final hasStress = _containsAny(lowerTranscript, [
+      'stressed', 'anxious', 'worried', 'overwhelmed', 'pressure',
+      'deadline', 'behind', 'too much', 'can\'t handle', 'panic',
+    ]);
+    final hasCalm = _containsAny(lowerTranscript, [
+      'calm', 'relaxed', 'peaceful', 'easy', 'fine', 'okay',
+      'no problem', 'good', 'great',
+    ]);
+    final stressLevel = hasStress ? 0.7 : hasCalm ? 0.2 : 0.4;
+
+    // Emotional valence
+    final positiveWords = ['happy', 'good', 'great', 'love', 'excited',
+      'proud', 'accomplished', 'grateful', 'hopeful', 'confident'];
+    final negativeWords = ['sad', 'bad', 'hate', 'frustrated', 'angry',
+      'disappointed', 'failed', 'hopeless', 'discouraged', 'upset'];
+
+    final positiveCount = positiveWords.where((w) => lowerTranscript.contains(w)).length;
+    final negativeCount = negativeWords.where((w) => lowerTranscript.contains(w)).length;
+    final emotionalValence = (positiveCount - negativeCount) / 5.0;
+
+    // Confidence indicators
+    final hasHesitation = _containsAny(lowerTranscript, [
+      'maybe', 'i think', 'not sure', 'i guess', 'perhaps',
+      'probably', 'might', 'could be', 'don\'t know',
+    ]);
+    final hasAssertive = _containsAny(lowerTranscript, [
+      'definitely', 'absolutely', 'i will', 'i am', 'for sure',
+      'no doubt', 'certainly', 'i know',
+    ]);
+    final confidenceLevel = hasHesitation ? 0.3 : hasAssertive ? 0.8 : 0.5;
+
+    // Motivation indicators
+    final hasMotivation = _containsAny(lowerTranscript, [
+      'want to', 'going to', 'will', 'excited', 'ready', 'let\'s',
+      'can\'t wait', 'looking forward',
+    ]);
+    final hasLowMotivation = _containsAny(lowerTranscript, [
+      'don\'t want', 'lazy', 'skip', 'later', 'tomorrow', 'not today',
+      'can\'t be bothered', 'not feeling',
+    ]);
+    final motivationLevel = hasLowMotivation ? 0.3 : hasMotivation ? 0.7 : 0.5;
+
+    // Determine primary emotion
+    DetectedEmotion primaryEmotion;
+    if (hasStress) {
+      primaryEmotion = DetectedEmotion.stressed;
+    } else if (hasTired) {
+      primaryEmotion = DetectedEmotion.tired;
+    } else if (emotionalValence < -0.3) {
+      primaryEmotion = DetectedEmotion.sad;
+    } else if (hasEnergetic && emotionalValence > 0.3) {
+      primaryEmotion = DetectedEmotion.excited;
+    } else if (emotionalValence > 0.3) {
+      primaryEmotion = DetectedEmotion.happy;
+    } else if (hasCalm) {
+      primaryEmotion = DetectedEmotion.calm;
+    } else {
+      primaryEmotion = DetectedEmotion.neutral;
+    }
+
+    return VoiceAffect(
+      energyLevel: energyLevel.clamp(0.0, 1.0),
+      stressLevel: stressLevel.clamp(0.0, 1.0),
+      emotionalValence: emotionalValence.clamp(-1.0, 1.0),
+      confidenceLevel: confidenceLevel.clamp(0.0, 1.0),
+      motivationLevel: motivationLevel.clamp(0.0, 1.0),
+      primaryEmotion: primaryEmotion,
+      secondaryEmotions: [],
+      transcript: transcript,
+      detectedAt: DateTime.now(),
+      detectionConfidence: 0.5, // Lower confidence for heuristic analysis
+    );
+  }
+
+  /// Helper to check if text contains any of the keywords
+  bool _containsAny(String text, List<String> keywords) {
+    return keywords.any((keyword) => text.contains(keyword));
   }
 
   /// Analyze transcript using Gemini

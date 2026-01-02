@@ -71,6 +71,27 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check rate limiting FIRST (one contribution session per 24h per user/archetype)
+    // This prevents users from contributing multiple times per day for the same archetype
+    const { data: existingLog } = await supabase
+      .from('contribution_log')
+      .select('id')
+      .eq('user_hash', userHash)
+      .eq('archetype', archetype)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingLog) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'rate_limited',
+          message: 'Already contributed for this archetype in the last 24 hours'
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Process each outcome
     const results = [];
     for (const outcome of outcomes) {
@@ -78,20 +99,6 @@ serve(async (req) => {
 
       if (!armId || typeof success !== 'boolean') {
         continue; // Skip invalid outcomes
-      }
-
-      // Check rate limiting (one contribution per 24h per user/archetype/arm)
-      const { data: existingLog } = await supabase
-        .from('contribution_log')
-        .select('id')
-        .eq('user_hash', userHash)
-        .eq('archetype', archetype)
-        .eq('arm_id', armId)
-        .single();
-
-      if (existingLog) {
-        results.push({ armId, status: 'rate_limited' });
-        continue;
       }
 
       // Get current priors
@@ -137,17 +144,17 @@ serve(async (req) => {
         continue;
       }
 
-      // Log the contribution for rate limiting
-      await supabase
-        .from('contribution_log')
-        .insert({
-          user_hash: userHash,
-          archetype,
-          arm_id: armId,
-        });
-
       results.push({ armId, status: 'success' });
     }
+
+    // Log the contribution session for rate limiting (once per archetype, not per arm)
+    await supabase
+      .from('contribution_log')
+      .insert({
+        user_hash: userHash,
+        archetype,
+        arm_id: '_session_', // Session marker, not arm-specific
+      });
 
     // Clean old contribution logs (async, fire-and-forget)
     supabase.rpc('clean_old_contributions').then(() => {
