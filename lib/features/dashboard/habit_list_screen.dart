@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
+import '../../data/providers/user_provider.dart';
 import '../../data/models/habit.dart';
 import '../review/weekly_review_dialog.dart';
 import 'widgets/habit_summary_card.dart';
@@ -27,10 +28,11 @@ class HabitListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, child) {
+    return Consumer2<UserProvider, AppState>(
+      builder: (context, userProvider, appState, child) {
         final habits = appState.habits;
-        final profile = appState.userProfile;
+        // Strangler Fig Phase 2: Read profile from UserProvider
+        final profile = userProvider.userProfile;
 
         return Scaffold(
           appBar: AppBar(
@@ -145,7 +147,8 @@ class HabitListScreen extends StatelessWidget {
   /// Phase 31 (Zhuo Z5): Enhanced empty state with personality
   /// Creates an emotional connection and motivates action
   Widget _buildEmptyState(BuildContext context) {
-    final profile = context.read<AppState>().userProfile;
+    // Strangler Fig Phase 2: Read from UserProvider
+    final profile = context.read<UserProvider>().userProfile;
     final identity = profile?.identity ?? 'the person you want to become';
     
     // Motivational quotes that rotate
@@ -447,6 +450,8 @@ class HabitListScreen extends StatelessWidget {
 
   void _showAddHabitOptions(BuildContext context) {
     final appState = context.read<AppState>();
+    final userProvider = context.read<UserProvider>();
+    
     showModalBottomSheet(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -460,12 +465,12 @@ class HabitListScreen extends StatelessWidget {
                 leading: const Icon(Icons.mic, color: Colors.deepPurple),
                 title: const Text('Voice Coach'),
                 subtitle: Text(
-                  appState.isPremium 
+                  userProvider.isPremium 
                     ? 'Speak with your AI coach (Premium)'
                     : 'Premium feature - Upgrade to unlock',
                 ),
-                enabled: appState.isPremium,
-                onTap: appState.isPremium ? () {
+                enabled: userProvider.isPremium,
+                onTap: userProvider.isPremium ? () {
                   Navigator.pop(sheetContext);
                   context.push(AppRoutes.voiceOnboarding);
                 } : null,
