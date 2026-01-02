@@ -99,6 +99,12 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 
 ## ✅ Completed Legacy Phases (Reference)
 
+### Phase 64: Cloud Hydration & UserProvider (02 Jan 2026)
+**Goal:** Fix P0 data loss and modernize state management.
+- [x] **Cloud Hydration:** Restore habits from Supabase on fresh install.
+- [x] **UserProvider Migration:** Migrate Dashboard & Onboarding to strict Provider pattern.
+- [x] **Perf Optimization:** Unblock startup (Witness svc) and first frame (Drift analysis).
+
 ### Phase 63: Psychometric Cloud Sync (02 Jan 2026)
 **Goal:** Hybrid storage model for Identity Evidence.
 - [x] **Schema Alignment**: `habit_contracts` UUID -> TEXT migration.

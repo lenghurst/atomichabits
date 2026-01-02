@@ -1,3 +1,24 @@
+## [6.11.0] - 2026-01-02 - Phase 64 & 2: "Cloud Hydration & Strangler Fig"
+
+### Architecture (The Strangler Fig)
+- **UserProvider Migration (Phase 2):** Migrated user profile management from legacy `AppState` to `UserProvider` across the entire app (Dashboard + Onboarding).
+  - **Screens Migrated:** `HabitListScreen`, `VoiceCoachScreen`, `WitnessInvestmentScreen`, `IdentityAccessGateScreen`, `BootstrapScreen`.
+  - **Strategy:** Used Strangler Fig pattern to decouple UI from legacy state, enabling cleaner testing and future refactoring.
+
+### Fixed (P0 Data Loss)
+- **Cloud Hydration:** Resolved a critical data loss scenario for returning users on fresh installs.
+  - **Mechanism:** `AppState.initialize()` now checks for `isEmpty && isAuthenticated`. If true, it automatically hydrates the local Hive database from Supabase (`SyncService.hydrateFromCloud`), restoring the user's habits seamlessly.
+  - **Impact:** Zero data loss for reinstalling users.
+
+### Performance
+- **Witness Service:** Changed event loading to "Fire-and-Forget" in `initialize()`, unblocking app startup (saving ~500ms).
+- **Drift Analysis:** Deferred `checkForDriftSuggestion` via `Future.microtask`, preventing UI jank on the first frame of the Dashboard.
+
+### Documentation
+- **Data Flow Mapping:** Added comprehensive mapping of [Storage] -> [Repo] -> [UI] flows for returning users to `docs/architecture/returning_user_data_flow.md`.
+
+---
+
 ## [6.10.0] - 2026-01-02 - Phase 63: "Psychometric Cloud Sync & Schema Repair"
 
 ### Architecture

@@ -152,7 +152,16 @@ graph TD
 | **60** | **Hybrid Voice Stack** (Gemini 3 Reasoning + REST TTS) | ✅ |
 | **60.1** | **WAV Header Fix** (Manual PCM Wrapping for Mobile) | ✅ |
 | **62** | **Sherlock Protocol** (IFS Refinement + Privacy Fixes) | ✅ |
+> **Current Phase:** The Augmented Constitution (Phase 64 Complete)  
+
+...
+
+| Phase | Fix | Status |
+|-------|-----|--------|
+...
 | **63** | **Cloud Sync** (Hybrid Storage + Schema Repair) | ✅ |
+| **64** | **Cloud Hydration** (Restore from Cloud on separate install) | ✅ |
+| **64.1** | **UserProvider Migration** (Strangler Fig Phase 2) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 
