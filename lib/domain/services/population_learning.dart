@@ -11,10 +11,16 @@
 /// Philosophy: Users with similar failure patterns respond similarly
 /// to interventions. Share learnings, not data.
 
+import 'dart:convert';
 import 'dart:math';
+
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 import '../entities/psychometric_profile.dart';
 import '../entities/intervention.dart';
+import '../../config/supabase_config.dart';
 
 /// Population-level Beta distribution for an arm within an archetype
 class PopulationPrior {
@@ -330,6 +336,135 @@ class PopulationLearningService {
         (archetype, arms) => MapEntry(archetype, arms.length),
       ),
     };
+  }
+
+  // ============================================================
+  // SUPABASE EDGE FUNCTION INTEGRATION
+  // ============================================================
+
+  /// Fetch population priors from Supabase Edge Function
+  Future<void> fetchFromEdgeFunction(String archetype) async {
+    if (!SupabaseConfig.isConfigured) {
+      if (kDebugMode) {
+        debugPrint('PopulationLearning: Supabase not configured, using defaults');
+      }
+      return;
+    }
+
+    try {
+      final url = Uri.parse(
+        '${SupabaseConfig.url}/functions/v1/population-learning-fetch?archetype=$archetype',
+      );
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${SupabaseConfig.anonKey}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        if (kDebugMode) {
+          debugPrint('PopulationLearning: Fetch failed: ${response.statusCode}');
+        }
+        return;
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final priors = data['priors'] as Map<String, dynamic>? ?? {};
+
+      // Update cache
+      _priorCache.putIfAbsent(archetype, () => {});
+      priors.forEach((armId, values) {
+        final v = values as Map<String, dynamic>;
+        _priorCache[archetype]![armId] = PopulationPrior(
+          archetype: archetype,
+          armId: armId,
+          alpha: (v['alpha'] as num).toDouble(),
+          beta: (v['beta'] as num).toDouble(),
+          contributorCount: v['sampleCount'] as int? ?? 0,
+          updatedAt: DateTime.now(),
+        );
+      });
+
+      if (kDebugMode) {
+        debugPrint('PopulationLearning: Loaded ${priors.length} priors for $archetype');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('PopulationLearning: Fetch error: $e');
+      }
+    }
+  }
+
+  /// Sync pending outcomes to Supabase Edge Function
+  Future<void> syncToEdgeFunction({required String userId}) async {
+    if (!SupabaseConfig.isConfigured || _pendingOutcomes.isEmpty) {
+      return;
+    }
+
+    try {
+      // Group outcomes by archetype
+      final byArchetype = <String, List<_LocalOutcome>>{};
+      for (final outcome in _pendingOutcomes) {
+        byArchetype.putIfAbsent(outcome.archetype, () => []).add(outcome);
+      }
+
+      // Hash user ID for privacy
+      final userHash = sha256.convert(utf8.encode(userId)).toString();
+
+      // Sync each archetype
+      for (final entry in byArchetype.entries) {
+        final archetype = entry.key;
+        final outcomes = entry.value;
+
+        final url = Uri.parse(
+          '${SupabaseConfig.url}/functions/v1/population-learning-sync',
+        );
+
+        final response = await http.post(
+          url,
+          headers: {
+            'Authorization': 'Bearer ${SupabaseConfig.anonKey}',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'userHash': userHash,
+            'archetype': archetype,
+            'outcomes': outcomes.map((o) => {
+              'armId': o.armId,
+              'success': o.success,
+            }).toList(),
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          if (kDebugMode) {
+            debugPrint('PopulationLearning: Synced ${outcomes.length} outcomes for $archetype');
+          }
+        } else {
+          if (kDebugMode) {
+            debugPrint('PopulationLearning: Sync failed: ${response.statusCode}');
+          }
+        }
+      }
+
+      // Clear pending outcomes on success
+      _pendingOutcomes.clear();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('PopulationLearning: Sync error: $e');
+      }
+    }
+  }
+
+  /// Initialize with population priors for a profile
+  Future<void> initializeForProfile(PsychometricProfile profile) async {
+    final archetype = profile.archetypeKey;
+    if (archetype == 'UNKNOWN') return;
+
+    await fetchFromEdgeFunction(archetype);
   }
 }
 
