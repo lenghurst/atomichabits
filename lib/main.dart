@@ -39,6 +39,7 @@ import 'data/repositories/hive_settings_repository.dart';
 import 'data/repositories/hive_user_repository.dart';
 import 'data/repositories/hive_habit_repository.dart';
 import 'data/repositories/hive_psychometric_repository.dart';
+import 'data/repositories/supabase_psychometric_repository.dart'; // Phase 63
 import 'data/providers/settings_provider.dart';
 import 'data/providers/user_provider.dart';
 import 'data/providers/habit_provider.dart';
@@ -113,9 +114,17 @@ void main() async {
   final userProvider = UserProvider(userRepository);
   final notificationService = NotificationService();
   final habitProvider = HabitProvider(habitRepository, notificationService);
+  
+  // Phase 63: Initialize Cloud Repository for Dual-Write
+  SupabasePsychometricRepository? cloudPsychometricRepo;
+  if (supabaseClient != null) {
+    cloudPsychometricRepo = SupabasePsychometricRepository(supabaseClient);
+  }
+  
   final psychometricProvider = PsychometricProvider(
     psychometricRepository,
     psychometricEngine,
+    cloudRepository: cloudPsychometricRepo,
   );
 
   // JITAI Provider (Just-In-Time Adaptive Interventions)

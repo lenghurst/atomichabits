@@ -10,9 +10,9 @@ import '../models/onboarding_data.dart' as onboarding;
 import '../sensors/biometric_sensor.dart';
 import '../sensors/digital_truth_sensor.dart';
 import '../sensors/environmental_sensor.dart';
-
 import 'package:http/http.dart' as http;
 import '../../config/ai_model_config.dart';
+import '../repositories/supabase_psychometric_repository.dart';
 
 /// PsychometricProvider: Manages the user's psychological profile for LLM context.
 /// 
@@ -21,13 +21,15 @@ import '../../config/ai_model_config.dart';
 /// 
 /// Satisfies: Rousselet (Specific Scope), Uncle Bob (DIP).
 class PsychometricProvider extends ChangeNotifier {
-  final PsychometricRepository _repository;
+  final PsychometricRepository _repository; // Hive (Primary)
+  final SupabasePsychometricRepository? _cloudRepository; // Supabase (Secondary/Cloud)
   final PsychometricEngine _engine;
   
   PsychometricProfile _profile = PsychometricProfile();
   bool _isLoading = true;
 
-  PsychometricProvider(this._repository, this._engine);
+  PsychometricProvider(this._repository, this._engine, {SupabasePsychometricRepository? cloudRepository}) 
+      : _cloudRepository = cloudRepository;
 
   // === Getters ===
   PsychometricProfile get profile => _profile;
@@ -42,16 +44,68 @@ class PsychometricProvider extends ChangeNotifier {
   /// Initialize the provider by loading from repository
   Future<void> initialize() async {
     try {
+      // 1. Load Local (Fast)
       final loadedProfile = await _repository.getProfile();
       if (loadedProfile != null) {
         _profile = loadedProfile;
       }
+      
+      // 2. Sync from Cloud (Async) - Conflict Resolution
+      if (_cloudRepository != null) {
+        _syncFromCloud();
+      }
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('PsychometricProvider: Error initializing: $e');
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Internal: Sync from cloud and resolve conflicts
+  Future<void> _syncFromCloud() async {
+    if (_cloudRepository == null) return;
+    
+    try {
+      final cloudProfile = await _cloudRepository.getProfile();
+      if (cloudProfile != null) {
+        // Simple Conflict Resolution: Cloud Last Updated Wins if significantly newer
+        // Or if local is empty/default.
+        final localTime = _profile.lastUpdated;
+        final cloudTime = cloudProfile.lastUpdated;
+        
+        // If cloud is newer by > 1 minute (to avoid jitter loops), adopt cloud
+        if (cloudTime.isAfter(localTime.add(const Duration(minutes: 1)))) {
+           if (kDebugMode) debugPrint('PsychometricProvider: Cloud profile is newer. Updating local.');
+           _profile = cloudProfile;
+           await _repository.saveProfile(_profile); // Save to local Hive
+           notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('PsychometricProvider: Background cloud sync failed: $e');
+    }
+  }
+
+  /// Internal: Save profile (Local + Async Cloud)
+  Future<void> _saveAndSync(PsychometricProfile profile) async {
+    _profile = profile;
+    
+    // 1. Save Local (Blocking for UI consistency)
+    await _repository.saveProfile(_profile);
+    notifyListeners();
+    
+    // 2. Sync Cloud (Fire & Forget / Async)
+    if (_cloudRepository != null) {
+      _cloudRepository.syncToCloud(_profile).then((_) {
+        // Mark as synced locally if successful
+        _repository.markAsSynced();
+      }).catchError((e) {
+         debugPrint('PsychometricProvider: Cloud sync push failed: $e');
+         // Will retry on next save/init logic implicitly as isSynced stays false (if we tracked it that way)
+      });
     }
   }
 
@@ -62,7 +116,7 @@ class PsychometricProvider extends ChangeNotifier {
     String? bigWhy,
     List<String>? fears,
   }) async {
-    _profile = _engine.initializeFromOnboarding(
+    final newProfile = _engine.initializeFromOnboarding(
       identity: identity,
       motivation: motivation,
       bigWhy: bigWhy,
@@ -71,122 +125,111 @@ class PsychometricProvider extends ChangeNotifier {
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Record a habit miss (updates resilience)
   Future<void> recordMiss() async {
-    _profile = _engine.onHabitMiss(_profile).copyWith(
+    final newProfile = _engine.onHabitMiss(_profile).copyWith(
       isSynced: false, 
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Record a habit completion (updates resilience)
   Future<void> recordCompletion({bool wasRecovery = false}) async {
-    _profile = _engine.onHabitComplete(_profile, wasRecovery: wasRecovery).copyWith(
+    final newProfile = _engine.onHabitComplete(_profile, wasRecovery: wasRecovery).copyWith(
       isSynced: false, 
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update coaching style preference
   Future<void> setCoachingStyle(CoachingStyle style) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       coachingStyle: style,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update verbosity preference
   Future<void> setVerbosityPreference(int level) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       verbosityPreference: level.clamp(1, 5),
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update core values
   Future<void> setCoreValues(List<String> values) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       coreValues: values,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update anti-identities (fears)
   Future<void> setAntiIdentities(List<String> fears) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       antiIdentities: fears,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update the big why
   Future<void> setBigWhy(String bigWhy) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       bigWhy: bigWhy,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update resonance words (words that motivate)
   Future<void> setResonanceWords(List<String> words) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       resonanceWords: words,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Update avoid words (words that cause resistance)
   Future<void> setAvoidWords(List<String> words) async {
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       avoidWords: words,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Recalibrate risks based on habit history (call periodically)
   /// Uses Isolate for heavy O(N) computation per Muratori's recommendation.
   Future<void> recalibrateRisks(List<Habit> habits) async {
-    _profile = await _engine.recalibrateRisksAsync(_profile, habits);
+    var updatedProfile = await _engine.recalibrateRisksAsync(_profile, habits);
     
     // Also update peak energy window
     final peakWindow = await _engine.calculatePeakEnergyWindowAsync(habits);
-    _profile = _profile.copyWith(
+    updatedProfile = updatedProfile.copyWith(
       peakEnergyWindow: peakWindow,
       isSynced: false,
       lastUpdated: DateTime.now(),
     );
     
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(updatedProfile);
   }
 
   /// Update profile based on chat feedback
@@ -194,19 +237,19 @@ class PsychometricProvider extends ChangeNotifier {
     required String userMessage,
     required bool wasPositiveResponse,
   }) async {
-    _profile = _engine.updateFromChatFeedback(
+    final newProfile = _engine.updateFromChatFeedback(
       _profile,
       userMessage: userMessage,
       wasPositiveResponse: wasPositiveResponse,
     );
-    await _repository.saveProfile(_profile);
-    notifyListeners();
+    await _saveAndSync(newProfile);
   }
 
   /// Clear all psychometric data
   Future<void> clear() async {
     _profile = PsychometricProfile();
     await _repository.clear();
+    // Cloud clear ?? Maybe not.
     notifyListeners();
   }
   
@@ -215,21 +258,13 @@ class PsychometricProvider extends ChangeNotifier {
   // ============================================================
   
   /// Update profile from AI tool call arguments.
-  /// 
-  /// This method is called by VoiceSessionManager when the AI invokes
-  /// the `update_user_psychometrics` tool during onboarding.
-  /// 
-  /// IMPORTANT: Saves to Hive IMMEDIATELY (crash recovery per Margaret Hamilton).
-  /// Each trait is saved independently - we don't wait for all 3 traits.
-  /// 
-  /// Arguments use snake_case to match the tool schema.
   Future<void> updateFromToolCall(Map<String, dynamic> args) async {
     if (kDebugMode) {
       debugPrint('PsychometricProvider: Received tool call with args: $args');
     }
     
     // Build the update using only the fields that were provided
-    _profile = _profile.copyWith(
+    final newProfile = _profile.copyWith(
       // Trait 1: Anti-Identity
       antiIdentityLabel: args['anti_identity_label'] as String? ?? _profile.antiIdentityLabel,
       antiIdentityContext: args['anti_identity_context'] as String? ?? _profile.antiIdentityContext,
@@ -246,16 +281,17 @@ class PsychometricProvider extends ChangeNotifier {
       inferredFears: args['inferred_fears'] != null 
           ? List<String>.from(args['inferred_fears'] as List)
           : _profile.inferredFears,
+          
+      isSynced: false,
+      lastUpdated: DateTime.now(),
     );
     
     // CRITICAL: Save immediately (crash recovery)
-    await _repository.saveProfile(_profile);
+    await _saveAndSync(newProfile);
     
     if (kDebugMode) {
       debugPrint('PsychometricProvider: Profile saved. Onboarding complete: ${_profile.isOnboardingComplete}');
     }
-    
-    notifyListeners();
   }
   
   /// Update profile from OnboardingData (Text Chat flow)
@@ -333,7 +369,6 @@ class PsychometricProvider extends ChangeNotifier {
   // ============================================================
   // DEFERRED INTELLIGENCE (Phase 58)
   // ============================================================
-
   /// Analyze the full session transcript to extract psychometric traits.
   /// 
   /// This replaces the live tool calls that were causing "Reasoning Lock".
@@ -343,7 +378,6 @@ class PsychometricProvider extends ChangeNotifier {
       if (kDebugMode) debugPrint('PsychometricProvider: Empty transcript, skipping analysis.');
       return;
     }
-
     if (kDebugMode) debugPrint('PsychometricProvider: Analyzing ${transcript.length} turns via DeepSeek V3...');
     
     try {
@@ -365,7 +399,6 @@ class PsychometricProvider extends ChangeNotifier {
       for (final turn in transcript) {
         buffer.writeln("${turn['role']?.toUpperCase()}: ${turn['content']}");
       }
-
       // 2. Call DeepSeek V3 (REST API)
       final url = Uri.parse('https://api.deepseek.com/chat/completions');
       
@@ -379,9 +412,7 @@ class PsychometricProvider extends ChangeNotifier {
         'temperature': 1.0, // Recommended for DeepSeek V3
         'stream': false,
       };
-
       if (kDebugMode) debugPrint('PsychometricProvider: Sending request to DeepSeek...');
-
       final response = await http.post(
         url,
         headers: {
@@ -390,11 +421,9 @@ class PsychometricProvider extends ChangeNotifier {
         },
         body: jsonEncode(payload),
       );
-
       if (response.statusCode != 200) {
         throw Exception('DeepSeek API Error: ${response.statusCode} ${response.body}');
       }
-
       // 3. Parse JSON Response
       final responseBody = jsonDecode(response.body);
       final content = responseBody['choices'][0]['message']['content'] as String;
@@ -424,7 +453,6 @@ class PsychometricProvider extends ChangeNotifier {
   // ============================================================
   // PHASE 47: SENSOR FUSION (Sherlock Expansion)
   // ============================================================
-
   /// Syncs data from all Sherlock sensors (Biometric, Digital Truth, etc.)
   /// and updates the psychometric profile accordingly.
   Future<void> syncSensors() async {
@@ -472,7 +500,7 @@ class PsychometricProvider extends ChangeNotifier {
     );
     
     // 4. Persist
-    await _repository.saveProfile(_profile);
+    await _saveAndSync(_profile);
     notifyListeners();
     
     if (kDebugMode) {

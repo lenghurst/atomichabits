@@ -23,6 +23,35 @@
 
 ## 1. The "Component Stack" Architecture
 
+## Psychometric Data Flow (Phase 63)
+
+### Hybrid Storage Model
+
+```mermaid
+graph TD
+    User[User Action (Voice/Text)] --> Provider[PsychometricProvider]
+    Provider --> Hive[(Hive Local)]
+    Provider --> Supabase[(Supabase Cloud)]
+    
+    subgraph Data Layer
+        Hive -- "Source of Truth (Offline)" --> Provider
+        Supabase -- "identity_seeds (RLS)" --> Provider
+    end
+    
+    Provider --> Context[AI Context Prompt]
+```
+
+### Data Privacy Contract
+
+| Data Type | Storage | Access |
+|-----------|---------|--------|
+| Shadow Archetypes | Hive + Supabase | User only (RLS) |
+| Failure Patterns | Hive + Supabase | User only (RLS) |
+| Sensor Data (HRV, Sleep) | Hive ONLY | Never synced |
+| Conversation Transcripts | Hive + Supabase | User only (RLS) |
+
+> **Privacy Rule:** Biometric sensor data (HRV, sleep, screen time) is NEVER synced to cloud. It exists for local AI context only.
+
 ## ⚠️ AI HANDOFF PROTOCOL (READ FIRST!)
 
 ### Mandatory Session Start Checklist

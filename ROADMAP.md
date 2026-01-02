@@ -20,11 +20,16 @@
 We are ignoring linear versions (v1, v2). We are building 5 interconnected layers simultaneously.
 
 ### Layer 1: The Evidence Engine (Foundation)
-**Goal:** Database schema with philosophical integrity.
-- [ ] **Schema Definition** (Supabase): `identity_seeds`, `identity_evidence`, `value_behavior_gaps`.
-- [ ] **Evidence API**: Log phenomenological richness (effort, shadow presence, emotion).
-- [ ] **Psychometric Sync**: Sync `PsychometricRepository` (Hive) to `identity_seeds` table (Supabase).
-- [ ] **Real-time Subscriptions**: Piping updates to the UI.
+**Goal:** Database schema with philosophical integrity + privacy guarantees.
+
+| ID | Task | Status |
+|----|------|--------|
+| E1 | **Schema Definition**: Create `identity_seeds` table in Supabase. | [ ] |
+| E2 | **RLS Policies**: Enforce user-only access (psychometric data is sensitive). | [ ] |
+| E3 | **Supabase Repository**: Create `SupabasePsychometricRepository` class. | [ ] |
+| E4 | **Hybrid Provider**: Update `PsychometricProvider` to write Hive + Supabase. | [ ] |
+| E5 | **Sync-on-Login**: Pull cloud profile on authentication. | [ ] |
+| E6 | **Evidence API**: Log observable signals (emotion, tone) + AI-inferred constructs. | [ ] |
 
 ### Layer 2: The Shadow & Values Profiler (Onboarding)
 **Goal:** Magic Wand Onboarding (Voice-First).
