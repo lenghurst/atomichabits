@@ -59,6 +59,9 @@ class PsychometricProfile {
   // === BEHAVIORAL RISK BITMASK (Performance Optimization per Muratori) ===
   final int riskBitmask;               // Bitmask for O(1) risk checks
 
+  // === ARCHETYPE EVOLUTION (Genspark Recommendation - Shadow Archetype Tracking) ===
+  final List<ArchetypeSnapshot> archetypeHistory;  // Track how archetype evolves over time
+
   PsychometricProfile({
     this.coreValues = const [],
     this.bigWhy = '',
@@ -88,6 +91,7 @@ class PsychometricProfile {
     this.distractionMinutes,
     
     this.riskBitmask = 0,
+    this.archetypeHistory = const [],
     this.isSynced = false,
     DateTime? lastUpdated,
   }) : lastUpdated = lastUpdated ?? DateTime.now();
@@ -206,12 +210,50 @@ class PsychometricProfile {
 
   /// Quick O(1) check for weekend risk
   bool get isWeekendRisk => (riskBitmask & RiskFlags.weekend) != 0;
-  
+
   /// Quick O(1) check for travel risk
   bool get isTravelRisk => (riskBitmask & RiskFlags.travel) != 0;
-  
+
   /// Quick O(1) check for evening risk
   bool get isEveningRisk => (riskBitmask & RiskFlags.evening) != 0;
+
+  /// Quick O(1) check for morning risk
+  bool get isMorningRisk => (riskBitmask & RiskFlags.morning) != 0;
+
+  /// Quick O(1) check for social risk
+  bool get isSocialRisk => (riskBitmask & RiskFlags.social) != 0;
+
+  /// Quick O(1) check for stress risk
+  bool get isStressRisk => (riskBitmask & RiskFlags.stress) != 0;
+
+  /// Quick O(1) check for fatigue risk
+  bool get isFatigueRisk => (riskBitmask & RiskFlags.fatigue) != 0;
+
+  /// Calculate base vulnerability score from risk bitmask (O(1))
+  /// Returns 0.0-1.0 normalized score based on active risk flags
+  double get riskScore {
+    int activeFlags = 0;
+    int mask = riskBitmask;
+    while (mask > 0) {
+      activeFlags += mask & 1;
+      mask >>= 1;
+    }
+    // 7 possible flags, normalize to 0-1
+    // Each flag contributes ~0.14 to base vulnerability
+    return (activeFlags / 7.0).clamp(0.0, 1.0);
+  }
+
+  /// Get the dominant risk factor name for explainability
+  String? get dominantRiskFactor {
+    if (isWeekendRisk) return 'weekend';
+    if (isEveningRisk) return 'evening';
+    if (isMorningRisk) return 'morning';
+    if (isStressRisk) return 'stress';
+    if (isFatigueRisk) return 'fatigue';
+    if (isSocialRisk) return 'social';
+    if (isTravelRisk) return 'travel';
+    return null;
+  }
 
   /// Domain Logic: Can the user handle a challenge today?
   bool isResilientEnough(int difficultyLevel) {
@@ -260,6 +302,7 @@ class PsychometricProfile {
     int? distractionMinutes,
     
     int? riskBitmask,
+    List<ArchetypeSnapshot>? archetypeHistory,
     bool? isSynced,
     DateTime? lastUpdated,
   }) {
@@ -293,9 +336,35 @@ class PsychometricProfile {
       distractionMinutes: distractionMinutes ?? this.distractionMinutes,
       
       riskBitmask: riskBitmask ?? this.riskBitmask,
+      archetypeHistory: archetypeHistory ?? this.archetypeHistory,
       isSynced: isSynced ?? this.isSynced,
       lastUpdated: lastUpdated ?? this.lastUpdated,
     );
+  }
+
+  /// Get the current evolved archetype (with modifiers like DISCIPLINED_REBEL)
+  String get evolvedArchetype {
+    if (archetypeHistory.isEmpty) {
+      return failureArchetype ?? 'UNKNOWN';
+    }
+    return archetypeHistory.last.evolvedArchetype ?? failureArchetype ?? 'UNKNOWN';
+  }
+
+  /// Check if user has evolved from their original archetype
+  bool get hasEvolved =>
+      archetypeHistory.isNotEmpty &&
+      archetypeHistory.last.evolvedArchetype != null;
+
+  /// Get evolution progress (0.0 - 1.0) based on archetype transitions
+  double get evolutionProgress {
+    if (archetypeHistory.isEmpty) return 0.0;
+
+    final positiveTransitions = archetypeHistory.where(
+      (s) => s.evolutionType == EvolutionType.positive
+    ).length;
+
+    // 5 positive transitions = full evolution
+    return (positiveTransitions / 5.0).clamp(0.0, 1.0);
   }
 
   Map<String, dynamic> toJson() {
@@ -328,6 +397,7 @@ class PsychometricProfile {
       'distractionMinutes': distractionMinutes,
       
       'riskBitmask': riskBitmask,
+      'archetypeHistory': archetypeHistory.map((s) => s.toJson()).toList(),
       'isSynced': isSynced,
       'lastUpdated': lastUpdated.toIso8601String(),
     };
@@ -367,12 +437,85 @@ class PsychometricProfile {
       distractionMinutes: json['distractionMinutes'] as int?,
       
       riskBitmask: json['riskBitmask'] ?? 0,
+      archetypeHistory: (json['archetypeHistory'] as List<dynamic>?)
+          ?.map((e) => ArchetypeSnapshot.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
       isSynced: json['isSynced'] ?? false,
-      lastUpdated: json['lastUpdated'] != null 
+      lastUpdated: json['lastUpdated'] != null
           ? DateTime.parse(json['lastUpdated'])
           : DateTime.now(),
     );
   }
+}
+
+/// Represents a point-in-time snapshot of archetype evolution
+class ArchetypeSnapshot {
+  /// Original archetype from onboarding (e.g., "REBEL")
+  final String baseArchetype;
+
+  /// Evolved archetype with modifiers (e.g., "DISCIPLINED_REBEL", "RECOVERING_PERFECTIONIST")
+  final String? evolvedArchetype;
+
+  /// Type of evolution that occurred
+  final EvolutionType evolutionType;
+
+  /// What triggered this evolution snapshot
+  final String trigger;
+
+  /// When this snapshot was taken
+  final DateTime recordedAt;
+
+  /// Metrics that influenced this evolution
+  final Map<String, double>? metrics;
+
+  const ArchetypeSnapshot({
+    required this.baseArchetype,
+    this.evolvedArchetype,
+    required this.evolutionType,
+    required this.trigger,
+    required this.recordedAt,
+    this.metrics,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'baseArchetype': baseArchetype,
+        'evolvedArchetype': evolvedArchetype,
+        'evolutionType': evolutionType.name,
+        'trigger': trigger,
+        'recordedAt': recordedAt.toIso8601String(),
+        'metrics': metrics,
+      };
+
+  factory ArchetypeSnapshot.fromJson(Map<String, dynamic> json) {
+    return ArchetypeSnapshot(
+      baseArchetype: json['baseArchetype'] as String,
+      evolvedArchetype: json['evolvedArchetype'] as String?,
+      evolutionType: EvolutionType.values.firstWhere(
+        (e) => e.name == json['evolutionType'],
+        orElse: () => EvolutionType.neutral,
+      ),
+      trigger: json['trigger'] as String,
+      recordedAt: DateTime.parse(json['recordedAt'] as String),
+      metrics: json['metrics'] != null
+          ? Map<String, double>.from(json['metrics'] as Map)
+          : null,
+    );
+  }
+}
+
+/// Types of archetype evolution
+enum EvolutionType {
+  /// Positive growth (e.g., REBEL -> DISCIPLINED_REBEL)
+  positive,
+
+  /// Regression (e.g., DISCIPLINED_REBEL -> REBEL)
+  regression,
+
+  /// No change detected
+  neutral,
+
+  /// Archetype shift (e.g., PERFECTIONIST -> OVERTHINKING_PERFECTIONIST)
+  shift,
 }
 
 /// Coaching styles that determine how the AI communicates with the user.

@@ -43,8 +43,10 @@ import 'data/providers/settings_provider.dart';
 import 'data/providers/user_provider.dart';
 import 'data/providers/habit_provider.dart';
 import 'data/providers/psychometric_provider.dart';
+import 'data/providers/jitai_provider.dart';
 import 'domain/services/psychometric_engine.dart';
 import 'data/notification_service.dart';
+import 'config/jitai_config.dart';
 import 'features/onboarding/state/onboarding_state.dart'; // Phase 7: Strangler State
 
 void main() async {
@@ -115,6 +117,9 @@ void main() async {
     psychometricRepository,
     psychometricEngine,
   );
+
+  // JITAI Provider (Just-In-Time Adaptive Interventions)
+  final jitaiProvider = JITAIProvider();
 
   // Phase 15: Initialize Auth service
   final authService = AuthService(supabaseClient: supabaseClient);
@@ -196,6 +201,7 @@ void main() async {
     userProvider.initialize(),
     habitProvider.initialize(),
     psychometricProvider.initialize(),
+    jitaiProvider.initialize(weatherApiKey: JITAIConfig.openWeatherMapApiKey),
   ]);
   
   if (kDebugMode) {
@@ -204,6 +210,7 @@ void main() async {
     debugPrint('  - UserProvider: ready');
     debugPrint('  - HabitProvider: ready');
     debugPrint('  - PsychometricProvider: ready');
+    debugPrint('  - JITAIProvider: ready');
   }
   // ========== End Phase 34 Shadow Wiring ==========
   
@@ -260,6 +267,7 @@ void main() async {
         ChangeNotifierProvider.value(value: userProvider),
         ChangeNotifierProvider.value(value: habitProvider),
         ChangeNotifierProvider.value(value: psychometricProvider),
+        ChangeNotifierProvider.value(value: jitaiProvider),
         // ========== End Phase 34 Shadow Providers ==========
       ],
       child: MyApp(
