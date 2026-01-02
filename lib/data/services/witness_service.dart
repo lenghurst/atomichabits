@@ -98,11 +98,12 @@ class WitnessService extends ChangeNotifier {
     }
     
     try {
-      // Load recent events
-      await _loadRecentEvents();
-      
-      // Subscribe to realtime events
-      await _subscribeToEvents();
+      // Fire-and-forget: Load recent events in background to not block startup
+      // Error handling is internal to _loadRecentEvents() - see catch block at line ~255
+      unawaited(_loadRecentEvents());
+
+      // Subscribe to realtime events (also non-blocking for startup)
+      unawaited(_subscribeToEvents());
       
       // Listen for auth changes (reconnect on auth change)
       _authSubscription = _authService.addListener(() {
@@ -114,7 +115,7 @@ class WitnessService extends ChangeNotifier {
       }) as StreamSubscription?;
       
       if (kDebugMode) {
-        debugPrint('WitnessService: Initialized successfully');
+        debugPrint('WitnessService: Initialized (background loading started)');
       }
     } catch (e) {
       _lastError = e.toString();
