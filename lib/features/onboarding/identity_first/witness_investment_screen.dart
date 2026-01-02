@@ -8,7 +8,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../data/app_state.dart';
+import '../../../data/providers/user_provider.dart';
 import '../../../data/services/voice_session_manager.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../components/permission_glass_pane.dart';
@@ -226,17 +226,17 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
     
     HapticFeedback.heavyImpact();
     
-    // Save witness to app state
-    final appState = context.read<AppState>();
+    // Save witness to user profile via UserProvider (Strangler Fig)
+    final userProvider = context.read<UserProvider>();
     final witnessName = _selectedContact?.displayName ?? _searchController.text;
     final witnessContact = _selectedContactMethod ?? '';
-    
-    if (appState.userProfile != null) {
-      final updatedProfile = appState.userProfile!.copyWith(
+
+    if (userProvider.userProfile != null) {
+      final updatedProfile = userProvider.userProfile!.copyWith(
         witnessName: witnessName,
         witnessContact: witnessContact,
       );
-      appState.setUserProfile(updatedProfile);
+      userProvider.setUserProfile(updatedProfile);
     }
 
     // --- NEW: INVITE THE WITNESS (Brain Surgery 2.5) ---
@@ -249,8 +249,8 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
   }
 
   Future<void> _inviteWitness(String name, String contact) async {
-    final appState = context.read<AppState>();
-    final myName = appState.userProfile?.name ?? "I";
+    final userProvider = context.read<UserProvider>();
+    final myName = userProvider.userProfile?.name ?? "I";
     final habitName = context.read<OnboardingOrchestrator>().extractedData?.name ?? "a new habit";
     
     // Polished Copy (Brain Surgery 2.5)
@@ -291,13 +291,13 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                Navigator.pop(context);
                
                // "Go Solo" means being your own witness (Internal Locus of Control)
-               final appState = context.read<AppState>();
-               if (appState.userProfile != null) {
-                 final updatedProfile = appState.userProfile!.copyWith(
+               final userProvider = context.read<UserProvider>();
+               if (userProvider.userProfile != null) {
+                 final updatedProfile = userProvider.userProfile!.copyWith(
                    witnessName: "Myself",
                    witnessContact: "Internal",
                  );
-                 appState.setUserProfile(updatedProfile);
+                 userProvider.setUserProfile(updatedProfile);
                }
 
                // Go directly to Dashboard (Bypass Voice Coach)
@@ -320,25 +320,25 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
   void _handleDoThisLater() {
     HapticFeedback.lightImpact();
     // Logic: Treat as "Myself" for now but continue flow (don't exit to dashboard)
-    final appState = context.read<AppState>();
-    if (appState.userProfile != null) {
-      final updatedProfile = appState.userProfile!.copyWith(
+    final userProvider = context.read<UserProvider>();
+    if (userProvider.userProfile != null) {
+      final updatedProfile = userProvider.userProfile!.copyWith(
         witnessName: "Myself",
         witnessContact: "Deferred",
       );
-      appState.setUserProfile(updatedProfile);
+      userProvider.setUserProfile(updatedProfile);
     }
     context.go(AppRoutes.screening);
   }
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final userName = appState.userProfile?.name.isNotEmpty == true
-        ? appState.userProfile!.name
+    final userProvider = context.watch<UserProvider>();
+    final userName = userProvider.userProfile?.name.isNotEmpty == true
+        ? userProvider.userProfile!.name
         : 'You';
-    final identity = appState.userProfile?.identity.isNotEmpty == true
-        ? appState.userProfile!.identity
+    final identity = userProvider.userProfile?.identity.isNotEmpty == true
+        ? userProvider.userProfile!.identity
         : 'A Better Version of Yourself';
     final currentDate = DateFormat('MMMM d, y').format(DateTime.now());
     

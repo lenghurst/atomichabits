@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/enums/voice_session_type.dart';
 import '../../data/services/voice_session_manager.dart';
 import '../../config/router/app_routes.dart';
-import '../../data/app_state.dart';
+import '../../data/providers/user_provider.dart';
 import 'widgets/chat_message_bubble.dart';
 import '../../data/services/ai/prompt_factory.dart';
 import '../../data/models/voice_session_config.dart';
@@ -52,11 +52,11 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
             _voiceManager.resetSession();
          }
 
-         // 2. INJECT SYSTEM PROMPT (Track F)
-         final appState = context.read<AppState>();
+         // 2. INJECT SYSTEM PROMPT (Track F) - Uses UserProvider (Strangler Fig)
+         final userProvider = context.read<UserProvider>();
          final systemPrompt = PromptFactory.getSystemInstruction(
            type: widget.config.type,
-           profile: appState.userProfile,
+           profile: userProvider.userProfile,
          );
          _voiceManager.setSystemPrompt(systemPrompt);
          
@@ -80,8 +80,8 @@ class _VoiceCoachScreenState extends State<VoiceCoachScreen> {
     
     // FOR BACKWARD COMPATIBILITY with the test prompt:
     if (widget.config.type == VoiceSessionType.sherlock && message.contains("{Name}")) {
-        final appState = context.read<AppState>();
-        final name = appState.userProfile?.name ?? "I";
+        final userProvider = context.read<UserProvider>();
+        final name = userProvider.userProfile?.name ?? "I";
         final interpolated = message.replaceAll("{Name}", name);
         _voiceManager.sendText(interpolated);
     } else {
