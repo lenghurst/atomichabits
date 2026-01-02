@@ -39,14 +39,17 @@ CREATE INDEX IF NOT EXISTS idx_profiles_tier ON public.profiles(tier);
 -- RLS for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
@@ -60,6 +63,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW
@@ -97,18 +101,22 @@ CREATE INDEX IF NOT EXISTS idx_conversations_status ON public.conversations(stat
 -- RLS for conversations
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own conversations" ON public.conversations;
 CREATE POLICY "Users can view own conversations"
   ON public.conversations FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own conversations" ON public.conversations;
 CREATE POLICY "Users can insert own conversations"
   ON public.conversations FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own conversations" ON public.conversations;
 CREATE POLICY "Users can update own conversations"
   ON public.conversations FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own conversations" ON public.conversations;
 CREATE POLICY "Users can delete own conversations"
   ON public.conversations FOR DELETE
   USING (auth.uid() = user_id);
@@ -164,14 +172,17 @@ CREATE INDEX IF NOT EXISTS idx_turns_ai_response_search
 -- RLS for conversation_turns
 ALTER TABLE public.conversation_turns ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own turns" ON public.conversation_turns;
 CREATE POLICY "Users can view own turns"
   ON public.conversation_turns FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own turns" ON public.conversation_turns;
 CREATE POLICY "Users can insert own turns"
   ON public.conversation_turns FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own turns" ON public.conversation_turns;
 CREATE POLICY "Users can delete own turns"
   ON public.conversation_turns FOR DELETE
   USING (auth.uid() = user_id);

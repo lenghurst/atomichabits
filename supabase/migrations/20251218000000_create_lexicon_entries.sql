@@ -1,6 +1,6 @@
 -- Create lexicon_entries table
 create table lexicon_entries (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users not null,
   word text not null,
   definition text,
@@ -37,8 +37,8 @@ create policy "Users can delete from their own lexicon" on lexicon_entries
 create policy "Witnesses can view friend's lexicon" on lexicon_entries
   for select using (
     exists (
-      select 1 from contracts
-      where (owner_id = lexicon_entries.user_id and witness_id = auth.uid())
-      or (witness_id = lexicon_entries.user_id and owner_id = auth.uid())
+      select 1 from habit_contracts
+      where (builder_id = lexicon_entries.user_id and witness_id = auth.uid())
+      or (witness_id = lexicon_entries.user_id and builder_id = auth.uid())
     )
   );

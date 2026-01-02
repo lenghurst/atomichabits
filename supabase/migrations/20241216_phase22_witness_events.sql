@@ -18,7 +18,7 @@
 -- Create witness_events table
 CREATE TABLE IF NOT EXISTS public.witness_events (
     id TEXT PRIMARY KEY,
-    contract_id TEXT NOT NULL REFERENCES public.habit_contracts(id) ON DELETE CASCADE,
+    contract_id UUID NOT NULL REFERENCES public.habit_contracts(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,
     actor_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     target_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

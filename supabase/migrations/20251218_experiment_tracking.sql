@@ -23,27 +23,31 @@ CREATE TABLE IF NOT EXISTS experiment_assignments (
 );
 
 -- Index for querying by experiment
-CREATE INDEX IF NOT EXISTS idx_experiment_assignments_experiment 
+CREATE INDEX IF NOT EXISTS idx_experiment_assignments_experiment
   ON experiment_assignments(experiment_name, variant);
 
 -- Index for querying by user
-CREATE INDEX IF NOT EXISTS idx_experiment_assignments_user 
+CREATE INDEX IF NOT EXISTS idx_experiment_assignments_user
   ON experiment_assignments(user_id);
 
--- Enable RLS
+-- Enable-- RLS Policies
 ALTER TABLE experiment_assignments ENABLE ROW LEVEL SECURITY;
 
 -- Users can only read their own assignments
-CREATE POLICY "Users can view own assignments" 
-  ON experiment_assignments FOR SELECT 
+DROP POLICY IF EXISTS "Users can view own assignments" ON experiment_assignments;
+CREATE POLICY "Users can view own assignments"
+  ON experiment_assignments FOR SELECT
   USING (auth.uid() = user_id);
 
--- Service role can insert/update (via Edge Functions)
-CREATE POLICY "Service role can manage assignments" 
-  ON experiment_assignments FOR ALL 
+-- Only service role (Edge Functions) can insert/update assignments
+-- (This ensures randomization logic happens securely on server)
+DROP POLICY IF EXISTS "Service role can all assignments" ON experiment_assignments;
+CREATE POLICY "Service role can all assignments"
+  ON experiment_assignments FOR ALL
   USING (auth.role() = 'service_role');
 
 -- Authenticated users can insert their own assignments
+DROP POLICY IF EXISTS "Users can insert own assignments" ON experiment_assignments;
 CREATE POLICY "Users can insert own assignments" 
   ON experiment_assignments FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
@@ -74,11 +78,13 @@ CREATE INDEX IF NOT EXISTS idx_experiment_events_conversion
 ALTER TABLE experiment_events ENABLE ROW LEVEL SECURITY;
 
 -- Users can only insert their own events
+DROP POLICY IF EXISTS "Users can insert own events" ON experiment_events;
 CREATE POLICY "Users can insert own events" 
   ON experiment_events FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
 -- Service role can read all events (for analytics)
+DROP POLICY IF EXISTS "Service role can read all events" ON experiment_events;
 CREATE POLICY "Service role can read all events" 
   ON experiment_events FOR SELECT 
   USING (auth.role() = 'service_role');
@@ -107,6 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_token_usage_model
 ALTER TABLE ai_token_usage ENABLE ROW LEVEL SECURITY;
 
 -- Service role can manage (Edge Functions)
+DROP POLICY IF EXISTS "Service role can manage token usage" ON ai_token_usage;
 CREATE POLICY "Service role can manage token usage" 
   ON ai_token_usage FOR ALL 
   USING (auth.role() = 'service_role');
@@ -135,11 +142,13 @@ CREATE INDEX IF NOT EXISTS idx_wallet_passes_user
 ALTER TABLE wallet_passes ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own passes
+DROP POLICY IF EXISTS "Users can view own passes" ON wallet_passes;
 CREATE POLICY "Users can view own passes" 
   ON wallet_passes FOR SELECT 
   USING (auth.uid() = user_id);
 
 -- Service role can manage (Edge Functions)
+DROP POLICY IF EXISTS "Service role can manage passes" ON wallet_passes;
 CREATE POLICY "Service role can manage passes" 
   ON wallet_passes FOR ALL 
   USING (auth.role() = 'service_role');
