@@ -798,17 +798,22 @@ class JITAIDecisionEngine {
 
       // Tiny version still counts (lowered barrier)
       if (outcome.usedTinyVersion) {
-        reward += 0.05; // Evidence is evidence, size doesn't matter
+        reward += 0.25;
       }
+    } else {
+      // Missed habit
+      reward -= 0.2; // Penalize mechanism (but not too harshly, avoid death spiral)
     }
 
-    // === SECONDARY: Engagement Quality (30%) ===
-    // Did they engage with the identity narrative?
+    // === ENGAGEMENT: Notification Interaction (30%) ===
     if (outcome.notificationOpened) {
-      reward += 0.15; // Opened = engaged with identity message
-      if (outcome.interactionType == 'action') {
-        reward += 0.15; // Took action = committed to identity
-      }
+      reward += 0.2;
+    }
+    if (outcome.interactionType == 'action') {
+      reward += 0.1;
+    }
+    if (outcome.interactionType == 'dismiss') {
+      reward -= 0.1;
     }
 
     // === ASYNC BONUS: Real Identity Delta (15% when available) ===

@@ -74,5 +74,41 @@ void main() {
       final greeting = archetype.getGreeting(mockContext, mockProfile);
       expect(greeting, contains("your call"));
     });
+
+    test('questions external motivation on miss', () {
+      final reaction = archetype.getMissReaction(mockContext, mockProfile);
+      expect(reaction, contains('Did you choose to skip'));
+    });
   });
+
+  group('ProcrastinatorArchetype', () {
+    final archetype = ArchetypeRegistry.get('PROCRASTINATOR');
+
+    test('offers small steps for greeting', () {
+      final greeting = archetype.getGreeting(mockContext, mockProfile);
+      expect(greeting, contains('Just 2 minutes')); // Actual: "Just 2 minutes. That's all..."
+    });
+
+    test('encourages starting small on miss', () {
+      final reaction = archetype.getMissReaction(mockContext, mockProfile);
+      expect(reaction, contains('Starting is the hardest part')); // Actual: "Starting is the hardest part. Tomorrow, just..."
+    });
+  });
+
+  group('PeoplePleaserArchetype', () {
+    final archetype = ArchetypeRegistry.get('PEOPLE_PLEASER');
+
+    test('prioritizes Social Witness for greeting', () {
+      final greeting = archetype.getGreeting(mockContext, mockProfile);
+      expect(greeting, contains('Someone believes in you'));
+    });
+
+    test('reminds of social commitment on miss', () {
+      final reaction = archetype.getMissReaction(mockContext, mockProfile);
+      expect(reaction, contains('okay to disappoint yourself')); // Actual: "It's okay to disappoint yourself sometimes. But..."
+    });
+  });
+
+  // Note: Testing HierarchicalBandit seeding requires inspecting private state or 
+  // mocking the taxonomy, which is complex. Relying on integration verification.
 }

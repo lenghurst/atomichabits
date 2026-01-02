@@ -467,12 +467,14 @@ class DigitalContext {
   final int distractionMinutes; // Total dopamine app time today
   final String? apexDistractor; // Most used app (e.g., "TikTok")
   final double distractionZScore; // Relative to user's baseline
+  final String? witnessName; // Name of accountability partner
   final DateTime capturedAt;
 
   DigitalContext({
     required this.distractionMinutes,
     this.apexDistractor,
     this.distractionZScore = 0.0,
+    this.witnessName,
     required this.capturedAt,
   });
 
@@ -483,6 +485,7 @@ class DigitalContext {
         'distractionMinutes': distractionMinutes,
         'apexDistractor': apexDistractor,
         'distractionZScore': distractionZScore,
+        'witnessName': witnessName,
         'capturedAt': capturedAt.toIso8601String(),
       };
 
@@ -491,6 +494,7 @@ class DigitalContext {
       distractionMinutes: json['distractionMinutes'] as int,
       apexDistractor: json['apexDistractor'] as String?,
       distractionZScore: (json['distractionZScore'] as num?)?.toDouble() ?? 0.0,
+      witnessName: json['witnessName'] as String?,
       capturedAt: DateTime.parse(json['capturedAt'] as String),
     );
   }

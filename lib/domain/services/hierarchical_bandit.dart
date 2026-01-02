@@ -390,6 +390,39 @@ class HierarchicalBandit {
           BetaDistribution(alpha: 6.0, beta: 4.0); // 60%
       _boostArm(armPriors, 'EMO_COMPASSION', 1.3);
     }
+
+    // --- NEW ARCHETYPES ---
+
+    // Procrastinator: Needs tiny starts (friction reduction)
+    if (archetype.contains('PROCRASTINATOR')) {
+      leverPriors[MetaLever.support] = BetaDistribution(alpha: 6.5, beta: 3.5);
+      _boostArm(armPriors, 'FRICTION_TINY', 1.5);
+    }
+
+    // Overthinker: Needs cognitive reframing and zoom out
+    if (archetype.contains('OVERTHINKER')) {
+      leverPriors[MetaLever.support] = BetaDistribution(alpha: 6.0, beta: 4.0);
+      _boostArm(armPriors, 'COG_ZOOM', 1.4);
+      _boostArm(armPriors, 'COG_LIE_CALL', 1.3);
+    }
+
+    // People Pleaser: Needs social witness
+    if (archetype.contains('PEOPLE_PLEASER') || archetype.contains('PLEASER')) {
+      leverPriors[MetaLever.activate] = BetaDistribution(alpha: 6.0, beta: 4.0);
+      _boostArm(armPriors, 'SOCIAL_WITNESS', 1.6); // Strong preference
+    }
+
+    // Pleasure Seeker: Needs positive valence
+    if (archetype.contains('PLEASURE_SEEKER') || archetype.contains('HEDONIST')) {
+      _boostArm(armPriors, 'FRICTION_TINY', 1.2); // Easy entry
+      // Boost arms with high positive emotional valence
+      for (final armId in armPriors.keys) {
+        final arm = InterventionTaxonomy.getArm(armId);
+        if (arm != null && arm.emotionalValence > 0.5) {
+          _boostArm(armPriors, armId, 1.25);
+        }
+      }
+    }
   }
 
   static void _boostArm(
