@@ -5,6 +5,8 @@ import '../../data/models/habit.dart';
 import 'vulnerability_opportunity_calculator.dart';
 import 'hierarchical_bandit.dart';
 import 'optimal_timing_predictor.dart';
+import 'cascade_pattern_detector.dart';
+import 'population_learning.dart';
 
 /// JITAIDecisionEngine: The Orchestrator
 ///
@@ -17,10 +19,13 @@ import 'optimal_timing_predictor.dart';
 ///
 /// Phase 63: JITAI Foundation
 /// Phase 64: ML Workstreams (Optimal Timing + Cascade Prevention)
+/// Phase 65: Enhanced ML (Weather, Travel, Population Learning)
 class JITAIDecisionEngine {
   final HierarchicalBandit _bandit;
   final GottmanTracker _gottmanTracker;
   final OptimalTimingPredictor _timingPredictor;
+  final CascadePatternDetector _cascadeDetector;
+  final PopulationLearningService _populationLearning;
 
   /// Recent interventions for fatigue tracking
   final List<InterventionEvent> _recentInterventions = [];
@@ -30,13 +35,20 @@ class JITAIDecisionEngine {
   /// Minimum timing score to proceed (gates poor timing)
   static const _minTimingScore = 0.35;
 
+  /// Minimum cascade risk to trigger proactive intervention
+  static const _cascadeRiskThreshold = 0.6;
+
   JITAIDecisionEngine({
     HierarchicalBandit? bandit,
     GottmanTracker? gottmanTracker,
     OptimalTimingPredictor? timingPredictor,
+    CascadePatternDetector? cascadeDetector,
+    PopulationLearningService? populationLearning,
   })  : _bandit = bandit ?? HierarchicalBandit(),
         _gottmanTracker = gottmanTracker ?? GottmanTracker(),
-        _timingPredictor = timingPredictor ?? OptimalTimingPredictor();
+        _timingPredictor = timingPredictor ?? OptimalTimingPredictor(),
+        _cascadeDetector = cascadeDetector ?? CascadePatternDetector(),
+        _populationLearning = populationLearning ?? PopulationLearningService();
 
   /// Create engine personalized for a user profile
   factory JITAIDecisionEngine.forProfile(PsychometricProfile profile) {
@@ -73,8 +85,24 @@ class JITAIDecisionEngine {
       );
     }
 
-    // === STEP 2.5: Cascade Prevention Override (ML Workstream #2) ===
-    // If habit is at risk of cascade failure, override timing/VO gates
+    // === STEP 2.5: Enhanced Cascade Detection (Weather, Travel, Patterns) ===
+    final cascadeRisk = _cascadeDetector.detectRisk(
+      habit: habit,
+      context: context,
+    );
+
+    // If high cascade risk, trigger proactive intervention
+    if (cascadeRisk.isHighRisk) {
+      return _handleProactiveCascadePrevention(
+        context: context,
+        voState: voState,
+        profile: profile,
+        habit: habit,
+        cascadeRisk: cascadeRisk,
+      );
+    }
+
+    // === STEP 2.5b: Legacy Cascade Prevention (timing-based) ===
     if (timingScore.window?.reason == TimingReason.cascadePrevention) {
       return _handleCascadePrevention(context, voState, profile, habit, timingScore);
     }
@@ -305,6 +333,142 @@ class JITAIDecisionEngine {
       dismissLabel: 'I\'ll come back',
       armId: arm.armId,
     );
+  }
+
+  /// Handle proactive cascade prevention (weather, travel, patterns)
+  ///
+  /// Triggers BEFORE the cascade happens, not after.
+  JITAIDecision _handleProactiveCascadePrevention({
+    required ContextSnapshot context,
+    required VOState voState,
+    required PsychometricProfile profile,
+    required Habit habit,
+    required CascadeRisk cascadeRisk,
+  }) {
+    // Select arm based on cascade reason
+    final arm = _selectArmForCascadeReason(cascadeRisk.reason);
+
+    final event = InterventionEvent(
+      eventId: _generateEventId(),
+      timestamp: DateTime.now(),
+      habitId: habit.id,
+      arm: arm,
+      selectedMetaLever: arm.metaLever,
+      contextFeatures: context.toFeatureVector(),
+      thompsonSampleValue: cascadeRisk.probability,
+      wasExploration: false,
+      armExposureCount: 0,
+    );
+
+    _trackIntervention(event);
+
+    // Get suggestion from cascade detector
+    final suggestion = _cascadeDetector.getAlternativeSuggestion(
+      habit: habit,
+      risk: cascadeRisk,
+    );
+
+    final content = InterventionContent(
+      title: _getTitleForCascadeReason(cascadeRisk.reason),
+      body: suggestion ?? cascadeRisk.explanation,
+      actionLabel: _getActionForCascadeReason(cascadeRisk.reason),
+      dismissLabel: 'Got it',
+      armId: arm.armId,
+    );
+
+    return JITAIDecision.intervene(
+      event: event,
+      voState: voState,
+      content: content,
+      burdenType: BurdenType.deposit, // Proactive = supportive
+    );
+  }
+
+  /// Select intervention arm based on cascade reason
+  InterventionArm _selectArmForCascadeReason(CascadeRiskReason reason) {
+    switch (reason) {
+      case CascadeRiskReason.weatherBlocking:
+      case CascadeRiskReason.travelDisruption:
+      case CascadeRiskReason.calendarCrunch:
+        // Friction reduction for external blockers
+        return InterventionTaxonomy.getArm('FRICTION_TINY') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.yesterdayMiss:
+        // Identity for Never Miss Twice
+        return InterventionTaxonomy.getArm('ID_VOTE') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.multiDayMiss:
+        // Compassion for multi-day miss
+        return InterventionTaxonomy.getArm('EMO_COMPASSION') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.weekendPattern:
+        // Pre-emptive identity reminder
+        return InterventionTaxonomy.getArm('ID_MIRROR') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.energyGap:
+        // Compassion for low energy
+        return InterventionTaxonomy.getArm('EMO_COMPASSION') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.socialIsolation:
+        // Social witness to re-engage
+        return InterventionTaxonomy.getArm('SOCIAL_WITNESS') ??
+            InterventionTaxonomy.allArms.first;
+
+      case CascadeRiskReason.baseline:
+        return InterventionTaxonomy.getArm('ID_VOTE') ??
+            InterventionTaxonomy.allArms.first;
+    }
+  }
+
+  String _getTitleForCascadeReason(CascadeRiskReason reason) {
+    switch (reason) {
+      case CascadeRiskReason.weatherBlocking:
+        return 'Weather Alert';
+      case CascadeRiskReason.travelDisruption:
+        return 'Travel Mode';
+      case CascadeRiskReason.weekendPattern:
+        return 'Weekend Plan';
+      case CascadeRiskReason.energyGap:
+        return 'Easy Day';
+      case CascadeRiskReason.yesterdayMiss:
+        return 'Never Miss Twice';
+      case CascadeRiskReason.multiDayMiss:
+        return 'Welcome Back';
+      case CascadeRiskReason.calendarCrunch:
+        return 'Busy Day';
+      case CascadeRiskReason.socialIsolation:
+        return 'Check In';
+      case CascadeRiskReason.baseline:
+        return 'Quick Reminder';
+    }
+  }
+
+  String _getActionForCascadeReason(CascadeRiskReason reason) {
+    switch (reason) {
+      case CascadeRiskReason.weatherBlocking:
+        return 'Try indoor version';
+      case CascadeRiskReason.travelDisruption:
+        return 'Do travel version';
+      case CascadeRiskReason.weekendPattern:
+        return 'Set weekend plan';
+      case CascadeRiskReason.energyGap:
+        return 'Do tiny version';
+      case CascadeRiskReason.yesterdayMiss:
+        return 'Show up today';
+      case CascadeRiskReason.multiDayMiss:
+        return 'Start fresh';
+      case CascadeRiskReason.calendarCrunch:
+        return 'Find 2 minutes';
+      case CascadeRiskReason.socialIsolation:
+        return 'Update witness';
+      case CascadeRiskReason.baseline:
+        return 'Show up';
+    }
   }
 
   /// Check safety gates before intervention
@@ -543,10 +707,16 @@ class JITAIDecisionEngine {
         archetype.contains('CONTRARIAN');
   }
 
-  /// Record outcome and update bandit
+  /// Record outcome and update learning systems
+  ///
+  /// Updates:
+  /// 1. Local Thompson Sampling bandit
+  /// 2. Gottman ratio tracker
+  /// 3. Population learning (aggregated, privacy-preserving)
   void recordOutcome({
     required String eventId,
     required InterventionOutcome outcome,
+    PsychometricProfile? profile,
   }) {
     // Find the event
     final event = _recentInterventions.cast<InterventionEvent?>().firstWhere(
@@ -565,6 +735,15 @@ class JITAIDecisionEngine {
       armId: event.arm.armId,
       reward: reward,
     );
+
+    // Update population learning (if profile available)
+    if (profile != null) {
+      _populationLearning.recordOutcome(
+        archetype: profile.archetypeKey,
+        armId: event.arm.armId,
+        success: reward > 0.5, // Simple success threshold
+      );
+    }
 
     // Update Gottman tracker
     final burden = _classifyBurden(event.arm);
@@ -683,6 +862,40 @@ class JITAIDecisionEngine {
     if (daysSinceLast >= 2) return 2;
     if (daysSinceLast >= 1) return 1;
     return 0;
+  }
+
+  /// Get detailed cascade risk assessment
+  CascadeRisk getCascadeRisk({
+    required Habit habit,
+    required ContextSnapshot context,
+  }) {
+    return _cascadeDetector.detectRisk(
+      habit: habit,
+      context: context,
+    );
+  }
+
+  // =============================================================================
+  // POPULATION LEARNING API
+  // =============================================================================
+
+  /// Get population priors for an archetype
+  Map<String, PopulationPrior> getPopulationPriors(String archetype) {
+    return _populationLearning.getPriorsForArchetype(archetype);
+  }
+
+  /// Sync population learning to cloud (call periodically)
+  Future<void> syncPopulationLearning({
+    required Future<void> Function(List<Map<String, dynamic>>) uploadBatch,
+  }) {
+    return _populationLearning.syncToCloud(uploadBatch: uploadBatch);
+  }
+
+  /// Load population learning from cloud (call on app start)
+  Future<void> loadPopulationLearning({
+    required Future<List<Map<String, dynamic>>> Function() fetchPriors,
+  }) {
+    return _populationLearning.loadFromCloud(fetchPriors: fetchPriors);
   }
 
   // =============================================================================

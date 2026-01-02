@@ -332,6 +332,11 @@ class CalendarContext {
   final String? currentEventTitle; // For context (anonymized)
   final DateTime capturedAt;
 
+  // Travel detection
+  final bool isTravelDay; // Calendar has travel-related events
+  final bool isMultiDayTrip; // Travel spans multiple days
+  final int? tripDaysRemaining; // Days until return (if on trip)
+
   CalendarContext({
     required this.busynessScore,
     this.freeWindowMinutes,
@@ -339,6 +344,9 @@ class CalendarContext {
     this.isInMeeting = false,
     this.currentEventTitle,
     required this.capturedAt,
+    this.isTravelDay = false,
+    this.isMultiDayTrip = false,
+    this.tripDaysRemaining,
   });
 
   /// Has enough time for a habit? (> 15 min free window)
@@ -347,6 +355,29 @@ class CalendarContext {
   /// Is in a good intervention window? (not in meeting, has time)
   bool get isGoodWindow => !isInMeeting && hasTimeWindow;
 
+  /// Is routine likely disrupted?
+  bool get isRoutineDisrupted => isTravelDay || isMultiDayTrip;
+
+  /// Check if current event title contains travel keywords
+  bool get hasUpcomingTravel {
+    final title = currentEventTitle?.toLowerCase() ?? '';
+    const travelKeywords = [
+      'flight',
+      'airport',
+      'travel',
+      'trip',
+      'vacation',
+      'hotel',
+      'train',
+      'conference',
+      'out of office',
+      'ooo',
+      'pto',
+      'holiday',
+    ];
+    return travelKeywords.any((kw) => title.contains(kw));
+  }
+
   Map<String, dynamic> toJson() => {
         'busynessScore': busynessScore,
         'freeWindowMinutes': freeWindowMinutes,
@@ -354,6 +385,9 @@ class CalendarContext {
         'isInMeeting': isInMeeting,
         'currentEventTitle': currentEventTitle,
         'capturedAt': capturedAt.toIso8601String(),
+        'isTravelDay': isTravelDay,
+        'isMultiDayTrip': isMultiDayTrip,
+        'tripDaysRemaining': tripDaysRemaining,
       };
 
   factory CalendarContext.fromJson(Map<String, dynamic> json) {
@@ -364,6 +398,9 @@ class CalendarContext {
       isInMeeting: json['isInMeeting'] as bool? ?? false,
       currentEventTitle: json['currentEventTitle'] as String?,
       capturedAt: DateTime.parse(json['capturedAt'] as String),
+      isTravelDay: json['isTravelDay'] as bool? ?? false,
+      isMultiDayTrip: json['isMultiDayTrip'] as bool? ?? false,
+      tripDaysRemaining: json['tripDaysRemaining'] as int?,
     );
   }
 }
