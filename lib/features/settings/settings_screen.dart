@@ -5,6 +5,7 @@ import '../../config/router/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/app_state.dart';
 import '../../data/models/app_settings.dart';
+import '../../data/providers/settings_provider.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/sync_service.dart';
 import '../../data/services/feedback_service.dart';
@@ -21,16 +22,17 @@ import '../../widgets/alpha_shield_banner.dart';
 /// - App info and version
 /// 
 /// **Vibecoding Architecture:**
-/// Uses Consumer<AppState> for reactive updates
-/// All changes persist via AppState → Hive
+/// Uses Consumer2<SettingsProvider, AppState> for reactive updates
+/// Settings changes persist via SettingsProvider → Hive
+/// AppState retained only for clearAllData() (legacy bridge)
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, child) {
-        final settings = appState.settings;
+    return Consumer2<SettingsProvider, AppState>(
+      builder: (context, settingsProvider, appState, child) {
+        final settings = settingsProvider.settings;
         
         return Scaffold(
           appBar: AppBar(
@@ -74,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Theme'),
                         subtitle: Text(_getThemeName(settings.themeMode)),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => _showThemeSelector(context, appState),
+                        onTap: () => _showThemeSelector(context, settingsProvider),
                       ),
                       const Divider(height: 1),
                       // Show Quotes Toggle
@@ -83,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Motivational Quotes'),
                         subtitle: const Text('Show daily inspiration'),
                         value: settings.showQuotes,
-                        onChanged: (value) => appState.setShowQuotes(value),
+                        onChanged: (value) => settingsProvider.setShowQuotes(value),
                       ),
                     ],
                   ),
@@ -101,7 +103,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Daily Reminders'),
                         subtitle: const Text('Get notified to complete habits'),
                         value: settings.notificationsEnabled,
-                        onChanged: (value) => appState.setNotificationsEnabled(value),
+                        onChanged: (value) => settingsProvider.setNotificationsEnabled(value),
                       ),
                       // Notification Time (only visible if notifications enabled)
                       if (settings.notificationsEnabled) ...[
@@ -111,7 +113,7 @@ class SettingsScreen extends StatelessWidget {
                           title: const Text('Default Reminder Time'),
                           subtitle: Text(_formatTime(settings.notificationTimeOfDay)),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () => _showTimePicker(context, appState, settings),
+                          onTap: () => _showTimePicker(context, settingsProvider, settings),
                         ),
                       ],
                     ],
@@ -130,7 +132,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Sound Effects'),
                         subtitle: const Text('Play sounds on completion'),
                         value: settings.soundEnabled,
-                        onChanged: (value) => appState.setSoundEnabled(value),
+                        onChanged: (value) => settingsProvider.setSoundEnabled(value),
                       ),
                       const Divider(height: 1),
                       // Haptic Toggle
@@ -139,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('Haptic Feedback'),
                         subtitle: const Text('Vibrate on interactions'),
                         value: settings.hapticsEnabled,
-                        onChanged: (value) => appState.setHapticsEnabled(value),
+                        onChanged: (value) => settingsProvider.setHapticsEnabled(value),
                       ),
                     ],
                   ),
@@ -286,32 +288,26 @@ class SettingsScreen extends StatelessWidget {
                         secondary: const Icon(Icons.developer_mode),
                         title: const Text('Developer Mode'),
                         subtitle: Text(
-                          settings.developerMode 
-                            ? 'Using Tier 2 (Gemini Flash) - Voice Enabled' 
+                          settings.developerMode
+                            ? 'Using Tier 2 (Gemini Flash) - Voice Enabled'
                             : 'Using Tier 1 (DeepSeek) - Text Only',
                         ),
                         value: settings.developerMode,
-                        onChanged: (value) {
-                          appState.updateSettings(
-                            settings.copyWith(developerMode: value),
-                          );
-                        },
+                        onChanged: (value) => settingsProvider.setDeveloperMode(value),
                       ),
                       const Divider(height: 1),
                       SwitchListTile(
                         secondary: const Icon(Icons.bug_report),
                         title: const Text('Developer Logging'),
                         subtitle: Text(
-                          settings.developerLogging 
-                            ? 'Verbose logging enabled - Check console' 
+                          settings.developerLogging
+                            ? 'Verbose logging enabled - Check console'
                             : 'Standard logging only',
                         ),
                         value: settings.developerLogging,
-                        onChanged: settings.developerMode ? (value) {
-                          appState.updateSettings(
-                            settings.copyWith(developerLogging: value),
-                          );
-                        } : null,
+                        onChanged: settings.developerMode
+                            ? (value) => settingsProvider.setDeveloperLogging(value)
+                            : null,
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -413,7 +409,7 @@ class SettingsScreen extends StatelessWidget {
     return '$hour:$minute $period';
   }
 
-  void _showThemeSelector(BuildContext context, AppState appState) {
+  void _showThemeSelector(BuildContext context, SettingsProvider settingsProvider) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -433,33 +429,33 @@ class SettingsScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.phone_android),
               title: const Text('System default'),
-              trailing: appState.themeMode == ThemeMode.system
+              trailing: settingsProvider.themeMode == ThemeMode.system
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
-                appState.setThemeMode(ThemeMode.system);
+                settingsProvider.setThemeMode(ThemeMode.system);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.light_mode),
               title: const Text('Light'),
-              trailing: appState.themeMode == ThemeMode.light
+              trailing: settingsProvider.themeMode == ThemeMode.light
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
-                appState.setThemeMode(ThemeMode.light);
+                settingsProvider.setThemeMode(ThemeMode.light);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
               title: const Text('Dark'),
-              trailing: appState.themeMode == ThemeMode.dark
+              trailing: settingsProvider.themeMode == ThemeMode.dark
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
-                appState.setThemeMode(ThemeMode.dark);
+                settingsProvider.setThemeMode(ThemeMode.dark);
                 Navigator.pop(context);
               },
             ),
@@ -472,7 +468,7 @@ class SettingsScreen extends StatelessWidget {
 
   Future<void> _showTimePicker(
     BuildContext context,
-    AppState appState,
+    SettingsProvider settingsProvider,
     AppSettings settings,
   ) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -480,10 +476,10 @@ class SettingsScreen extends StatelessWidget {
       initialTime: settings.notificationTimeOfDay,
       helpText: 'Set Default Reminder Time',
     );
-    
+
     if (picked != null) {
       final timeString = AppSettings.timeOfDayToString(picked);
-      appState.setDefaultNotificationTime(timeString);
+      settingsProvider.setDefaultNotificationTime(timeString);
     }
   }
 

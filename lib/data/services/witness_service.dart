@@ -98,10 +98,11 @@ class WitnessService extends ChangeNotifier {
     }
     
     try {
-      // Load recent events (Fire-and-forget: background loading)
+      // Fire-and-forget: Load recent events in background to not block startup
+      // Error handling is internal to _loadRecentEvents() - see catch block at line ~255
       unawaited(_loadRecentEvents());
-      
-      // Subscribe to realtime events (Fire-and-forget)
+
+      // Subscribe to realtime events (also non-blocking for startup)
       unawaited(_subscribeToEvents());
       
       // Listen for auth changes (reconnect on auth change)
@@ -114,7 +115,7 @@ class WitnessService extends ChangeNotifier {
       }) as StreamSubscription?;
       
       if (kDebugMode) {
-        debugPrint('WitnessService: Initialized successfully');
+        debugPrint('WitnessService: Initialized (background loading started)');
       }
     } catch (e) {
       _lastError = e.toString();
