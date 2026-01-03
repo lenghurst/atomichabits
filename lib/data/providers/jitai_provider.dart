@@ -99,7 +99,6 @@ class JITAIProvider extends ChangeNotifier {
   // === Phase 65: Guardian Mode State ===
   bool _guardianModeEnabled = false;
   Timer? _guardianPollTimer;
-  // DateTime? _lastGuardianCheck; // Unused
   final Duration _guardianPollInterval = const Duration(seconds: 30);
 
   // Guardian intervention thresholds (configurable)
