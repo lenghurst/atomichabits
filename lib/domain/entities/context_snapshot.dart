@@ -1,6 +1,6 @@
-/// ContextSnapshot: The unified sensory input for JITAI decision-making.
 import 'weather_context.dart';
 
+/// ContextSnapshot: The unified sensory input for JITAI decision-making.
 ///
 /// This is the "eyes and ears" of the intervention system - a frozen snapshot
 /// of all contextual signals at a moment in time. Used as input to the

@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/entities/context_snapshot.dart';
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/services/jitai_decision_engine.dart';
+import '../../domain/entities/intervention.dart';
 import '../../domain/services/optimal_timing_predictor.dart';
 import '../../domain/services/cascade_pattern_detector.dart';
 import '../models/habit.dart';
@@ -62,7 +63,7 @@ class CascadeAlert {
   final String description;
   final double severity; // 0.0 - 1.0
   final String suggestedAction;
-  final CascadePattern pattern;
+  final CascadeRiskReason pattern;
 
   const CascadeAlert({
     required this.title,
@@ -93,13 +94,13 @@ class JITAIProvider extends ChangeNotifier {
   List<CascadeAlert> _cascadeAlerts = [];
 
   // Settings
-  Duration _contextRefreshInterval = const Duration(minutes: 5);
+  final Duration _contextRefreshInterval = const Duration(minutes: 15);
 
   // === Phase 65: Guardian Mode State ===
   bool _guardianModeEnabled = false;
   Timer? _guardianPollTimer;
-  DateTime? _lastGuardianCheck;
-  Duration _guardianPollInterval = const Duration(seconds: 30);
+  // DateTime? _lastGuardianCheck; // Unused
+  final Duration _guardianPollInterval = const Duration(seconds: 30);
 
   // Guardian intervention thresholds (configurable)
   final Map<int, Duration> _guardianThresholds = {
@@ -211,7 +212,7 @@ class JITAIProvider extends ChangeNotifier {
   Future<JITAIDecision?> checkIntervention({
     required Habit habit,
     required PsychometricProfile profile,
-    DecisionTrigger trigger = DecisionTrigger.contextChange,
+    DecisionTrigger trigger = DecisionTrigger.scheduled,
   }) async {
     if (!_isInitialized || !_isEnabled) return null;
     if (habit.isCompletedToday || habit.isPaused) return null;
@@ -260,11 +261,16 @@ class JITAIProvider extends ChangeNotifier {
     if (!_isInitialized) return;
 
     try {
-      await _decisionEngine.recordOutcome(
+      final outcome = InterventionOutcome(
         eventId: eventId,
-        engaged: engaged,
-        habitCompleted: habitCompleted,
-        engagementSeconds: engagementSeconds,
+        notificationOpened: engaged,
+        habitCompleted24h: habitCompleted,
+        timeToOpenSeconds: engagementSeconds,
+      );
+
+      _decisionEngine.recordOutcome(
+        eventId: eventId,
+        outcome: outcome,
       );
 
       // Clear active intervention
@@ -338,18 +344,18 @@ class JITAIProvider extends ChangeNotifier {
     ));
 
     // Optimal windows
-    final windows = getOptimalWindows(habit: habit);
-    if (windows.isNotEmpty) {
-      final nextWindow = windows.first;
+    final nextWindow = _timingPredictor.getBestWindowForNow(
+      habit: habit,
+      context: _lastContext!,
+    );
+    
+    if (nextWindow != null) {
+      final endHour = nextWindow.optimalHour + (nextWindow.windowMinutes / 60).ceil();
       insights.add(TimingInsight(
         title: 'Optimal Window',
-        description: '${nextWindow.startHour}:00 - ${nextWindow.endHour}:00',
-        score: nextWindow.score,
-        suggestedTime: DateTime.now().copyWith(
-          hour: nextWindow.startHour,
-          minute: 0,
-        ),
-        iconType: IconType.trending,
+        description: '${nextWindow.optimalHour}:00 - $endHour:00',
+        score: nextWindow.confidence,
+        iconType: IconType.clock,
       ));
     }
 
@@ -358,7 +364,7 @@ class JITAIProvider extends ChangeNotifier {
       final peakHour = _calculatePeakHour(habit.completionHistory);
       insights.add(TimingInsight(
         title: 'Your Peak Hour',
-        description: 'You usually complete around ${peakHour}:00',
+        description: 'You usually complete around $peakHour:00',
         score: 0.8,
         iconType: IconType.calendar,
       ));
@@ -375,11 +381,11 @@ class JITAIProvider extends ChangeNotifier {
     final cascadeRisk = getCascadeRisk(habit: habit);
     if (cascadeRisk != null && cascadeRisk.probability > 0.3) {
       alerts.add(CascadeAlert(
-        title: _cascadeTitle(cascadeRisk.pattern),
-        description: cascadeRisk.reason,
+        title: _cascadeTitle(cascadeRisk.reason),
+        description: cascadeRisk.explanation,
         severity: cascadeRisk.probability,
-        suggestedAction: cascadeRisk.suggestedAction,
-        pattern: cascadeRisk.pattern,
+        suggestedAction: _cascadeDetector.getAlternativeSuggestion(habit: habit, risk: cascadeRisk) ?? '',
+        pattern: cascadeRisk.reason,
       ));
     }
 
@@ -391,7 +397,7 @@ class JITAIProvider extends ChangeNotifier {
         description: 'Outdoor conditions are challenging today',
         severity: 0.4,
         suggestedAction: 'Consider an indoor alternative',
-        pattern: CascadePattern.weatherBlocking,
+        pattern: CascadeRiskReason.weatherBlocking,
       ));
     }
 
@@ -402,7 +408,7 @@ class JITAIProvider extends ChangeNotifier {
         description: 'Your routine may be disrupted',
         severity: 0.5,
         suggestedAction: 'Set a flexible reminder',
-        pattern: CascadePattern.travelDisruption,
+        pattern: CascadeRiskReason.travelDisruption,
       ));
     }
 
@@ -417,19 +423,21 @@ class JITAIProvider extends ChangeNotifier {
     return 'Poor timing';
   }
 
-  String _cascadeTitle(CascadePattern pattern) {
+  String _cascadeTitle(CascadeRiskReason pattern) {
     switch (pattern) {
-      case CascadePattern.weatherBlocking:
+      case CascadeRiskReason.weatherBlocking:
         return 'Weather Risk';
-      case CascadePattern.travelDisruption:
+      case CascadeRiskReason.travelDisruption:
         return 'Travel Disruption';
-      case CascadePattern.weekendPattern:
+      case CascadeRiskReason.weekendPattern:
         return 'Weekend Pattern';
-      case CascadePattern.energyGap:
+      case CascadeRiskReason.energyGap:
         return 'Energy Gap';
-      case CascadePattern.yesterdayMiss:
+      case CascadeRiskReason.yesterdayMiss:
         return 'Recovery Needed';
-      case CascadePattern.multiDayMiss:
+      case CascadeRiskReason.multiDayMiss:
+        return 'Cascade Alert';
+      default:
         return 'Cascade Alert';
     }
   }
@@ -535,7 +543,6 @@ class JITAIProvider extends ChangeNotifier {
   Future<void> _stopGuardianPolling() async {
     _guardianPollTimer?.cancel();
     _guardianPollTimer = null;
-    _lastGuardianCheck = null;
   }
 
   /// Guardian Mode polling check
@@ -547,8 +554,6 @@ class JITAIProvider extends ChangeNotifier {
   /// Current implementation uses basic distraction minutes check as fallback.
   Future<void> _guardianCheck() async {
     if (!_guardianModeEnabled || !_isInitialized) return;
-
-    _lastGuardianCheck = DateTime.now();
 
     try {
       // TODO: Replace with native bridge call when available
