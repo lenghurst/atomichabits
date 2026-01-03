@@ -257,20 +257,22 @@ class _CascadeAlertCardState extends State<_CascadeAlertCard>
     );
   }
 
-  IconData _iconForPattern(CascadePattern pattern) {
+  IconData _iconForPattern(CascadeRiskReason pattern) {
     switch (pattern) {
-      case CascadePattern.weatherBlocking:
+      case CascadeRiskReason.weatherBlocking:
         return Icons.cloud_off;
-      case CascadePattern.travelDisruption:
+      case CascadeRiskReason.travelDisruption:
         return Icons.flight;
-      case CascadePattern.weekendPattern:
+      case CascadeRiskReason.weekendPattern:
         return Icons.weekend;
-      case CascadePattern.energyGap:
+      case CascadeRiskReason.energyGap:
         return Icons.battery_alert;
-      case CascadePattern.yesterdayMiss:
+      case CascadeRiskReason.yesterdayMiss:
         return Icons.warning_amber;
-      case CascadePattern.multiDayMiss:
+      case CascadeRiskReason.multiDayMiss:
         return Icons.trending_down;
+      default:
+        return Icons.error_outline;
     }
   }
 }
