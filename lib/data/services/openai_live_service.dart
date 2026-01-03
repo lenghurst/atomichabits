@@ -9,13 +9,81 @@ import '../../config/ai_model_config.dart';
 import '../../core/logging/app_logger.dart';
 import 'voice_api_service.dart';
 
+/// Phase 65: Emotion metadata from OpenAI Realtime API (2025)
+///
+/// OpenAI's Realtime API provides explicit emotion metadata in JSON responses,
+/// unlike other providers that require inference from audio analysis.
+class EmotionMetadata {
+  /// Primary detected emotion (e.g., "joy", "sadness", "anger", "fear", "surprise")
+  final String? primaryEmotion;
+
+  /// Confidence score for primary emotion (0.0 - 1.0)
+  final double? confidence;
+
+  /// Detected tone (e.g., "assertive", "hesitant", "defensive", "open")
+  final String? tone;
+
+  /// Speech emphasis indicators (e.g., words with increased emphasis)
+  final List<String>? emphasizedWords;
+
+  /// Secondary emotions detected
+  final Map<String, double>? secondaryEmotions;
+
+  /// Raw metadata from API
+  final Map<String, dynamic>? rawMetadata;
+
+  EmotionMetadata({
+    this.primaryEmotion,
+    this.confidence,
+    this.tone,
+    this.emphasizedWords,
+    this.secondaryEmotions,
+    this.rawMetadata,
+  });
+
+  factory EmotionMetadata.fromJson(Map<String, dynamic> json) {
+    return EmotionMetadata(
+      primaryEmotion: json['primary_emotion'] as String? ?? json['emotion'] as String?,
+      confidence: (json['confidence'] as num?)?.toDouble(),
+      tone: json['tone'] as String?,
+      emphasizedWords: (json['emphasized_words'] as List<dynamic>?)?.cast<String>(),
+      secondaryEmotions: (json['secondary_emotions'] as Map<String, dynamic>?)?.map(
+        (k, v) => MapEntry(k, (v as num).toDouble()),
+      ),
+      rawMetadata: json,
+    );
+  }
+
+  @override
+  String toString() => 'EmotionMetadata(primary: $primaryEmotion, confidence: $confidence, tone: $tone)';
+}
+
 /// OpenAI Live API Service
 ///
 /// Implements Realtime API using WebSocket.
-/// Endpoint: wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01
+/// Endpoint: wss://api.openai.com/v1/realtime?model=...
 /// Docs: https://platform.openai.com/docs/guides/realtime
+///
+/// Phase 65: Hybrid Voice Provider Routing
+/// - Used for emotion-critical sessions (sherlock, toughTruths)
+/// - Provides explicit emotion metadata in JSON responses
+/// - Trade-off: ~$0.06/min vs Gemini's token-based pricing
 class OpenAILiveService implements VoiceApiService {
-  static const String _wsUrl = 'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01';
+  /// OpenAI Realtime API model
+  ///
+  /// Phase 65: Updated for 2025 API
+  /// - Preview: gpt-4o-realtime-preview-2024-10-01
+  /// - Production (when available): gpt-4o-realtime-2025-xx-xx
+  ///
+  /// The model can be configured via AIModelConfig for easy updates.
+  static const String _defaultModel = 'gpt-4o-realtime-preview-2024-10-01';
+
+  /// Get the model to use (allows for future config-based selection)
+  static String get _model => AIModelConfig.openAiRealtimeModel.isNotEmpty
+      ? AIModelConfig.openAiRealtimeModel
+      : _defaultModel;
+
+  static String get _wsUrl => 'wss://api.openai.com/v1/realtime?model=$_model';
 
   // === STATE ===
   WebSocketChannel? _channel;
@@ -31,6 +99,15 @@ class OpenAILiveService implements VoiceApiService {
   final void Function(String toolName, Map<String, dynamic> args, String callId)? onToolCall;
   final void Function(List<String> log)? onDebugLogUpdated;
 
+  /// Phase 65: Emotion metadata callback
+  ///
+  /// Called when OpenAI provides emotion metadata for the user's speech.
+  /// This is a key differentiator from Gemini - explicit emotion data vs inference.
+  final void Function(EmotionMetadata)? onEmotionDetected;
+
+  /// Phase 65: Accumulated emotion data for the current turn
+  EmotionMetadata? _lastEmotionMetadata;
+
   final List<String> _debugLog = [];
 
   OpenAILiveService({
@@ -40,7 +117,11 @@ class OpenAILiveService implements VoiceApiService {
     this.onError,
     this.onToolCall,
     this.onDebugLogUpdated,
+    this.onEmotionDetected,
   });
+
+  /// Get the last detected emotion metadata (for post-processing)
+  EmotionMetadata? get lastEmotionMetadata => _lastEmotionMetadata;
 
   @override
   bool get isConnected => _isConnected;
@@ -161,6 +242,7 @@ class OpenAILiveService implements VoiceApiService {
         case 'session.created':
           _sessionId = data['session']['id'];
           _addDebugLog('Session Created: $_sessionId');
+          _addDebugLog('Model: $_model');
           break;
 
         case 'response.audio.delta':
@@ -172,9 +254,34 @@ class OpenAILiveService implements VoiceApiService {
 
         case 'response.audio_transcript.delta':
            // OpenAI sends incremental transcript
-           // We might want to accumulate or just notify
            final delta = data['delta'] as String;
            onTranscription?.call(delta, false);
+           break;
+
+        // Phase 65: Handle emotion/sentiment metadata from OpenAI 2025 API
+        case 'input_audio_buffer.speech_started':
+           _addDebugLog('🎤 Speech started');
+           break;
+
+        case 'input_audio_buffer.speech_stopped':
+           _addDebugLog('🎤 Speech stopped');
+           break;
+
+        case 'conversation.item.input_audio_transcription.completed':
+           // Final transcription with potential emotion metadata
+           final transcript = data['transcript'] as String?;
+           if (transcript != null) {
+             onTranscription?.call(transcript, true);
+           }
+
+           // Phase 65: Extract emotion metadata if present (2025 API feature)
+           _extractEmotionMetadata(data);
+           break;
+
+        // Phase 65: Dedicated emotion event (anticipated 2025 API)
+        case 'response.audio.emotion':
+        case 'input_audio_buffer.emotion':
+           _handleEmotionEvent(data);
            break;
 
         case 'response.function_call_arguments.done':
@@ -188,16 +295,65 @@ class OpenAILiveService implements VoiceApiService {
 
         case 'response.done':
            onModelSpeakingChanged?.call(false);
+           // Log emotion summary for this turn
+           if (_lastEmotionMetadata != null) {
+             _addDebugLog('🎭 Turn emotion: ${_lastEmotionMetadata!.primaryEmotion} (${_lastEmotionMetadata!.tone})');
+           }
            break;
 
         case 'error':
            final err = data['error'];
            _addDebugLog('❌ OpenAI Error: ${err['message']}', isError: true);
+           onError?.call(err['message'] as String? ?? 'Unknown error');
            break;
+
+        default:
+           // Log unknown event types for debugging new API features
+           if (kDebugMode && type != null) {
+             AppLogger.debug('[OpenAI] Unhandled event type: $type');
+           }
       }
     } catch (e) {
-      // _addDebugLog('Parse error: $e');
+      if (kDebugMode) {
+        AppLogger.debug('[OpenAI] Parse error: $e');
+      }
     }
+  }
+
+  /// Phase 65: Extract emotion metadata from transcription or audio events
+  void _extractEmotionMetadata(Map<String, dynamic> data) {
+    // Check for emotion data in various possible locations
+    final emotionData = data['emotion'] ??
+        data['metadata']?['emotion'] ??
+        data['audio_metadata']?['emotion'] ??
+        data['sentiment'];
+
+    if (emotionData is Map<String, dynamic>) {
+      _lastEmotionMetadata = EmotionMetadata.fromJson(emotionData);
+      _addDebugLog('🎭 Emotion detected: ${_lastEmotionMetadata!.primaryEmotion}');
+      onEmotionDetected?.call(_lastEmotionMetadata!);
+    }
+
+    // Also check for tone/emphasis at the data level
+    final tone = data['tone'] as String?;
+    final emphasis = data['emphasis'] as List<dynamic>?;
+
+    if (tone != null || emphasis != null) {
+      _lastEmotionMetadata = EmotionMetadata(
+        tone: tone,
+        emphasizedWords: emphasis?.cast<String>(),
+        rawMetadata: data,
+      );
+      onEmotionDetected?.call(_lastEmotionMetadata!);
+    }
+  }
+
+  /// Phase 65: Handle dedicated emotion events (anticipated 2025 API)
+  void _handleEmotionEvent(Map<String, dynamic> data) {
+    final emotionData = data['emotion'] ?? data;
+    _lastEmotionMetadata = EmotionMetadata.fromJson(emotionData);
+    _addDebugLog('🎭 Emotion event: ${_lastEmotionMetadata!.primaryEmotion} (conf: ${_lastEmotionMetadata!.confidence})');
+    onEmotionDetected?.call(_lastEmotionMetadata!);
   }
 
   void _sendJson(Map<String, dynamic> data) {

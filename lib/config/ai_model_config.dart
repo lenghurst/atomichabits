@@ -42,8 +42,19 @@ class AIModelConfig {
   /// Gemini API key (Tier 2/3 - Multimodal Native)
   static const String geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
   
-  /// OpenAI API key (Fallback TTS provider)
+  /// OpenAI API key (Fallback TTS provider + Realtime API)
   static const String openAiApiKey = String.fromEnvironment('OPENAI_API_KEY');
+
+  /// OpenAI Realtime API model (Phase 65)
+  ///
+  /// Configure via: --dart-define=OPENAI_REALTIME_MODEL=gpt-4o-realtime-2025-xx-xx
+  ///
+  /// Available models (as of 2025):
+  /// - gpt-4o-realtime-preview-2024-10-01 (October 2024 preview)
+  /// - gpt-4o-realtime-2025-xx-xx (when released)
+  ///
+  /// If not set, defaults to the preview model in OpenAILiveService.
+  static const String openAiRealtimeModel = String.fromEnvironment('OPENAI_REALTIME_MODEL');
 
   // === NEW KEYS FOR COMPONENT STACK ===
   static const String cartesiaApiKey = String.fromEnvironment('CARTESIA_API_KEY');
@@ -72,6 +83,7 @@ class AIModelConfig {
     buffer.writeln('Gemini Key: ${hasGeminiKey ? "✓ Configured" : "✗ Missing"}');
     buffer.writeln('OpenAI Key: ${hasOpenAiKey ? "✓ Configured" : "✗ Missing"}');
     buffer.writeln('Tier 2 Model: $tier2Model');
+    buffer.writeln('OpenAI Realtime Model: ${openAiRealtimeModel.isEmpty ? "(default)" : openAiRealtimeModel}');
     buffer.writeln('Live API Version: $liveApiVersion');
     return buffer.toString();
   }
