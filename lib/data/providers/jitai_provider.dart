@@ -95,6 +95,19 @@ class JITAIProvider extends ChangeNotifier {
   // Settings
   Duration _contextRefreshInterval = const Duration(minutes: 5);
 
+  // === Phase 65: Guardian Mode State ===
+  bool _guardianModeEnabled = false;
+  Timer? _guardianPollTimer;
+  DateTime? _lastGuardianCheck;
+  Duration _guardianPollInterval = const Duration(seconds: 30);
+
+  // Guardian intervention thresholds (configurable)
+  final Map<int, Duration> _guardianThresholds = {
+    1: const Duration(minutes: 5),  // Tier 1: Gentle nudge
+    2: const Duration(minutes: 10), // Tier 2: Moderate intervention
+    3: const Duration(minutes: 20), // Tier 3: Strong intervention
+  };
+
   JITAIProvider();
 
   // === Getters ===
@@ -106,6 +119,10 @@ class JITAIProvider extends ChangeNotifier {
   List<CascadeAlert> get cascadeAlerts => List.unmodifiable(_cascadeAlerts);
   bool get hasActiveIntervention => _activeIntervention != null;
   bool get hasCascadeRisk => _cascadeAlerts.any((a) => a.severity > 0.5);
+
+  // Phase 65: Guardian Mode getters
+  bool get guardianModeEnabled => _guardianModeEnabled;
+  bool get guardianModeActive => _guardianPollTimer != null && _guardianPollTimer!.isActive;
 
   /// Initialize the JITAI system
   Future<void> initialize({String? weatherApiKey}) async {
@@ -471,9 +488,146 @@ class JITAIProvider extends ChangeNotifier {
     }
   }
 
+  // === Phase 65: Guardian Mode Methods ===
+
+  /// Enable/disable Guardian Mode (real-time doom scroll detection)
+  ///
+  /// Guardian Mode uses adaptive polling to detect active doom scrolling sessions
+  /// and trigger interventions at configurable thresholds (5min, 10min, 20min).
+  ///
+  /// When enabled, polls every 30 seconds (baseline) or 5 seconds (when distraction app active).
+  /// Requires Usage Stats permission on Android.
+  Future<void> setGuardianMode(bool enabled) async {
+    if (_guardianModeEnabled == enabled) return;
+    if (!_isInitialized) return;
+
+    _guardianModeEnabled = enabled;
+
+    if (enabled) {
+      await _startGuardianPolling();
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Guardian Mode enabled');
+      }
+    } else {
+      await _stopGuardianPolling();
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Guardian Mode disabled');
+      }
+    }
+
+    notifyListeners();
+  }
+
+  /// Start Guardian Mode polling loop
+  Future<void> _startGuardianPolling() async {
+    if (_guardianPollTimer != null) return;
+
+    // Initial check
+    await _guardianCheck();
+
+    // Start periodic polling
+    _guardianPollTimer = Timer.periodic(_guardianPollInterval, (_) async {
+      await _guardianCheck();
+    });
+  }
+
+  /// Stop Guardian Mode polling loop
+  Future<void> _stopGuardianPolling() async {
+    _guardianPollTimer?.cancel();
+    _guardianPollTimer = null;
+    _lastGuardianCheck = null;
+  }
+
+  /// Guardian Mode polling check
+  ///
+  /// TODO: This is a placeholder implementation. Requires native bridge enhancements:
+  /// - DigitalTruthSensor.getAppSessions() for real-time session tracking
+  /// - DigitalTruthSensor.detectDopamineLoop() for rapid app switching
+  ///
+  /// Current implementation uses basic distraction minutes check as fallback.
+  Future<void> _guardianCheck() async {
+    if (!_guardianModeEnabled || !_isInitialized) return;
+
+    _lastGuardianCheck = DateTime.now();
+
+    try {
+      // TODO: Replace with native bridge call when available
+      // final sessions = await _digitalSensor.getAppSessions();
+      // final activeSession = sessions.firstWhereOrNull((s) => s.isActive);
+      // if (activeSession == null) return;
+
+      // PLACEHOLDER: Use basic digital context check
+      if (_lastContext?.digital == null) return;
+
+      final digital = _lastContext!.digital!;
+
+      // Check for active doom scrolling
+      // TODO: This will be replaced with real-time session tracking
+      if (digital.isHighDistraction) {
+        // Check intervention thresholds
+        // For now, using daily distraction minutes as proxy
+        // TODO: Replace with current session duration
+        final sessionMinutes = digital.distractionMinutes; // Placeholder
+
+        // Determine tier based on session duration
+        int? tier;
+        if (sessionMinutes >= _guardianThresholds[3]!.inMinutes) {
+          tier = 3; // Strong intervention
+        } else if (sessionMinutes >= _guardianThresholds[2]!.inMinutes) {
+          tier = 2; // Moderate intervention
+        } else if (sessionMinutes >= _guardianThresholds[1]!.inMinutes) {
+          tier = 1; // Gentle nudge
+        }
+
+        if (tier != null && _activeIntervention == null) {
+          // Trigger Guardian Mode intervention
+          // TODO: Pass actual habit and profile
+          if (kDebugMode) {
+            debugPrint('JITAIProvider: Guardian Mode triggered (Tier $tier) - ${sessionMinutes}min doom scrolling detected');
+          }
+
+          // This would trigger a JITAI decision with DecisionTrigger.guardianMode
+          // For now, just log it
+          // await checkIntervention(
+          //   habit: currentHabit,
+          //   profile: currentProfile,
+          //   trigger: DecisionTrigger.guardianMode,
+          // );
+        }
+      }
+
+      // TODO: Check for dopamine loop detection
+      // final loopAlert = await _digitalSensor.detectDopamineLoop();
+      // if (loopAlert != null) {
+      //   // Trigger intervention with DecisionTrigger.dopamineLoop
+      // }
+
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Guardian check failed: $e');
+      }
+    }
+  }
+
+  /// Update Guardian Mode intervention thresholds
+  void setGuardianThresholds({
+    Duration? tier1,
+    Duration? tier2,
+    Duration? tier3,
+  }) {
+    if (tier1 != null) _guardianThresholds[1] = tier1;
+    if (tier2 != null) _guardianThresholds[2] = tier2;
+    if (tier3 != null) _guardianThresholds[3] = tier3;
+    notifyListeners();
+  }
+
+  /// Get current Guardian Mode thresholds
+  Map<int, Duration> get guardianThresholds => Map.unmodifiable(_guardianThresholds);
+
   /// Clean up resources
   @override
   void dispose() {
+    _stopGuardianPolling();
     JITAIBackgroundWorker.cancelBackgroundTasks();
     super.dispose();
   }
