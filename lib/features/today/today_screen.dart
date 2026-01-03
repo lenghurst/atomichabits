@@ -5,9 +5,13 @@ import '../../config/router/app_routes.dart';
 import '../../data/app_state.dart';
 import '../../data/models/habit.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/providers/jitai_provider.dart';
 import '../../widgets/graceful_consistency_card.dart';
 import '../../widgets/pre_habit_ritual_dialog.dart';
 import '../../widgets/guest_data_warning_banner.dart';
+import '../jitai/widgets/jitai_insights_card.dart';
+import '../jitai/widgets/cascade_alert_banner.dart';
+import '../jitai/widgets/intervention_modal.dart';
 import 'widgets/identity_card.dart';
 import 'widgets/habit_card.dart';
 import 'widgets/completion_button.dart';
@@ -43,18 +47,48 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   late TodayScreenController _controller;
   PageController? _pageController;
   int _currentPageIndex = 0;
-  
+
+  // Sprint 1: Track if we've shown intervention modal for current intervention
+  String? _shownInterventionId;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Initialize controller after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initController();
       _initPageController();
       _controller.onScreenResumed();
+
+      // Sprint 1: Set up JITAI intervention listener
+      _setupInterventionListener();
     });
+  }
+
+  /// Sprint 1: Listen for active interventions and show modal
+  void _setupInterventionListener() {
+    final jitai = Provider.of<JITAIProvider>(context, listen: false);
+    jitai.addListener(_onJITAIStateChanged);
+  }
+
+  void _onJITAIStateChanged() {
+    if (!mounted) return;
+
+    final jitai = Provider.of<JITAIProvider>(context, listen: false);
+    final intervention = jitai.activeIntervention;
+
+    // Show modal if there's a new intervention we haven't shown yet
+    if (intervention != null &&
+        intervention.decision.event?.eventId != _shownInterventionId) {
+      _shownInterventionId = intervention.decision.event?.eventId;
+      _showInterventionModal();
+    }
+  }
+
+  void _showInterventionModal() {
+    showInterventionModal(context);
   }
   
   void _initController() {
@@ -80,6 +114,15 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _pageController?.dispose();
+
+    // Sprint 1: Remove JITAI listener
+    try {
+      final jitai = Provider.of<JITAIProvider>(context, listen: false);
+      jitai.removeListener(_onJITAIStateChanged);
+    } catch (_) {
+      // Provider may not be available during dispose
+    }
+
     super.dispose();
   }
 
@@ -284,7 +327,10 @@ class _HabitView extends StatelessWidget {
           GuestDataWarningBanner(
             onSignUp: () => context.push(AppRoutes.settingsAccount),
           ),
-          
+
+          // Sprint 1: Cascade Alert Banner - shows urgent cascade warnings
+          const CascadeAlertBanner(),
+
           // Identity reminder
           if (profile != null) ...[
             IdentityCard(
@@ -293,6 +339,10 @@ class _HabitView extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
+
+          // Sprint 1: JITAI Insights Card - shows timing and pattern insights
+          JITAIInsightsCard(habitId: habit.id),
+          const SizedBox(height: 16),
 
           // Section title
           _SectionTitle(title: 'Your Habit for Today'),

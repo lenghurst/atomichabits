@@ -11,8 +11,10 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../domain/entities/context_snapshot.dart';
+import '../repositories/jitai_state_repository.dart';
 import '../../domain/entities/psychometric_profile.dart';
 import '../../domain/services/jitai_decision_engine.dart';
 import '../../domain/entities/intervention.dart';
@@ -74,13 +76,16 @@ class CascadeAlert {
   });
 }
 
-class JITAIProvider extends ChangeNotifier {
+class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
   // Services
   late final JITAIDecisionEngine _decisionEngine;
   late final ContextSnapshotBuilder _contextBuilder;
   late final JITAINotificationService _notificationService;
   late final OptimalTimingPredictor _timingPredictor;
   late final CascadePatternDetector _cascadeDetector;
+
+  // Sprint 1: Bandit persistence repository
+  late final JITAIStateRepository _stateRepository;
 
   // State
   bool _isInitialized = false;
@@ -125,7 +130,12 @@ class JITAIProvider extends ChangeNotifier {
   bool get guardianModeActive => _guardianPollTimer != null && _guardianPollTimer!.isActive;
 
   /// Initialize the JITAI system
-  Future<void> initialize({String? weatherApiKey}) async {
+  ///
+  /// Sprint 1: Now hydrates bandit state from persistence on startup.
+  Future<void> initialize({
+    String? weatherApiKey,
+    JITAIStateRepository? stateRepository,
+  }) async {
     if (_isInitialized) return;
 
     try {
@@ -135,6 +145,13 @@ class JITAIProvider extends ChangeNotifier {
       _timingPredictor = OptimalTimingPredictor();
       _cascadeDetector = CascadePatternDetector();
 
+      // Sprint 1: Initialize state repository (injectable for testing)
+      _stateRepository = stateRepository ?? HiveJITAIStateRepository();
+      await _stateRepository.init();
+
+      // Sprint 1: Hydrate bandit state from persistence
+      await _hydrateBanditState();
+
       // Initialize services
       await _contextBuilder.initialize(weatherApiKey: weatherApiKey);
       await _notificationService.initialize();
@@ -142,8 +159,9 @@ class JITAIProvider extends ChangeNotifier {
       // Register background tasks
       await JITAIBackgroundWorker.registerBackgroundTasks();
 
-      // Register lifecycle observer
+      // Register lifecycle observers
       JITAILifecycleObserver.register();
+      WidgetsBinding.instance.addObserver(this);
 
       _isInitialized = true;
       notifyListeners();
@@ -155,6 +173,54 @@ class JITAIProvider extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('JITAIProvider: Initialization failed: $e');
       }
+    }
+  }
+
+  /// Sprint 1: Hydrate bandit state from persistence
+  Future<void> _hydrateBanditState() async {
+    try {
+      final savedState = await _stateRepository.loadBanditState();
+      if (savedState != null) {
+        _decisionEngine.importState(savedState);
+        if (kDebugMode) {
+          debugPrint('JITAIProvider: Bandit state hydrated from persistence');
+        }
+      } else {
+        if (kDebugMode) {
+          debugPrint('JITAIProvider: No saved bandit state, using fresh priors');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Failed to hydrate bandit state: $e');
+      }
+    }
+  }
+
+  /// Sprint 1: Persist bandit state to storage
+  Future<void> _persistBanditState() async {
+    if (!_isInitialized) return;
+
+    try {
+      final state = _decisionEngine.exportState();
+      await _stateRepository.saveBanditState(state);
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Bandit state persisted');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('JITAIProvider: Failed to persist bandit state: $e');
+      }
+    }
+  }
+
+  /// Sprint 1: Handle app lifecycle changes for persistence
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      // Persist bandit state when app goes to background
+      _persistBanditState();
     }
   }
 
@@ -251,6 +317,8 @@ class JITAIProvider extends ChangeNotifier {
   }
 
   /// Record user response to intervention
+  ///
+  /// Sprint 1: Now persists bandit state after recording outcome.
   Future<void> recordInterventionOutcome({
     required String eventId,
     required bool engaged,
@@ -271,6 +339,9 @@ class JITAIProvider extends ChangeNotifier {
         eventId: eventId,
         outcome: outcome,
       );
+
+      // Sprint 1: Persist bandit state after learning (significant event)
+      await _persistBanditState();
 
       // Clear active intervention
       if (_activeIntervention?.decision.event?.eventId == eventId) {
@@ -629,8 +700,16 @@ class JITAIProvider extends ChangeNotifier {
   Map<int, Duration> get guardianThresholds => Map.unmodifiable(_guardianThresholds);
 
   /// Clean up resources
+  ///
+  /// Sprint 1: Now persists bandit state before disposing.
   @override
   void dispose() {
+    // Sprint 1: Persist bandit state before cleanup
+    _persistBanditState();
+
+    // Remove lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+
     _stopGuardianPolling();
     JITAIBackgroundWorker.cancelBackgroundTasks();
     super.dispose();

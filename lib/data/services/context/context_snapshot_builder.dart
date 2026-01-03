@@ -10,8 +10,11 @@
 /// - Biometrics (Health Connect / HealthKit)
 /// - Location (Geolocator)
 /// - Historical (from habit data)
+/// - Emotion (from voice sessions - Sprint 1)
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../domain/entities/context_snapshot.dart';
 import '../../../data/models/habit.dart';
@@ -41,6 +44,8 @@ class ContextSnapshotBuilder {
   ///
   /// Fetches all available sensor data in parallel.
   /// Returns snapshot even if some sensors fail (graceful degradation).
+  ///
+  /// Sprint 1: Now reads emotion_metadata from voice sessions.
   Future<ContextSnapshot> build({
     required Habit habit,
     List<Habit>? allHabits,
@@ -49,21 +54,26 @@ class ContextSnapshotBuilder {
   }) async {
     final now = DateTime.now();
 
-    // Fetch all sensor data in parallel
+    // Fetch all sensor data in parallel (including emotion)
     final futures = await Future.wait([
       _getWeatherContext(),
       _calendarService.getCalendarContext(),
       _biometricsService.getBiometricContext(),
       _getLocationContext(),
+      _getEmotionMetadata(), // Sprint 1: Emotion from voice sessions
     ]);
 
     final weatherContext = futures[0] as WeatherContext?;
     final calendarContext = futures[1] as CalendarContext?;
     final biometricContext = futures[2] as BiometricContext?;
     final locationContext = futures[3] as LocationContext?;
+    final emotionData = futures[4] as Map<String, dynamic>?;
 
     // Build historical context from habit data
     final historicalContext = _buildHistoricalContext(habit, allHabits);
+
+    // Sprint 1: Build digital context with emotion data
+    final digitalContext = _buildDigitalContext(emotionData);
 
     // Build snapshot
     return ContextSnapshot(
@@ -74,9 +84,77 @@ class ContextSnapshotBuilder {
       calendar: calendarContext,
       biometrics: biometricContext,
       location: locationContext,
+      digital: digitalContext, // Sprint 1: Now includes emotion
       history: historicalContext,
       userVulnerabilityOverride: userVulnerabilityOverride,
       activePatterns: activePatterns,
+    );
+  }
+
+  /// Sprint 1: Read emotion metadata from Hive (stored by voice sessions)
+  ///
+  /// Returns null if no emotion data or if data is stale (>2 hours)
+  Future<Map<String, dynamic>?> _getEmotionMetadata() async {
+    try {
+      final box = await Hive.openBox('emotion_metadata');
+      final data = box.get('latest_emotion');
+
+      if (data == null) {
+        if (kDebugMode) {
+          debugPrint('ContextSnapshotBuilder: No emotion metadata found');
+        }
+        return null;
+      }
+
+      // Convert to proper type and check staleness
+      final emotionMap = Map<String, dynamic>.from(data as Map);
+      final capturedAt = emotionMap['capturedAt'] as String?;
+
+      if (capturedAt != null) {
+        final captured = DateTime.parse(capturedAt);
+        final age = DateTime.now().difference(captured);
+
+        if (age.inHours >= 2) {
+          if (kDebugMode) {
+            debugPrint('ContextSnapshotBuilder: Emotion data stale (${age.inHours}h old)');
+          }
+          return null; // Stale data
+        }
+      }
+
+      if (kDebugMode) {
+        debugPrint('ContextSnapshotBuilder: Loaded emotion: ${emotionMap['primaryEmotion']}');
+      }
+
+      return emotionMap;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ContextSnapshotBuilder: Failed to read emotion metadata: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Sprint 1: Build DigitalContext with emotion data
+  DigitalContext? _buildDigitalContext(Map<String, dynamic>? emotionData) {
+    // If no emotion data, we still might want to return DigitalContext
+    // for distraction tracking in the future, but for now return null
+    if (emotionData == null) return null;
+
+    DateTime? emotionCapturedAt;
+    final capturedAtStr = emotionData['capturedAt'] as String?;
+    if (capturedAtStr != null) {
+      emotionCapturedAt = DateTime.tryParse(capturedAtStr);
+    }
+
+    return DigitalContext(
+      distractionMinutes: 0, // TODO: Wire to DigitalTruthSensor
+      capturedAt: DateTime.now(),
+      // Emotion fields from voice sessions
+      primaryEmotion: emotionData['primaryEmotion'] as String?,
+      emotionalIntensity: (emotionData['confidence'] as num?)?.toDouble(),
+      emotionalTone: emotionData['tone'] as String?,
+      emotionCapturedAt: emotionCapturedAt,
     );
   }
 
