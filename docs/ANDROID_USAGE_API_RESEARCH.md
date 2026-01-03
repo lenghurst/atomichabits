@@ -158,3 +158,30 @@ Add to **Layer 3 (Real-Time Intervention)** backlog as enhancement to `DigitalTr
 | Completeness | 4/5 | Good coverage, could include code samples |
 
 **Overall**: The Researcher Agent provided valuable technical discovery that identifies a concrete improvement opportunity. The research correctly distinguished between theoretical knowledge (internal API) and practical implementation (queryEvents alternative).
+
+---
+
+## Implementation Status
+
+**Date Implemented:** January 3, 2026
+
+### Completed Work
+
+| Component | File | Status |
+|-----------|------|--------|
+| Platform Channel (Kotlin) | `android/app/src/main/kotlin/co/thepact/app/MainActivity.kt` | ✅ Implemented |
+| Event-based Tracking (Dart) | `lib/data/sensors/digital_truth_sensor.dart` | ✅ Implemented |
+| Dopamine Loop Detection | `DigitalTruthSensor.detectDopamineLoop()` | ✅ Implemented |
+| Session Statistics | `DigitalTruthSensor.getDistractionStats()` | ✅ Implemented |
+
+### New Capabilities
+
+1. **`getAppSessions()`** - Returns list of `AppSession` objects with precise timing
+2. **`getDistractionSessions()`** - Filtered to distraction apps only
+3. **`detectDopamineLoop()`** - Returns `DopamineLoopAlert` when rapid switching detected
+4. **`getDistractionStats()`** - Session count, avg duration, longest session
+
+### Backward Compatibility
+
+- Legacy `getDailyUsage()`, `getDopamineBurnMinutes()`, `getApexDistractor()` preserved
+- `getDopamineBurnMinutes()` now tries event-based first, falls back to legacy
