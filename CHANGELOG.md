@@ -1,3 +1,18 @@
+## [6.12.0] - 2026-01-03 - Phase 65: "Digital Truth & Emotion Integration"
+
+### Architecture
+- **Digital Truth Sensor (Guardian Mode):** Added "Guardian Mode" to `JITAIProvider`, enabling real-time polling (30s interval) for "Dopamine Loop" detection (rapid app switching) and excessive usage.
+- **Emotion Integration:** Extended `DigitalContext` to include `primaryEmotion`, `emotionalIntensity`, and `emotionalTone`.
+- **Vulnerability Boost:** `VulnerabilityOpportunityCalculator` now ingests emotional state to adjust intervention thresholds (e.g., High Sadness = Lower Threshold for Support).
+- **Privacy-First Storage:** Emotion metadata is stored locally in Hive (`emotion_metadata` box) with a strict 2-hour expiry, ensuring transient states don't become permanent labels.
+
+### Added
+- **JITAIProvider:** `setGuardianMode(bool)`, `_guardianCheck()`, and intervention triggers for `guardianMode` and `dopamineLoop`.
+- **DigitalContext:** New fields for session tracking (`currentSessionMinutes`, `isActivelyDoomScrolling`) and emotion snapshots.
+- **Documentation:** Added `docs/DIGITAL_TRUTH_SENSOR_ARCHITECTURE.md` and `docs/EMOTION_DIGITAL_INTEGRATION.md`.
+
+---
+
 ## [6.11.0] - 2026-01-02 - Phase 64 & 2: "Cloud Hydration & Strangler Fig"
 
 ### Architecture (The Strangler Fig)

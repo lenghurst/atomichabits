@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 02 January 2026  
+> **Last Updated:** 03 January 2026  
 > **Current Strategy:** The Augmented Constitution (Parallel MVP)  
 > **Target Launch:** 16 Jan 2026  
 > **Identity:** Identity Evidence Engine
@@ -98,6 +98,13 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 ---
 
 ## ✅ Completed Legacy Phases (Reference)
+
+### Phase 65: Digital Truth & Emotion Integration (03 Jan 2026)
+**Goal:** Real-time protection against digital dopamine loops & emotional vulnerability.
+- [x] **Digital Truth Sensor**: Guardian Mode polling loop (30s) in `JITAIProvider`.
+- [x] **Emotion Context**: `DigitalContext` extensions for affective computing keys.
+- [x] **Vulnerability Logic**: `emotionVulnerabilityBoost` modifier in Decision Engine.
+- [x] **Privacy Architecture**: Local-only, 2-hour ephemeral storage for emotion data.
 
 ### Phase 64: Cloud Hydration & UserProvider (02 Jan 2026)
 **Goal:** Fix P0 data loss and modernize state management.
