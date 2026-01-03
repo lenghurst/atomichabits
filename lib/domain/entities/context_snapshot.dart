@@ -462,13 +462,57 @@ enum LocationZone {
   unknown,
 }
 
+/// Dopamine loop detection alert (Phase 65 - Guardian Mode)
+class DopamineLoopAlert {
+  final List<String> appSequence; // e.g., ["TikTok", "Instagram", "YouTube"]
+  final DateTime detectedAt;
+  final int switchCount;
+  final Duration totalDuration;
+
+  DopamineLoopAlert({
+    required this.appSequence,
+    required this.detectedAt,
+    required this.switchCount,
+    required this.totalDuration,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'appSequence': appSequence,
+        'detectedAt': detectedAt.toIso8601String(),
+        'switchCount': switchCount,
+        'totalDuration': totalDuration.inSeconds,
+      };
+
+  factory DopamineLoopAlert.fromJson(Map<String, dynamic> json) {
+    return DopamineLoopAlert(
+      appSequence: (json['appSequence'] as List).cast<String>(),
+      detectedAt: DateTime.parse(json['detectedAt'] as String),
+      switchCount: json['switchCount'] as int,
+      totalDuration: Duration(seconds: json['totalDuration'] as int),
+    );
+  }
+}
+
 /// Digital behavior context from App Usage APIs
 class DigitalContext {
+  // EXISTING FIELDS
   final int distractionMinutes; // Total dopamine app time today
   final String? apexDistractor; // Most used app (e.g., "TikTok")
   final double distractionZScore; // Relative to user's baseline
   final String? witnessName; // Name of accountability partner
   final DateTime capturedAt;
+
+  // NEW FIELDS (Phase 65 - Guardian Mode + Emotion Integration)
+  final int? currentSessionMinutes; // Active session duration
+  final bool isActivelyDoomScrolling; // Currently in distraction app
+  final int? sessionCount; // Number of sessions today
+  final DopamineLoopAlert? recentLoop; // Recent dopamine loop detection
+
+  // Emotion fields from voice sessions (Phase 65 - Emotion Integration)
+  final String? primaryEmotion; // e.g., "anxiety", "joy", "stress"
+  final double? emotionalIntensity; // 0.0-1.0 confidence
+  final String? emotionalTone; // e.g., "tense", "calm"
+  final DateTime? emotionCapturedAt;
 
   DigitalContext({
     required this.distractionMinutes,
@@ -476,10 +520,46 @@ class DigitalContext {
     this.distractionZScore = 0.0,
     this.witnessName,
     required this.capturedAt,
+    // Phase 65 fields
+    this.currentSessionMinutes,
+    this.isActivelyDoomScrolling = false,
+    this.sessionCount,
+    this.recentLoop,
+    this.primaryEmotion,
+    this.emotionalIntensity,
+    this.emotionalTone,
+    this.emotionCapturedAt,
   });
 
   /// Is user in a high-distraction state? (z-score > 1)
   bool get isHighDistraction => distractionZScore > 1.0;
+
+  /// Is emotion data stale? (older than 2 hours)
+  bool get isEmotionStale {
+    if (emotionCapturedAt == null) return true;
+    final age = DateTime.now().difference(emotionCapturedAt!);
+    return age.inHours >= 2;
+  }
+
+  /// Emotion-based vulnerability boost for JITAI decision engine
+  /// Returns 0.0-0.3 boost based on emotion type and intensity
+  double get emotionVulnerabilityBoost {
+    if (primaryEmotion == null || emotionalIntensity == null || isEmotionStale) {
+      return 0.0;
+    }
+
+    // Map emotions to vulnerability multipliers
+    final multiplier = switch (primaryEmotion!) {
+      'anxiety' || 'stress' => 0.3, // High vulnerability
+      'sadness' || 'frustration' => 0.25,
+      'boredom' || 'restlessness' => 0.2,
+      'anger' => 0.15,
+      'neutral' => 0.05,
+      _ => 0.0, // Joy, calm, etc. - no vulnerability boost
+    };
+
+    return emotionalIntensity! * multiplier;
+  }
 
   Map<String, dynamic> toJson() => {
         'distractionMinutes': distractionMinutes,
@@ -487,6 +567,15 @@ class DigitalContext {
         'distractionZScore': distractionZScore,
         'witnessName': witnessName,
         'capturedAt': capturedAt.toIso8601String(),
+        // Phase 65 fields
+        'currentSessionMinutes': currentSessionMinutes,
+        'isActivelyDoomScrolling': isActivelyDoomScrolling,
+        'sessionCount': sessionCount,
+        'recentLoop': recentLoop?.toJson(),
+        'primaryEmotion': primaryEmotion,
+        'emotionalIntensity': emotionalIntensity,
+        'emotionalTone': emotionalTone,
+        'emotionCapturedAt': emotionCapturedAt?.toIso8601String(),
       };
 
   factory DigitalContext.fromJson(Map<String, dynamic> json) {
@@ -496,6 +585,19 @@ class DigitalContext {
       distractionZScore: (json['distractionZScore'] as num?)?.toDouble() ?? 0.0,
       witnessName: json['witnessName'] as String?,
       capturedAt: DateTime.parse(json['capturedAt'] as String),
+      // Phase 65 fields
+      currentSessionMinutes: json['currentSessionMinutes'] as int?,
+      isActivelyDoomScrolling: json['isActivelyDoomScrolling'] as bool? ?? false,
+      sessionCount: json['sessionCount'] as int?,
+      recentLoop: json['recentLoop'] != null
+          ? DopamineLoopAlert.fromJson(json['recentLoop'] as Map<String, dynamic>)
+          : null,
+      primaryEmotion: json['primaryEmotion'] as String?,
+      emotionalIntensity: (json['emotionalIntensity'] as num?)?.toDouble(),
+      emotionalTone: json['emotionalTone'] as String?,
+      emotionCapturedAt: json['emotionCapturedAt'] != null
+          ? DateTime.parse(json['emotionCapturedAt'] as String)
+          : null,
     );
   }
 }

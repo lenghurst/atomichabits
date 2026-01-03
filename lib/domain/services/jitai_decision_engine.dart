@@ -1040,6 +1040,8 @@ enum DecisionTrigger {
   locationChange, // Geofence trigger
   calendarEvent, // Meeting ended
   manual, // User requested
+  guardianMode, // Phase 65: Real-time doom scroll detection
+  dopamineLoop, // Phase 65: Rapid app switching detected
 }
 
 /// Content to display for intervention

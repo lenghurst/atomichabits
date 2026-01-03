@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart'; // REQUIRED for Content
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/models/chat_message.dart';
 import 'gemini_voice_note_service.dart';
 import 'audio_recording_service.dart';
@@ -209,7 +210,50 @@ class VoiceSessionManager extends ChangeNotifier {
   Future<void> cleanupSession() async {
     await _sherlockService.cleanupSessionAudio();
   }
-  
+
+  // === Phase 65: Emotion Metadata Storage ===
+
+  /// Store emotion metadata from voice session for JITAI integration
+  ///
+  /// This data is used to boost vulnerability calculations in the JITAI decision engine.
+  /// Emotion data is stored locally only (never synced) and expires after 2 hours.
+  ///
+  /// Call this after processing voice sessions when emotion data is available.
+  /// Example: After OpenAI Realtime API analysis or Gemini emotion extraction.
+  Future<void> storeEmotionMetadata({
+    required String primaryEmotion,
+    required double confidence,
+    String? tone,
+    String? emphasis,
+  }) async {
+    try {
+      final box = await Hive.openBox('emotion_metadata');
+
+      await box.put('latest_emotion', {
+        'primaryEmotion': primaryEmotion,
+        'confidence': confidence,
+        'tone': tone,
+        'emphasis': emphasis,
+        'capturedAt': DateTime.now().toIso8601String(),
+      });
+
+      debugPrint('VoiceSessionManager: Stored emotion - $primaryEmotion (${(confidence * 100).toStringAsFixed(0)}%)');
+    } catch (e) {
+      debugPrint('VoiceSessionManager: Failed to store emotion metadata: $e');
+    }
+  }
+
+  /// Clear emotion metadata (called when emotion becomes stale or irrelevant)
+  Future<void> clearEmotionMetadata() async {
+    try {
+      final box = await Hive.openBox('emotion_metadata');
+      await box.delete('latest_emotion');
+      debugPrint('VoiceSessionManager: Cleared emotion metadata');
+    } catch (e) {
+      debugPrint('VoiceSessionManager: Failed to clear emotion metadata: $e');
+    }
+  }
+
   @override
   void dispose() {
     // ✅ PRIVACY: Cleanup TTS audio when session ends
