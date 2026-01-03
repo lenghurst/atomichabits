@@ -2,16 +2,21 @@
 
 **Date:** 03 January 2026
 **Analysis Scope:** Complete data flow mapping, gap identification, sprint prioritization
+**Sources:** Claude + Gemini dual analysis (synthesized)
 
 ---
 
-## Executive Summary
+## Executive Summary: "The Missing Nervous System"
 
-The JITAI system core is **well-implemented** but **not wired to UI**. This is the single biggest gap blocking launch. The 5-layer architecture has Layer 1 (Evidence Engine) mostly complete, but Layers 2-5 are incomplete.
+You have built a sophisticated **Brain** (JITAIDecisionEngine, HierarchicalBandit) and high-fidelity **Senses** (GeminiLiveService, VoiceSessionManager). However, the **Nervous System** connecting them is incomplete:
 
-**Launch Readiness:** 60% complete
-**Blocking Issues:** 4 P0 gaps identified
-**Recommended Sprint Focus:** "Wire JITAI to UI" + "Notification Pipeline"
+1. **The Brain is invisible** - Decision engine generates insights, but UI doesn't display them
+2. **The Brain has amnesia** - Bandit state isn't persisted, learning resets on app restart
+3. **The Brain can't feel** - Emotion from voice sessions doesn't flow to ContextSnapshot
+
+**Launch Readiness:** 55% complete (revised down due to persistence gap)
+**Blocking Issues:** 6 P0 gaps identified
+**Recommended Sprint Focus:** "Close the Loop" (Wire JITAI to UI + Persistence + Emotion Flow)
 
 ---
 
@@ -181,7 +186,77 @@ The JITAI system core is **well-implemented** but **not wired to UI**. This is t
 
 ## 3. P0 Gaps Blocking Launch
 
-### Gap 1: JITAI NOT WIRED TO UI (Critical)
+### Gap 1: BANDIT AMNESIA - Learning Loop Volatile (Critical)
+
+**Impact:** The Thompson Sampling bandit resets to default priors on every app restart. The AI never "learns" user preferences.
+**Effort:** 0.5 days
+**Root Cause:** `exportState()` and `importState()` methods exist in `HierarchicalBandit` (lines 443, 456) but are **never called**.
+
+**Files to modify:**
+
+| File | Changes Required |
+|------|-----------------|
+| `lib/data/providers/jitai_provider.dart` | Call `decisionEngine.exportState()` on dispose/pause, `importState()` on initialize |
+| New: `lib/data/repositories/jitai_state_repository.dart` | Hive persistence for bandit state |
+
+**Implementation:**
+```dart
+// In JITAIProvider.dispose() or AppLifecycleState.paused
+Future<void> _persistBanditState() async {
+  final box = await Hive.openBox('bandit_params');
+  await box.put('state', _decisionEngine.exportState());
+}
+
+// In JITAIProvider.initialize()
+Future<void> _hydrateBanditState() async {
+  final box = await Hive.openBox('bandit_params');
+  final state = box.get('state') as Map<String, dynamic>?;
+  if (state != null) {
+    _decisionEngine.importState(state);
+  }
+}
+```
+
+### Gap 2: EMOTION DISCONNECT - Voice Can't Influence JITAI (Critical)
+
+**Impact:** `VoiceSessionManager.storeEmotionMetadata()` writes to Hive, but `ContextSnapshotBuilder` never reads it. The JITAI brain can't "feel" the user's emotional state from voice sessions.
+**Effort:** 0.5 days
+**Root Cause:** No read path from `emotion_metadata` Hive box to `ContextSnapshot.digital.emotionVulnerabilityBoost`.
+
+**Files to modify:**
+
+| File | Changes Required |
+|------|-----------------|
+| `lib/data/services/context/context_snapshot_builder.dart` | Inject emotion storage, read in `build()` |
+
+**Implementation:**
+```dart
+// In ContextSnapshotBuilder.build()
+Future<ContextSnapshot> build() async {
+  // ... existing code ...
+
+  // Fetch latest emotion from Hive
+  final emotionBox = await Hive.openBox('emotion_metadata');
+  final emotionData = emotionBox.get('latest_emotion') as Map<String, dynamic>?;
+
+  double emotionBoost = 0.0;
+  if (emotionData != null) {
+    final capturedAt = DateTime.parse(emotionData['capturedAt']);
+    final age = DateTime.now().difference(capturedAt);
+    if (age < const Duration(hours: 2)) {
+      emotionBoost = _calculateEmotionBoost(emotionData);
+    }
+  }
+
+  // Pass to DigitalContext
+  final digital = DigitalContext(
+    // ... existing fields ...
+    emotionVulnerabilityBoost: emotionBoost,
+  );
+}
+```
+
+### Gap 3: JITAI NOT WIRED TO UI (Critical)
 
 **Impact:** Users cannot see any JITAI insights, interventions, or cascade alerts.
 **Effort:** 2-3 days
@@ -218,7 +293,7 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
 }
 ```
 
-### Gap 2: Notification Pipeline Incomplete (Critical)
+### Gap 4: Notification Pipeline Incomplete (Critical)
 
 **Impact:** Background interventions never reach users.
 **Effort:** 1-2 days
@@ -231,7 +306,7 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
 
 **Current state:** `JITAINotificationService.deliverIntervention()` exists but is never called.
 
-### Gap 3: Evidence API Missing (High)
+### Gap 5: Evidence API Missing (High)
 
 **Impact:** Layer 1 foundation incomplete, no identity evidence logging.
 **Effort:** 1 day
@@ -247,7 +322,7 @@ class EvidenceService {
 }
 ```
 
-### Gap 4: Lazy TTS Not Implemented (Medium)
+### Gap 6: Lazy TTS Not Implemented (Medium)
 
 **Impact:** Cost overrun on TTS generation (every response generates audio, even if not played).
 **Effort:** 0.5 days
@@ -258,78 +333,108 @@ class EvidenceService {
 
 ---
 
-## 4. Hidden Dependencies
+## 4. Hidden Dependencies & Risks
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                        DEPENDENCY GRAPH                                   │
 ├──────────────────────────────────────────────────────────────────────────┤
 │                                                                           │
-│  Evidence API (Gap 3) ◄──────────── Required by:                          │
-│                                     - Gap Analysis Engine (Layer 5)       │
-│                                     - Population Learning                 │
-│                                     - Guardian Mode logging               │
+│  Bandit Persistence (Gap 1) ◄──────── Required by:                        │
+│                                        - All adaptive behavior            │
+│                                        - Personalization                  │
+│                                        - Without it, AI never learns      │
 │                                                                           │
-│  Wire JITAI to UI (Gap 1) ◄──────── Required by:                          │
-│                                     - User testing                        │
-│                                     - Intervention outcome tracking       │
-│                                     - Bandit learning                     │
+│  Emotion Flow (Gap 2) ◄────────────── Required by:                        │
+│                                        - Vulnerability calculation        │
+│                                        - Voice-aware interventions        │
 │                                                                           │
-│  Notification Pipeline (Gap 2) ◄─── Required by:                          │
-│                                     - Background intervention delivery    │
-│                                     - User engagement                     │
+│  Evidence API (Gap 5) ◄────────────── Required by:                        │
+│                                        - Gap Analysis Engine (Layer 5)    │
+│                                        - Population Learning              │
+│                                        - Guardian Mode logging            │
 │                                                                           │
-│  PsychometricProfile ◄───────────── Required by:                          │
-│                                     - JITAI archetype-specific messaging  │
-│                                     - Shadow interventions                │
-│                                     - Population priors                   │
+│  Wire JITAI to UI (Gap 3) ◄────────── Required by:                        │
+│                                        - User testing                     │
+│                                        - Intervention outcome tracking    │
+│                                        - Bandit learning                  │
+│                                                                           │
+│  Notification Pipeline (Gap 4) ◄───── Required by:                        │
+│                                        - Background intervention delivery │
+│                                        - User engagement                  │
+│                                                                           │
+│  PsychometricProfile ◄─────────────── Required by:                        │
+│                                        - JITAI archetype-specific messaging│
+│                                        - Shadow interventions             │
+│                                        - Population priors                │
 │                                                                           │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Production Risks
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| **Native Bridge Crash** | `DigitalTruthSensor` (Guardian Mode) requires Android `UsageStats`, iOS `ScreenTime`. If not robust, app crashes. | Wrap in try-catch, default to `false` (no distraction detected) |
+| **Supabase Edge Function** | `get-gemini-ephemeral-token` referenced in `GeminiLiveService`. If not deployed, Voice Mode fails in production. | Deploy to Supabase, verify `GEMINI_API_KEY` env var |
+| **Cold Start Problem** | `OptimalTimingPredictor` needs historical data. New users get poor predictions. | Use population priors from `PopulationLearningService` |
 
 ---
 
 ## 5. Sprint Recommendation
 
-### Sprint 1: "Surface the Engine" (Days 1-4)
+### Sprint 1: "Close the Loop" (Days 1-3)
 
-**Goal:** Make JITAI visible to users.
+**Goal:** Complete the Nervous System - Context → Decision → UI → Learning → Persistence.
 
-| Priority | Task | Effort | Owner |
-|----------|------|--------|-------|
-| P0 | Wire `JITAIInsightsCard` to TodayScreen | 4h | - |
-| P0 | Wire `CascadeAlertBanner` to Dashboard | 2h | - |
-| P0 | Trigger `runForegroundCheck()` on app open | 2h | - |
-| P0 | Show `InterventionModal` when intervention triggered | 3h | - |
-| P0 | Connect notification tap to intervention handler | 3h | - |
-| P1 | Call `deliverIntervention()` from background worker | 4h | - |
-| P1 | Persist intervention outcomes to bandit | 2h | - |
+| Priority | Task | Effort | Gap |
+|----------|------|--------|-----|
+| **P0** | Implement `_persistBanditState()` and `_hydrateBanditState()` in JITAIProvider | 3h | Gap 1 |
+| **P0** | Read `emotion_metadata` in ContextSnapshotBuilder | 3h | Gap 2 |
+| **P0** | Wire `JITAIInsightsCard` to TodayScreen | 4h | Gap 3 |
+| **P0** | Show `InterventionModal` when intervention triggered | 3h | Gap 3 |
+| **P0** | Trigger `runForegroundCheck()` on app open | 2h | Gap 3 |
+| P1 | Wire `CascadeAlertBanner` to Dashboard | 2h | Gap 3 |
+| P1 | Connect notification tap to intervention handler | 3h | Gap 4 |
 
-**Deliverable:** Users see timing insights, cascade warnings, and receive interventions.
+**Deliverable:** AI remembers, feels, and speaks. Complete closed loop.
 
-### Sprint 2: "Evidence Foundation" (Days 5-7)
+### Sprint 2: "Notification Pipeline" (Days 4-5)
+
+**Goal:** Background interventions reach users.
+
+| Priority | Task | Effort | Gap |
+|----------|------|--------|-----|
+| **P0** | Call `deliverIntervention()` from background worker | 4h | Gap 4 |
+| **P0** | Persist intervention outcomes to bandit | 2h | Gap 1 |
+| P1 | Wrap `DigitalTruthSensor` in try-catch (crash protection) | 2h | Risk |
+| P1 | Verify Supabase Edge Function `get-gemini-ephemeral-token` | 2h | Risk |
+
+**Deliverable:** Users receive background interventions, learning loop complete.
+
+### Sprint 3: "Evidence Foundation" (Days 6-8)
 
 **Goal:** Complete Layer 1 with Evidence API.
 
-| Priority | Task | Effort | Owner |
-|----------|------|--------|-------|
-| P1 | Create `EvidenceService` | 4h | - |
-| P1 | Log habit completions as identity evidence | 2h | - |
-| P1 | Log emotion from voice sessions | 2h | - |
-| P1 | Log doom scroll sessions from Guardian Mode | 2h | - |
-| P2 | Implement Lazy TTS refactor | 4h | - |
+| Priority | Task | Effort | Gap |
+|----------|------|--------|-----|
+| P1 | Create `EvidenceService` | 4h | Gap 5 |
+| P1 | Log habit completions as identity evidence | 2h | Gap 5 |
+| P1 | Log emotion from voice sessions | 2h | Gap 5 |
+| P1 | Log doom scroll sessions from Guardian Mode | 2h | Gap 5 |
+| P2 | Implement Lazy TTS refactor | 4h | Gap 6 |
 
 **Deliverable:** Identity evidence logged, cost savings from lazy TTS.
 
-### Sprint 3: "Witness & Share" (Days 8-10)
+### Sprint 4: "Witness & Share" (Days 9-10)
 
 **Goal:** Social accountability loop.
 
-| Priority | Task | Effort | Owner |
-|----------|------|--------|-------|
-| P1 | Witness deep link (WhatsApp share) | 8h | - |
-| P2 | "Ask your best witness" intervention action | 4h | - |
-| P2 | Witness ranking display in settings | 4h | - |
+| Priority | Task | Effort |
+|----------|------|--------|
+| P1 | Witness deep link (WhatsApp share) | 8h |
+| P2 | "Ask your best witness" intervention action | 4h |
+| P2 | Witness ranking display in settings | 4h |
 
 **Deliverable:** Users can invite witnesses via WhatsApp.
 
@@ -341,19 +446,20 @@ class EvidenceService {
                           HIGH IMPACT
                               │
     ┌─────────────────────────┼─────────────────────────┐
-    │  DO NOW                 │  PLAN CAREFULLY         │
+    │  DO NOW (Sprint 1-2)    │  PLAN CAREFULLY         │
     │                         │                         │
-    │  • Wire JITAI to UI     │  • Voice Wand (Layer 2) │
-    │  • Notification Pipeline│  • Gap Analysis Engine  │
-    │  • Evidence API         │  • Population Learning  │
+    │  • Bandit Persistence   │  • Voice Wand (Layer 2) │
+    │  • Emotion Flow         │  • Gap Analysis Engine  │
+    │  • Wire JITAI to UI     │  • Population Learning  │
+    │  • Notification Pipeline│                         │
     │                         │                         │
 LOW ├─────────────────────────┼─────────────────────────┤ HIGH
 EFFORT                        │                         EFFORT
     │  QUICK WINS             │  DEFER                  │
     │                         │                         │
     │  • Lazy TTS             │  • Living Garden (Rive) │
-    │  • Guardian Mode TODOs  │  • Command CLI          │
-    │                         │  • Contextual Bandits   │
+    │  • Crash protection     │  • Command CLI          │
+    │  • Edge Function verify │  • Contextual Bandits   │
     │                         │                         │
     └─────────────────────────┼─────────────────────────┘
                               │
@@ -385,13 +491,23 @@ lib/data/services/witness_service.dart            # Deep link share
 
 ## 8. Launch Checklist (16 Jan 2026)
 
-- [ ] **JITAI visible in UI** (Gap 1)
-- [ ] **Notifications delivered from background** (Gap 2)
-- [ ] **Evidence API logging** (Gap 3)
-- [ ] **Lazy TTS implemented** (Gap 4)
+### Critical (Must Have)
+- [ ] **Bandit state persists across restarts** (Gap 1) - AI remembers
+- [ ] **Emotion metadata flows to JITAI** (Gap 2) - AI feels
+- [ ] **JITAI visible in UI** (Gap 3) - AI speaks
+- [ ] **Notifications delivered from background** (Gap 4) - AI reaches users
+
+### High Priority
+- [ ] **Evidence API logging** (Gap 5)
+- [ ] **Lazy TTS implemented** (Gap 6)
 - [ ] **Witness deep link working** (Track F)
+- [ ] **DigitalTruthSensor crash-protected**
+- [ ] **Supabase Edge Function deployed**
+
+### Production
 - [ ] **Play Store build passing**
 - [ ] **Privacy policy updated for emotion data**
+- [ ] **Crash reporting enabled (Sentry/Crashlytics)**
 
 ---
 
