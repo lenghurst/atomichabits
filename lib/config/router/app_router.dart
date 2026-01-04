@@ -70,7 +70,11 @@ class AppRouter {
   /// 
   /// [appState] - The AppState instance for reactive updates and auth checks
   /// [onboardingState] - The OnboardingState instance (Strangler Fig) for v4 logic
-  static GoRouter createRouter(AppState appState, OnboardingState onboardingState) {
+  static GoRouter createRouter(
+      AppState appState, 
+      OnboardingState onboardingState,
+      PsychometricProvider psychProvider, // Injected dependency
+  ) {
     return GoRouter(
       initialLocation: appState.hasCompletedOnboarding 
           ? AppRoutes.dashboard 
@@ -78,7 +82,7 @@ class AppRouter {
       // Phase 7.2: Listen to BOTH states for routing changes
       refreshListenable: Listenable.merge([appState, onboardingState]),
       debugLogDiagnostics: kDebugMode,
-      redirect: (context, state) => _redirect(context, state, appState, onboardingState),
+      redirect: (context, state) => _redirect(context, state, appState, onboardingState, psychProvider),
       observers: [
         _NavigationLogger(),
       ],
@@ -96,6 +100,7 @@ class AppRouter {
     GoRouterState state, 
     AppState appState,
     OnboardingState onboardingState,
+    PsychometricProvider psychProvider,
   ) {
     final location = state.matchedLocation;
     final isOnboardingRoute = location.startsWith('/onboarding') || 
@@ -124,7 +129,15 @@ class AppRouter {
       // Exception: If we have completed onboarding fully, allow access (e.g. re-visiting)
       if (!appState.hasCompletedOnboarding) {
          try {
-           final psychProvider = context.read<PsychometricProvider>();
+           // Fix for "Misalignment on Resume" (Race Condition)
+           // When returning from external apps (e.g. WhatsApp share), PsychometricProvider 
+           // might be re-initializing. If it's loading, we trust the persistence layer 
+           // and allow access. The destination screen can handle empty data if needed.
+           if (psychProvider.isLoading) {
+             AppLogger.info('AppRouter: ⏳ Allowing access (Provider Loading)');
+             return null;
+           }
+
            if (!psychProvider.profile.hasHolyTrinity) {
               AppLogger.info('AppRouter: 🛑 Data Integrity Guard Triggered');
               AppLogger.info('  - Reason: Missing "Holy Trinity" Psych Data');

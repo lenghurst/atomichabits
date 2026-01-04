@@ -666,7 +666,7 @@ class _JITAIModalOverlay extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final intervention = jitai.activeIntervention!.decision;
+        final intervention = jitai.activeIntervention!;
         return Container(
           color: Colors.black54, // Dim background
           child: InterventionModal(intervention: intervention),

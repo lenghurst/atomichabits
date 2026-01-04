@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import '../enums/voice_session_mode.dart';
+
 
 /// Abstract interface for voice API services (Gemini, OpenAI, etc.)
 abstract class VoiceApiService {

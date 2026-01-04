@@ -7,6 +7,7 @@ import '../../sensors/biometric_sensor.dart';
 import '../../sensors/digital_truth_sensor.dart';
 import '../../sensors/environmental_sensor.dart';
 import '../weather_service.dart';
+import '../../../domain/entities/weather_context.dart';
 
 /// ContextSnapshotAggregator: The "Nervous System Hub"
 ///
@@ -270,8 +271,8 @@ class ContextSnapshotAggregator {
       const defaultLon = -122.4194;
 
       return await _weatherService.getWeatherContext(
-        latitude: defaultLat,
-        longitude: defaultLon,
+        lat: defaultLat,
+        lon: defaultLon,
       );
     } catch (e) {
       debugPrint('ContextSnapshotAggregator: Weather capture failed: $e');

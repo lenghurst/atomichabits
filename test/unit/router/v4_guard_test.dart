@@ -154,7 +154,7 @@ void main() {
     });
 
     Future<void> pumpRouterApp(WidgetTester tester) async {
-       router = AppRouter.createRouter(appState, onboardingState);
+       router = AppRouter.createRouter(appState, onboardingState, psychProvider);
        
        await tester.pumpWidget(
         MultiProvider(

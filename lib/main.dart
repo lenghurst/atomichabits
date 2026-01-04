@@ -333,6 +333,7 @@ class _MyAppState extends State<MyApp> {
     _router = AppRouter.createRouter(
       widget.appState, 
       widget.onboardingState, // Pass the Fig
+      context.read<PsychometricProvider>(), // Pass PsychometicProvider for guards
     );
     
     // Phase 21.1: Initialize deep link service with router

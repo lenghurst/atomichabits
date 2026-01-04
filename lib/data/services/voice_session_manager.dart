@@ -68,6 +68,12 @@ class VoiceSessionManager extends ChangeNotifier {
     try {
       final responseMessage = await _sherlockService.processText(text);
       _addMessage(responseMessage);
+
+      // Check for [APPROVED] token (e.g. "cheat code")
+      if (responseMessage.content.contains('[APPROVED]')) {
+        _isSessionComplete = true; // Signal completion
+        notifyListeners();
+      }
     } catch (e) {
       _addMessage(ChatMessage(
         id: 'error',
