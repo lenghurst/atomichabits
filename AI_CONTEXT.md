@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 04 January 2026  
-> **Current Phase:** Witness & Share (Phase 66 Verified)  
+> **Current Phase:** Dashboard Redesign & JITAI Integration (Phase 67 Verified)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
 > **Core Concept:** Identity Evidence Engine
@@ -49,6 +49,7 @@ graph TD
 | Failure Patterns | Hive + Supabase | User only (RLS) |
 | Sensor Data (HRV, Sleep) | Hive ONLY | Never synced |
 | Conversation Transcripts | Hive + Supabase | User only (RLS) |
+| Identity Embeddings (RAG) | Supabase (pgvector) | User only (RLS) |
 
 > **Privacy Rule:** Biometric sensor data (HRV, sleep, screen time) is NEVER synced to cloud. It exists for local AI context only.
 
@@ -166,6 +167,8 @@ graph TD
 | **66** | **Witness & Share** (Deferred Witness + WhatsApp Deep Links) | ✅ |
 | **66.1** | **JITAI Foundation** (Bandit Persistence + Hive State Repository) | ✅ |
 | **66.2** | **Evidence Foundation** (Layer 1 Logging + Background Worker) | ✅ |
+| **67** | **Dashboard Redesign** (Binary Interface: Bridge + Tree) | ✅ |
+| **67.1** | **RAG Vector Memory** (Embedding Service + pgvector) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 

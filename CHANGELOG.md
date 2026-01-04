@@ -1,3 +1,24 @@
+## [6.14.0] - 2026-01-04 - Phase 67: "Dashboard Redesign & JITAI Integration"
+
+### Architecture
+- **Dashboard Redesign (Binary Interface):** Replaced the list-based dashboard with a "Binary Interface":
+  - **The Bridge (Doing):** A priority-sorted, context-aware action deck. Habits are ranked by JITAI V-O score and Cascade Risk.
+  - **The Skill Tree (Being):** A visual representation of identity growth over time.
+- **RAG Vector Memory:** Implemented `EmbeddingService` and `pgvector` storage (`user_embeddings` table) to give the AI long-term semantic memory of user journals and logs.
+- **Comms Interface:** Integrated `CommsFab` for instant access to AI Persona chats (Sherlock/Oracle/Stoic) directly from the dashboard.
+
+### Fixed
+- **Holy Trinity Sourcing:** Corrected a critical architectural error where `TheBridge` widget attempted to read Psychometric data (`antiIdentity`, `archetype`) from `UserProfile`. All "Holy Trinity" data is now correctly sourced from `PsychometricProvider`.
+- **JITAI Wiring:** Connected `vulnerability_opportunity_calculator.dart` to the Dashboard, ensuring cards are physically reordered based on real-time user context (Time, Location, Emotion).
+- **Navigation Guard:** Hardened `v4_guard_test.dart` and `AppRouter` dependencies to ensure 100% reliable redirection for uninitialized users.
+
+### Added
+- **EmbeddingService:** Google Gemini Text Embedding 004 integration.
+- **IdentityGrowthService:** Logic for level progression based on "Identity Votes".
+- **Vector Migration:** `20260105_vector_memory.sql` enabling `pgvector` extension.
+
+---
+
 ## [6.13.0] - 2026-01-04 - Phase 66: "Witness & Share (Viral Loop)"
 
 ### Social Architecture

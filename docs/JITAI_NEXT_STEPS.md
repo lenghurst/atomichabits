@@ -2,9 +2,10 @@
 
 ## Next Steps Roadmap
 
-### Phase 1: Core Integration (Immediate)
+### Phase 1: Core Integration (COMPLETED ✅ Phase 67)
+> **Status:** All core wiring, background workers, and notifications are implemented as of Phase 67.
 
-1. **Wire Services to UI**
+1. **Wire Services to UI** (Done: The Bridge)
    - Integrate `JITAIProvider` with existing habit screens
    - Add `JITAIInsightsCard` to dashboard
    - Connect `InterventionModal` to notification tap handlers

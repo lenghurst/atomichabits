@@ -13,16 +13,16 @@ Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 66 | Witness & Share (Deferred Logic) Verified |
+| **Mobile App** | 🟢 Phase 67 | Dashboard Redesign & JITAI RAG Verified |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
-| **Backend** | 🟢 Live | Supabase + Edge Functions |
+| **Backend** | 🟢 Live | Supabase + Edge Functions + pgvector |
 | **Voice AI** | 🟢 **Stable** | Hybrid Stack: Gemini 3 (Brain) + Gemini 2.5 (Voice) |
-| **Text AI** | 🟢 **Ready** | DeepSeek V3 (Analysis Pipeline Active) |
+| **Text AI** | 🟢 **Ready** | DeepSeek V3 + RAG Vector Memory |
 | **Cloud Sync** | 🟢 **Stable** | Hybrid Storage + JITAI State + Evidence Logs |
-| **Database** | 🟢 **Aligned** | Schema v2.2.0 (Identity Seeds + Evidence Logs) |
+| **Database** | 🟢 **Aligned** | Schema v2.3.0 (Vector Embeddings) |
 
 > **Last Updated:** 04 January 2026  
-> **Current Phase:** Witness & Share (Phase 66 Verified)  
+> **Current Phase:** Dashboard Redesign (Phase 67 Verified)  
 > **Target:** Launch 16 Jan 2026  
 > **Language:** UK English (Default)
 

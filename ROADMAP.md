@@ -78,9 +78,10 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] **Lazy TTS Implementation**: Refactor `VoiceCoachScreen` Play button.
 - [ ] **Shadow Persona Prompting**: Update `PromptFactory` for archetypes.
 
-### Track C: Living Garden & Visualization
-- [ ] Rive asset integration.
-- [ ] `LivingGarden` widget with state binding.
+### Track C: Binary Interface (Dashboard Redesign)
+- [x] **The Bridge**: Action deck with JITAI sorting.
+- [x] **Skill Tree**: Identity growth visualization.
+- [x] **Comms Fab**: AI Persona integration (Sherlock/Oracle).
 
 ### Track D: Gap Analysis (The Analyst)
 - [ ] `PsychometricProvider` → `DeepSeekService` pipeline update.
@@ -100,6 +101,12 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 ---
 
 ## ✅ Completed Legacy Phases (Reference)
+
+### Phase 67: Dashboard Redesign & JITAI Integration (04 Jan 2026)
+**Goal:** Integrated interface for Doing (habits) + Being (identity).
+- [x] **Binary Interface:** Split Dashboard into "Bridge" (Action) and "Tree" (Growth).
+- [x] **RAG Vector Memory:** Semantic search for AI context.
+- [x] **JITAI Wiring:** Real-time reordering of habits based on context.
 
 ### Phase 66: Witness & Share (04 Jan 2026)
 **Goal:** Enable viral social loops and safe accountability.
