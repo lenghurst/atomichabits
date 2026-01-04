@@ -8,6 +8,8 @@ import '../notification_service.dart';
 import '../ai_suggestion_service.dart';
 import '../services/recovery_engine.dart';
 import '../services/home_widget_service.dart';
+import '../services/witness_service.dart';
+import '../services/evidence_service.dart';
 
 /// HabitProvider: Manages the core domain—Habits, Stacking, Recovery, and Widget integration.
 /// 
@@ -17,10 +19,13 @@ import '../services/home_widget_service.dart';
 class HabitProvider extends ChangeNotifier {
   final HabitRepository _repository;
   final NotificationService _notificationService;
-  
+
   // Services (can be injected for testing)
   final AiSuggestionService _aiSuggestionService = AiSuggestionService();
   final HomeWidgetService _homeWidgetService = HomeWidgetService();
+
+  // Phase 67: Witness integration (set via configure())
+  WitnessService? _witnessService;
 
   // === State ===
   List<Habit> _habits = [];
@@ -38,6 +43,12 @@ class HabitProvider extends ChangeNotifier {
   UserProfile? _cachedUserProfile;
 
   HabitProvider(this._repository, this._notificationService);
+
+  /// Configure the provider with optional services
+  /// Called after Provider tree is built
+  void configure({WitnessService? witnessService}) {
+    _witnessService = witnessService;
+  }
 
   // === Getters ===
   List<Habit> get habits => List.unmodifiable(_habits);
@@ -267,16 +278,23 @@ class HabitProvider extends ChangeNotifier {
     );
     
     await _repository.saveAll(_habits);
-    
+
     _currentRecoveryNeed = null;
     _shouldShowRecoveryPrompt = false;
     _shouldShowRewardFlow = true;
-    
+
     await _updateHomeWidget();
+
+    // Phase 67: Witness completion ping (fire-and-forget)
+    _notifyWitness(habit, newStreak);
+
+    // Phase 67: Evidence logging (fire-and-forget)
+    _logHabitEvidence(habit);
+
     notifyListeners();
-    
+
     final nextStackedHabit = getNextStackedHabit(habit.id);
-    
+
     return CompletionResult(
       wasNewCompletion: true,
       completedHabitId: habit.id,
@@ -398,6 +416,40 @@ class HabitProvider extends ChangeNotifier {
     );
   }
   
+  // =============================================================================
+  // Phase 67: Witness & Evidence Integration
+  // =============================================================================
+
+  /// Notify witnesses of habit completion (fire-and-forget)
+  void _notifyWitness(Habit habit, int newStreak) {
+    if (_witnessService == null || !_witnessService!.isAvailable) return;
+
+    // Fire and forget - don't await
+    _witnessService!.sendCompletionPing(
+      habitId: habit.id,
+      habitName: habit.name,
+      identity: habit.identity ?? 'someone who shows up',
+      currentStreak: newStreak,
+    ).catchError((e) {
+      if (kDebugMode) {
+        debugPrint('HabitProvider: Witness ping failed: $e');
+      }
+    });
+  }
+
+  /// Log habit completion as evidence (fire-and-forget)
+  void _logHabitEvidence(Habit habit) {
+    // Fire and forget - don't await
+    EvidenceService.instance.logHabitCompletion(
+      habitId: habit.id,
+      timestamp: DateTime.now(),
+    ).catchError((e) {
+      if (kDebugMode) {
+        debugPrint('HabitProvider: Evidence log failed: $e');
+      }
+    });
+  }
+
   /// Clear all habit data
   Future<void> clearAllData() async {
     await _repository.clear();

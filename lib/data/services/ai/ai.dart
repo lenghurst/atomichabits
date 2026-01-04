@@ -19,4 +19,5 @@ library;
 
 export 'ai_service_manager.dart';
 export 'deep_seek_service.dart';
+export 'embedding_service.dart'; // Phase 67: RAG Vector Memory
 // export 'claude_service.dart';  // Not implemented yet

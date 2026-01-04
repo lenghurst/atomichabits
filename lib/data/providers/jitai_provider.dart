@@ -20,6 +20,7 @@ import '../../domain/services/jitai_decision_engine.dart';
 import '../../domain/entities/intervention.dart';
 import '../../domain/services/optimal_timing_predictor.dart';
 import '../../domain/services/cascade_pattern_detector.dart';
+import '../../domain/services/vulnerability_opportunity_calculator.dart';
 import '../models/habit.dart';
 import '../services/context/context_snapshot_builder.dart';
 import '../services/jitai/jitai_background_worker.dart';
@@ -751,5 +752,188 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
     _stopGuardianPolling();
     JITAIBackgroundWorker.cancelBackgroundTasks();
     super.dispose();
+  }
+
+  // =============================================================================
+  // Phase 67: The Bridge - Optimal Habit Sorting
+  // =============================================================================
+
+  /// Get habits sorted by intervention priority for The Bridge UI
+  ///
+  /// Uses V-O scoring (Vulnerability-Opportunity), cascade risk, and timing
+  /// to determine which habits need attention most urgently.
+  ///
+  /// Returns habits sorted by composite priority score (highest first).
+  /// Completed habits are excluded.
+  ///
+  /// Scoring Algorithm:
+  /// - 40%: V-O Score (vulnerability * opportunity product)
+  /// - 30%: Cascade Risk (days since completion, never-miss-twice)
+  /// - 20%: Timing Score (how optimal is NOW for this habit)
+  /// - 10%: Identity Weight (habits with strong identity get slight boost)
+  Future<List<ScoredHabit>> getOptimalHabits({
+    required List<Habit> habits,
+    required PsychometricProfile profile,
+  }) async {
+    if (!_isInitialized || habits.isEmpty) return [];
+
+    // Filter out completed and paused habits
+    final activeHabits = habits.where((h) => !h.isCompletedToday && !h.isPaused).toList();
+    if (activeHabits.isEmpty) return [];
+
+    // Ensure context is fresh
+    if (_lastContext == null && activeHabits.isNotEmpty) {
+      await refreshContext(habit: activeHabits.first, allHabits: habits);
+    }
+
+    final context = _lastContext ?? await _contextBuilder.build(habit: activeHabits.first);
+
+    final scoredHabits = <ScoredHabit>[];
+
+    for (final habit in activeHabits) {
+      // Calculate V-O state
+      final voState = VulnerabilityOpportunityCalculator.calculate(
+        context: context,
+        profile: profile,
+      );
+
+      // Calculate cascade risk
+      final cascadeRisk = _cascadeDetector.detectRisk(
+        habit: habit,
+        context: context,
+      );
+
+      // Calculate timing score
+      final timingScore = _timingPredictor.scoreCurrentTiming(
+        habit: habit,
+        context: context,
+      );
+
+      // Calculate composite priority score
+      final priorityScore = _calculatePriorityScore(
+        voState: voState,
+        cascadeRisk: cascadeRisk,
+        timingScore: timingScore.score,
+        habit: habit,
+      );
+
+      scoredHabits.add(ScoredHabit(
+        habit: habit,
+        priorityScore: priorityScore,
+        voState: voState,
+        cascadeRisk: cascadeRisk,
+        timingScore: timingScore.score,
+        reason: _getPriorityReason(voState, cascadeRisk, timingScore.score),
+      ));
+    }
+
+    // Sort by priority (highest first)
+    scoredHabits.sort((a, b) => b.priorityScore.compareTo(a.priorityScore));
+
+    if (kDebugMode) {
+      debugPrint('JITAIProvider: Scored ${scoredHabits.length} habits for Bridge');
+      for (final s in scoredHabits.take(3)) {
+        debugPrint('  ${s.habit.name}: ${s.priorityScore.toStringAsFixed(2)} (${s.reason})');
+      }
+    }
+
+    return scoredHabits;
+  }
+
+  /// Calculate composite priority score
+  double _calculatePriorityScore({
+    required VOState voState,
+    required CascadeRisk cascadeRisk,
+    required double timingScore,
+    required Habit habit,
+  }) {
+    // V-O product (40%) - high V + high O = intervene now
+    final voScore = voState.voScore * 0.40;
+
+    // Cascade risk (30%) - urgent if about to break streak
+    final cascadeScore = cascadeRisk.probability * 0.30;
+
+    // Timing (20%) - how optimal is NOW
+    final timeScore = timingScore * 0.20;
+
+    // Identity weight (10%) - habits with strong identity get boost
+    final identityBoost = _calculateIdentityWeight(habit) * 0.10;
+
+    return voScore + cascadeScore + timeScore + identityBoost;
+  }
+
+  /// Calculate identity weight for a habit
+  double _calculateIdentityWeight(Habit habit) {
+    // More identity votes = stronger identity = higher weight
+    final votes = habit.identityVotes ?? 0;
+    if (votes == 0) return 0.3; // New habit, give it a chance
+
+    // Logarithmic scale: 1 vote = 0.5, 10 votes = 0.8, 100 votes = 1.0
+    return (0.5 + 0.5 * (votes / (votes + 10))).clamp(0.3, 1.0);
+  }
+
+  /// Get human-readable reason for priority
+  String _getPriorityReason(VOState voState, CascadeRisk cascadeRisk, double timingScore) {
+    // Check cascade first (most urgent)
+    if (cascadeRisk.probability > 0.7) {
+      return 'Never miss twice - recovery needed';
+    }
+    if (cascadeRisk.probability > 0.5) {
+      return 'At risk of breaking streak';
+    }
+
+    // Check V-O state
+    if (voState.quadrant == VOQuadrant.interveneNow) {
+      return 'Prime moment to act';
+    }
+    if (voState.quadrant == VOQuadrant.lightTouch) {
+      return 'Good conditions';
+    }
+    if (voState.quadrant == VOQuadrant.waitForMoment) {
+      return 'Wait for better timing';
+    }
+
+    // Check timing
+    if (timingScore > 0.7) {
+      return 'Optimal time window';
+    }
+    if (timingScore > 0.4) {
+      return 'Reasonable timing';
+    }
+
+    return 'On your radar';
+  }
+}
+
+/// Scored habit for The Bridge UI
+class ScoredHabit {
+  final Habit habit;
+  final double priorityScore;
+  final VOState voState;
+  final CascadeRisk cascadeRisk;
+  final double timingScore;
+  final String reason;
+
+  const ScoredHabit({
+    required this.habit,
+    required this.priorityScore,
+    required this.voState,
+    required this.cascadeRisk,
+    required this.timingScore,
+    required this.reason,
+  });
+
+  /// Is this habit at high cascade risk?
+  bool get isHighPriority => priorityScore > 0.6;
+
+  /// Is this habit in the "intervene now" quadrant?
+  bool get isInterventionReady =>
+      voState.quadrant == VOQuadrant.interveneNow ||
+      voState.quadrant == VOQuadrant.lightTouch;
+
+  /// Days since last completion
+  int get daysSinceCompletion {
+    if (habit.lastCompletedDate == null) return 999;
+    return DateTime.now().difference(habit.lastCompletedDate!).inDays;
   }
 }
