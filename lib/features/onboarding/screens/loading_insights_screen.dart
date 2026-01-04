@@ -142,7 +142,7 @@ class _LoadingInsightsScreenState extends State<LoadingInsightsScreen>
 
   void _navigateNext() {
     if (mounted) {
-      context.replace(AppRoutes.onboardingTierSelection);
+      context.replace(AppRoutes.tierOnboarding);
     }
   }
 
