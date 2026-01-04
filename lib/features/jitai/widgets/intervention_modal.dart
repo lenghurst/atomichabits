@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/providers/jitai_provider.dart';
 import '../../../domain/services/jitai_decision_engine.dart';
+import '../../../domain/entities/intervention.dart';
 
 /// Shows an intervention modal
 Future<bool?> showInterventionModal(BuildContext context) {
@@ -114,13 +115,13 @@ class _InterventionModalState extends State<InterventionModal> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: _colorForLever(arm.lever).withOpacity(0.1),
+                  color: _colorForLever(arm.metaLever).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _iconForLever(arm.lever),
+                  _iconForLever(arm.metaLever),
                   size: 32,
-                  color: _colorForLever(arm.lever),
+                  color: _colorForLever(arm.metaLever),
                 ),
               ),
               const SizedBox(height: 16),
@@ -136,7 +137,7 @@ class _InterventionModalState extends State<InterventionModal> {
 
               // Message
               Text(
-                arm.message,
+                arm.description,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w600,
@@ -203,6 +204,8 @@ class _InterventionModalState extends State<InterventionModal> {
         return Icons.favorite;
       case MetaLever.trust:
         return Icons.self_improvement;
+      default:
+        return Icons.lightbulb;
     }
   }
 
@@ -214,6 +217,8 @@ class _InterventionModalState extends State<InterventionModal> {
         return Colors.pink;
       case MetaLever.trust:
         return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 }
@@ -252,13 +257,13 @@ class InterventionBanner extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _colorForLever(arm.lever).withOpacity(0.1),
+                  color: _colorForLever(arm.metaLever).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _iconForLever(arm.lever),
+                  _iconForLever(arm.metaLever),
                   size: 20,
-                  color: _colorForLever(arm.lever),
+                  color: _colorForLever(arm.metaLever),
                 ),
               ),
               const SizedBox(width: 12),
@@ -274,7 +279,7 @@ class InterventionBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      arm.message,
+                      arm.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -305,6 +310,8 @@ class InterventionBanner extends StatelessWidget {
         return Icons.favorite;
       case MetaLever.trust:
         return Icons.self_improvement;
+      default:
+        return Icons.lightbulb;
     }
   }
 
@@ -316,6 +323,8 @@ class InterventionBanner extends StatelessWidget {
         return Colors.pink;
       case MetaLever.trust:
         return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 }

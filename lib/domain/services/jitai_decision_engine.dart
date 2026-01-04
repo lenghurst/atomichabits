@@ -8,6 +8,7 @@ import 'optimal_timing_predictor.dart';
 import 'cascade_pattern_detector.dart';
 import 'population_learning.dart';
 import 'archetype_registry.dart';
+import '../archetypes/archetype.dart';
 
 /// JITAIDecisionEngine: The Orchestrator
 ///
@@ -115,7 +116,7 @@ class JITAIDecisionEngine {
         // Poor timing - defer to optimal window
         final window = timingScore.window;
         final retryMinutes = window != null
-            ? window.minutesUntilWindow(context.time).clamp(10, 120)
+            ? window.minutesUntilWindow(context.capturedAt).clamp(10, 120)
             : 30;
         return JITAIDecision.deferred(
           voState: voState,
@@ -170,7 +171,7 @@ class JITAIDecisionEngine {
       contextFeatures: context.toFeatureVector(),
       thompsonSampleValue: selection.armThompsonValue,
       wasExploration: selection.wasExploration,
-      armExposureCount: selection.armExposureCount,
+      armExposureCount: 0,
     );
 
     // Track intervention
@@ -235,7 +236,7 @@ class JITAIDecisionEngine {
   ) {
     // Calculate days since last completion
     final daysSinceLast = habit.lastCompletedDate != null
-        ? context.time.difference(habit.lastCompletedDate!).inDays
+        ? context.capturedAt.difference(habit.lastCompletedDate!).inDays
         : 999;
 
     // Choose intervention based on cascade severity

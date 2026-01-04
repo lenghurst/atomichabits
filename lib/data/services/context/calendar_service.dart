@@ -65,6 +65,53 @@ class CalendarService {
       return null;
     }
   }
+  
+  /// Get count of events for today (for onboarding insights)
+  Future<int?> getTodayEventCount() async {
+    try {
+      // Create a temporary context fetch to get events
+      // Since _fetchCalendarContext actually does the hard work of fetching and filtering
+      // We can just add eventCount to CalendarContext in the future, but for now
+      // we'll do a focused fetch.
+      
+      var permissionsGranted = await _calendarPlugin.hasPermissions();
+      if (permissionsGranted.isSuccess && !(permissionsGranted.data ?? false)) {
+        permissionsGranted = await _calendarPlugin.requestPermissions();
+        if (!(permissionsGranted.data ?? false)) return null;
+      }
+      
+      final calendarsResult = await _calendarPlugin.retrieveCalendars();
+      if (!calendarsResult.isSuccess || calendarsResult.data == null) return null;
+      
+      final calendars = calendarsResult.data!;
+      if (calendars.isEmpty) return 0;
+      
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final todayEnd = todayStart.add(const Duration(days: 1));
+      
+      final allEvents = <Event>[];
+      for (final calendar in calendars) {
+        if (calendar.id == null) continue;
+        
+        final eventsResult = await _calendarPlugin.retrieveEvents(
+          calendar.id!,
+          RetrieveEventsParams(
+            startDate: todayStart,
+            endDate: todayEnd,
+          ),
+        );
+        
+        if (eventsResult.isSuccess && eventsResult.data != null) {
+          allEvents.addAll(eventsResult.data!);
+        }
+      }
+      
+      return allEvents.length;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Fetch calendar data from device
   Future<CalendarContext?> _fetchCalendarContext() async {

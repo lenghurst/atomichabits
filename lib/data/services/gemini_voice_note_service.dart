@@ -140,16 +140,10 @@ class GeminiVoiceNoteService {
         ));
       }
 
-      // --- STEP 2: SPEECH SYNTHESIS (REST API) ---
-      String? sherlockAudioPath;
-      // Only generate speech if we have actual text
-      if (sherlockText.isNotEmpty && sherlockText != "I'm having trouble responding.") {
-        try {
-          sherlockAudioPath = await _generateSpeechViaRest(sherlockText);
-        } catch (e) {
-          if (kDebugMode) print("TTS Generation Failed: $e");
-        }
-      }
+      // --- STEP 2: SPEECH SYNTHESIS (LAZY) ---
+      // Phase 3: We no longer auto-generate audio to save costs.
+      // The UI will request audio on demand via generateAudioOnDemand().
+      String? sherlockAudioPath; 
       
       // ✅ CONDITIONAL CLEANUP: Only delete if requested
       // This prevents race condition with storage wrapper
@@ -169,7 +163,7 @@ class GeminiVoiceNoteService {
       return VoiceNoteResult(
         userTranscript: transcript,
         sherlockResponse: sherlockText,
-        sherlockAudioPath: sherlockAudioPath,
+        sherlockAudioPath: null, // Lazy TTS
         userAudioPath: userAudioPath, // ✅ Added for storage wrapper
         isError: sherlockText == "I'm having trouble responding.",
       );
@@ -209,18 +203,16 @@ class GeminiVoiceNoteService {
   // Fallback for text input
   Future<ChatMessage> processText(String text) async {
     try {
-      // Generate speech for text-only input
-      final audioPath = await _generateSpeechViaRest(text);
-      
+      // Lazy TTS for text input too
       return ChatMessage.sherlock(
         text: text,
-        audioPath: audioPath,
+        audioPath: null,
       );
     } catch (e) {
       return ChatMessage(
         id: 'error',
         role: MessageRole.assistant,
-        content: "Speech synthesis failed: $e",
+        content: "Processing failed: $e",
         timestamp: DateTime.now(),
         status: MessageStatus.error,
       );
@@ -228,8 +220,9 @@ class GeminiVoiceNoteService {
   }
 
   /// Manually calls the Gemini 2.5 TTS endpoint via REST to bypass SDK constraints
-  Future<String?> _generateSpeechViaRest(String text) async {
+  Future<String?> generateAudioOnDemand(String text) async {
     final String url = "https://generativelanguage.googleapis.com/v1beta/models/${AIModelConfig.ttsModel}:generateContent";
+
     // NOTE: Use System variable for API KEY in production!
     final String apiKey = AIModelConfig.geminiApiKey; 
 

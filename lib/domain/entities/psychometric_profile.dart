@@ -367,6 +367,9 @@ class PsychometricProfile {
     return (positiveTransitions / 5.0).clamp(0.0, 1.0);
   }
 
+  /// Compatibility getter for legacy code expecting archetypeKey
+  String get archetypeKey => evolvedArchetype;
+
   Map<String, dynamic> toJson() {
     return {
       'coreValues': coreValues,

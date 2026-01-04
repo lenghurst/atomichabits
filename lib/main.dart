@@ -27,6 +27,7 @@ import 'data/services/witness_service.dart';
 import 'data/services/audio_cleanup_service.dart';
 import 'data/services/gemini_voice_note_service.dart';
 import 'data/services/psychometric_extraction_service.dart';
+import 'data/services/evidence_service.dart';
 
 // Phase 2: Storage Infrastructure
 import 'data/services/local_audio_service.dart';
@@ -133,6 +134,10 @@ void main() async {
   // Phase 15: Initialize Auth service
   final authService = AuthService(supabaseClient: supabaseClient);
   await authService.initialize();
+
+  // Phase 3: Initialize Evidence Service (Evidence Foundation)
+  EvidenceService.instance.configure(authService: authService);
+  await EvidenceService.instance.initialize();
 
   // Phase 4.5: Initialize Psychometric Extraction Service
   final psychometricExtractionService = PsychometricExtractionService(psychometricProvider);

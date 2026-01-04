@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/supabase_config.dart';
 import '../models/habit_contract.dart';
 import '../models/witness_event.dart';
 import 'auth_service.dart';
 import 'contract_service.dart';
+import 'social_contract_exception.dart';
 
 /// Witness Service
 /// 
@@ -101,6 +103,9 @@ class WitnessService extends ChangeNotifier {
       // Fire-and-forget: Load recent events in background to not block startup
       // Error handling is internal to _loadRecentEvents() - see catch block at line ~255
       unawaited(_loadRecentEvents());
+      
+      // Open local storage for nudge limits
+      await Hive.openBox('nudge_limits');
 
       // Subscribe to realtime events (also non-blocking for startup)
       unawaited(_subscribeToEvents());
@@ -451,6 +456,15 @@ class WitnessService extends ChangeNotifier {
     if (userId == null) return false;
     
     try {
+      // 1. Check Global Nudge Limit (Spam Protection)
+      if (!await _checkGlobalNudgeLimit(contractId)) {
+        if (kDebugMode) {
+          debugPrint('WitnessService: Daily nudge limit reached for contract $contractId');
+        }
+        // Throwing allows UI to show specific toast
+        throw const SocialContractException('Daily nudge limit reached (6 max)');
+      }
+      
       final event = WitnessEvent(
         id: _generateEventId(),
         contractId: contractId,
@@ -476,6 +490,14 @@ class WitnessService extends ChangeNotifier {
       }
       
       return true;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('WitnessService: Sent nudge to builder $builderId');
+      }
+      
+      return true;
+    } on SocialContractException {
+      rethrow; // Re-throw intentionally for UI handling
     } catch (e) {
       if (kDebugMode) {
         debugPrint('WitnessService: Failed to send nudge: $e');
@@ -678,6 +700,28 @@ class WitnessService extends ChangeNotifier {
     _unsubscribeFromEvents();
     _authSubscription?.cancel();
     super.dispose();
+  }
+  
+  /// Check if we're within the global daily nudge limit (6 per contract per day)
+  Future<bool> _checkGlobalNudgeLimit(String contractId) async {
+    try {
+      final box = Hive.box('nudge_limits');
+      final today = DateTime.now().toString().split(' ')[0]; // yyyy-MM-dd
+      final key = 'nudges_${contractId}_$today';
+      
+      final currentCount = box.get(key, defaultValue: 0) as int;
+      if (currentCount >= 6) {
+        return false;
+      }
+      
+      // Increment count (optimistic)
+      await box.put(key, currentCount + 1);
+      return true;
+    } catch (e) {
+      // Fail open if Hive errors (don't block user)
+      if (kDebugMode) debugPrint('WitnessService: Error checking nudge limit: $e');
+      return true;
+    }
   }
 }
 

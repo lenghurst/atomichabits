@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart'; // ✅ Actual Audio Engine
 import '../../../data/models/chat_message.dart';
+import '../../../data/services/voice_session_manager.dart';
 
 class ChatMessageBubble extends StatefulWidget {
   final ChatMessage message;
@@ -13,6 +15,7 @@ class ChatMessageBubble extends StatefulWidget {
 class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   late AudioPlayer _player;
   bool _isPlaying = false;
+  bool _isLoadingAudio = false; // Phase 3: Lazy TTS state
   double _playbackSpeed = 1.0;
   Duration _position = Duration.zero;
   Duration _totalDuration = Duration.zero;
@@ -44,6 +47,17 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   void dispose() {
     _player.dispose(); // Important: Kill audio when bubble leaves screen
     super.dispose();
+  }
+
+  Future<void> _generateAudio() async {
+    if (widget.message.audioPath != null) return;
+    
+    setState(() => _isLoadingAudio = true);
+    try {
+      await context.read<VoiceSessionManager>().generateAudioForMessage(widget.message);
+    } finally {
+      if (mounted) setState(() => _isLoadingAudio = false);
+    }
   }
 
   Future<void> _togglePlay() async {
@@ -91,6 +105,36 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
+            // --- LAZY TTS BUTTON Phase 3 ---
+            if (widget.message.audioPath == null && !isUser && widget.message.status != MessageStatus.error)
+              Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                 decoration: const BoxDecoration(
+                   border: Border(bottom: BorderSide(color: Colors.white10)),
+                 ),
+                 child: Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+                     if (_isLoadingAudio)
+                       const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent))
+                     else
+                       GestureDetector(
+                         onTap: _generateAudio,
+                         child: const CircleAvatar(
+                           radius: 16,
+                           backgroundColor: Colors.black26,
+                           child: Icon(Icons.volume_up, color: Colors.cyanAccent, size: 18),
+                         ),
+                       ),
+                     const SizedBox(width: 8),
+                     Text(
+                       _isLoadingAudio ? "Generating audio..." : "Read Aloud",
+                       style: const TextStyle(color: Colors.white54, fontSize: 12),
+                     ),
+                   ],
+                 ),
+              ),
             
             // --- AUDIO PLAYER SECTION (Top) ---
             if (widget.message.audioPath != null)

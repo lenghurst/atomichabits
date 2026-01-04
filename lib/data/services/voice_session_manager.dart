@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/models/chat_message.dart';
 import 'gemini_voice_note_service.dart';
 import 'audio_recording_service.dart';
+import 'evidence_service.dart';
 
 class VoiceSessionManager extends ChangeNotifier {
   final GeminiVoiceNoteService _sherlockService;
@@ -206,6 +207,40 @@ class VoiceSessionManager extends ChangeNotifier {
     notifyListeners();
   }
   
+  // === Phase 3: Lazy TTS Trigger ===
+  
+  /// Generates audio for a specific message on demand
+  Future<void> generateAudioForMessage(ChatMessage message) async {
+    if (message.audioPath != null) return; // Already has audio
+    
+    try {
+      // 1. Set status to loading (optional, or just rely on async)
+      // We might need a loading state in ChatMessage? For now, we assume UI shows spinner if button pressed
+      
+      final audioPath = await _sherlockService.generateAudioOnDemand(message.content);
+      
+      if (audioPath != null) {
+        // 2. Update message with audio path
+        // We need to find and replace the message instance since it's immutable-ish
+        final index = _messages.indexWhere((m) => m.id == message.id);
+        if (index != -1) {
+          _messages[index] = ChatMessage(
+            id: message.id,
+            role: message.role,
+            content: message.content,
+            timestamp: message.timestamp,
+            audioPath: audioPath, // ✅ Updated
+            status: message.status,
+            audioDuration: message.audioDuration,
+          );
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('VoiceSessionManager: Lazy TTS failed: $e');
+    }
+  }
+
   /// Cleans up TTS audio files generated during the session.
   Future<void> cleanupSession() async {
     await _sherlockService.cleanupSessionAudio();
@@ -238,6 +273,13 @@ class VoiceSessionManager extends ChangeNotifier {
       });
 
       debugPrint('VoiceSessionManager: Stored emotion - $primaryEmotion (${(confidence * 100).toStringAsFixed(0)}%)');
+      
+      // Phase 3: Log Evidence (Evidence Foundation)
+      await EvidenceService.instance.logEmotionDetected(
+        emotion: primaryEmotion,
+        confidence: confidence,
+        source: 'voice_session', // or get from context if available
+      );
     } catch (e) {
       debugPrint('VoiceSessionManager: Failed to store emotion metadata: $e');
     }

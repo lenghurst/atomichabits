@@ -269,14 +269,14 @@ class CascadePatternDetector {
     // Check if habit has weekend pattern in miss history
     final hasWeekendPattern = habit.missHistory.any((m) =>
         m.category == 'weekend' ||
-        (m.missedAt.weekday == DateTime.saturday ||
-            m.missedAt.weekday == DateTime.sunday));
+        (m.date.weekday == DateTime.saturday ||
+            m.date.weekday == DateTime.sunday));
 
     // Check if habit has weekend risk flag
     final weekendMissCount = habit.missHistory
         .where((m) =>
-            m.missedAt.weekday == DateTime.saturday ||
-            m.missedAt.weekday == DateTime.sunday)
+            m.date.weekday == DateTime.saturday ||
+            m.date.weekday == DateTime.sunday)
         .length;
 
     final totalMisses = habit.missHistory.length;

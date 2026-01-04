@@ -15,6 +15,7 @@ import 'services/recovery_engine.dart';
 import 'services/home_widget_service.dart';
 import 'services/sync_service.dart';
 import 'services/auth_service.dart';
+import 'services/evidence_service.dart';
 import '../core/logging/app_logger.dart';
 
 import '../features/onboarding/state/onboarding_state.dart';
@@ -428,6 +429,10 @@ class AppState extends ChangeNotifier {
       // Load saved data from Hive
       await _loadFromStorage();
       
+      // Phase 3: Sync any queued evidence logs (Evidence Foundation)
+      // This handles events that were logged offline or by background worker
+      // Phase 3: Sync moved after hydration (see below)
+      
       // ============================================================
       // P0 FIX: Cloud Hydration (Sync Gap)
       // If local is empty but user is authenticated, restore from cloud
@@ -487,6 +492,9 @@ class AppState extends ChangeNotifier {
         }
       }
       // ============================================================
+      
+      // Phase 3: Sync queued evidence (Moved here to ensure connectivity check post-hydration)
+      EvidenceService.instance.syncQueuedEvents();
 
       // Schedule notifications if onboarding completed
       if (_hasCompletedOnboarding && hasHabits && _userProfile != null) {
@@ -999,6 +1007,12 @@ class AppState extends ChangeNotifier {
     await _updateHomeWidget();
     
     notifyListeners();
+    
+    // Phase 3: Log Evidence (Evidence Foundation)
+    EvidenceService.instance.logHabitCompletion(
+      habitId: habit.id,
+      timestamp: now,
+    );
     
     // Phase 13: Check for stacked habits (Chain Reaction)
     final nextStackedHabit = getNextStackedHabit(habit.id);

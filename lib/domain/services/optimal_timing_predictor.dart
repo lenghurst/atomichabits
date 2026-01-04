@@ -129,7 +129,7 @@ class OptimalTimingPredictor {
     // === 1. HISTORICAL PATTERN (Primary) ===
     final historicalWindow = _analyzeHistoricalPattern(
       habit.completionHistory,
-      context.time,
+      context.capturedAt,
     );
     if (historicalWindow != null) {
       windows.add(historicalWindow);
@@ -138,7 +138,7 @@ class OptimalTimingPredictor {
     // === 2. DAY-OF-WEEK SPECIFIC ===
     final dayWindow = _analyzeDayOfWeekPattern(
       habit.completionHistory,
-      context.time.weekday,
+      context.capturedAt.weekday,
     );
     if (dayWindow != null &&
         (historicalWindow == null ||
@@ -179,7 +179,7 @@ class OptimalTimingPredictor {
       maxWindows: 5,
     );
 
-    final now = context.time;
+    final now = context.capturedAt;
 
     // Find windows that are upcoming (within 2 hours) or current
     for (final window in windows) {
@@ -204,7 +204,7 @@ class OptimalTimingPredictor {
       maxWindows: 5,
     );
 
-    final now = context.time;
+    final now = context.capturedAt;
 
     // Check if we're in any optimal window
     for (final window in windows) {

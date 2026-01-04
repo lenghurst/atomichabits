@@ -9,6 +9,7 @@ import '../../data/services/contract_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/sound_service.dart';
 import '../../config/supabase_config.dart';
+import '../../data/services/witness_deep_link_service.dart';
 
 /// Create Contract Screen
 /// 
@@ -36,6 +37,9 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
   int _durationDays = 21;
   NudgeFrequency _nudgeFrequency = NudgeFrequency.daily;
   NudgeStyle _nudgeStyle = NudgeStyle.encouraging;
+  
+  // Phase 24: Deferred Witness
+  bool _isDeferred = false;
   
   // Phase 4: Identity Privacy
   String? _alternativeIdentity;
@@ -219,10 +223,6 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
             // Witness Preferences
             _buildWitnessPreferences(),
             const SizedBox(height: 16),
-            
-            // Personal Message
-            _buildMessageField(),
-            const SizedBox(height: 32),
             
             // Personal Message
             _buildMessageField(),
@@ -440,6 +440,56 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
               'How should your witness hold you accountable?',
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
+            const SizedBox(height: 16),
+            
+            // Witness Selection (Deferred)
+            const Text('Who is your witness?', style: TextStyle(fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Invite Someone'),
+                    selected: !_isDeferred,
+                    onSelected: (selected) {
+                      if (selected) setState(() => _isDeferred = false);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Start solo, invite later'),
+                    selected: _isDeferred,
+                    onSelected: (selected) {
+                      if (selected) setState(() => _isDeferred = true);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (_isDeferred) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, size: 16, color: Colors.blue.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'You will be your own witness for now.',
+                        style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             
             // Nudge Frequency
@@ -702,11 +752,27 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
       nudgeFrequency: _nudgeFrequency,
       nudgeStyle: _nudgeStyle,
       alternativeIdentity: _alternativeIdentity, // Phase 4 Privacy
+      // Phase 24: Deferred Witness
+      witnessId: _isDeferred ? context.read<AuthService>().userId : null,
     );
     
     setState(() => _isCreating = false);
     
     if (result.success && result.contract != null) {
+      if (mounted) {
+        // Phase 24: If deferred (self-witness), skip invite screen
+        if (_isDeferred) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contract started! You are your own witness for now.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.go(AppRoutes.dashboard);
+          return;
+        }
+      }
+
       // Phase 18: Contract signing feedback - "The Commitment" 🔊
       // Tick-tick-thud buildup to make contract feel official
       try {
@@ -883,24 +949,38 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Share Button
+          // Share Options
+          // 1. WhatsApp (Primary)
           FilledButton.icon(
-            onPressed: () => _shareInvite(contract),
-            icon: const Icon(Icons.share),
-            label: const Text('Share Invite'),
+            onPressed: () => _shareViaWhatsApp(contract, context),
+            icon: const Icon(Icons.chat_bubble), // Ideally FontAwesomePlugins.whatsapp if available
+            label: const Text('Share via WhatsApp'),
             style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+              foregroundColor: Colors.white,
               minimumSize: const Size.fromHeight(56),
             ),
           ),
           const SizedBox(height: 12),
           
-          // Done Button
-          OutlinedButton(
-            onPressed: () => context.go(AppRoutes.dashboard),
+          // 2. System Share (Secondary)
+          OutlinedButton.icon(
+            onPressed: () => _shareInvite(contract),
+            icon: const Icon(Icons.share),
+            label: const Text('Share Another Way'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
             ),
-            child: const Text('Done'),
+          ),
+          const SizedBox(height: 24),
+          
+          // 3. Skip (Tertiary)
+          TextButton(
+            onPressed: () => context.go(AppRoutes.dashboard),
+            child: Text(
+              'Skip for now',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
           ),
           const SizedBox(height: 24),
           
@@ -925,6 +1005,29 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
           ),
         ],
       ),
+    );
+  }
+  
+  Future<void> _shareViaWhatsApp(HabitContract contract, BuildContext context) async {
+    final habitName = _selectedHabitId != null 
+        ? context.read<AppState>().habits.firstWhere((h) => h.id == _selectedHabitId).name 
+        : contract.title;
+        
+    final text = WitnessDeepLinkService.generateShareText(
+      habitName: habitName,
+      inviteCode: contract.inviteCode,
+      startDate: contract.startDate,
+    );
+    
+    await WitnessDeepLinkService.shareViaWhatsApp(
+      text: text,
+      onError: (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not open WhatsApp: $error')),
+          );
+        }
+      },
     );
   }
   

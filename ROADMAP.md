@@ -91,13 +91,21 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] "Dogfooding" build distribution.
 
 ### Track F: Social & Protocol Refinements (User Priority)
-- [ ] **Witness Investment**: deep dive into "Deep Link" vs "Web Landing" for WhatsApp share.
-- [ ] **Betting Logic**: Inverse confidence slider (£5 vs High Stakes) + "Tough Truths AI" fallback.
+- [x] **Witness Investment**: WhatsApp Deep Link Integration (WitnessDeepLinkService).
+- [x] **Deferred Witness**: "Start Solo" option for immediate activation.
+- [x] **Safety Limits**: Global Nudge Limit (6/day) enforced via Hive.
+- [ ] **Betting Logic**: Inverse confidence slider + "Tough Truths AI" fallback.
 - [ ] **The Oracle**: Separate `VoiceSessionManager` state + Context Injection from Sherlock.
 
 ---
 
 ## ✅ Completed Legacy Phases (Reference)
+
+### Phase 66: Witness & Share (04 Jan 2026)
+**Goal:** Enable viral social loops and safe accountability.
+- [x] **WhatsApp Deep Links**: `WitnessDeepLinkService` with clean URL encoding and fallback.
+- [x] **Deferred Witness**: Immediate contract activation with self-witnessing pattern.
+- [x] **Nudge Safety**: Local 6-nudge daily limit to prevent harassment.
 
 ### Phase 65: Digital Truth & Emotion Integration (03 Jan 2026)
 **Goal:** Real-time protection against digital dopamine loops & emotional vulnerability.

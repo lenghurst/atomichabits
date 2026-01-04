@@ -71,6 +71,8 @@ class ContractService extends ChangeNotifier {
     NudgeStyle nudgeStyle = NudgeStyle.encouraging,
     // Phase 4: Identity Privacy
     String? alternativeIdentity,
+    // Phase 24: Deferred Witness
+    String? witnessId,
   }) async {
     if (!isAvailable) {
       return ContractResult.failure('Contract service not available');
@@ -91,22 +93,35 @@ class ContractService extends ChangeNotifier {
       final inviteCode = HabitContract.generateInviteCode();
       final inviteUrl = SupabaseConfig.getInviteUrl(inviteCode);
       
+      final now = DateTime.now();
+      
+      // Determine status based on witness
+      // If witness provided (Self-witness), activate immediately
+      final isSelfWitness = witnessId != null && witnessId == userId;
+      final initialStatus = isSelfWitness ? ContractStatus.active : ContractStatus.draft;
+      
       final contract = HabitContract(
         id: contractId,
         builderId: userId,
+        witnessId: witnessId,
         habitId: habitId,
         inviteCode: inviteCode,
         inviteUrl: inviteUrl,
         title: title,
         commitmentStatement: commitmentStatement,
         durationDays: durationDays,
-        status: ContractStatus.draft,
+        status: initialStatus,
         nudgeFrequency: nudgeFrequency,
         nudgeStyle: nudgeStyle,
         builderMessage: builderMessage,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: now,
+        updatedAt: now,
         alternativeIdentity: alternativeIdentity,
+        // If self-witness, set start/accepted times
+        startedAt: isSelfWitness ? now : null,
+        acceptedAt: isSelfWitness ? now : null,
+        startDate: isSelfWitness ? now : null,
+        endDate: isSelfWitness ? now.add(Duration(days: durationDays)) : null,
       );
       
       // Save to Supabase
@@ -123,14 +138,29 @@ class ContractService extends ChangeNotifier {
         message: 'Contract created',
       );
       
+      if (isSelfWitness) {
+        await _logEvent(
+          contractId: contractId,
+          eventType: ContractEventType.started,
+          actorId: userId,
+          actorRole: 'system', // System event for self-start
+          message: 'Contract started (Self-Witness)',
+        );
+      }
+      
       // Update local cache
       _builderContracts.add(contract);
+      if (isSelfWitness) {
+        // Also add to witness contracts if self-witnessing? 
+        // Technically yes, they are also the witness.
+        _witnessContracts.add(contract);
+      }
       
       _isLoading = false;
       notifyListeners();
       
       if (kDebugMode) {
-        debugPrint('ContractService: Created contract $contractId');
+        debugPrint('ContractService: Created contract $contractId (Self-Witness: $isSelfWitness)');
       }
       
       return ContractResult.success(contract);

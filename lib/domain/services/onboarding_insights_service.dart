@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/models/onboarding_data.dart';
 import '../../config/niche_config.dart';
-import 'jitai/context_snapshot.dart';
+import '../entities/context_snapshot.dart';
 import '../../data/services/weather_service.dart';
 import '../../data/services/context/calendar_service.dart';
 import 'population_learning.dart';
@@ -707,7 +707,7 @@ class OnboardingInsightsService {
 
     for (var attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        final weather = await _weatherService!.getCurrentWeather().timeout(
+        final weather = await _weatherService!.getWeatherContext().timeout(
               const Duration(seconds: 5), // Increased from 3s to 5s
               onTimeout: () => null,
             );

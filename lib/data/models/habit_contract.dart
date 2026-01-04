@@ -209,6 +209,11 @@ class HabitContract {
   /// Whether the contract can be shared
   bool get canShare => status == ContractStatus.draft || status == ContractStatus.pending;
   
+  /// Phase 24: Deferred Witness (Self-Witnessing)
+  bool get isSelfWitness => witnessId == builderId;
+  
+  bool get hasExternalWitness => witnessId != null && witnessId != builderId;
+  
   /// Progress percentage (0-100)
   double get progressPercentage {
     if (durationDays == 0) return 0;

@@ -1,3 +1,17 @@
+## [6.13.0] - 2026-01-04 - Phase 66: "Witness & Share (Viral Loop)"
+
+### Social Architecture
+- **WhatsApp Deep Linking:** Implemented `WitnessDeepLinkService` to generate pre-filled invites (`https://thepact.co/c/CODE`). Includes smart fallback to system share sheet if WhatsApp isn't installed.
+- **Deferred Witnessing:** Users can now start immediately ("Start Solo") and invite a witness later. Technical implementation sets `witnessId = builderId` to allow active contract status.
+- **Nudge Safety Protocol:** Enforced a global limit of **6 nudges per day** per contract using local Hive storage (`nudge_limits` box). Prevents social spamming while maintaining offline functionality.
+
+### Added
+- **WitnessDeepLinkService:** URL encoding and platform launching logic.
+- **CreateContractScreen:** "Start solo, invite later" ChoiceChip and streamlined success flow.
+- **DeepLinkConfig:** Centralized URL generation logic.
+
+---
+
 ## [6.12.0] - 2026-01-03 - Phase 65: "Digital Truth & Emotion Integration"
 
 ### Architecture

@@ -19,6 +19,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +31,7 @@ import '../../../data/models/habit.dart';
 import '../context/context_snapshot_builder.dart';
 import 'jitai_notification_service.dart';
 import '../../repositories/jitai_state_repository.dart';
+import '../evidence_service.dart';
 
 /// Unique task names for Workmanager
 const String jitaiPeriodicTask = 'com.atomichabits.jitai.periodic';
@@ -134,10 +136,9 @@ class JITAIBackgroundWorker {
       jitaiPeriodicTask,
       frequency: _periodicInterval,
       constraints: Constraints(
-        networkType: NetworkType.not_required,
         requiresBatteryNotLow: true,
       ),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     );
 
     debugPrint('JITAI Background: Registered periodic task');
@@ -159,9 +160,6 @@ class JITAIBackgroundWorker {
       jitaiOneOffTask,
       initialDelay: delay,
       inputData: {'habitId': habitId},
-      constraints: Constraints(
-        networkType: NetworkType.not_required,
-      ),
     );
 
     debugPrint('JITAI Background: Scheduled check for $habitId in $delay');
@@ -270,6 +268,14 @@ class JITAIBackgroundWorker {
 
       // Deliver intervention if needed
       if (decision.shouldIntervene) {
+        // Phase 3: Log Evidence (Delivery)
+        await EvidenceService.instance.logInterventionDelivered(
+          eventId: decision.event?.eventId ?? 'unknown',
+          armId: decision.event?.arm.armId ?? 'unknown',
+          habitId: habit.id,
+          trigger: 'scheduled',
+        );
+
         await _notificationService.deliverIntervention(decision);
         debugPrint('JITAI Background: Delivered ${decision.event?.arm.armId} for ${habit.name}');
 

@@ -24,6 +24,7 @@ import '../models/habit.dart';
 import '../services/context/context_snapshot_builder.dart';
 import '../services/jitai/jitai_background_worker.dart';
 import '../services/jitai/jitai_notification_service.dart';
+import '../services/evidence_service.dart';
 
 /// Provider state for active intervention
 class ActiveIntervention {
@@ -221,6 +222,9 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
         state == AppLifecycleState.detached) {
       // Persist bandit state when app goes to background
       _persistBanditState();
+    } else if (state == AppLifecycleState.resumed) {
+       // Phase 3: Sync queued evidence
+       EvidenceService.instance.syncQueuedEvents();
     }
   }
 
@@ -338,6 +342,13 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
       _decisionEngine.recordOutcome(
         eventId: eventId,
         outcome: outcome,
+      );
+
+      // Phase 3: Log Evidence (Outcome)
+      await EvidenceService.instance.logInterventionOutcome(
+        eventId: eventId,
+        engaged: engaged,
+        habitCompleted: habitCompleted,
       );
 
       // Sprint 1: Persist bandit state after learning (significant event)
@@ -661,6 +672,14 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
             debugPrint('JITAIProvider: Guardian Mode triggered (Tier $tier) - ${sessionMinutes}min doom scrolling detected');
           }
 
+          // Phase 3: Log Evidence (Doom Scroll)
+          await EvidenceService.instance.logDoomScrollSession(
+            appName: _lastContext?.digital?.apexDistractor ?? 'unknown',
+            dailyMinutes: sessionMinutes,
+            tier: tier,
+          );
+        }
+
           // This would trigger a JITAI decision with DecisionTrigger.guardianMode
           // For now, just log it
           // await checkIntervention(
@@ -669,7 +688,6 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
           //   trigger: DecisionTrigger.guardianMode,
           // );
         }
-      }
 
       // TODO: Check for dopamine loop detection
       // final loopAlert = await _digitalSensor.detectDopamineLoop();
