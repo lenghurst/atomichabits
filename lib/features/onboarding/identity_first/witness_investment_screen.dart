@@ -292,9 +292,9 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
             child: const Text('Add a Witness'),
           ),
           TextButton(
-             onPressed: () {
+             onPressed: () async {
                Navigator.pop(context);
-               
+
                // "Go Solo" means being your own witness (Internal Locus of Control)
                final appState = context.read<AppState>();
                  if (appState.userProfile != null) {
@@ -303,10 +303,14 @@ class _WitnessInvestmentScreenState extends State<WitnessInvestmentScreen>
                      witnessContact: "Internal",
                    );
                    appState.setUserProfile(updatedProfile);
-                   
+
                    // Strangler Fig: Update UserProvider
                    context.read<UserProvider>().setUserProfile(updatedProfile);
                  }
+
+               // Complete onboarding before going to dashboard
+               await appState.completeOnboarding();
+               await context.read<UserProvider>().completeOnboarding();
 
                // Go directly to Dashboard (Bypass Voice Coach)
                context.go(AppRoutes.dashboard);

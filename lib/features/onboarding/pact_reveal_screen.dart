@@ -65,14 +65,19 @@ class _PactRevealScreenState extends State<PactRevealScreen>
 
     try {
       // VALIDATION: Load the habit from AppState using the ID passed in
+      // Note: In identity-first flow, habitId may be null (habit created later)
       if (widget.habitId != null) {
         final appState = context.read<AppState>();
         // Ensure AppState is synced/loaded
-        _createdHabit = appState.habits.firstWhere(
-          (h) => h.id == widget.habitId, 
-          orElse: () => throw Exception("Habit not found in state")
+        _createdHabit = appState.habits.cast<Habit?>().firstWhere(
+          (h) => h?.id == widget.habitId,
+          orElse: () => null,
         );
-        debugPrint("✅ VERIFICATION SUCCESS: Found habit '${_createdHabit!.name}'");
+        if (_createdHabit != null) {
+          debugPrint("✅ VERIFICATION SUCCESS: Found habit '${_createdHabit!.name}'");
+        } else {
+          debugPrint("ℹ️ Habit not found in state (may be created later in flow)");
+        }
       }
 
       // Existing Sherlock Analysis logic...

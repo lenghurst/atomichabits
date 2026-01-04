@@ -68,8 +68,10 @@ class _SherlockPermissionScreenState extends State<SherlockPermissionScreen> {
   }
   
   void _navigateToNextStep() {
-    // Proceed to the Magic Moment (Pact Reveal)
-    context.go(AppRoutes.pactReveal);
+    // Proceed to the Sherlock Voice Session to capture Holy Trinity data
+    // (anti-identity, failure archetype, resistance lie)
+    // After voice session completes, it will navigate to PactReveal
+    context.go(AppRoutes.onboardingSherlock);
   }
 
   @override

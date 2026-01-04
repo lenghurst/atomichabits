@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/router/app_routes.dart';
+import '../../../data/app_state.dart';
 import '../../../data/models/onboarding_data.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
 import '../../../domain/services/onboarding_insights_service.dart';
@@ -66,8 +67,10 @@ class _LoadingInsightsScreenState extends State<LoadingInsightsScreen>
 
     // Safely get onboarding data from orchestrator after widget is built
     OnboardingOrchestrator? orchestrator;
+    AppState? appState;
     try {
       orchestrator = context.read<OnboardingOrchestrator?>();
+      appState = context.read<AppState?>();
     } catch (e) {
       // Provider not found - proceed without orchestrator data
     }
@@ -79,11 +82,20 @@ class _LoadingInsightsScreenState extends State<LoadingInsightsScreen>
       habits.add(habitData);
     }
 
+    // Get witness status from user profile
+    final witnessName = appState?.userProfile?.witnessName;
+    final hasWitnesses = witnessName != null &&
+        witnessName.isNotEmpty &&
+        witnessName != 'Myself';
+
+    // Get motivation/bigWhy from orchestrator data or habit data
+    final bigWhy = habitData?.motivation;
+
     // Capture signals and generate insights
     await for (final status in _insightsService.captureSignals(
       habits: habits,
-      hasWitnesses: false, // TODO: Get from orchestrator
-      bigWhy: null, // TODO: Get from profile
+      hasWitnesses: hasWitnesses,
+      bigWhy: bigWhy,
     )) {
       if (!mounted) return;
       setState(() => _statusText = status);

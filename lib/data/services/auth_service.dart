@@ -554,6 +554,7 @@ class AuthService extends ChangeNotifier {
   }
   
   /// Create a user record in the database
+  /// Note: Email is stored in auth.users (Supabase managed), not profiles table
   Future<void> _createUserRecord(User user) async {
     try {
       await _supabase!.from(SupabaseTables.users).insert({
@@ -585,6 +586,7 @@ class AuthService extends ChangeNotifier {
   }
   
   /// Create or update a user record
+  /// Note: Email is stored in auth.users (Supabase managed), not profiles table
   Future<void> _createOrUpdateUserRecord(User user) async {
     try {
       await _supabase!.from(SupabaseTables.users).upsert({
