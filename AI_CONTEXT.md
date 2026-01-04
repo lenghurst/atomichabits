@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 03 January 2026  
-> **Current Phase:** The Augmented Constitution (Phase 65 Verified)  
+> **Last Updated:** 04 January 2026  
+> **Current Phase:** Witness & Share (Phase 66 Verified)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
 > **Core Concept:** Identity Evidence Engine
@@ -163,6 +163,9 @@ graph TD
 | **64** | **Cloud Hydration** (Restore from Cloud on separate install) | ✅ |
 | **64.1** | **UserProvider Migration** (Strangler Fig Phase 2) | ✅ |
 | **65** | **Digital Truth & Emotion** (Guardian Mode + Vulnerability Boost) | ✅ |
+| **66** | **Witness & Share** (Deferred Witness + WhatsApp Deep Links) | ✅ |
+| **66.1** | **JITAI Foundation** (Bandit Persistence + Hive State Repository) | ✅ |
+| **66.2** | **Evidence Foundation** (Layer 1 Logging + Background Worker) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 
@@ -190,6 +193,10 @@ graph TD
 | `lib/data/services/voice_session_manager.dart` | Restored Sherlock Logic (Phase 59.2) & Integrated Safety Gate (Phase 59.3) |
 | `lib/data/services/audio_recording_service.dart` | Added WebRTC Fallback Logic (Phase 59.1) |
 | `lib/data/services/stream_voice_player.dart` | Unified Source of Truth + Trace Logging (Phase 59.4) |
+| `lib/data/services/witness_deep_link_service.dart` | WhatsApp Invite Logic (Phase 66) |
+| `lib/data/services/evidence_service.dart` | Behavioral Logs & Hive Queue (Phase 66.2) |
+| `lib/data/providers/jitai_provider.dart` | Bandit Persistence & State Export (Phase 66.1) |
+| `lib/data/services/jitai/jitai_background_worker.dart` | Background Intervention Loop (Phase 66.2) |
 
 ---
 

@@ -13,16 +13,16 @@ Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Mobile App** | 🟢 Phase 65 | Digital Truth & Emotion Integration Verified |
+| **Mobile App** | 🟢 Phase 66 | Witness & Share (Deferred Logic) Verified |
 | **Landing Page** | 🟢 Live | [thepact.co](https://thepact.co) |
 | **Backend** | 🟢 Live | Supabase + Edge Functions |
 | **Voice AI** | 🟢 **Stable** | Hybrid Stack: Gemini 3 (Brain) + Gemini 2.5 (Voice) |
 | **Text AI** | 🟢 **Ready** | DeepSeek V3 (Analysis Pipeline Active) |
-| **Cloud Sync** | 🟢 **Stable** | Hybrid Storage + P0 Hydration Fix (Phase 64) |
-| **Database** | 🟢 **Aligned** | Schema v2.1.0 (TEXT IDs + Full Parity) |
+| **Cloud Sync** | 🟢 **Stable** | Hybrid Storage + JITAI State + Evidence Logs |
+| **Database** | 🟢 **Aligned** | Schema v2.2.0 (Identity Seeds + Evidence Logs) |
 
-> **Last Updated:** 03 January 2026  
-> **Current Phase:** The Augmented Constitution (Phase 65 Verified)  
+> **Last Updated:** 04 January 2026  
+> **Current Phase:** Witness & Share (Phase 66 Verified)  
 > **Target:** Launch 16 Jan 2026  
 > **Language:** UK English (Default)
 
@@ -101,7 +101,6 @@ Create `secrets.json` in project root:
 |-------|---------|
 | **[docs/BUILD_PIPELINE.md](./docs/BUILD_PIPELINE.md)** | Build commands and pipelines |
 | **[docs/dt.md](./docs/dt.md)** | Testing the Gemini Live connection |
-| **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** | Provider architecture guide |
 | **[docs/dt.md](./docs/dt.md)** | **NEW** Device Testing & Golden Command Chain |
