@@ -4,6 +4,7 @@ import '../../models/chat_message.dart';
 import '../../models/chat_conversation.dart';
 import '../gemini_chat_service.dart';
 import 'deep_seek_service.dart';
+import 'embedding_service.dart';
 
 /// AI Service Manager
 /// 
@@ -319,6 +320,117 @@ class AIServiceManager extends ChangeNotifier {
     _activeProvider = null;
     _lastError = null;
     notifyListeners();
+  }
+
+  // ===========================================================================
+  // Phase 67: RAG-Enhanced Messaging
+  // ===========================================================================
+
+  /// Send message with RAG context injection
+  ///
+  /// Searches user's memory (evidence logs + conversations) for relevant
+  /// context and injects it into the system prompt for persona coaching.
+  Future<ChatMessage?> sendMessageWithRAG({
+    required String userMessage,
+    String? baseSystemPrompt,
+    int maxMemories = 5,
+    double similarityThreshold = 0.65,
+  }) async {
+    if (_activeConversation == null || _activeProvider == null) {
+      _lastError = 'No active conversation';
+      return null;
+    }
+
+    // Step 1: Search memory for relevant context
+    String? memoryContext;
+    if (EmbeddingService.instance.isAvailable) {
+      try {
+        final memories = await EmbeddingService.instance.searchMemory(
+          query: userMessage,
+          threshold: similarityThreshold,
+          limit: maxMemories,
+        );
+
+        if (memories.isNotEmpty) {
+          memoryContext = EmbeddingService.instance.formatMemoryAsContext(memories);
+          if (kDebugMode) {
+            debugPrint('AIServiceManager: RAG found ${memories.length} relevant memories');
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('AIServiceManager: RAG search failed: $e');
+        }
+        // Continue without memory context
+      }
+    }
+
+    // Step 2: Build enhanced system prompt
+    String? enhancedPrompt;
+    if (memoryContext != null || baseSystemPrompt != null) {
+      final buffer = StringBuffer();
+
+      if (baseSystemPrompt != null) {
+        buffer.writeln(baseSystemPrompt);
+        buffer.writeln();
+      }
+
+      if (memoryContext != null) {
+        buffer.writeln(memoryContext);
+      }
+
+      enhancedPrompt = buffer.toString();
+    }
+
+    // Step 3: Send message with enhanced context
+    return sendMessage(
+      userMessage: userMessage,
+      systemPromptOverride: enhancedPrompt,
+    );
+  }
+
+  /// RAG-enhanced single turn request
+  ///
+  /// Useful for AI personas (Sherlock, Oracle, Stoic) that need
+  /// to reference past user behavior when providing coaching.
+  Future<String?> singleTurnWithRAG({
+    required String prompt,
+    String? baseSystemPrompt,
+    bool isPremiumUser = false,
+    bool isBreakHabit = false,
+    int maxMemories = 5,
+  }) async {
+    // Search for relevant memories
+    String? memoryContext;
+    if (EmbeddingService.instance.isAvailable) {
+      try {
+        final memories = await EmbeddingService.instance.searchMemory(
+          query: prompt,
+          limit: maxMemories,
+        );
+
+        if (memories.isNotEmpty) {
+          memoryContext = EmbeddingService.instance.formatMemoryAsContext(memories);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('AIServiceManager: RAG search failed: $e');
+        }
+      }
+    }
+
+    // Build enhanced prompt
+    String enhancedSystemPrompt = baseSystemPrompt ?? '';
+    if (memoryContext != null) {
+      enhancedSystemPrompt = '$enhancedSystemPrompt\n\n$memoryContext';
+    }
+
+    return singleTurn(
+      prompt: prompt,
+      systemPrompt: enhancedSystemPrompt.isNotEmpty ? enhancedSystemPrompt : null,
+      isPremiumUser: isPremiumUser,
+      isBreakHabit: isBreakHabit,
+    );
   }
   
   /// Get display info for current provider

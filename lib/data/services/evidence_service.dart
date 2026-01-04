@@ -9,6 +9,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_service.dart';
+import 'ai/embedding_service.dart';
 
 /// Evidence Event Types
 class EvidenceEventType {
@@ -200,15 +201,48 @@ class EvidenceService {
   /// Send single event to Supabase
   Future<void> _sendToSupabase(Map<String, dynamic> event) async {
     final client = Supabase.instance.client;
-    
+
     // Remove metadata fields not in schema
     final data = Map<String, dynamic>.from(event);
     data.remove('retry_count');
-    // Ensure we don't send 'id' if we want DB to generate it, 
+    // Ensure we don't send 'id' if we want DB to generate it,
     // BUT we generated it locally to ensure uniqueness across retries.
     // The schema says DEFAULT gen_random_uuid(), but we can override.
-    
+
     await client.from('evidence_logs').insert(data);
+
+    // Phase 67: Async embedding (non-blocking)
+    // Fire-and-forget embedding generation to avoid blocking the log flow
+    _embedAsync(
+      logId: data['id'] as String,
+      eventType: data['event_type'] as String,
+      payload: data['payload'] as Map<String, dynamic>? ?? {},
+    );
+  }
+
+  /// Generate embedding asynchronously (non-blocking)
+  ///
+  /// Phase 67: RAG Vector Memory Layer
+  /// Embeddings are best-effort - failure doesn't affect logging
+  void _embedAsync({
+    required String logId,
+    required String eventType,
+    required Map<String, dynamic> payload,
+  }) {
+    // Fire and forget - don't await
+    EmbeddingService.instance.embedEvidenceLog(
+      logId: logId,
+      eventType: eventType,
+      payload: payload,
+    ).then((success) {
+      if (kDebugMode && !success) {
+        debugPrint('EvidenceService: Embedding skipped for $logId (service unavailable)');
+      }
+    }).catchError((e) {
+      if (kDebugMode) {
+        debugPrint('EvidenceService: Embedding failed for $logId: $e');
+      }
+    });
   }
 
   /// Queue event in Hive
