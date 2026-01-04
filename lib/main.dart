@@ -28,6 +28,7 @@ import 'data/services/audio_cleanup_service.dart';
 import 'data/services/gemini_voice_note_service.dart';
 import 'data/services/psychometric_extraction_service.dart';
 import 'data/services/evidence_service.dart';
+import 'data/services/ai/embedding_service.dart'; // Phase 67: RAG Vector Memory
 
 // Phase 2: Storage Infrastructure
 import 'data/services/local_audio_service.dart';
@@ -181,6 +182,13 @@ void main() async {
     contractService: contractService,
   );
   await witnessService.initialize();
+
+  // Phase 67: Wire Witness to HabitProvider for completion pings
+  habitProvider.configure(witnessService: witnessService);
+
+  // Phase 67: Initialize Embedding Service for RAG Vector Memory
+  EmbeddingService.instance.configure(authService: authService);
+  await EmbeddingService.instance.initialize();
 
   // Phase 7.1: Initialize OnboardingState (The Fig)
   final onboardingState = OnboardingState();
