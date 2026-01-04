@@ -12,10 +12,14 @@
 /// - Batches sensor reads
 /// - Uses lightweight snapshots when possible
 /// - Respects Doze mode
+///
+/// Sprint 2: Wired to Hive storage for habits and profiles.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +29,7 @@ import '../../../domain/services/optimal_timing_predictor.dart';
 import '../../../data/models/habit.dart';
 import '../context/context_snapshot_builder.dart';
 import 'jitai_notification_service.dart';
+import '../../repositories/jitai_state_repository.dart';
 
 /// Unique task names for Workmanager
 const String jitaiPeriodicTask = 'com.atomichabits.jitai.periodic';
@@ -64,6 +69,7 @@ class JITAIBackgroundWorker {
   late final ContextSnapshotBuilder _contextBuilder;
   late final JITAIDecisionEngine _decisionEngine;
   late final JITAINotificationService _notificationService;
+  late final JITAIStateRepository _stateRepository;
 
   /// Minimum interval between checks (battery saving)
   static const Duration _minCheckInterval = Duration(minutes: 15);
@@ -74,12 +80,45 @@ class JITAIBackgroundWorker {
   JITAIBackgroundWorker();
 
   /// Initialize the worker
+  ///
+  /// Sprint 2: Now initializes Hive and hydrates bandit state.
   Future<void> initialize() async {
+    // Initialize Hive for background context
+    await Hive.initFlutter();
+
     _contextBuilder = ContextSnapshotBuilder();
     _decisionEngine = JITAIDecisionEngine();
     _notificationService = JITAINotificationService();
+    _stateRepository = HiveJITAIStateRepository();
 
+    await _stateRepository.init();
     await _notificationService.initialize();
+
+    // Hydrate bandit state from persistence
+    await _hydrateBanditState();
+  }
+
+  /// Sprint 2: Hydrate bandit state from persistence
+  Future<void> _hydrateBanditState() async {
+    try {
+      final savedState = await _stateRepository.loadBanditState();
+      if (savedState != null) {
+        _decisionEngine.importState(savedState);
+        debugPrint('JITAIBackgroundWorker: Bandit state hydrated');
+      }
+    } catch (e) {
+      debugPrint('JITAIBackgroundWorker: Failed to hydrate bandit state: $e');
+    }
+  }
+
+  /// Sprint 2: Persist bandit state after learning
+  Future<void> _persistBanditState() async {
+    try {
+      final state = _decisionEngine.exportState();
+      await _stateRepository.saveBanditState(state);
+    } catch (e) {
+      debugPrint('JITAIBackgroundWorker: Failed to persist bandit state: $e');
+    }
   }
 
   /// Register background tasks with Workmanager
@@ -233,6 +272,9 @@ class JITAIBackgroundWorker {
       if (decision.shouldIntervene) {
         await _notificationService.deliverIntervention(decision);
         debugPrint('JITAI Background: Delivered ${decision.event?.arm.armId} for ${habit.name}');
+
+        // Sprint 2: Persist bandit state after intervention delivery
+        await _persistBanditState();
       } else if (decision.type == JITAIDecisionType.deferred) {
         // Schedule retry
         final retryAfter = decision.retryAfter ?? const Duration(minutes: 30);
@@ -275,33 +317,58 @@ class JITAIBackgroundWorker {
   }
 
   /// Load habits from storage
+  ///
+  /// Sprint 2: Now reads from Hive habit_data box.
   Future<List<Habit>> _loadHabits() async {
-    // TODO: Wire to actual habit repository
-    // For now, return empty list (would load from Hive/Supabase)
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final habitsJson = prefs.getString('habits_cache');
-      if (habitsJson == null) return [];
+      final box = await Hive.openBox('habit_data');
+      final habitsData = box.get('habits') as List<dynamic>?;
 
-      // Would deserialize habits here
-      return [];
-    } catch (_) {
+      if (habitsData == null || habitsData.isEmpty) {
+        debugPrint('JITAIBackgroundWorker: No habits found in storage');
+        return [];
+      }
+
+      final habits = <Habit>[];
+      for (final data in habitsData) {
+        try {
+          if (data is Map) {
+            final habitMap = Map<String, dynamic>.from(data);
+            habits.add(Habit.fromJson(habitMap));
+          }
+        } catch (e) {
+          debugPrint('JITAIBackgroundWorker: Error parsing habit: $e');
+        }
+      }
+
+      debugPrint('JITAIBackgroundWorker: Loaded ${habits.length} habits');
+      return habits;
+    } catch (e) {
+      debugPrint('JITAIBackgroundWorker: Error loading habits: $e');
       return [];
     }
   }
 
   /// Load profile from storage
+  ///
+  /// Sprint 2: Now reads from Hive psychometric_data box.
   Future<PsychometricProfile?> _loadProfile() async {
-    // TODO: Wire to actual profile provider
-    // For now, return null (would load from Hive/Supabase)
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final profileJson = prefs.getString('profile_cache');
-      if (profileJson == null) return null;
+      final box = await Hive.openBox('psychometric_data');
+      final profileData = box.get('profile') as Map<dynamic, dynamic>?;
 
-      // Would deserialize profile here
-      return null;
-    } catch (_) {
+      if (profileData == null) {
+        debugPrint('JITAIBackgroundWorker: No profile found in storage');
+        return null;
+      }
+
+      final profileMap = Map<String, dynamic>.from(profileData);
+      final profile = PsychometricProfile.fromJson(profileMap);
+
+      debugPrint('JITAIBackgroundWorker: Loaded profile (archetype: ${profile.archetypeKey})');
+      return profile;
+    } catch (e) {
+      debugPrint('JITAIBackgroundWorker: Error loading profile: $e');
       return null;
     }
   }
