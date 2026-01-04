@@ -558,7 +558,6 @@ class AuthService extends ChangeNotifier {
     try {
       await _supabase!.from(SupabaseTables.users).insert({
         'id': user.id,
-        'email': user.email,
         'username': null,
         'tier': UserTier.free.name,
         'created_at': DateTime.now().toIso8601String(),
@@ -576,7 +575,6 @@ class AuthService extends ChangeNotifier {
   Future<void> _updateUserRecord(User user) async {
     try {
       await _supabase!.from(SupabaseTables.users).update({
-        'email': user.email,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', user.id);
     } catch (e) {
@@ -591,7 +589,6 @@ class AuthService extends ChangeNotifier {
     try {
       await _supabase!.from(SupabaseTables.users).upsert({
         'id': user.id,
-        'email': user.email,
         'updated_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
