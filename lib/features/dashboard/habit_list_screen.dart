@@ -10,6 +10,9 @@ import '../../data/providers/user_provider.dart';
 import '../../data/models/habit.dart';
 import '../review/weekly_review_dialog.dart';
 import 'widgets/habit_summary_card.dart';
+import '../../data/providers/jitai_provider.dart';
+import '../jitai/widgets/intervention_modal.dart';
+import '../jitai/widgets/cascade_alert_banner.dart';
 
 /// Dashboard screen showing all habits
 /// 
@@ -28,117 +31,134 @@ class HabitListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 4: Use Consumer2 to listen to User/App state
+    // Sprint 1 Update: Added JITAI listening via child widget to avoid rebuilds
     return Consumer2<UserProvider, AppState>(
       builder: (context, userProvider, appState, child) {
         final habits = appState.habits;
         // Strangler Fig Phase 2: Read profile from UserProvider
         final profile = userProvider.userProfile;
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'My Habits',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                if (profile != null)
-                  Text(
-                    profile.identity,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+        return Stack(
+          children: [
+            Scaffold(
+              appBar: AppBar(
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'My Habits',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-              ],
-            ),
-            centerTitle: true,
-            actions: [
-              // Weekly Review button (Phase 7)
-              if (habits.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.auto_awesome),
-                  tooltip: 'Weekly Review',
-                  onPressed: () => _showWeeklyReviewPicker(context, habits),
-                ),
-              // Analytics button (Phase 10)
-              if (habits.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.analytics_outlined),
-                  tooltip: 'Analytics',
-                  onPressed: () => context.push(AppRoutes.analytics),
-                ),
-              // History button (Phase 5)
-              IconButton(
-                icon: const Icon(Icons.calendar_month_outlined),
-                tooltip: 'History',
-                onPressed: () => context.push(AppRoutes.history),
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                tooltip: 'Settings',
-                onPressed: () => context.push(AppRoutes.settings),
-              ),
-              // DEBUG: Factory Reset Button
-              IconButton(
-                icon: const Icon(Icons.delete_forever, color: Colors.red),
-                tooltip: 'Factory Reset (Debug)',
-                onPressed: () async {
-                  // Confirm dialog first
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Factory Reset?'),
-                      content: const Text(
-                        'This will wipe ALL data, sign out, and restart onboarding.\n\n'
-                        'Only for testing purposes.',
+                    if (profile != null)
+                      Text(
+                        profile.identity,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                          child: const Text('NUKE IT ☢️'),
-                        ),
-                      ],
+                  ],
+                ),
+                centerTitle: true,
+                actions: [
+                  // Weekly Review button (Phase 7)
+                  if (habits.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.auto_awesome),
+                      tooltip: 'Weekly Review',
+                      onPressed: () => _showWeeklyReviewPicker(context, habits),
                     ),
-                  ) ?? false;
+                  // Analytics button (Phase 10)
+                  if (habits.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.analytics_outlined),
+                      tooltip: 'Analytics',
+                      onPressed: () => context.push(AppRoutes.analytics),
+                    ),
+                  // History button (Phase 5)
+                  IconButton(
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    tooltip: 'History',
+                    onPressed: () => context.push(AppRoutes.history),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    tooltip: 'Settings',
+                    onPressed: () => context.push(AppRoutes.settings),
+                  ),
+                  // DEBUG: Factory Reset Button
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever, color: Colors.red),
+                    tooltip: 'Factory Reset (Debug)',
+                    onPressed: () async {
+                      // Confirm dialog first
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Factory Reset?'),
+                          content: const Text(
+                            'This will wipe ALL data, sign out, and restart onboarding.\n\n'
+                            'Only for testing purposes.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                              child: const Text('NUKE IT ☢️'),
+                            ),
+                          ],
+                        ),
+                      ) ?? false;
 
-                  if (confirmed && context.mounted) {
-                    debugPrint('☢️ MANUAL NUCLEAR RESET INITIATED');
-                    // 1. Sign out
-                    try {
-                      // ignore: undefined_prefixed_name
-                      await Supabase.instance.client.auth.signOut();
-                    } catch (e) { /* ignore */ }
-                    
-                    // 2. Clear Hive
-                    await Hive.deleteBoxFromDisk('habit_data');
-                    await Hive.deleteBoxFromDisk('settings');
-                    await Hive.deleteBoxFromDisk('user_data');
-                    
-                    // 3. Force Navigation
-                    if (context.mounted) {
-                      context.go(AppRoutes.home);
-                    }
-                  }
-                },
+                      if (confirmed && context.mounted) {
+                        debugPrint('☢️ MANUAL NUCLEAR RESET INITIATED');
+                        // 1. Sign out
+                        try {
+                          // ignore: undefined_prefixed_name
+                          await Supabase.instance.client.auth.signOut();
+                        } catch (e) { /* ignore */ }
+                        
+                        // 2. Clear Hive
+                        await Hive.deleteBoxFromDisk('habit_data');
+                        await Hive.deleteBoxFromDisk('settings');
+                        await Hive.deleteBoxFromDisk('user_data');
+                        
+                        // 3. Force Navigation
+                        if (context.mounted) {
+                          context.go(AppRoutes.home);
+                        }
+                      }
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-          body: habits.isEmpty
-              ? _buildEmptyState(context)
-              : _buildHabitList(context, appState, habits),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddHabitOptions(context),
-            icon: const Icon(Icons.add),
-            label: const Text('New Habit'),
-          ),
+              body: Column(
+                children: [
+                   // Minimal JITAI Alert Integration
+                   const _JITAIAlertWrapper(), 
+                   Expanded(
+                     child: habits.isEmpty
+                        ? _buildEmptyState(context)
+                        : _buildHabitList(context, appState, habits),
+                   ),
+                ],
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () => _showAddHabitOptions(context),
+                icon: const Icon(Icons.add),
+                label: const Text('New Habit'),
+              ),
+            ),
+            
+            // Minimal JITAI Modal Overlay
+            const _JITAIModalOverlay(),
+          ],
         );
       },
     );
@@ -610,6 +630,48 @@ class HabitListScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Minimal wrapper for Cascade Alerts to keep main build clean
+class _JITAIAlertWrapper extends StatelessWidget {
+  const _JITAIAlertWrapper();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<JITAIProvider>(
+      builder: (context, jitai, _) {
+        if (!jitai.isInitialized || !jitai.hasCascadeRisk) return const SizedBox.shrink();
+        return Padding(
+           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+           child: const CascadeAlertBanner(),
+        );
+      },
+    );
+  }
+}
+
+/// Minimal overlay for blocking interventions
+class _JITAIModalOverlay extends StatelessWidget {
+  const _JITAIModalOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<JITAIProvider>(
+      builder: (context, jitai, _) {
+        if (!jitai.isInitialized || 
+            !jitai.hasActiveIntervention || 
+            jitai.activeIntervention?.decision.shouldIntervene != true) {
+          return const SizedBox.shrink();
+        }
+
+        final intervention = jitai.activeIntervention!.decision;
+        return Container(
+          color: Colors.black54, // Dim background
+          child: InterventionModal(intervention: intervention),
+        );
+      },
     );
   }
 }

@@ -22,12 +22,14 @@ import '../weather_service.dart';
 import '../../../domain/entities/weather_context.dart';
 import 'calendar_service.dart';
 import 'biometrics_service.dart';
+import '../../sensors/digital_truth_sensor.dart';
 
 @deprecated // Use ContextService instead
 class ContextSnapshotBuilder {
   final WeatherService _weatherService;
   final CalendarService _calendarService;
   final BiometricsService _biometricsService;
+  final DigitalTruthSensor _digitalSensor;
 
   /// Last known location for weather API
   Position? _lastPosition;
@@ -36,9 +38,11 @@ class ContextSnapshotBuilder {
     WeatherService? weatherService,
     CalendarService? calendarService,
     BiometricsService? biometricsService,
+    DigitalTruthSensor? digitalSensor,
   })  : _weatherService = weatherService ?? WeatherService(),
         _calendarService = calendarService ?? CalendarService(),
-        _biometricsService = biometricsService ?? BiometricsService();
+        _biometricsService = biometricsService ?? BiometricsService(),
+        _digitalSensor = digitalSensor ?? DigitalTruthSensor();
 
   /// Build a complete context snapshot
   ///
@@ -73,7 +77,7 @@ class ContextSnapshotBuilder {
     final historicalContext = _buildHistoricalContext(habit, allHabits);
 
     // Sprint 1: Build digital context with emotion data
-    final digitalContext = _buildDigitalContext(emotionData);
+    final digitalContext = await _buildDigitalContext(emotionData);
 
     // Build snapshot
     return ContextSnapshot(
@@ -136,7 +140,7 @@ class ContextSnapshotBuilder {
   }
 
   /// Sprint 1: Build DigitalContext with emotion data
-  DigitalContext? _buildDigitalContext(Map<String, dynamic>? emotionData) {
+  Future<DigitalContext?> _buildDigitalContext(Map<String, dynamic>? emotionData) async {
     // If no emotion data, we still might want to return DigitalContext
     // for distraction tracking in the future, but for now return null
     if (emotionData == null) return null;
@@ -147,14 +151,18 @@ class ContextSnapshotBuilder {
       emotionCapturedAt = DateTime.tryParse(capturedAtStr);
     }
 
+    final usage = await _digitalSensor.getDopamineBurnMinutes();
+    final apex = await _digitalSensor.getApexDistractor();
+    
     return DigitalContext(
-      distractionMinutes: 0, // TODO: Wire to DigitalTruthSensor
-      capturedAt: DateTime.now(),
-      // Emotion fields from voice sessions
-      primaryEmotion: emotionData['primaryEmotion'] as String?,
-      emotionalIntensity: (emotionData['confidence'] as num?)?.toDouble(),
-      emotionalTone: emotionData['tone'] as String?,
-      emotionCapturedAt: emotionCapturedAt,
+        distractionMinutes: usage,
+        capturedAt: DateTime.now(),
+        apexDistractor: apex,
+        // Emotion fields from voice sessions
+        primaryEmotion: emotionData['primaryEmotion'] as String?,
+        emotionalIntensity: (emotionData['confidence'] as num?)?.toDouble(),
+        emotionalTone: emotionData['tone'] as String?,
+        emotionCapturedAt: emotionCapturedAt,
     );
   }
 

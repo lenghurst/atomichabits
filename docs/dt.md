@@ -51,6 +51,14 @@ Once the app is running via GCC, use these keys in the terminal (or ask the Agen
 | **`d`** | **Detach** | Stop listening but keep app running. |
 | **`q`** | **Quit** | Stop the app. |
 
+### Agent Protocol for CLI Interaction
+When the user asks to "Type R", "Hot Restart", or "Hot Reload", the Agent **MUST**:
+1.  Identify the **Command ID** of the running GCC process (from `run_command` output).
+2.  Use the `send_command_input` tool.
+    *   **Input**: "r" (for Reload) or "R" (for Restart).
+    *   **Terminate**: `false`.
+3.  Report the result (e.g., "Hot Reload sent").
+
 ---
 
 ## 3. Verification Matrices

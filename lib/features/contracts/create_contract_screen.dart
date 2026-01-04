@@ -1016,7 +1016,7 @@ class _CreateContractScreenState extends State<CreateContractScreen> {
     final text = WitnessDeepLinkService.generateShareText(
       habitName: habitName,
       inviteCode: contract.inviteCode,
-      startDate: contract.startDate,
+      startDate: contract.startDate ?? DateTime.now(),
     );
     
     await WitnessDeepLinkService.shareViaWhatsApp(

@@ -160,6 +160,26 @@ class JITAIProvider extends ChangeNotifier with WidgetsBindingObserver {
       // Register background tasks
       await JITAIBackgroundWorker.registerBackgroundTasks();
 
+      // "Nerve Repair": Wire notification callbacks to learning loop
+      _notificationService.onInterventionAction = (eventId, action) {
+        if (kDebugMode) {
+          debugPrint('JITAIProvider: Received notification action: $action for event $eventId');
+        }
+        
+        // Map action to boolean outcome
+        // "dismiss" -> engaged (false), "my_choice" -> engaged (true - autonomy)
+        // This is a simplified mapping; rich telemetry handled in recordInterventionOutcome
+        final engaged = action != 'dismiss';
+        
+        recordInterventionOutcome(
+          eventId: eventId,
+          engaged: engaged,
+          habitCompleted: action == 'tiny_version' || action == 'primary',
+          // Can't measure time-to-open accurately from notification callback
+          engagementSeconds: null, 
+        );
+      };
+
       // Register lifecycle observers
       JITAILifecycleObserver.register();
       WidgetsBinding.instance.addObserver(this);
