@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/models/habit.dart';
 import '../../../data/providers/jitai_provider.dart';
-import '../../../data/providers/user_provider.dart';
+import '../../../data/providers/psychometric_provider.dart';
 import '../../../domain/entities/psychometric_profile.dart';
 import '../../../domain/services/vulnerability_opportunity_calculator.dart';
 import '../../../domain/services/cascade_pattern_detector.dart';
@@ -59,7 +59,7 @@ class _TheBridgeState extends State<TheBridge> {
     if (!mounted) return;
 
     final jitaiProvider = context.read<JITAIProvider>();
-    final userProvider = context.read<UserProvider>();
+    final psychometricProvider = context.read<PsychometricProvider>();
 
     if (!jitaiProvider.isInitialized) {
       setState(() {
@@ -69,8 +69,8 @@ class _TheBridgeState extends State<TheBridge> {
       return;
     }
 
-    // Build profile from UserProvider
-    final profile = _buildProfile(userProvider);
+    // Get profile from PsychometricProvider (Holy Trinity source of truth)
+    final profile = psychometricProvider.profile;
 
     try {
       final scored = await jitaiProvider.getOptimalHabits(
@@ -92,15 +92,6 @@ class _TheBridgeState extends State<TheBridge> {
         });
       }
     }
-  }
-
-  PsychometricProfile _buildProfile(UserProvider userProvider) {
-    final userProfile = userProvider.userProfile;
-    return PsychometricProfile(
-      antiIdentityLabel: userProfile?.antiIdentityLabel,
-      failureArchetype: userProfile?.failureArchetypeEnum,
-      resistanceLieLabel: userProfile?.resistanceLieLabel,
-    );
   }
 
   @override
