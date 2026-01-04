@@ -480,9 +480,8 @@ VOState _neutralVOState() => VOState(
 );
 
 /// Helper to create no-risk CascadeRisk for fallback
-CascadeRisk _noCascadeRisk() => CascadeRisk(
+CascadeRisk _noCascadeRisk() => const CascadeRisk(
   probability: 0.0,
   reason: CascadeRiskReason.baseline,
-  explanation: '',
-  isHighRisk: false,
+  explanation: 'No risk detected',
 );
