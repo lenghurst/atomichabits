@@ -1,3 +1,17 @@
+## [6.15.0] - 2026-01-04 - Phase 68: "Onboarding Calibration & Auth Repair"
+
+### Critical Fixes
+- **Onboarding Navigation:** Corrected the routing in `LoadingInsightsScreen` to target the V4 `PactTierSelectorScreen` (`AppRoutes.tierOnboarding`) instead of the legacy V3 `TierSelectionScreen`. This ensures users enter the correct pricing flow.
+- **Auth Schema Compliance:** Removed erroneous writes of the `email` field to the `public.profiles` table in `AuthService`. This resolves the `PostgrestException (PGRST204)` caused by attempting to write to a non-existent column (email is managed exclusively by Supabase Auth).
+- **Identity-First Flow:**
+  - **Sherlock Routing:** `SherlockPermissionScreen` now correctly routes to `VoiceCoachScreen` (Sherlock Session) to capture the "Holy Trinity" data (Values, Archetype, Anti-Identity).
+  - **Misalignment Guard:** By enforcing the Voice Session step, the "Data Integrity Guard" in `AppRouter` no longer blocks users at the Screening phase, as the required psychometric data is now populated.
+- **Resilience:**
+  - **Null Handling:** `PactRevealScreen` now gracefully handles null `habitId` for the Identity-First flow (where the habit is created *after* the pact).
+  - **Go Solo Path:** `WitnessInvestmentScreen` now correctly finalizes onboarding before navigating to the dashboard for solo players.
+
+---
+
 ## [6.14.0] - 2026-01-04 - Phase 67: "Dashboard Redesign & JITAI Integration"
 
 ### Architecture

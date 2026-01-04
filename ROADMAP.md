@@ -108,6 +108,12 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [x] **RAG Vector Memory:** Semantic search for AI context.
 - [x] **JITAI Wiring:** Real-time reordering of habits based on context.
 
+### Phase 68: Onboarding Calibration & Auth Repair (04 Jan 2026)
+**Goal:** Stabilize Identity-First flow and ensure schema compliance.
+- [x] **V4 Navigation:** `LoadingInsightsScreen` -> `PactTierSelectorScreen` (V4) correction.
+- [x] **Schema Integrity:** Removed `email` writes from `AuthService` (PGRST204 Fix).
+- [x] **Sherlock Routing:** `SherlockPermissionScreen` -> `VoiceCoachScreen` (Misalignment Fix).
+
 ### Phase 66: Witness & Share (04 Jan 2026)
 **Goal:** Enable viral social loops and safe accountability.
 - [x] **WhatsApp Deep Links**: `WitnessDeepLinkService` with clean URL encoding and fallback.

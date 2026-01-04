@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 04 January 2026  
-> **Current Phase:** Dashboard Redesign & JITAI Integration (Phase 67 Verified)  
+> **Current Phase:** Onboarding Calibration & Auth Repair (Phase 68 Verified)  
 > **Identity:** The Pact  
 > **Domain:** thepact.co  
 > **Core Concept:** Identity Evidence Engine
@@ -153,7 +153,9 @@ graph TD
 | **60** | **Hybrid Voice Stack** (Gemini 3 Reasoning + REST TTS) | ✅ |
 | **60.1** | **WAV Header Fix** (Manual PCM Wrapping for Mobile) | ✅ |
 | **62** | **Sherlock Protocol** (IFS Refinement + Privacy Fixes) | ✅ |
-> **Current Phase:** The Augmented Constitution (Phase 64 Complete)  
+| **67** | **Dashboard Redesign** (Binary Interface + RAG) | ✅ |
+| **68** | **Onboarding Calibration** (V4 Nav + Auth Repair) | ✅ |
+> **Current Phase:** Onboarding Calibration (Phase 68 Complete)  
 
 ...
 
@@ -169,6 +171,7 @@ graph TD
 | **66.2** | **Evidence Foundation** (Layer 1 Logging + Background Worker) | ✅ |
 | **67** | **Dashboard Redesign** (Binary Interface: Bridge + Tree) | ✅ |
 | **67.1** | **RAG Vector Memory** (Embedding Service + pgvector) | ✅ |
+| **68** | **Onboarding Calibration** (V4 Navigation + Auth Schema Fix) | ✅ |
 
 ### Key Files Changed (Phase 42-50)
 
