@@ -13,6 +13,9 @@ import '../sensors/environmental_sensor.dart';
 import 'package:http/http.dart' as http;
 import '../../config/ai_model_config.dart';
 import '../repositories/supabase_psychometric_repository.dart';
+import '../../core/utils/retry_policy.dart'; // Correct import for RetryPolicy
+import 'package:supabase_flutter/supabase_flutter.dart'; // For PostgrestException
+import 'dart:io'; // For SocketException
 
 /// PsychometricProvider: Manages the user's psychological profile for LLM context.
 /// 
@@ -68,8 +71,11 @@ class PsychometricProvider extends ChangeNotifier {
   Future<void> _syncFromCloud() async {
     if (_cloudRepository == null) return;
     
+    
     try {
-      final cloudProfile = await _cloudRepository.getProfile();
+      final cloudProfile = await RetryPolicy.network.execute(
+        () => _cloudRepository!.getProfile(),
+      );
       if (cloudProfile != null) {
         // Simple Conflict Resolution: Cloud Last Updated Wins if significantly newer
         // Or if local is empty/default.
@@ -85,6 +91,11 @@ class PsychometricProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
+    } on PostgrestException catch (e) {
+      if (kDebugMode) debugPrint('PsychometricProvider: Cloud sync failed (Postgrest): ${e.message}');
+    } on SocketException catch (e) {
+      if (kDebugMode) debugPrint('PsychometricProvider: Cloud sync failed (Network): $e');
+    } catch (e) {
       debugPrint('PsychometricProvider: Background cloud sync failed: $e');
     }
   }
@@ -99,7 +110,9 @@ class PsychometricProvider extends ChangeNotifier {
     
     // 2. Sync Cloud (Fire & Forget / Async)
     if (_cloudRepository != null) {
-      _cloudRepository.syncToCloud(_profile).then((_) {
+      RetryPolicy.network.execute(
+        () => _cloudRepository!.syncToCloud(_profile),
+      ).then((_) {
         // Mark as synced locally if successful
         _repository.markAsSynced();
       }).catchError((e) {

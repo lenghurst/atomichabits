@@ -196,10 +196,9 @@ class PsychometricProfile {
     return buffer.toString();
   }
   
-  /// Check if the holy trinity is captured
   bool get hasHolyTrinity => 
-      antiIdentityLabel != null || 
-      failureArchetype != null || 
+      antiIdentityLabel != null && 
+      failureArchetype != null && 
       resistanceLieLabel != null;
   
   /// Check if onboarding is complete (all 3 traits captured)

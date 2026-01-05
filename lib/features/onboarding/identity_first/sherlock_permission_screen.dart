@@ -155,7 +155,21 @@ class _SherlockPermissionScreenState extends State<SherlockPermissionScreen> {
               
               // 4. The Choice
               if (_isAnalyzing)
-                const CircularProgressIndicator(color: Colors.white)
+                Column(
+                  children: [
+                    const CircularProgressIndicator(color: Colors.white),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'INITIALIZING NEURAL LINK...',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                )
               else
                 Column(
                   children: [

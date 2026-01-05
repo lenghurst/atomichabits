@@ -6,6 +6,7 @@ import '../../../config/router/app_routes.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../data/app_state.dart';
 import '../../../data/services/onboarding/onboarding_orchestrator.dart';
+import '../../../data/services/analytics_service.dart';
 
 /// Pact Tier Selector Screen
 /// 
@@ -73,8 +74,8 @@ class _PactTierSelectorScreenState extends State<PactTierSelectorScreen> {
         await appState.setPremiumStatus(true);
         
         // Log telemetry event for pricing validation
-        // TODO: Send to analytics: payment_intent_captured, tier: tierId
-        debugPrint('[Telemetry] payment_intent_captured: tier=$tierId');
+        // Log telemetry event for pricing validation
+        await AnalyticsService().logPaymentIntentCaptured(tierId);
         
         // Phase 30 (Zhuo Z4): Celebrate first pact creation!
         _confettiController.play();

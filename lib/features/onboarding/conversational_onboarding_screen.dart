@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -236,12 +237,17 @@ class _ConversationalOnboardingScreenState
 
   /// Add an error message to the chat
   void _addErrorMessage(String error) {
-    // Include API key debug info in debug builds
-    final debugInfo = AIModelConfig.debugKeyStatus;
+    String content = "I'm having trouble connecting. Would you like to try again, or switch to manual entry?";
+    
+    // Only include debug info in development builds
+    if (kDebugMode) {
+      final debugInfo = AIModelConfig.debugKeyStatus;
+      content += "\n\n--- DEBUG INFO (dev only) ---\nError: $error\n$debugInfo";
+    }
     
     setState(() {
       _messages.add(ChatMessage.assistant(
-        content: "I'm having trouble connecting. Would you like to try again, or switch to manual entry?\n\nError: $error\n\n--- DEBUG INFO ---\n$debugInfo",
+        content: content,
         status: MessageStatus.error,
       ));
     });

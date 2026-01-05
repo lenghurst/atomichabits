@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:io' show SocketException;
 import '../../config/supabase_config.dart';
+import '../../core/utils/retry_policy.dart';
 
 /// Authentication Service
 /// 
@@ -587,16 +589,31 @@ class AuthService extends ChangeNotifier {
   
   /// Create or update a user record
   /// Note: Email is stored in auth.users (Supabase managed), not profiles table
+  /// Create or update a user record with retry logic
+  /// Note: Email is stored in auth.users (Supabase managed), not profiles table
   Future<void> _createOrUpdateUserRecord(User user) async {
     try {
-      await _supabase!.from(SupabaseTables.users).upsert({
-        'id': user.id,
-        'updated_at': DateTime.now().toIso8601String(),
+      await RetryPolicy.network.execute(() async {
+        await _supabase!.from(SupabaseTables.users).upsert({
+          'id': user.id,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
       });
+    } on PostgrestException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Database error upserting user: ${e.code} - ${e.message}');
+      }
+      // Don't throw - user can still use app
+    } on SocketException catch (_) {
+      if (kDebugMode) {
+        debugPrint('Offline - user record will sync later');
+      }
+      // Queue for later if you have a sync queue
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Failed to upsert user record: $e');
+        debugPrint('Failed to upsert user record after retries: $e');
       }
+      // Don't throw - this is best-effort
     }
   }
   
