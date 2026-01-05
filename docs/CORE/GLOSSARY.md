@@ -493,7 +493,9 @@ These terms appear in documentation but are either not implemented or require pr
 ### Hexis Score
 **Definition:** Proposed composite score for identity visualization.
 
-**Intended Calculation (from ARCHITECTURE_RECONCILIATION.md):**
+**Status:** 🔴 DEPRECATED — Never concretely defined or implemented
+
+**Original Intent (from ARCHITECTURE_RECONCILIATION.md):**
 ```
 Base score from habit completions
 - Doom scrolling penalty (−0.05 per session)
@@ -501,14 +503,13 @@ Base score from habit completions
 = Hexis Score (0.0 - 1.0)
 ```
 
-**Status:** ❌ NOT IMPLEMENTED — `hexis_calculator.dart` never built
+**Why Deprecated:**
+- `hexis_calculator.dart` was never built
+- No concrete specification existed beyond the above formula
+- Dependencies (Living Garden, Digital Truth Sensor) also not implemented
+- Term created confusion without adding value
 
-**Dependencies:**
-- Living Garden visualization (would consume this score)
-- Digital Truth Sensor (doom scroll detection)
-- Emotion Context (positive state detection)
-
-**Code References:** None (ghost term — exists only in docs)
+**Replacement:** Consider using existing `gracefulScore` or `difficultyLevel` fields if a composite identity metric is needed in future.
 
 ---
 
@@ -528,14 +529,41 @@ Base score from habit completions
 ---
 
 ### Shadow Presence
-**Definition:** Undefined metric for Living Garden visualization.
+**Definition:** A proposed real-time metric measuring how "active" a user's shadow/resistance patterns are at any given moment.
 
-**Status:** ❌ NOT IMPLEMENTED — No specification exists
+**Status:** ❌ NOT IMPLEMENTED — Contingent on Living Garden (Layer 3)
 
-**Questions:**
-- How is "shadow presence" measured?
-- What behaviors indicate shadow activation?
-- How does this relate to Failure Archetype?
+**Original Intent (from product discussions):**
+Shadow Presence was conceived as the "darkness" input to the Living Garden visualization:
+- **High Shadow Presence:** User is in self-sabotage mode (doom scrolling, avoidance, excuse-making)
+- **Low Shadow Presence:** User is aligned with identity goals, shadow dormant
+- **Visual Effect:** Garden would "darken" or show "wilting" when Shadow Presence is high
+
+**Measurement Approach (Theoretical):**
+```
+Shadow Presence = f(
+  doom_scrolling_detected,      // Digital Truth Sensor
+  missed_habits_today,          // Habit completion
+  time_since_last_evidence,     // Engagement gap
+  negative_self_talk_detected,  // Voice session analysis
+  excuse_patterns_matched       // Resistance Lie activation
+)
+```
+
+**Relationship to Other Concepts:**
+| Concept | Relationship |
+|---------|--------------|
+| Failure Archetype | Shadow patterns vary by archetype (Perfectionist's shadow = harsh self-criticism) |
+| Resistance Lie | High Shadow Presence often correlates with Resistance Lie activation |
+| JITAI | Could inform Vulnerability score — high Shadow Presence = high Vulnerability |
+| Hexis Score | Was intended to be inverse of Shadow Presence |
+
+**Why Not Implemented:**
+- Living Garden (Layer 3) not built — Shadow Presence had no consumer
+- Detection logic requires Digital Truth Sensor maturity
+- Philosophy needs validation: Is "shadow" the right frame, or does it pathologize normal resistance?
+
+**Future Consideration:** If Living Garden or equivalent visualization is built, Shadow Presence should be reconsidered. May integrate with JITAI Vulnerability scoring instead of being a separate metric.
 
 ---
 
@@ -553,12 +581,32 @@ Base score from habit completions
 
 **Status:** 🟡 PARTIALLY IMPLEMENTED — DeepSeek pipeline exists but `GapAnalysisEngine` class does not
 
+**Priority:** 🔴 HIGH — Core to app value proposition
+
 **Current State:**
 - DeepSeek integration exists for post-session analysis
 - Full gap analysis logic not yet built
 - Referenced in ROADMAP Layer 5
 
-**Note:** DeepSeek is intended to be a substantive part of the engine. Current partial state is a gap.
+**Why This Is Architecturally Critical:**
+The Gap Analysis Engine speaks to fundamental questions about how the app operates:
+1. **Insight Generation:** How does the app generate meaningful insights from user data?
+2. **Surfacing:** How are insights surfaced to users (push vs pull)?
+3. **JITAI Integration:** Should gap insights trigger JITAI interventions?
+4. **Governance:** What rules govern when DeepSeek is called (cost, privacy, timing)?
+
+**Architectural Questions to Resolve:**
+| Question | Options | Status |
+|----------|---------|--------|
+| When is DeepSeek called? | Real-time vs batch vs on-demand | PENDING |
+| What data does it analyze? | Session transcripts, habit data, both | PENDING |
+| How are insights stored? | Local, cloud, ephemeral | PENDING |
+| How do insights reach users? | Notification, dashboard widget, voice summary | PENDING |
+| Cost management? | Credit system, rate limiting, caching | PENDING |
+
+**Note:** DeepSeek is intended to be a substantive part of the app experience. Current partial implementation (post-session only) is insufficient for the vision.
+
+**Action Required:** Add to existing PD or create new one to prioritize Gap Analysis Engine completion alongside JITAI/Recommendation architecture decisions.
 
 ---
 
