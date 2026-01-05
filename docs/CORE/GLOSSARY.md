@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Systematic Review Session)
+> **Last Updated:** 05 January 2026 (Added PGS hierarchy, Behavioral Dimensions, Ghost Term Policy)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -292,6 +292,99 @@ A Habit can exist:
 **Code References:** `jitai_decision_engine.dart`, `vulnerability_opportunity_calculator.dart`
 
 **Status:** Partially hardcoded — needs documentation and review. See PRODUCT_DECISIONS.md.
+
+---
+
+### Proactive Guidance System (PGS)
+**Definition:** The umbrella system that orchestrates all coaching intelligence.
+
+**Status:** 🔴 ARCHITECTURE PENDING — See PD-107
+
+**Hierarchy:**
+```
+PROACTIVE GUIDANCE SYSTEM (umbrella)
+├── Aspiration Extraction (via Sherlock)
+│   └── Captures: Holy Trinity + Aspirational Identities
+│
+├── Guidance Content (renamed from "Content Library")
+│   ├── Habit recommendation templates
+│   ├── Ritual templates
+│   ├── Intervention messages (4 variants per archetype)
+│   └── Coaching insights
+│
+├── Gap Analysis Engine
+│   ├── Detects value-behavior dissonance
+│   └── Generates Socratic questions
+│
+├── Recommendation Engine
+│   ├── What habits/rituals to suggest
+│   └── Based on aspirational identity + gaps
+│
+└── JITAI (timing component)
+    ├── When to deliver (V-O calculation)
+    ├── How to deliver (channel selection)
+    └── Learning (Thompson Sampling)
+```
+
+**Key Insight:** JITAI is ONE COMPONENT of PGS, not a separate system. JITAI handles timing. Recommendation Engine handles content selection. Gap Analysis feeds both.
+
+**Related Terms:**
+- **Identity-First Design** — The philosophy (optimize for identity evidence, not task completion)
+- **Proactive Guidance System** — The implementation (the system that delivers on the philosophy)
+
+**Code References:** Not yet implemented as unified system. Components exist separately.
+
+---
+
+### Behavioral Dimensions (6-Dimension Model)
+**Definition:** The six psychological dimensions used to personalize interventions.
+
+**Status:** ✅ CONFIRMED — See CD-005
+
+**The 6 Dimensions:**
+
+| # | Dimension | Continuum | What It Predicts |
+|---|-----------|-----------|------------------|
+| 1 | **Regulatory Focus** | Promotion ↔ Prevention | How to frame identity evidence |
+| 2 | **Autonomy/Reactance** | Rebel ↔ Conformist | Intervention style (autonomy-supportive vs directive) |
+| 3 | **Action-State Orientation** | Executor ↔ Overthinker | Rumination risk, decision paralysis |
+| 4 | **Temporal Discounting** | Future ↔ Present | Streak value, micro-reward effectiveness |
+| 5 | **Perfectionistic Reactivity** | Adaptive ↔ Maladaptive | Failure response, shame spiral risk |
+| 6 | **Social Rhythmicity** | Stable ↔ Chaotic | Schedule normalization, timing strategy |
+
+**Detailed Definitions:**
+
+#### Regulatory Focus
+Whether a person is motivated by pursuing gains (Promotion) or avoiding losses (Prevention).
+- **Promotion:** Eager, growth-oriented, excited by possibilities → "Imagine becoming..."
+- **Prevention:** Vigilant, security-oriented, fears regression → "Don't let yourself slide back..."
+
+#### Autonomy/Reactance
+How much a person resists being told what to do.
+- **Rebel (High Reactance):** Resists external pressure → "You decide when" (autonomy-supportive)
+- **Conformist (Low Reactance):** Welcomes guidance → "Here's what to do" (directive)
+
+#### Action-State Orientation
+Whether someone acts immediately or ruminates before acting.
+- **Executor:** Acts quickly, doesn't overthink → Simple prompts work
+- **Overthinker:** Ruminates, gets stuck in analysis paralysis → Value affirmation ("Remember why")
+
+#### Temporal Discounting
+How much someone devalues future rewards relative to immediate ones.
+- **Future-Oriented:** Cares about long-term outcomes → Streak milestones motivating
+- **Present-Oriented:** Wants immediate gratification → Micro-rewards ("Just 2 minutes")
+
+#### Perfectionistic Reactivity
+How someone responds to failure/imperfection.
+- **Adaptive:** Uses failure as learning, bounces back → Standard messaging fine
+- **Maladaptive:** Failure triggers shame spiral, gives up → Self-compassion messaging critical
+
+#### Social Rhythmicity
+How stable/predictable a person's daily schedule is.
+- **Stable:** Consistent routines, predictable day → Time-specific reminders work
+- **Chaotic:** Variable schedule, unpredictable day → Context-based triggers better
+
+**Code References:** `archetype_registry.dart`, dimension vectors in `psychometric_profile.dart`
 
 ---
 
@@ -636,3 +729,58 @@ The Gap Analysis Engine speaks to fundamental questions about how the app operat
 3. **Flag status:** Is it implemented? Under review? Deprecated?
 4. **Update:** PRODUCT_DECISIONS.md if decision needed
 5. **Commit:** With message "docs: add [term] to glossary"
+
+---
+
+## Ghost Term Policy
+
+**Problem:** Terms added to documentation without implementation create confusion ("ghost terms").
+
+**Rule:** For aspirational terms (not yet implemented):
+
+| Requirement | Reason |
+|-------------|--------|
+| Mark as ❌ NOT IMPLEMENTED | Clarity on current state |
+| Reference blocking PD or RQ | Accountability |
+| If no PD/RQ exists → Create one first | Forces discipline |
+| Include "Why Not Implemented" | Context for future |
+
+**Good Example:**
+```markdown
+### Living Garden
+**Status:** ❌ NOT IMPLEMENTED — Layer 3 in ROADMAP.md
+**Blocking:** RQ-007 (Identity Roadmap Architecture)
+**Why Not Implemented:** Depends on visualization philosophy decisions
+```
+
+**Bad Example (Ghost Term):**
+```markdown
+### Hexis Score
+**Definition:** A composite score...
+(No status, no blocking reference, no accountability)
+```
+
+**Enforcement:** During GLOSSARY reviews, identify and either:
+1. Add blocking reference (RQ/PD) if term has value
+2. Deprecate if term has no clear path to implementation
+
+---
+
+## Signposting Guidance
+
+**Purpose:** When to reference this GLOSSARY from other documents.
+
+**When to Signpost:**
+| Scenario | Action |
+|----------|--------|
+| First use of critical term in a document | "(see GLOSSARY.md: Term Name)" |
+| Term has specific technical meaning | "JITAI (GLOSSARY)" |
+| Term has changed meaning | "Note: Identity Coach now refers to..." |
+
+**When NOT to Signpost:**
+- Every occurrence of a term
+- Obvious terms used in their normal sense
+- Terms in their document of origin (GLOSSARY itself)
+
+**Example:**
+> The Proactive Guidance System (see GLOSSARY.md) orchestrates all coaching intelligence, with JITAI handling timing decisions.

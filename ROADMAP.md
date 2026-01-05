@@ -1,8 +1,8 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 03 January 2026  
-> **Current Strategy:** The Augmented Constitution (Parallel MVP)  
-> **Target Launch:** 16 Jan 2026  
+> **Last Updated:** 05 January 2026
+> **Current Strategy:** Phase-based Development with Parallel Tracks
+> **Target Launch:** 16 Jan 2026
 > **Identity:** Identity Evidence Engine
 
 ---
@@ -15,44 +15,119 @@
 
 ---
 
-## 🎯 The Unconventional MVP: 5 Parallel Layers
+## 🎯 Development Phases
 
-We are ignoring linear versions (v1, v2). We are building 5 interconnected layers simultaneously.
+Development follows a **phase-based model** where each phase enables the next. Tracks run within phases as parallel workstreams.
+
+```
+                    Phase 0      Phase 1      Phase 2      Phase 3
+                    Research     Foundation   Intelligence User Exp
+                    ─────────────────────────────────────────────────
+Track A (Database)     ─            ████           ░           ░
+Track B (Voice)        ─            ████          ███         ███
+Track C (Dashboard)    ─              ─            ░          ████ ✅
+Track D (Gap Analysis) ████ blocked   ░           ░░░          ░
+Track G (Identity)     ████ blocked   ░            ░           ░░░
+```
+
+### Phase 0: Research & Decisions (PERPETUAL)
+**What It Is:** The "thinking" work that informs building. Phase 0 never completes — new questions emerge as we build.
+
+**Contains:**
+- Research Questions (RQ-XXX) — Open investigations
+- Product Decisions (PD-XXX) — Pending choices
+- Confirmed Decisions (CD-XXX) — Locked choices
+
+**Currently Blocking:**
+- RQ-011 (Multiple Identities) → Blocks Phase 1 schema
+- RQ-005/006 (Proactive Guidance) → Blocks Phase 2 intelligence
+- RQ-010 (Permission Data) → Blocks Phase 2 JITAI refinement
+
+**See:** `docs/CORE/RESEARCH_QUESTIONS.md` for full list
+
+---
+
+### Phase 1: Foundation
+**What It Is:** Infrastructure — data, auth, core services.
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Database schemas (Supabase) | ✅ Done | `identity_seeds`, `habit_contracts` |
+| Auth flow | ✅ Done | Supabase Auth |
+| Core repositories | ✅ Done | `PsychometricRepository` |
+| Permission capture | 🟡 Partial | Captured but underutilized |
+| Evidence logging (E6) | 🔴 Not done | Log observable signals |
+
+---
+
+### Phase 2: Intelligence
+**What It Is:** The "brain" — systems that analyze, decide, recommend.
+
+| Component | Status | Blocking |
+|-----------|--------|----------|
+| JITAI Decision Engine | ✅ Done | — |
+| Thompson Sampling | ✅ Done | — |
+| V-O Calculator | ✅ Done | — |
+| Gap Analysis Engine | 🔴 Not done | RQ-005/006/007 |
+| Recommendation Engine | 🔴 Not done | RQ-005/006/007 |
+| Dimension Inference | 🟡 Partial | RQ-003 tasks |
+
+---
+
+### Phase 3: User Experience
+**What It Is:** User-facing journeys that consume intelligence.
+
+| Journey | Status | Notes |
+|---------|--------|-------|
+| Onboarding (Sherlock) | 🟡 Partial | Works but prompt needs overhaul |
+| Daily Loop (Dashboard) | 🟡 Partial | Bridge + Skill Tree done |
+| Growth Path (Coaching) | 🔴 Not done | Blocked by Phase 2 |
+| Interventions | ✅ Done | JITAI-powered |
+
+---
+
+### Future Features (Not in Current Roadmap)
+These are parked until blocking decisions are made.
+
+| Feature | Blocking Decision |
+|---------|-------------------|
+| Living Garden | Visualization philosophy TBD |
+| Conversational CLI | CD-004 rejected this |
+| Power Words / Lexicon | Content strategy TBD |
+| Shadow Dialogue | IFS integration TBD |
+
+---
+
+## 📦 Legacy Layers (DEPRECATED)
+
+> **Note:** The "5 Parallel Layers" concept is deprecated. Use Phases + Tracks instead.
+> Retained below for historical reference only.
+
+<details>
+<summary>Click to expand deprecated layers</summary>
 
 ### Layer 1: The Evidence Engine (Foundation)
-**Goal:** Database schema with philosophical integrity + privacy guarantees.
-
-| ID | Task | Status |
-|----|------|--------|
-| E1 | **Schema Definition**: Create `identity_seeds` table in Supabase. | [x] |
-| E2 | **RLS Policies**: Enforce user-only access (psychometric data is sensitive). | [x] |
-| E3 | **Supabase Repository**: Create `SupabasePsychometricRepository` class. | [x] |
-| E4 | **Hybrid Provider**: Update `PsychometricProvider` to write Hive + Supabase. | [x] |
-| E5 | **Sync-on-Login**: Pull cloud profile on authentication. | [x] |
-| E6 | **Evidence API**: Log observable signals (emotion, tone) + AI-inferred constructs. | [ ] |
+**Status:** ✅ Mostly complete (5/6 tasks)
+- [x] Schema Definition
+- [x] RLS Policies
+- [x] Supabase Repository
+- [x] Hybrid Provider
+- [x] Sync-on-Login
+- [ ] Evidence API (E6)
 
 ### Layer 2: The Shadow & Values Profiler (Onboarding)
-**Goal:** Magic Wand Onboarding (Voice-First).
-- [ ] **Voice Wand**: 3-minute recording capture.
-- [ ] **Sherlock Profiler**: Extract Core Values + Shadow Archetype.
-- [ ] **Lazy TTS Refactor**: Switch `GeminiVoiceNoteService` to generate audio ONLY on "Play" click (Cost Savings).
-- [ ] **Shadow Dialogue**: Logic for "Talk to my [Perfectionist/Rebel] part".
+**Status:** 🟡 Partial — This is really onboarding, not a "layer"
 
 ### Layer 3: The Living Garden Visualization (UI)
-**Goal:** A responsive ecosystem, not a chart.
-- [ ] **Rive Integration:** `garden_ecosystem` state machine.
-- [ ] **Dynamic Inputs:** Wire `hexis_score`, `shadow_presence`, `season` to Rive controller.
-- [ ] **Atmospherics:** Weather effects based on user emotional state.
+**Status:** ❌ NOT IMPLEMENTED — Moved to Future Features
 
 ### Layer 4: The Conversational Command Line (Interaction)
-**Goal:** Fast, text/voice hybrid command discovery.
-- [ ] **Daemon CLI:** Command parsing (`log`, `check`, `gap`, `shadow`).
-- [ ] **Voice Interaction**: Enhanced `VoiceCoachScreen` supporting command routing.
+**Status:** ❌ REJECTED — See CD-004
 
 ### Layer 5: Philosophical Intelligence (The Brain)
-**Goal:** Real-time DeepSeek analysis.
-- [ ] **Gap Analysis Engine:** Detect dissonance between Stated Values and Behavior.
-- [ ] **Socratic Generator:** Turn "data" into "questions" (e.g., "Is this a seasonal dormancy?").
+**Status:** 🟡 Partial — DeepSeek exists, Gap Analysis Engine doesn't
+
+</details>
 
 ---
 
@@ -98,21 +173,23 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] **Betting Logic**: Inverse confidence slider + "Tough Truths AI" fallback.
 - [ ] **The Oracle**: Separate `VoiceSessionManager` state + Context Injection from Sherlock.
 
-### Track G-0: Terminology Alignment (URGENT — Prerequisite)
+### Track G-0: Terminology Alignment (Prerequisite)
 
-**Status:** 🔴 NOT STARTED — Blocks clear communication
+**Status:** ✅ COMPLETE (05 January 2026)
 
-| Task | Status | Priority | Notes |
-|------|--------|----------|-------|
-| Systematic GLOSSARY review | 🔴 NOT STARTED | **URGENT** | Terms undefined → miscommunication |
-| Habit vs Ritual decision | 🔴 NOT STARTED | HIGH | Are they separate concepts? (See GLOSSARY.md) |
-| Layer 3 "Living Garden" clarification | 🔴 NOT STARTED | MEDIUM | Does not exist in codebase — aspirational only |
-| Align terms across all Core docs | 🔴 NOT STARTED | HIGH | Ensure consistency |
+| Task | Status | Notes |
+|------|--------|-------|
+| Systematic GLOSSARY review | ✅ Done | Ghost terms identified, PGS hierarchy added |
+| Habit vs Ritual decision | 🟡 Deferred | Part of broader dashboard/recommendation architecture (RQ-005/006/007) |
+| Layer 3 "Living Garden" clarification | ✅ Done | Moved to Future Features, not a "layer" |
+| Align terms across all Core docs | ✅ Done | Behavioral dimensions, PGS, policies added |
+| Ghost Term Policy | ✅ Done | Added to GLOSSARY.md |
+| Signposting Guidance | ✅ Done | Added to GLOSSARY.md |
 
-**Why Urgent:**
-- Agents and human must share vocabulary
-- Undefined terms lead to conflicting implementations
-- GLOSSARY should be source of truth
+**Outcome:**
+- GLOSSARY now includes: Proactive Guidance System, Behavioral Dimensions, Ghost Term Policy
+- Deprecated terms marked: Hexis Score, Puck
+- Phase structure replaces Layer concept
 
 ---
 

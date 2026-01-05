@@ -1,6 +1,6 @@
 # PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
 
-> **Last Updated:** 05 January 2026 (Expanded with codebase context)
+> **Last Updated:** 05 January 2026 (Added PD-106, PD-107, Phase structure)
 > **Purpose:** Central source of truth for product decisions and open questions
 > **Owner:** Product Team (Oliver)
 
@@ -28,6 +28,35 @@ DEPENDENT DECISIONS (Tier 2)
 IMPLEMENTATION DETAILS (Tier 3)
     ↓ Can only be resolved after Tier 2
 ```
+
+---
+
+## RQ/PD Relationship
+
+**Key Principle:** Not all PDs require RQs, but all RQs should generate PDs if implementation decisions are needed.
+
+```
+RQ (Research Question)
+├── Open investigation — "What should we do?"
+├── Generates findings and recommendations
+└── If decision needed → Creates PD
+
+PD (Pending Decision)
+├── Awaiting human input — "Which option?"
+├── May or may not have RQ behind it
+└── Once resolved → Becomes CD
+
+CD (Confirmed Decision)
+├── Locked choice — implementation can proceed
+└── Rationale documented for future reference
+```
+
+**Examples:**
+- **RQ → PD:** RQ-011 (Multiple Identity research) → PD-106 (Multiple Identity decision)
+- **PD without RQ:** PD-004 (Dev Mode Purpose) — straightforward product choice, no research needed
+- **PD with multiple RQs:** PD-107 → requires RQ-005, RQ-006, RQ-007
+
+**Rule:** If a question is complex enough to need research, create an RQ first. If it's a straightforward choice between known options, create a PD directly.
 
 ---
 
@@ -103,7 +132,9 @@ These four decisions form the core value proposition chain.
 | **CD-012** | Git Workflow Protocol | 0 | — | — | LOW (process) |
 | **CD-013** | UI Logic Separation | 0 | — | — | MEDIUM (code quality) |
 | **CD-014** | Core File Guardrails | 0 | — | — | **CRITICAL** (agent context) |
-| **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, Research | CD-008,9,11 | **CRITICAL** (architecture) — NEEDS RESEARCH |
+| **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, Research | CD-008,9,11 | **CRITICAL** (architecture) — SUPERSEDED by PD-107 |
+| **PD-106** | Multiple Identity Architecture | 1 | RQ-011 | Phase 1,2,3 | **CRITICAL** (data model) — NEEDS RESEARCH |
+| **PD-107** | Proactive Guidance System | 1 | RQ-005,6,7 | Gap Analysis, Recommendations | **CRITICAL** (intelligence) — NEEDS RESEARCH |
 
 **Impact Legend:**
 - **CRITICAL:** Foundational to product identity; changes ripple everywhere
@@ -563,6 +594,119 @@ These decisions BLOCK other work. They must be resolved first.
 | **Resolution** | 6-dimension continuous model with 4 UI clusters |
 | **Date** | 05 January 2026 |
 | **Research** | RQ-001 in RESEARCH_QUESTIONS.md |
+
+---
+
+### PD-106: Multiple Identity Architecture
+| Field | Value |
+|-------|-------|
+| **Question** | How should the app handle users with multiple aspirational identities? |
+| **Status** | 🔴 PENDING — Requires Research (RQ-011) |
+| **Priority** | **CRITICAL** — Fundamental to data model and philosophy |
+| **Blocking** | Phase 1 (schema), Phase 2 (recommendations), Phase 3 (dashboard) |
+| **Research** | RQ-011 in RESEARCH_QUESTIONS.md |
+
+**The Core Question:**
+Users have multiple aspirational identities ("Worldclass SaaS Salesman" + "Consistent Swimmer" + "Present Father"). How do we:
+1. Capture them?
+2. Track progress for each?
+3. Handle conflicts between them?
+4. Prioritize recommendations?
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Single Identity** | Force one primary identity | Simple data model, clear focus | Limiting, doesn't reflect reality |
+| **B: Multiple + Conflict Detection** | Allow multiple, AI flags conflicts | Deep reflection opportunity | Complex logic |
+| **C: Multiple + User Resolves** | Allow multiple, user handles conflicts | Maximum autonomy | May overwhelm user |
+| **D: Hierarchical** | Primary + secondary identities | Clear prioritization | Artificial hierarchy |
+
+**Example Conflict:**
+- Identity 1: "Early Riser" → wake 5am, morning run
+- Identity 2: "Night Owl Creative" → work until 2am, sleep late
+- These directly conflict — what should the app do?
+
+**Philosophical Opportunity:**
+Identity conflicts could be the app's MOST valuable coaching moments. Surfacing tension between "who I want to be" in different domains enables genuine self-reflection.
+
+**Data Model Implications:**
+```
+Current: User → 1 Identity → N Habits
+Option B: User → N Identities → N Habits (many-to-many?)
+         Identity → Dimension Vector (per identity or composite?)
+```
+
+**Questions to Resolve:**
+1. Max number of identities?
+2. Can habits serve multiple identities?
+3. Does each identity have its own dimension vector?
+4. How does dashboard visualize multiple identities?
+5. How do conflicts surface in coaching?
+
+---
+
+### PD-107: Proactive Guidance System Architecture
+| Field | Value |
+|-------|-------|
+| **Question** | How should the Proactive Guidance System (PGS) be architected? |
+| **Status** | 🔴 PENDING — Requires Research (RQ-005, RQ-006, RQ-007) |
+| **Priority** | **CRITICAL** — Defines core intelligence architecture |
+| **Blocking** | Gap Analysis Engine, Recommendation Engine, Content structure |
+| **Supersedes** | Clarifies relationship between JITAI, Content Library, and Identity Coach |
+
+**The Problem:**
+Three overlapping concepts need reconciliation:
+- **JITAI** — When and how to intervene (timing, channel)
+- **Content Library** — What to say (templates, messages)
+- **Identity Coach** — The philosophy of guiding identity development
+
+**Proposed Architecture:**
+
+```
+PROACTIVE GUIDANCE SYSTEM (umbrella)
+├── Aspiration Extraction (via Sherlock)
+│   └── Captures: Holy Trinity + Aspirational Identities
+│
+├── Guidance Content (renamed from "Content Library")
+│   ├── Habit recommendation templates
+│   ├── Ritual templates
+│   ├── Intervention messages (4 variants per archetype)
+│   └── Coaching insights
+│
+├── Gap Analysis Engine
+│   ├── Detects value-behavior dissonance
+│   └── Generates Socratic questions
+│
+├── Recommendation Engine
+│   ├── What habits/rituals to suggest
+│   └── Based on aspirational identity + gaps
+│
+└── JITAI (unchanged)
+    ├── When to deliver (V-O calculation)
+    ├── How to deliver (channel selection)
+    └── Learning (Thompson Sampling)
+```
+
+**Key Insight:**
+JITAI is ONE COMPONENT of PGS, not a separate system. JITAI handles timing. Recommendation Engine handles content selection. Gap Analysis feeds both.
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Unified PGS** | Single integrated system | Coherent experience, single source of truth | Complex, harder to test |
+| **B: Modular Components** | Separate systems with integration | Easier to test/maintain | Integration overhead |
+| **C: Hybrid** | PGS orchestrates, components are modular | Best of both | Requires clear interfaces |
+
+**Recommendation:** Option C (Hybrid) — PGS as orchestration layer, components remain modular but coordinated.
+
+**Related Decisions:**
+- PD-105 (Unified AI Coaching Architecture) — This supersedes and clarifies
+- CD-008 (Identity Development Coach) — This implements
+- CD-009 (Content Library) — Renamed to "Guidance Content"
+
+**Research Required:** RQ-005 (Algorithms), RQ-006 (Content), RQ-007 (Roadmap Architecture)
 
 **Code References:**
 | File | Lines | What It Does |

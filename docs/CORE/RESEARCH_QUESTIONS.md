@@ -1,6 +1,6 @@
 # RESEARCH_QUESTIONS.md — Active Research & Open Questions
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 05 January 2026 (Added RQ-010, RQ-011, Implementation Tasks Process)
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
 > **Status:** RQ-001 RESEARCH COMPLETE — Awaiting human decision on implementation
@@ -406,6 +406,154 @@ Current AI_AGENT_PROTOCOL.md Protocol 2 states:
 
 ---
 
+### RQ-010: Permission Data Philosophy
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should permission-gated data (Health, Location, Usage) be captured, stored, and used to inform identity coaching? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Affects architecture across all phases |
+| **Blocking** | Phase 2 (Intelligence), JITAI refinement, Gap Analysis Engine |
+| **Assigned** | Dedicated session required |
+
+**Context:**
+The app requests extensive permissions but hasn't formalized:
+- What data we actually use from each permission
+- How it flows into coaching decisions
+- Privacy/storage implications
+- User transparency expectations
+
+**Current Permissions Captured:**
+
+| Permission | Data Available | Currently Used? | Notes |
+|------------|---------------|-----------------|-------|
+| **Health** | Sleep duration, HRV, stress | 🟡 Partial | Z-scored for V-O calculation |
+| **Location** | GPS coordinates, zone | 🟡 Partial | Location zone for context |
+| **Calendar** | Meeting count, free windows | 🟡 Partial | Busyness context |
+| **Usage** | Screen time, app usage | 🟡 Partial | Doom scrolling detection |
+| **Notifications** | Enabled/disabled | ✅ Yes | JITAI channel selection |
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | What signals from each permission actually predict intervention effectiveness? | Research needed |
+| 2 | How do we communicate data usage to users (transparency)? | UX/Legal |
+| 3 | What's the storage model? (Ephemeral vs persistent, local vs cloud) | Architecture |
+| 4 | How does each signal feed into the 6-dimension model? | Intelligence |
+| 5 | What happens if user revokes permission mid-use? | Graceful degradation |
+| 6 | Should any permissions be optional? | Product philosophy |
+| 7 | What additional permissions should we request? | Expansion |
+
+**User Direction (05 Jan 2026):**
+> "My gut tells me to make nothing optional and ask for everything because that is what I want for myself."
+
+**Output Expected:**
+- Permission-to-signal mapping
+- Storage architecture for each data type
+- Integration with 6-dimension model
+- User transparency design
+- Graceful degradation strategy
+
+**Note:** Requires dedicated session to flesh out properly.
+
+---
+
+### RQ-011: Multiple Identity Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should the app handle users with multiple aspirational identities? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **CRITICAL** — Fundamental to data model, coaching logic, and philosophy |
+| **Blocking** | Phase 1 (schema), Phase 2 (recommendations), Phase 3 (dashboard) |
+| **Related PD** | PD-106 (Product Decision required) |
+
+**Context:**
+Users have multiple aspirational identities:
+- "Worldclass SaaS Salesman"
+- "Consistent Swimmer"
+- "Present Father"
+- "Morning Person"
+
+These may complement or conflict with each other.
+
+**Sub-Questions:**
+
+| # | Question | Options | Implications |
+|---|----------|---------|--------------|
+| 1 | How many identities can a user have? | 1, 3, unlimited | Data model, UI complexity |
+| 2 | Do identities have hierarchy? | Primary/secondary, equal | Recommendation prioritization |
+| 3 | Can identities conflict? | Yes (detect), No (ignore) | Conflict detection logic |
+| 4 | What does conflict mean philosophically? | Trade-off, integration, surfacing | Coaching response |
+| 5 | Do habits belong to identities? | 1:1, many:many | Data model |
+| 6 | Does each identity have its own dimension vector? | Yes, No, Composite | JITAI complexity |
+| 7 | How does dashboard show multiple identities? | Tabs, unified, toggle | UI design |
+
+**Example Conflict:**
+```
+Identity 1: "Early Riser"
+  → Habits: Wake 5am, morning run
+
+Identity 2: "Night Owl Creative"
+  → Habits: Work until 2am, sleep late
+
+These directly conflict. What should the app do?
+```
+
+**Philosophical Depth:**
+This touches on "Who am I really?" — a core human question. Options:
+- **A) Force single primary identity** — simpler but limiting
+- **B) Allow multiple, flag conflicts** — deeper reflection opportunity
+- **C) Allow multiple, user resolves** — maximum autonomy
+
+**Opportunity:**
+Identity conflicts could be the app's MOST valuable coaching moments — surfacing the tension between "who I want to be" in different domains.
+
+**Output Expected:**
+- Data model for multiple identities
+- Conflict detection algorithm
+- Coaching strategy for conflicts
+- Dashboard UX for multiple identities
+- Recommendation engine changes
+
+---
+
+## Implementation Tasks from Research
+
+**Purpose:** Track actionable items generated by completed research.
+
+**Process:**
+1. When research generates actionable items → Log here
+2. If HIGH priority → Add to relevant Track in ROADMAP.md
+3. If needs decision first → Create PD in PRODUCT_DECISIONS.md
+
+### From RQ-002 (Intervention Effectiveness)
+
+| Task | Priority | Status | Track |
+|------|----------|--------|-------|
+| Post-intervention emotion capture | MEDIUM | 🔴 NOT STARTED | Track D |
+| Retention cohort tracking | LOW | 🔴 NOT STARTED | Track D |
+| Micro-feedback prompt (👍/👎) | LOW | 🔴 NOT STARTED | Track D |
+
+### From RQ-003 (Dimension Tracking)
+
+| Task | Priority | Status | Track |
+|------|----------|--------|-------|
+| Add `decision_time_ms` tracking | HIGH | 🔴 NOT STARTED | Track A |
+| Calculate schedule entropy from time_context | MEDIUM | 🔴 NOT STARTED | Track D |
+| Track notification open source (push vs organic) | MEDIUM | 🔴 NOT STARTED | Track D |
+
+### From RQ-004 (Migration Strategy)
+
+| Task | Priority | Status | Track |
+|------|----------|--------|-------|
+| Add 3 onboarding questions for cold-start | HIGH | 🔴 NOT STARTED | Track B |
+| Pass 6-float vector to Thompson Sampling | HIGH | 🔴 NOT STARTED | Track D |
+| Implement Holy Trinity "Emergency Mode" | MEDIUM | 🔴 NOT STARTED | Track D |
+
+---
+
 ## Open Questions for Human Decision
 
 These require Oliver's input before implementation:
@@ -468,24 +616,38 @@ RQ-001 (Archetype Taxonomy) ✅ COMPLETE
     └── RQ-004 (Migration Strategy) ✅ COMPLETE
 
 UNBLOCKED DECISIONS:
-    ├── PD-001 (Archetype Philosophy) → READY FOR DECISION
+    ├── PD-001 (Archetype Philosophy) → ✅ RESOLVED via CD-005
     └── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
+
+PENDING RESEARCH (Core Architecture - BLOCKING):
+RQ-010 (Permission Data Philosophy) 🔴 NEEDS RESEARCH
+    └── Blocks: Phase 2 Intelligence, JITAI refinement, Gap Analysis
+RQ-011 (Multiple Identity Architecture) 🔴 NEEDS RESEARCH
+    └── Blocks: Phase 1 Schema, Phase 2 Recommendations, Phase 3 Dashboard
+    └── Related: PD-106
 
 PENDING RESEARCH (Identity Coach - Core Value Proposition):
 RQ-005 (Proactive Recommendation Algorithms) 🔴 NEEDS RESEARCH
-    └── RQ-006 (Content Library) 🔴 NEEDS RESEARCH
+    └── RQ-006 (Content Library → Guidance Content) 🔴 NEEDS RESEARCH
         └── RQ-007 (Identity Roadmap Architecture) 🔴 NEEDS RESEARCH
-            └── Blocks: CD-008, CD-009, CD-011, PD-105
+            └── Blocks: CD-008, CD-009, CD-011, PD-105, PD-107
 
 PENDING RESEARCH (Process/Code Quality):
 RQ-008 (UI Logic Separation) 🔴 NEEDS RESEARCH → Blocks CD-013
 RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 ```
 
+**RQ/PD Hierarchy:**
+- Not all PDs require RQs (some are straightforward product choices)
+- All RQs should generate PDs if implementation decisions are needed
+- RQs are research; PDs are decisions; CDs are confirmed decisions
+
 **Research Priority Order:**
-1. **CRITICAL:** RQ-005, RQ-006 (Identity Coach is core value prop)
-2. **HIGH:** RQ-007 (Enables Identity Roadmap)
-3. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
+1. **BLOCKING:** RQ-011 (Multiple Identities — fundamental to data model)
+2. **BLOCKING:** RQ-005, RQ-006 (Proactive Guidance System — core value prop)
+3. **HIGH:** RQ-010 (Permission Data — affects all phases)
+4. **HIGH:** RQ-007 (Identity Roadmap Architecture)
+5. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
 
 ---
 
