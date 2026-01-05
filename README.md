@@ -3,9 +3,108 @@
 > **"The Atomic Unit is Identity Evidence."**
 
 A philosophical identity engine that turns daily actions into evidence of who you are becoming.
-Built on **Flutter** (Mobile) with a **5-Layer Hybrid AI Architecture**.
+Built on **Flutter** (Mobile) with a hybrid AI architecture.
 
 **Live URL:** [thepact.co](https://thepact.co)
+
+---
+
+## AI Agents: Start Here
+
+If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MUST** follow this protocol.
+
+### Mandatory Reading Order
+
+```
+1. README.md (this file) ← YOU ARE HERE
+2. docs/CORE/AI_HANDOVER.md (session context from last agent)
+3. docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
+4. docs/CORE/GLOSSARY.md (terminology definitions)
+5. AI_CONTEXT.md (technical architecture — note: may contain stale info)
+6. ROADMAP.md (current priorities)
+```
+
+### Before Making ANY Code Changes
+
+- [ ] Read AI_HANDOVER.md completely
+- [ ] Check PRODUCT_DECISIONS.md for PENDING items that block your work
+- [ ] Understand the terminology in GLOSSARY.md
+- [ ] Identify your session scope (docs only? code? both?)
+
+### Before Ending Your Session
+
+- [ ] Update AI_HANDOVER.md with what you accomplished and what remains
+- [ ] Update PRODUCT_DECISIONS.md if you discovered new questions
+- [ ] Commit your changes with descriptive messages
+- [ ] Push to your branch
+
+**Critical Rule:** Do NOT implement features marked as PENDING in PRODUCT_DECISIONS.md. Wait for human confirmation.
+
+---
+
+## Documentation Structure
+
+### Document Hierarchy
+
+Understanding the relationship between documents prevents conflicting decisions:
+
+```
+PRODUCT_DECISIONS.md (Philosophy — why we make choices)
+    ↓ Confirmed decisions inform
+ROADMAP.md (Direction — where we're going)
+    ↓ Prioritized work informs
+AI_CONTEXT.md (Technical Truth — what exists now)
+    ↓ Architecture informs
+Code Changes
+```
+
+**Key Insight:** Product decisions must be CONFIRMED before they appear in ROADMAP. ROADMAP items must be prioritized before implementation.
+
+### Core Documents (Agent-Critical)
+
+| Document | Type | Purpose | When to Update |
+|----------|------|---------|----------------|
+| **README.md** | Entry Point | Project overview, AI protocol | When fundamentals change |
+| **[AI_CONTEXT.md](./AI_CONTEXT.md)** | Technical Truth | What exists NOW | When architecture changes |
+| **[ROADMAP.md](./ROADMAP.md)** | Direction | Where we're going | When priorities change |
+| **[CHANGELOG.md](./CHANGELOG.md)** | History | Version history | Every release |
+
+### Core Folder (`/docs/CORE/`)
+
+| Document | Type | Purpose | When to Update |
+|----------|------|---------|----------------|
+| **[AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | What the last agent did | Every session end |
+| **[PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Why we chose X over Y | When decisions made/needed |
+| **[GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Definition of all terms | When new terms introduced |
+
+### What Makes a Core Document
+
+A document is "Core" if it meets ALL criteria:
+1. **Referenced by AI agents** before making decisions
+2. **Updated when state changes** (not just initially created)
+3. **Clearly labelled** as one of:
+   - Truth (what exists now)
+   - Direction (where we're going)
+   - Philosophy (why we make choices)
+   - Context (what happened in past sessions)
+4. **Has clear ownership** (who is responsible for updates)
+
+### Other Documentation
+
+| Folder | Purpose |
+|--------|---------|
+| `/docs/` | Technical guides (build, OAuth, testing) |
+| `/docs/archive/` | Historical documents (DEPRECATED — reference only) |
+| `/docs/audits/` | Code audit reports |
+| `/docs/architecture/` | Architecture decision records |
+
+### Archive Documents Warning
+
+Files in `/docs/archive/` are **DEPRECATED**. They:
+- Reference old commits, phases, and approaches
+- Should NOT be treated as current truth
+- Exist for historical reference only
+- Will be audited individually in a future sprint
 
 ---
 
@@ -36,9 +135,9 @@ We are not building a habit tracker. We are building an **Identity Evidence Engi
 |-----------|-------------|
 | **Atomic Unit** | **Identity Evidence**. Not "Checkboxes". |
 | **Analysis** | **Gap Analysis**. The AI detects dissonance between your Stated Values and your Observed Behavior. |
-| **Interaction** | **Conversational CLI**. Talk to your Shadow (Jungian Archetypes). |
-| **Visuals** | **Living Garden**. A user interface that responds to your Hexis score (seasons, weather, growth). |
-| **Voice First** | **Magic Wand Onboarding**. 3 Minutes to extract your Core Values and Shadow. |
+| **Interaction** | **Voice & Chat**. Natural conversation with AI coaching personas. |
+| **Visuals** | **Living Garden**. A responsive UI (PLANNED — not yet implemented). |
+| **Voice First** | **Magic Wand Onboarding**. Sherlock extracts your Core Values and Shadow (Holy Trinity). |
 
 ---
 
@@ -87,32 +186,28 @@ Create `secrets.json` in project root:
 
 ## 📖 Documentation
 
-### Core Documentation
+> **Note:** See "Documentation Structure" section above for the full hierarchy and reading order.
 
-| File | Purpose |
-|------|---------|
-| **[AI_CONTEXT.md](./AI_CONTEXT.md)** | AI assistant context, architecture, feature matrix |
-| **[ROADMAP.md](./ROADMAP.md)** | Sprint history, priorities, technical debt |
-| **[CHANGELOG.md](./CHANGELOG.md)** | Version history |
+### Core Documents
+
+| File | Type | Purpose |
+|------|------|---------|
+| **[AI_CONTEXT.md](./AI_CONTEXT.md)** | Technical Truth | Architecture, feature matrix |
+| **[ROADMAP.md](./ROADMAP.md)** | Direction | Current priorities |
+| **[CHANGELOG.md](./CHANGELOG.md)** | History | Version history |
+| **[docs/CORE/AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | Last agent's work |
+| **[docs/CORE/PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Confirmed & pending decisions |
+| **[docs/CORE/GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Term definitions |
 
 ### Technical Guides
 
 | Guide | Purpose |
 |-------|---------|
 | **[docs/BUILD_PIPELINE.md](./docs/BUILD_PIPELINE.md)** | Build commands and pipelines |
-| **[docs/dt.md](./docs/dt.md)** | Testing the Gemini Live connection |
+| **[docs/dt.md](./docs/dt.md)** | Device Testing & Golden Command Chain |
 | **[docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md)** | Google Sign-In configuration |
 | **[docs/ARCHITECTURE_MIGRATION.md](./docs/ARCHITECTURE_MIGRATION.md)** | Provider architecture guide |
-| **[docs/dt.md](./docs/dt.md)** | **NEW** Device Testing & Golden Command Chain |
-
-### Gemini Live API
-
-| Document | Purpose |
-|----------|---------|
-| **[docs/PHASE_38_LOG_CONSOLE.md](./docs/PHASE_38_LOG_CONSOLE.md)** | In-App Log Console |
-| **[docs/PHASE_37_PRODUCTION_READY.md](./docs/PHASE_37_PRODUCTION_READY.md)** | Production headers fix |
-| **[docs/PHASE_36_ERROR_ANALYSIS.md](./docs/PHASE_36_ERROR_ANALYSIS.md)** | 403 Forbidden analysis |
-| **[docs/GEMINI_LIVE_API_RESEARCH.md](./docs/GEMINI_LIVE_API_RESEARCH.md)** | API research notes |
+| **[docs/GEMINI_LIVE_API_RESEARCH.md](./docs/GEMINI_LIVE_API_RESEARCH.md)** | Gemini API research notes |
 
 ---
 
