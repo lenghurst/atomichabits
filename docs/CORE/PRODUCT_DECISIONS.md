@@ -41,7 +41,7 @@ RQ (Research Question)
 ├── Generates findings and recommendations
 └── If decision needed → Creates PD
 
-PD (Pending Decision)
+PD (Product Decision - Pending)
 ├── Awaiting human input — "Which option?"
 ├── May or may not have RQ behind it
 └── Once resolved → Becomes CD
@@ -50,6 +50,11 @@ CD (Confirmed Decision)
 ├── Locked choice — implementation can proceed
 └── Rationale documented for future reference
 ```
+
+**Terminology:**
+- **RQ** = Research Question (investigation)
+- **PD** = Product Decision (pending choice)
+- **CD** = Confirmed Decision (locked choice)
 
 **Examples:**
 - **RQ → PD:** RQ-011 (Multiple Identity research) → PD-106 (Multiple Identity decision)

@@ -770,6 +770,8 @@ The Gap Analysis Engine speaks to fundamental questions about how the app operat
 
 **Purpose:** When to reference this GLOSSARY from other documents.
 
+**Rule:** Document this practice in all Core docs that use specialized terms.
+
 **When to Signpost:**
 | Scenario | Action |
 |----------|--------|
@@ -784,3 +786,5 @@ The Gap Analysis Engine speaks to fundamental questions about how the app operat
 
 **Example:**
 > The Proactive Guidance System (see GLOSSARY.md) orchestrates all coaching intelligence, with JITAI handling timing decisions.
+
+**For AI Agents:** When writing documentation, signpost on first use of terms defined in GLOSSARY.md. This ensures consistent understanding across sessions and developers.

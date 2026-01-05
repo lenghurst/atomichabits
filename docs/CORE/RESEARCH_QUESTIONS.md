@@ -525,8 +525,12 @@ Identity conflicts could be the app's MOST valuable coaching moments — surfaci
 
 **Process:**
 1. When research generates actionable items → Log here
-2. If HIGH priority → Add to relevant Track in ROADMAP.md
+2. **All tasks go to ROADMAP.md:**
+   - HIGH/CRITICAL priority → Add to relevant Track in current Roadmap
+   - LOW/MEDIUM priority → Add to Future Features section
 3. If needs decision first → Create PD in PRODUCT_DECISIONS.md
+
+**Rule:** Nothing gets lost. Every actionable item ends up in either the active Roadmap or Future Features.
 
 ### From RQ-002 (Intervention Effectiveness)
 
@@ -640,7 +644,11 @@ RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 **RQ/PD Hierarchy:**
 - Not all PDs require RQs (some are straightforward product choices)
 - All RQs should generate PDs if implementation decisions are needed
-- RQs are research; PDs are decisions; CDs are confirmed decisions
+
+**Terminology:**
+- **RQ** = Research Question (investigation)
+- **PD** = Product Decision (pending choice)
+- **CD** = Confirmed Decision (locked choice)
 
 **Research Priority Order:**
 1. **BLOCKING:** RQ-011 (Multiple Identities — fundamental to data model)
