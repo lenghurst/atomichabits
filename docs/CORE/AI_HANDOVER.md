@@ -36,28 +36,44 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `ai-coordination-setup-continued` |
+| **Session ID** | `strategic-foundation-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~45 mins (continued session) |
-| **Focus** | Research Coordination for PD-001 (Archetype Philosophy) |
+| **Duration** | ~2 hours (comprehensive session) |
+| **Focus** | Research Synthesis + Strategic Foundation + Protocol Establishment |
 
 ### What Was Accomplished
-- **🎉 RESEARCH COMPLETE (This Session):**
+- **🎉 RESEARCH COMPLETE:**
   - **ChatGPT:** Validated intervention effectiveness measurement (RQ-002)
   - **Gemini Deep Research:** Proposed 6-dimension hexagonal phenotype model
-  - **Gemini Deep Think:** Synthesized both into actionable architecture (RQ-004)
-  - **Outcome:** 6-float backend vector + 4 UI clusters recommended
-  - **See:** `docs/CORE/RESEARCH_QUESTIONS.md` for full findings
-- **Key Deliverables:**
-  - RQ-001: Minimum viable archetype taxonomy ✅
-  - RQ-002: Intervention effectiveness measurement ✅
-  - RQ-003: Dimension-to-tracking mapping ✅
-  - RQ-004: Archetype migration strategy ✅
-- **Previous Session Work:**
-  - Created symlink `AI_HANDOVER.md` → `docs/CORE/AI_HANDOVER.md` at project root
-  - Expanded ALL Tier 1 & Tier 2 Pending Decisions with codebase context
-  - Created `docs/CORE/RESEARCH_QUESTIONS.md` for cross-agent research tracking
+  - **Gemini Deep Think:** Synthesized both into actionable architecture
+  - **Outcome:** 6-float backend vector + 4 UI clusters + 7th social dimension planned
+
+- **📋 NEW CONFIRMED DECISIONS (CD-005 to CD-010):**
+  - CD-005: 6-Dimension Archetype Model
+  - CD-006: GPS Permission Usage (full GPS, time-only option)
+  - CD-007: Social Leaderboard + 7th Dimension
+  - CD-008: Proactive Analytics Engine
+  - CD-009: Content Library Priority
+  - CD-010: Retention Tracking Philosophy (dual perspective)
+
+- **📚 NEW CORE DOCUMENTS CREATED:**
+  - `docs/CORE/AI_AGENT_PROTOCOL.md` — Mandatory AI behaviors (6 protocols)
+  - `docs/CORE/IMPACT_ANALYSIS.md` — Research-to-roadmap traceability
+  - `docs/CORE/PROACTIVE_ENGINE_SPEC.md` — AI recommendation system spec
+
+- **🔍 GAPS IDENTIFIED:**
+  - **Proactive Analytics Engine:** JITAI is reactive; need proactive recommendations
+  - **Content Library:** 28 JITAI + 125+ proactive messages needed
+  - **Social Features:** Required for 7th dimension
+
+- **✅ PROTOCOL ESTABLISHED:**
+  - Research-to-Roadmap Cascade (mandatory)
+  - Clean Code Reconciliation (functionality first)
+  - AI Acceleration Timeline (final version default)
+  - Dual-Perspective Analysis (App + User)
+  - Gap Identification (proactive vs reactive)
+  - Content-Capability Parity check
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -71,14 +87,17 @@ This prevents:
 ### Blockers Awaiting Human Input
 | Blocker | Question | Status |
 |---------|----------|--------|
-| Archetype Philosophy (PD-001) | Hardcoded vs Dynamic vs Hybrid? | ✅ RESEARCH COMPLETE — READY FOR DECISION |
-| JITAI Architecture (PD-102) | Hardcoded vs AI-driven? | ✅ RESEARCH COMPLETE — READY FOR DECISION |
-| People Pleaser Archetype | Keep (add social dimension) or delete? | ⚠️ NEEDS DECISION |
-| Content Library | Need 4 message variants per trigger | ⚠️ NEEDS DECISION |
-| Streaks vs Consistency (PD-002) | Use `gracefulScore` or `currentStreak`? | BLOCKED |
-| Holy Trinity Validity (PD-003) | Is 3-trait model sufficient? | BLOCKED |
+| Archetype Philosophy (PD-001) | Hardcoded vs Dynamic vs Hybrid? | ✅ DECIDED → CD-005 (6-dimension model) |
+| JITAI Architecture (PD-102) | Hardcoded vs AI-driven? | ✅ DECIDED → CD-005 (dimensions as context vector) |
+| People Pleaser Archetype | Keep (add social dimension) or delete? | ✅ DECIDED → CD-007 (keep, add 7th dimension with social features) |
+| Content Library | Need 4 message variants per trigger | ✅ DECIDED → CD-009 (HIGH PRIORITY) |
+| Proactive Engine | Need recommendation system? | ✅ DECIDED → CD-008 (build alongside JITAI) |
+| Retention Tracking | How to measure? | ✅ DECIDED → CD-010 (dual perspective) |
+| GPS Usage | Full or time-only? | ✅ DECIDED → CD-006 (full GPS, option for time-only) |
+| Streaks vs Consistency (PD-002) | Use `gracefulScore` or `currentStreak`? | BLOCKED — Impacted by dimensions |
+| Holy Trinity Validity (PD-003) | Is 3-trait model sufficient? | BLOCKED — Maps to dimensions |
 | Dev Mode Purpose (PD-004) | Rename `developerMode` → `isPremium`? | BLOCKED |
-| Sherlock Prompt (PD-101) | Which of 2 prompts is canonical? | BLOCKED |
+| Sherlock Prompt (PD-101) | Which of 2 prompts is canonical? | BLOCKED — Needs dimension extraction |
 
 ---
 

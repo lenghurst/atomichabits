@@ -21,8 +21,10 @@ If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MU
 3. docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
 4. docs/CORE/GLOSSARY.md (terminology definitions)
 5. docs/CORE/RESEARCH_QUESTIONS.md (active research — check before implementing)
-6. AI_CONTEXT.md (technical architecture — note: may contain stale info)
-7. ROADMAP.md (current priorities)
+6. docs/CORE/AI_AGENT_PROTOCOL.md (mandatory AI behaviors)
+7. docs/CORE/IMPACT_ANALYSIS.md (research-to-roadmap traceability)
+8. AI_CONTEXT.md (technical architecture — note: may contain stale info)
+9. ROADMAP.md (current priorities)
 ```
 
 ### Before Making ANY Code Changes
@@ -78,6 +80,9 @@ Code Changes
 | **[PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Why we chose X over Y | When decisions made/needed |
 | **[GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Definition of all terms | When new terms introduced |
 | **[RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Active Research | Cross-agent research tracking | When research progresses |
+| **[AI_AGENT_PROTOCOL.md](./docs/CORE/AI_AGENT_PROTOCOL.md)** | Behavioral Rules | Mandatory AI agent behaviors | When protocols change |
+| **[IMPACT_ANALYSIS.md](./docs/CORE/IMPACT_ANALYSIS.md)** | Traceability | Research → Roadmap impacts | After research/decisions |
+| **[PROACTIVE_ENGINE_SPEC.md](./docs/CORE/PROACTIVE_ENGINE_SPEC.md)** | Specification | AI recommendation system | When spec evolves |
 
 ### What Makes a Core Document
 

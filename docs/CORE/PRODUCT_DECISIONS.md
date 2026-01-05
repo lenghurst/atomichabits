@@ -70,6 +70,80 @@ IMPLEMENTATION DETAILS (Tier 3)
 | **Rationale** | Developer-style interface is incongruent with consumer wellness app |
 | **Alternative** | Natural language chat already exists |
 
+### CD-005: 6-Dimension Archetype Model
+| Field | Value |
+|-------|-------|
+| **Decision** | Use 6-dimension continuous model with 4 UI clusters |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Research** | ChatGPT + Gemini Deep Research + Gemini Deep Think |
+| **Rationale** | Research-validated dimensions predict intervention response |
+| **Documentation** | See `docs/CORE/RESEARCH_QUESTIONS.md` RQ-001 |
+
+**The 6 Dimensions:**
+1. Regulatory Focus (Promotion ↔ Prevention)
+2. Autonomy/Reactance (Rebel ↔ Conformist)
+3. Action-State Orientation (Executor ↔ Overthinker)
+4. Temporal Discounting (Future ↔ Present)
+5. Perfectionistic Reactivity (Adaptive ↔ Maladaptive)
+6. Social Rhythmicity (Stable ↔ Chaotic)
+
+**The 4 UI Clusters:**
+- The Defiant Rebel
+- The Anxious Perfectionist
+- The Paralyzed Procrastinator
+- The Chaotic Discounter
+
+### CD-006: GPS Permission Usage
+| Field | Value |
+|-------|-------|
+| **Decision** | Use full GPS for schedule entropy calculation |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | Permission already granted; provides better signal for Social Rhythmicity dimension |
+| **Action Required** | Add "time-only" option in Settings for privacy-conscious users |
+
+### CD-007: Social Leaderboard + 7th Dimension
+| Field | Value |
+|-------|-------|
+| **Decision** | Add Social Leaderboard feature AND Social Sensitivity as 7th dimension |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | Social features enable valuable dimension; causality needs further study |
+| **Dependencies** | Social Leaderboard must be built before 7th dimension is activated |
+| **Action Required** | Add to roadmap as new track |
+
+### CD-008: Proactive Analytics Engine
+| Field | Value |
+|-------|-------|
+| **Decision** | Build Proactive Analytics Engine alongside JITAI |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | JITAI is reactive; need proactive system for habit/ritual/progression recommendations |
+| **Specification** | See `docs/CORE/PROACTIVE_ENGINE_SPEC.md` |
+| **Action Required** | Add to roadmap, identify content library requirements |
+
+### CD-009: Content Library Priority
+| Field | Value |
+|-------|-------|
+| **Decision** | Content Library is HIGH PRIORITY — blocks algorithm optimization |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | "We have the detection logic, but do we have the Copy?" |
+| **Requirements** | 28 JITAI messages (7 arms × 4 framings) + 125+ proactive recommendations |
+| **Action Required** | Create content generation workstream |
+
+### CD-010: Retention Tracking Philosophy
+| Field | Value |
+|-------|-------|
+| **Decision** | Track retention from DUAL perspectives (App + User) |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **App Perspective** | Retention rate, cohort analysis, intervention attribution |
+| **User Perspective** | "Graduation rate" as positive metric, goal achievement tracking |
+| **Rationale** | App success ≠ User success; both must be measured |
+| **Action Required** | Design metrics that capture both perspectives |
+
 ---
 
 ## Pending Decisions — Tier 1 (Foundational)
@@ -80,9 +154,10 @@ These decisions BLOCK other work. They must be resolved first.
 | Field | Value |
 |-------|-------|
 | **Question** | Should archetypes be hardcoded buckets or dynamically AI-generated? |
-| **Status** | PENDING |
-| **Blocking** | Evolution logic, coaching personalization, JITAI seeding |
-| **Current State** | 6 hardcoded archetypes with PERFECTIONIST as fallback |
+| **Status** | ✅ RESOLVED → See CD-005 |
+| **Resolution** | 6-dimension continuous model with 4 UI clusters |
+| **Date** | 05 January 2026 |
+| **Research** | RQ-001 in RESEARCH_QUESTIONS.md |
 
 **Code References:**
 | File | Lines | What It Does |
