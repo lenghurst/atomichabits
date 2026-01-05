@@ -102,6 +102,14 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 
 ## ✅ Completed Legacy Phases (Reference)
 
+### Phase 68.5: Onboarding Polish & Tech Debt (05 Jan 2026)
+**Goal:** Harden reliability, add observability, and standardizing error handling.
+- [x] **Testing Suite:** 3 Integration Suites (Identity/Conversational/Offline) + Unit Tests. 
+- [x] **Analytics:** `AnalyticsService` singleton implementation.
+- [x] **Resilience:** `RetryPolicy` for Auth & Psychometric sync.
+- [x] **Critical Fix:** `hasHolyTrinity` (OR -> AND) logic correction.
+- [x] **Documentation:** `ADR 002` (Dual Flows) & Loading State polish.
+
 ### Phase 67: Dashboard Redesign & JITAI Integration (04 Jan 2026)
 **Goal:** Integrated interface for Doing (habits) + Being (identity).
 - [x] **Binary Interface:** Split Dashboard into "Bridge" (Action) and "Tree" (Growth).

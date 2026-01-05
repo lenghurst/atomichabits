@@ -1,3 +1,27 @@
+## [6.16.0] - 2026-01-05 - Phase 68.5: "Onboarding Polish & Tech Debt"
+
+### Architecture
+- **Analytics Service:** Implemented singleton `AnalyticsService` for centralized telemetry events (Screen Views, Payment Intent, Funnel Errors).
+- **Resilience:** Implemented `RetryPolicy` with exponential backoff for `AuthService` and `PsychometricProvider`. Wrapped critical cloud sync methods to prevent partial data loss.
+- **Error Handling:** Standardized error UX with `OnboardingErrorHandler` utility.
+
+### Fixed
+- **Critical Data Integrity:** Fixed the `hasHolyTrinity` logic bug (changed `||` to `&&`), ensuring users cannot complete onboarding with partial psychometric data.
+- **Loading State:** Enhanced `SherlockPermissionScreen` with "INITIALIZING NEURAL LINK..." loading state.
+
+### Testing
+- **Coverage:** Added comprehensive integration tests for:
+  - `identity_first_onboarding_test.dart`
+  - `conversational_onboarding_test.dart`
+  - `offline_resilience_test.dart`
+  - `psychometric_provider_test.dart` (Unit)
+- **Infrastructure:** Established `test_mocks.dart` standardization for Mockito.
+
+### Documentation
+- **Architecture Decision Record:** Added `docs/adr/002-onboarding-flows.md` standardizing the "Identity-First default" strategy.
+
+---
+
 ## [6.15.0] - 2026-01-04 - Phase 68: "Onboarding Calibration & Auth Repair"
 
 ### Critical Fixes
