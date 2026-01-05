@@ -82,7 +82,7 @@ Code Changes
 | **[RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Active Research | Cross-agent research tracking | When research progresses |
 | **[AI_AGENT_PROTOCOL.md](./docs/CORE/AI_AGENT_PROTOCOL.md)** | Behavioral Rules | Mandatory AI agent behaviors | When protocols change |
 | **[IMPACT_ANALYSIS.md](./docs/CORE/IMPACT_ANALYSIS.md)** | Traceability | Research → Roadmap impacts | After research/decisions |
-| **[PROACTIVE_ENGINE_SPEC.md](./docs/CORE/PROACTIVE_ENGINE_SPEC.md)** | Specification | AI recommendation system | When spec evolves |
+| **[IDENTITY_COACH_SPEC.md](./docs/CORE/IDENTITY_COACH_SPEC.md)** | Specification | AI identity development coach | When spec evolves |
 
 ### What Makes a Core Document
 
@@ -95,6 +95,52 @@ A document is "Core" if it meets ALL criteria:
    - Philosophy (why we make choices)
    - Context (what happened in past sessions)
 4. **Has clear ownership** (who is responsible for updates)
+
+### Why Each Doc Exists (Quick Reference)
+
+| Doc | Exists Because | Without It |
+|-----|----------------|------------|
+| **AI_HANDOVER.md** | Context is lost between sessions | Agents repeat work, miss context |
+| **PRODUCT_DECISIONS.md** | Philosophy drives architecture | Agents make conflicting choices |
+| **GLOSSARY.md** | Terms have specific meanings | "Archetype" means different things |
+| **RESEARCH_QUESTIONS.md** | Research informs decisions | Decisions made without evidence |
+| **AI_AGENT_PROTOCOL.md** | Behaviors must be consistent | Agents skip critical steps |
+| **IMPACT_ANALYSIS.md** | Decisions have cascading effects | Downstream impacts missed |
+
+### Doc Maintenance Protocol (Preventing Reality Drift)
+
+**Problem:** Docs become stale when they don't reflect actual code/decisions.
+
+**Solution:** Mandatory update triggers and consistency checks.
+
+#### Update Triggers
+
+| Event | Must Update |
+|-------|-------------|
+| Code architecture changes | AI_CONTEXT.md |
+| Product decision made | PRODUCT_DECISIONS.md |
+| Research concludes | RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md |
+| Session ends | AI_HANDOVER.md |
+| New term introduced | GLOSSARY.md |
+| Feature implemented | ROADMAP.md (mark complete) |
+
+#### Cross-Doc Consistency Checks
+
+Before ending any session, verify:
+```
+□ Decisions in PRODUCT_DECISIONS.md match code behavior
+□ RESEARCH_QUESTIONS.md status reflects actual state
+□ AI_CONTEXT.md architecture diagrams are current
+□ ROADMAP.md priorities align with confirmed decisions
+□ GLOSSARY.md contains all terms used in other docs
+```
+
+#### Reality Alignment Rules
+
+1. **Code Changes → Doc Updates:** Any code change affecting architecture must include doc updates
+2. **Weekly Audit:** Human reviews docs against codebase weekly
+3. **AI Verification:** Each session starts with consistency check
+4. **Flag Staleness:** If a doc seems wrong, flag it rather than assuming it's correct
 
 ### Other Documentation
 

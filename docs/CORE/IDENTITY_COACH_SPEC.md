@@ -1,9 +1,22 @@
-# PROACTIVE_ENGINE_SPEC.md — AI-Driven Recommendation System
+# IDENTITY_COACH_SPEC.md — AI-Driven Identity Development System
 
 > **Last Updated:** 05 January 2026
 > **Status:** SPECIFICATION DRAFT — Requires research validation
-> **Priority:** HIGH — Elevates value proposition significantly
-> **Identified By:** Oliver (05 Jan 2026) + Deep Think synthesis
+> **Priority:** CRITICAL — This IS the core value proposition
+> **Identified By:** Oliver (05 Jan 2026)
+> **Related Decision:** CD-008 (Identity Development Coach)
+
+---
+
+## The Core Distinction
+
+```
+JITAI = WHEN to intervene (reactive timing)
+Content Library = WHAT to say in interventions
+Identity Coach = WHO to become + HOW to get there
+```
+
+**The Identity Coach is not an add-on — it's the reason the app exists.**
 
 ---
 
@@ -20,19 +33,23 @@ The Pact currently has a sophisticated JITAI system that:
 - Learns which interventions work per user
 - Reacts to problems
 
-**What's Missing:** A system that PROACTIVELY recommends growth, not just prevents failure.
+**What's Missing:** A system that answers the fundamental questions:
+1. **Who does the user want to become?** (Aspirational Identity)
+2. **What habits/rituals will get them there?** (Recommendations)
+3. **What's the next step in their identity journey?** (Progression)
+4. **What patterns are pulling them backward?** (Regression Detection)
+5. **Are their current habits aligned with their stated identity?** (Coherence)
 
 ---
 
-## Proposed: Proactive Analytics Engine
+## The Identity Coach
 
 ### Core Concept
-An AI-driven system that recommends actions, habits, rituals, and progression paths to enhance:
-- Identity consolidation
-- Goal achievement
-- Dream realization
-- Fear reduction
-- Anti-Identity prevention
+An AI-driven life coach that constructs and guides identity development — not just accountability, but transformation.
+
+**Value Proposition Shift:**
+- From: "We help you stick to habits" (accountability app)
+- To: "We help you become who you want to be" (identity transformation coach)
 
 ### System Components
 

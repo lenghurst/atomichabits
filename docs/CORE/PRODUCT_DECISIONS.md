@@ -103,35 +103,74 @@ IMPLEMENTATION DETAILS (Tier 3)
 | **Rationale** | Permission already granted; provides better signal for Social Rhythmicity dimension |
 | **Action Required** | Add "time-only" option in Settings for privacy-conscious users |
 
-### CD-007: Social Leaderboard + 7th Dimension
+### CD-007: 6+1 Dimension Model (Social Sensitivity Extension)
 | Field | Value |
 |-------|-------|
-| **Decision** | Add Social Leaderboard feature AND Social Sensitivity as 7th dimension |
-| **Status** | CONFIRMED |
+| **Decision** | Implement 6 core dimensions NOW; add 7th (Social Sensitivity) AFTER social features exist |
+| **Status** | CONFIRMED (Two-Phase) |
 | **Date** | 05 January 2026 |
-| **Rationale** | Social features enable valuable dimension; causality needs further study |
-| **Dependencies** | Social Leaderboard must be built before 7th dimension is activated |
-| **Action Required** | Add to roadmap as new track |
+| **Rationale** | 6 dimensions are research-validated; 7th is hypothesis requiring validation |
 
-### CD-008: Proactive Analytics Engine
-| Field | Value |
-|-------|-------|
-| **Decision** | Build Proactive Analytics Engine alongside JITAI |
-| **Status** | CONFIRMED |
-| **Date** | 05 January 2026 |
-| **Rationale** | JITAI is reactive; need proactive system for habit/ritual/progression recommendations |
-| **Specification** | See `docs/CORE/PROACTIVE_ENGINE_SPEC.md` |
-| **Action Required** | Add to roadmap, identify content library requirements |
+**Phase A (Now):**
+- Build Social Leaderboard feature
+- Backend accommodates 7-float vector (7th stays null)
+- UI shows 4 clusters based on 6 dimensions
 
-### CD-009: Content Library Priority
+**Phase B (After Social Features):**
+- Research Social Sensitivity dimension properly
+- Validate against intervention response data
+- Activate 7th dimension once validated
+
+**Why Not 7 Now:**
+- Social Sensitivity wasn't researched to same depth
+- Building on unvalidated assumptions creates technical debt
+- Social features must exist before we can measure social sensitivity
+
+### CD-008: Identity Development Coach (Recommendation Engine)
 | Field | Value |
 |-------|-------|
-| **Decision** | Content Library is HIGH PRIORITY — blocks algorithm optimization |
+| **Decision** | Build AI-driven Identity Development Coach that guides users toward their aspirational self |
+| **Status** | CONFIRMED — ELEVATED PRIORITY |
+| **Date** | 05 January 2026 |
+| **Supersedes** | Previous "Proactive Analytics Engine" framing |
+
+**Critical Distinction:**
+```
+JITAI = WHEN to intervene (reactive timing)
+Content Library = WHAT to say in interventions
+Identity Coach = WHO to become + HOW to get there
+```
+
+**The Identity Coach answers:**
+1. "Who does the user want to become?" (Aspirational Identity)
+2. "What habits/rituals will get them there?" (Habit Recommendations)
+3. "What's the next step in their identity journey?" (Progression Path)
+4. "What patterns are pulling them backward?" (Regression Detection)
+5. "Are their current habits aligned with their stated identity?" (Coherence)
+
+**This is NOT just notifications — it's an AI life coach that constructs and guides identity development.**
+
+**Specification:** See `docs/CORE/IDENTITY_COACH_SPEC.md` (to be created)
+
+### CD-009: Content Library (Serves Identity Coach)
+| Field | Value |
+|-------|-------|
+| **Decision** | Content Library supports BOTH JITAI (reactive) AND Identity Coach (proactive) |
 | **Status** | CONFIRMED |
 | **Date** | 05 January 2026 |
-| **Rationale** | "We have the detection logic, but do we have the Copy?" |
-| **Requirements** | 28 JITAI messages (7 arms × 4 framings) + 125+ proactive recommendations |
-| **Action Required** | Create content generation workstream |
+| **Rationale** | Detection logic is useless without content; Coach can't guide without recommendations |
+
+**Content Requirements:**
+
+| System | Content Type | Quantity |
+|--------|--------------|----------|
+| **JITAI** | Intervention messages (7 arms × 4 framings) | 28 |
+| **Identity Coach** | Habit recommendations (by dimension) | 50+ |
+| **Identity Coach** | Ritual templates (morning/evening/transition) | 20+ |
+| **Identity Coach** | Progression milestone descriptions | 15+ |
+| **Identity Coach** | Regression warning messages | 15+ |
+| **Identity Coach** | Goal alignment prompts | 25+ |
+| **Total** | | 153+ |
 
 ### CD-010: Retention Tracking Philosophy
 | Field | Value |
@@ -143,6 +182,76 @@ IMPLEMENTATION DETAILS (Tier 3)
 | **User Perspective** | "Graduation rate" as positive metric, goal achievement tracking |
 | **Rationale** | App success ≠ User success; both must be measured |
 | **Action Required** | Design metrics that capture both perspectives |
+
+### CD-011: Identity Coach Architecture Ramifications
+| Field | Value |
+|-------|-------|
+| **Decision** | Identity Coach changes onboarding, dashboard, and widget architecture |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+
+**Onboarding Changes:**
+
+| Current | Required |
+|---------|----------|
+| Extract Holy Trinity (blocks) | ALSO extract Aspirational Identity (goals) |
+| "What do you fear becoming?" | ADD "What does your ideal self look like in 1 year?" |
+| Focus on resistance | ADD focus on aspiration |
+
+**New Sherlock Extraction Targets:**
+```
+HOLY TRINITY (Existing — What blocks them)
+├── Anti-Identity: Who they fear becoming
+├── Failure Archetype: Why they failed before
+└── Resistance Lie: Their excuse
+
+ASPIRATIONAL IDENTITY (New — Who they want to become)
+├── Ideal Self: "In 1 year, I am..."
+├── Core Values: What matters most
+├── Identity Evidence: What daily actions prove this identity
+└── Milestone Vision: What does "success" look like?
+```
+
+**Dashboard Changes:**
+
+| Current | Required |
+|---------|----------|
+| Habit list + streaks | ADD "Recommended Next Steps" section |
+| Static layout | ADD Identity Progress visualization |
+| User-defined habits only | ADD Coach-suggested habits |
+| No progression path | ADD "Your Identity Journey" map |
+
+**Widget Opportunities:**
+- Daily Focus Widget: "Today's identity building block"
+- Progress Widget: % toward aspirational self
+- Recommendation Widget: "Try this habit today"
+- Coherence Widget: "Alignment with stated values"
+
+### CD-012: Git Branching Protocol
+| Field | Value |
+|-------|-------|
+| **Decision** | All AI agents use feature branches; human merges to main |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | Safety, review gate, conflict prevention |
+
+**Branch Naming:**
+- Claude: `claude/{task-description}-{session-id}`
+- Gemini: `gemini/{task-description}-{session-id}`
+- ChatGPT: N/A (research only, no code)
+
+**Merge Protocol:**
+1. Agent pushes to feature branch
+2. Human reviews changes
+3. Human merges to main (or requests changes)
+4. For docs-only changes: Human can fast-merge without detailed review
+
+**Why Not Direct to Main:**
+- Multiple agents working simultaneously → conflicts
+- No review gate → bad commits affect everyone
+- Harder to rollback
+
+**Note:** This is a protocol decision, not a Claude Code limitation. Claude CAN push to main if instructed.
 
 ---
 
