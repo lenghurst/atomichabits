@@ -49,7 +49,7 @@ TIER 0: FOUNDATIONAL (No dependencies — can be decided independently)
 ├── CD-002: AI as Default Witness [MEDIUM importance]
 ├── CD-012: Git Workflow Protocol [LOW importance — process]
 ├── CD-013: UI Logic Separation Principle [MEDIUM importance — code quality]
-└── CD-014: Core File Creation Guardrails [LOW importance — docs]
+└── CD-014: Core File Creation Guardrails [**CRITICAL** importance — agent context]
 
 TIER 1: CORE ARCHITECTURE (Blocks most product decisions)
 └── CD-005: 6-Dimension Archetype Model [CRITICAL importance]
@@ -102,8 +102,8 @@ These four decisions form the core value proposition chain.
 | **CD-011** | Architecture Ramifications | 3 | CD-008,15 | Onboarding, Dashboard | HIGH |
 | **CD-012** | Git Workflow Protocol | 0 | — | — | LOW (process) |
 | **CD-013** | UI Logic Separation | 0 | — | — | MEDIUM (code quality) |
-| **CD-014** | Core File Guardrails | 0 | — | — | LOW (docs) |
-| **CD-015** | Unified AI Coaching Architecture | 1 | CD-005 | CD-008,9,11 | **CRITICAL** (architecture) |
+| **CD-014** | Core File Guardrails | 0 | — | — | **CRITICAL** (agent context) |
+| **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, Research | CD-008,9,11 | **CRITICAL** (architecture) — NEEDS RESEARCH |
 
 **Impact Legend:**
 - **CRITICAL:** Foundational to product identity; changes ripple everywhere
@@ -398,19 +398,26 @@ class HabitCard extends StatelessWidget {
 
 **Research Task:** See RQ-005 for best practices on articulating this principle for AI-assisted development.
 
-### CD-015: Unified AI Coaching Architecture (Identity Coach + JITAI + Content)
+### PD-105: Unified AI Coaching Architecture (Identity Coach + JITAI + Content)
 | Field | Value |
 |-------|-------|
-| **Decision** | Identity Coach, JITAI, and Content Library are ONE integrated system, not three separate systems |
-| **Status** | CONFIRMED — CRITICAL |
-| **Date** | 05 January 2026 |
-| **Rationale** | False distinctions create fragmented architecture; unified system enables coherent user experience |
+| **Question** | How should Identity Coach, JITAI, and Content Library be architected? |
+| **Status** | 🔴 PENDING — Requires Research |
+| **Priority** | **CRITICAL** — Blocks CD-008, CD-009, CD-011 |
+| **Blocking** | Identity Coach implementation, Content Library design |
+| **Date Proposed** | 05 January 2026 |
 
-**The Unified Architecture:**
+**The Question:**
+Should these three components be:
+- **Option A:** ONE integrated system ("AI Coaching Engine")
+- **Option B:** Three separate systems with integration points
+- **Option C:** Two systems (Identity Coach + JITAI) with Content Library as shared resource
+
+**Current Hypothesis (NOT CONFIRMED — Requires Validation):**
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        AI COACHING ENGINE                                    │
-│                        (Single Integrated System)                            │
+│                        (Single Integrated System?)                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -439,29 +446,44 @@ class HabitCard extends StatelessWidget {
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**NOT Three Separate Systems:**
+**Hypothesized Relationship (Needs Validation):**
 ```
-❌ WRONG MENTAL MODEL:
-   Identity Coach ← separate → JITAI ← separate → Content Library
-
-✅ CORRECT MENTAL MODEL:
+Option A (Current Hypothesis):
    Identity Coach (Brain)
    ├── Uses JITAI to decide timing
    └── Uses Content Library for messaging
+
+Option B (Alternative):
+   JITAI ←──── shares content ────→ Content Library
+      ↓                                    ↑
+   triggers                           provides messages
+      ↓                                    ↑
+   Identity Coach (User Journey) ─────────┘
 ```
 
-**Why This Matters:**
-1. **Single Source of Truth:** One engine tracks user state, not three
-2. **Coherent Experience:** User sees one coach, not three systems
-3. **Unified Learning:** One reward function optimizes all behaviors
-4. **Simpler Architecture:** Fewer integration points, less tech debt
+**Arguments FOR Option A (Unified):**
+1. Single Source of Truth: One engine tracks user state
+2. Coherent Experience: User sees one coach
+3. Simpler Architecture: Fewer integration points
 
-**Implementation Implication:**
-- `IdentityCoachService` is the orchestrator
-- `JITAIDecisionEngine` is a timing calculator CALLED BY the coach
-- `ContentLibrary` is a message provider USED BY the coach
+**Arguments FOR Option B (Modular):**
+1. Separation of Concerns: Easier to test/maintain
+2. Independent Evolution: Can update JITAI without touching Coach
+3. Existing Code: JITAI already works independently
 
-**Code Architecture:**
+**Research Required:**
+1. What architecture patterns exist for multi-component AI coaching systems?
+2. How do existing habit apps (Noom, Headspace) structure their intervention systems?
+3. What are the maintenance trade-offs of unified vs modular?
+4. Does our current JITAI code naturally extend to orchestration, or is it timing-only?
+
+**Why This Needs Research (Not Assumption):**
+- Architecture affects all downstream implementation
+- Wrong choice creates significant technical debt
+- No literature review has been done on this specific question
+- "Unified is better" was an assertion, not a validated finding
+
+**Hypothetical Code (IF Option A is chosen):**
 ```dart
 class IdentityCoachService {
   final JITAIDecisionEngine _timing;
@@ -486,6 +508,8 @@ class IdentityCoachService {
   }
 }
 ```
+
+**See:** RQ-006 (Identity Roadmap Architecture) for research tracking
 
 ### CD-014: Core File Creation Guardrails
 | Field | Value |
