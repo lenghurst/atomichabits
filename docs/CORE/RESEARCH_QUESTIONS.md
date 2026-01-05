@@ -1,9 +1,9 @@
 # RESEARCH_QUESTIONS.md — Active Research & Open Questions
 
-> **Last Updated:** 05 January 2026 (RQ-012 + RQ-016 COMPLETE via Deep Think)
+> **Last Updated:** 05 January 2026 (Full implementation confirmed; RQ-019, RQ-020 added; CD-016 AI Model Strategy)
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
-> **Status:** psyOS CRITICAL research complete (RQ-012, RQ-016). Remaining: RQ-013-015, RQ-017-018
+> **Status:** psyOS CRITICAL research complete (RQ-012, RQ-016). Implementation RQs added (RQ-019, RQ-020). Full launch scope confirmed.
 
 ---
 
@@ -1067,11 +1067,25 @@ String getInterventionTone(String chronotype, DateTime now) {
 
 #### Implementation Roadmap
 
-| Phase | Milestone | Deliverables |
-|-------|-----------|--------------|
-| **Phase 1 (Jan 16)** | Schema + Onboarding | Create `psychometric_roots` + `psychological_manifestations` tables; add chronotype question to onboarding |
-| **Phase 2 (Post-Launch)** | Triangulation | Implement Day 7 synthesis; add pgvector for embedding storage; Sherlock root extraction |
-| **Phase 3 (Intelligence)** | JITAI Integration | Chronotype-JITAI Matrix in decision engine; tone-based message selection |
+**⚠️ CRITICAL: Full Implementation at Launch (Not Phased)**
+
+Per user directive (05 Jan 2026), the full psyOS vision will be implemented for launch, not staggered. Deep Think's phased approach has been consolidated into a single launch scope:
+
+| Component | Deliverable | AI Model | Status |
+|-----------|-------------|----------|--------|
+| **Schema** | `psychometric_roots` + `psychological_manifestations` with pgvector | N/A | 🔴 To Build |
+| **Onboarding** | Chronotype question; integrate into Keystone extraction | Gemini 3 Flash | 🔴 To Build |
+| **Triangulation** | Day 1 → Day 4 → Day 7 manifestation extraction algorithm | Gemini 3 Flash | 🔴 To Build |
+| **Synthesis** | Sherlock Day 7 root synthesis prompt with JSON output | **DeepSeek V3.2** | ✅ Designed |
+| **Embeddings** | pgvector integration for semantic similarity | **DeepSeek V3.2** | 🔴 To Build |
+| **JITAI** | Chronotype-JITAI Matrix in decision engine | Hardcoded | 🔴 To Build |
+| **Tone Selection** | push_hard/compassion/no_nudge/neutral message selection | Hardcoded | 🔴 To Build |
+
+**AI Model Strategy (see CD-016):**
+- **Real-time voice**: Gemini 3 Flash (latency-critical)
+- **Background analysis**: DeepSeek V3.2 (cost-effective, high reasoning)
+- **Embedding generation**: DeepSeek V3.2 (batch processing)
+- **Deterministic logic**: Hardcoded (no AI variance)
 
 ---
 
@@ -1495,12 +1509,32 @@ Sherlock (as Father): "'But at what cost? They won't be little forever.'"
 
 #### Implementation Roadmap
 
-| Phase | Milestone | Deliverables |
-|-------|-----------|--------------|
-| **Phase 1 (Jan 16)** | Text Council MVP | System prompt, single LLM call, basic UI (text bubbles), treaty table |
-| **Phase 2 (Post-Launch)** | Treaty Engine | Logic hooks in JITAI, breach tracking, renegotiation prompts |
-| **Phase 3 (Voice)** | Audio Council | Audiobook Pattern with Gemini TTS, SSML markup |
-| **Phase 4 (Intelligence)** | Auto-Detection | tension_score triggers, facet conflict detection |
+**⚠️ CRITICAL: Full Implementation at Launch (Not Phased)**
+
+Per user directive (05 Jan 2026), the full psyOS vision will be implemented for launch, not staggered. Deep Think's phased approach has been consolidated into a single launch scope:
+
+| Component | Deliverable | AI Model | Status |
+|-----------|-------------|----------|--------|
+| **System Prompt** | Single-Shot Playwright with CAST injection | **DeepSeek V3.2** | ✅ Designed |
+| **UI** | Text bubbles, character avatars, animated script playback | N/A | 🔴 To Build |
+| **Treaty Table** | `treaties` schema with `logic_hooks` JSONB | N/A | 🔴 To Build |
+| **Logic Hooks** | Treaty enforcement in JITAI decision engine | Hardcoded | 🔴 To Build |
+| **Breach Tracking** | Violation counting, renegotiation triggers | Hardcoded | 🔴 To Build |
+| **Voice (Audiobook)** | Single narrator TTS with SSML markup | Gemini 2.5 Flash TTS | 🔴 To Build |
+| **Auto-Detection** | tension_score > 0.7 triggers Council summon | **DeepSeek V3.2** | 🔴 To Build |
+
+**AI Model Strategy (see CD-016):**
+- **Council Script Generation**: DeepSeek V3.2 (complex reasoning, cost-effective for single-shot)
+- **Voice Synthesis (Audiobook)**: Gemini 2.5 Flash TTS (quality, SSML support)
+- **Conflict Detection**: DeepSeek V3.2 (pattern analysis)
+- **Logic Hook Execution**: Hardcoded (deterministic, no AI variance)
+
+**Treaty-JITAI Integration:**
+Treaties override default JITAI behavior. When a logic_hook fires:
+1. Check user's active treaties
+2. If treaty condition matches, override JITAI's default intervention
+3. Use treaty's `reminder_text` instead of standard content
+4. Log enforcement for breach tracking
 
 ---
 
@@ -1613,6 +1647,113 @@ Result: Immediate state shift via sensory anchoring.
 
 ---
 
+### RQ-019: pgvector Implementation Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should vector embeddings be implemented for semantic similarity in psyOS? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Foundational to Triangulation Protocol |
+| **Blocking** | Root synthesis, cross-facet pattern detection, population learning |
+| **Generated By** | RQ-012 (Fractal Trinity) Deep Think research |
+| **Assigned** | Technical research session required |
+
+**Context:**
+Deep Think's Triangulation Protocol requires semantic embeddings to:
+1. Store `root_embedding` and `resistance_embedding` vectors
+2. Calculate cosine similarity between manifestations
+3. Enable population-level pattern detection
+
+**Technical Requirements:**
+```sql
+-- Vector fields from Deep Think specification
+root_embedding VECTOR(768)        -- In psychometric_roots
+resistance_embedding VECTOR(768)  -- In psychological_manifestations
+```
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | Is pgvector supported on Supabase's free tier? | Infrastructure cost |
+| 2 | What embedding model should generate the 768-dim vectors? | DeepSeek V3.2 vs dedicated embedding model |
+| 3 | How do we batch embed for population learning? | Performance |
+| 4 | What's the query pattern for similarity search? | Index strategy |
+| 5 | How do we handle embedding updates when text changes? | Sync strategy |
+| 6 | What's the storage cost for vectors at scale? | Cost projection |
+
+**Output Expected:**
+- Supabase pgvector setup guide
+- Embedding generation pipeline (which model, when to embed)
+- Index strategy for similarity queries
+- Cost projection at 10K, 100K, 1M users
+
+---
+
+### RQ-020: Treaty-JITAI Integration Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should Treaties override and interact with default JITAI logic? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Core to Council AI value |
+| **Blocking** | Treaty enforcement, JITAI modifications, logic hook execution |
+| **Generated By** | RQ-016 (Council AI) Deep Think research |
+| **Assigned** | Technical architecture session required |
+
+**Context:**
+Deep Think specified that Treaties are "database objects that override default JITAI logic when specific conditions are met." This requires:
+1. A priority hierarchy (Treaty vs default JITAI)
+2. Logic hook execution engine
+3. Breach tracking and renegotiation triggers
+
+**From RQ-016:**
+```json
+{
+  "trigger": "travel_scheduled",
+  "condition": "day_of_week IN ('tue', 'thu')",
+  "action": "block_and_remind",
+  "reminder_text": "Protected day per Treaty",
+  "severity": "hard"
+}
+```
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | When in the JITAI pipeline do we check Treaties? | Performance, architecture |
+| 2 | How do we parse `condition` expressions at runtime? | Security, flexibility |
+| 3 | What triggers exist beyond `travel_scheduled`? | Trigger taxonomy |
+| 4 | How does `severity: hard` block vs `soft` warn? | UX flow |
+| 5 | When does breach_count trigger renegotiation? | Threshold decision |
+| 6 | Can Treaties conflict with each other? | Priority between Treaties |
+| 7 | How are expired Treaties handled? | Lifecycle management |
+
+**Proposed Architecture:**
+```
+JITAI Decision Pipeline (Updated)
+├── 1. Calculate V-O State
+├── 2. Safety Gates (Gottman, fatigue)
+├── 3. ★ Treaty Check ★ (NEW)
+│   ├── Load active treaties for user
+│   ├── Evaluate logic_hooks against current context
+│   └── If match → Override default intervention
+├── 4. Optimal Timing Analysis
+├── 5. Quadrant-based Strategy
+├── 6. Hierarchical Bandit Selection
+└── 7. Content Generation (may use Treaty reminder_text)
+```
+
+**Output Expected:**
+- Modified JITAI pipeline specification
+- Logic hook expression grammar (what conditions are supported)
+- Trigger taxonomy (what events can activate hooks)
+- Treaty priority rules (how to handle conflicts)
+- Breach → Renegotiation flow
+
+---
+
 ## Implementation Tasks from Research
 
 **Purpose:** Track actionable items generated by completed research.
@@ -1649,6 +1790,33 @@ Result: Immediate state shift via sensory anchoring.
 | Add 3 onboarding questions for cold-start | HIGH | 🔴 NOT STARTED | Track B |
 | Pass 6-float vector to Thompson Sampling | HIGH | 🔴 NOT STARTED | Track D |
 | Implement Holy Trinity "Emergency Mode" | MEDIUM | 🔴 NOT STARTED | Track D |
+
+### From RQ-012 (Fractal Trinity) — ✅ RESEARCH COMPLETE
+
+| Task | Priority | Status | Track | AI Model |
+|------|----------|--------|-------|----------|
+| Create `psychometric_roots` table with pgvector | **CRITICAL** | 🔴 NOT STARTED | Phase A | N/A |
+| Create `psychological_manifestations` table | **CRITICAL** | 🔴 NOT STARTED | Phase A | N/A |
+| Add chronotype question to onboarding | HIGH | 🔴 NOT STARTED | Phase A | N/A |
+| Implement Triangulation Protocol (Day 1→4→7) | **CRITICAL** | 🔴 NOT STARTED | Phase B | Gemini 3 Flash |
+| Implement Sherlock Day 7 root synthesis | **CRITICAL** | 🔴 NOT STARTED | Phase B | DeepSeek V3.2 |
+| Integrate pgvector for embedding storage | HIGH | 🔴 NOT STARTED | Phase B | DeepSeek V3.2 |
+| Add Chronotype-JITAI Matrix to decision engine | HIGH | 🔴 NOT STARTED | Phase B | Hardcoded |
+| Implement tone-based message selection | HIGH | 🔴 NOT STARTED | Phase B | Hardcoded |
+
+### From RQ-016 (Council AI) — ✅ RESEARCH COMPLETE
+
+| Task | Priority | Status | Track | AI Model |
+|------|----------|--------|-------|----------|
+| Create `treaties` table with logic_hooks JSONB | **CRITICAL** | 🔴 NOT STARTED | Phase C | N/A |
+| Implement Single-Shot Playwright system prompt | **CRITICAL** | 🔴 NOT STARTED | Phase C | DeepSeek V3.2 |
+| Build Council UI (text bubbles, avatars) | **CRITICAL** | 🔴 NOT STARTED | Phase C | N/A |
+| Implement Treaty signing flow | HIGH | 🔴 NOT STARTED | Phase C | N/A |
+| Implement Treaty enforcement in JITAI | HIGH | 🔴 NOT STARTED | Phase C | Hardcoded |
+| Add breach tracking and renegotiation prompts | HIGH | 🔴 NOT STARTED | Phase C | N/A |
+| Implement Audiobook Pattern TTS | HIGH | 🔴 NOT STARTED | Phase C | Gemini 2.5 Flash TTS |
+| Add tension_score auto-detection | MEDIUM | 🔴 NOT STARTED | Phase C | DeepSeek V3.2 |
+| Build Facet Agent Templates (4 archetypes) | HIGH | 🔴 NOT STARTED | Phase C | N/A |
 
 ---
 
@@ -1745,6 +1913,12 @@ RQ-017 (Constellation UX) 🔴 NEEDS RESEARCH
 RQ-018 (Airlock & Priming) 🔴 NEEDS RESEARCH
     └── Blocks: JITAI integration, audio assets
 
+IMPLEMENTATION RESEARCH (Generated by RQ-012/RQ-016):
+RQ-019 (pgvector Implementation) 🔴 NEEDS RESEARCH
+    └── Blocks: Embedding storage, Triangulation Protocol, population learning
+RQ-020 (Treaty-JITAI Integration) 🔴 NEEDS RESEARCH
+    └── Blocks: Treaty enforcement, JITAI modifications, Council AI value
+
 PENDING RESEARCH (Core Architecture - BLOCKING):
 RQ-010 (Permission Data Philosophy) 🔴 NEEDS RESEARCH
     └── Blocks: Phase 2 Intelligence, JITAI refinement, Gap Analysis
@@ -1771,11 +1945,12 @@ RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 
 **Research Priority Order (Updated for psyOS):**
 1. ~~**CRITICAL:** RQ-012, RQ-016 (Fractal Trinity, Council AI — signature features)~~ ✅ COMPLETE
-2. **HIGH:** RQ-013, RQ-014, RQ-015, RQ-017, RQ-018 (psyOS supporting systems)
-3. **HIGH:** RQ-005, RQ-006 (Proactive Guidance System — core value prop)
-4. **HIGH:** RQ-010 (Permission Data — affects all phases)
-5. **HIGH:** RQ-007 (Identity Roadmap Architecture)
-6. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
+2. **HIGH:** RQ-019, RQ-020 (Implementation research generated by RQ-012/RQ-016)
+3. **HIGH:** RQ-013, RQ-014, RQ-015, RQ-017, RQ-018 (psyOS supporting systems)
+4. **HIGH:** RQ-005, RQ-006 (Proactive Guidance System — core value prop)
+5. **HIGH:** RQ-010 (Permission Data — affects all phases)
+6. **HIGH:** RQ-007 (Identity Roadmap Architecture)
+7. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
 
 ---
 

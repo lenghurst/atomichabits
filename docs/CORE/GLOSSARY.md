@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added psyOS terminology per CD-015)
+> **Last Updated:** 05 January 2026 (Added Deep Think research terms: Triangulation Protocol, Treaty, Single-Shot Playwright, etc.)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -299,6 +299,200 @@ Result: Immediate state shift via sensory anchoring.
 **Status:** ✅ DESIGN READY — Part of CD-015
 
 **Code References:** Onboarding flow changes — not yet implemented
+
+---
+
+## Deep Think Research Terms (RQ-012 + RQ-016)
+
+> **Reference:** These terms were defined by Google Deep Think research on 05 January 2026 for RQ-012 (Fractal Trinity) and RQ-016 (Council AI).
+
+### Triangulation Protocol
+**Definition:** The algorithm for extracting root psychology from surface manifestations over Days 1-7.
+
+**Process:**
+```
+Day 1: Extract Manifestation A (Keystone Facet)
+  → Sherlock asks: "When you try to [habit], what stops you?"
+  → Store resistance_script + resistance_embedding
+
+Day 3-4: Extract Manifestation B (Shadow Facet)
+  → Sherlock asks: "What's being neglected? When you try that, what stops you?"
+  → Store resistance_script + resistance_embedding
+
+Day 7: Root Synthesis
+  → Calculate cosine_similarity(embedding_A, embedding_B)
+  → If similarity > 0.7: Same root, high confidence
+  → If similarity < 0.4: Different roots, investigate further
+  → Sherlock synthesizes: "I notice the same pattern..."
+```
+
+**Key Insight:** Users cannot directly articulate their root psychology. They only describe surface manifestations. Vector math reveals the hidden connection.
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-012
+
+**Code References:** Not yet implemented — See RESEARCH_QUESTIONS.md RQ-012
+
+---
+
+### Treaty
+**Definition:** A database object representing a negotiated agreement between identity facets, created by Council AI, that overrides default JITAI logic when specific conditions are met.
+
+**Schema:**
+```sql
+CREATE TABLE treaties (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  title TEXT,                    -- "The Tuesday-Thursday Shield"
+  terms_text TEXT,               -- Human-readable terms
+  logic_hooks JSONB,             -- Machine-executable rules
+  facets_involved UUID[],        -- Which facets negotiated this
+  status TEXT,                   -- 'active', 'suspended', 'expired', 'broken'
+  breach_count INT DEFAULT 0     -- How many times violated
+);
+```
+
+**Example:**
+```
+Title: "The Tuesday-Thursday Shield"
+Terms: "No work travel on Tuesdays and Thursdays. These are protected family days."
+Facets Involved: [The Executive, The Father]
+```
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-016
+
+**Code References:** Not yet implemented — See RESEARCH_QUESTIONS.md RQ-016
+
+---
+
+### Logic Hooks
+**Definition:** Machine-executable rules stored in a Treaty's JSONB field that trigger specific actions when conditions are met.
+
+**Structure:**
+```json
+{
+  "trigger": "travel_scheduled",
+  "condition": "day_of_week IN ('tue', 'thu')",
+  "action": "block_and_remind",
+  "reminder_text": "Protected day per Treaty",
+  "severity": "hard"
+}
+```
+
+**Fields:**
+| Field | Purpose |
+|-------|---------|
+| `trigger` | Event that activates the hook |
+| `condition` | When to fire (evaluated against context) |
+| `action` | What to do (block_and_remind, warn, etc.) |
+| `reminder_text` | What to say to the user |
+| `severity` | `soft` = warn only, `hard` = block action |
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-016
+
+**Code References:** Not yet implemented — See RQ-020 for integration architecture
+
+---
+
+### Single-Shot Playwright
+**Definition:** The architectural pattern for Council AI where one LLM call generates the entire dramatic script, rather than using multi-agent orchestration.
+
+**Why Not Multi-Agent:**
+| Approach | Pros | Cons |
+|----------|------|------|
+| Multi-Agent (LangChain) | More "authentic" voices | Latency, cost, complexity |
+| **Single-Shot Playwright** | Fast, predictable, coherent | Requires careful prompt engineering |
+
+**Architecture:**
+```
+Input: Conflict description + Facet profiles + User history
+  ↓
+Single LLM Call (DeepSeek V3.2)
+  ↓
+Output: Complete dramatic script + Treaty proposal (JSON)
+```
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-016
+
+**AI Model:** DeepSeek V3.2 (complex reasoning, cost-effective for single-shot)
+
+**Code References:** Not yet implemented — System prompt in RESEARCH_QUESTIONS.md RQ-016
+
+---
+
+### Audiobook Pattern
+**Definition:** The voice synthesis strategy for Council AI where a single narrator (Sherlock) reads the entire script, including character dialogue with vocal inflection but not voice switching.
+
+**Example:**
+```
+Sherlock (narrating): "The Executive leans forward, intensity in his voice."
+Sherlock (as Executive): "'This is the opportunity we've been building toward.'"
+Sherlock (narrating): "The Father shakes his head slowly."
+Sherlock (as Father): "'But at what cost? They won't be little forever.'"
+```
+
+**Why This Works:**
+- Audiobooks have done this for centuries
+- Single voice = single TTS call = faster, cheaper
+- Maintains narrative coherence
+- Listeners are trained to accept this convention
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-016
+
+**AI Model:** Gemini 2.5 Flash TTS with SSML tags for pacing
+
+**Code References:** Not yet implemented
+
+---
+
+### Chronotype-JITAI Matrix
+**Definition:** The timing logic that adjusts intervention tone based on user's chronotype (Lion/Bear/Wolf/Dolphin) and time of day.
+
+**Matrix:**
+| Chronotype | Peak (Push Hard) | Trough (Compassion) | Danger Zone (No Nudge) |
+|------------|------------------|---------------------|------------------------|
+| **Lion** | 06:00-10:00 | 14:00-16:00 | >20:30 |
+| **Bear** | 10:00-14:00 | 15:00-16:00 | >23:00 |
+| **Wolf** | 17:00-23:00 | 08:00-11:00 | 06:00-09:00 |
+| **Dolphin** | Variable | Mid-Day | 02:00-05:00 |
+
+**Tone Mapping:**
+| Tone | Message Style |
+|------|---------------|
+| `push_hard` | Direct challenge, high energy |
+| `compassion` | Gentle, self-compassion |
+| `no_nudge` | Silence (skip intervention) |
+| `neutral` | Standard message |
+
+**Key Insight:** Pushing a Wolf at 7am creates resentment, not action. Timing determines tone.
+
+**Status:** ✅ RESEARCH COMPLETE — RQ-012
+
+**Code References:** Not yet implemented — Logic in RESEARCH_QUESTIONS.md RQ-012
+
+---
+
+### DeepSeek V3.2
+**Definition:** The cost-effective AI model series used for background processing tasks in The Pact.
+
+**Model ID:** `deepseek-v3.2-chat`
+
+**Use Cases:**
+| Task | Why DeepSeek V3.2 |
+|------|-------------------|
+| Council AI Scripts | Complex reasoning, not latency-critical |
+| Root Psychology Synthesis | Deep analysis |
+| Embedding Generation | Batch processing |
+| Gap Analysis | Pattern detection |
+| Conflict Detection | Cross-facet analysis |
+
+**Why Not Gemini for Everything:**
+1. **Cost:** DeepSeek V3.2 is significantly cheaper
+2. **Quality:** Comparable or better for non-realtime tasks
+3. **Latency tolerance:** Background tasks don't need sub-second response
+
+**Status:** ✅ CONFIRMED — CD-016
+
+**Code References:** Model routing in `ai_model_config.dart` (to be implemented)
 
 ---
 

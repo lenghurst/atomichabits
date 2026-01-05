@@ -140,6 +140,7 @@ These four decisions form the core value proposition chain.
 | **CD-013** | UI Logic Separation | 0 | — | — | MEDIUM (code quality) |
 | **CD-014** | Core File Guardrails | 0 | — | — | **CRITICAL** (agent context) |
 | **CD-015** | psyOS Architecture | 1 | CD-005, RQ-011 | ALL | **CRITICAL** (foundational) — CONFIRMED |
+| **CD-016** | AI Model Strategy (DeepSeek V3.2) | 1 | CD-015 | All AI routing | **CRITICAL** (cost/quality) — CONFIRMED |
 | **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, CD-015 | CD-008,9,11 | **CRITICAL** (architecture) — SUPERSEDED by PD-107 |
 | **PD-106** | Multiple Identity Architecture | 1 | RQ-011, CD-015 | Phase 1,2,3 | **CRITICAL** (data model) — RESOLVED via CD-015 |
 | **PD-107** | Proactive Guidance System | 1 | RQ-005,6,7, CD-015 | Gap Analysis, Recommendations | **CRITICAL** (intelligence) — NEEDS RESEARCH |
@@ -850,10 +851,93 @@ User explicitly chose psyOS despite increased complexity:
 - Richer schema with more tables
 - Custom visualization (Constellation UX)
 
-**Mitigations:**
-- Phased rollout (Keystone → Shadow → Garden)
-- Schema designed for progressive enhancement
-- Core value proposition validated before full build
+**Implementation Strategy:**
+> **Updated 05 Jan 2026:** User explicitly chose FULL implementation at launch, not phased rollout. All psyOS features will be built for initial release.
+
+- Full implementation at launch (not phased)
+- Schema designed for psyOS from day one
+- All 7 core architectural elements built simultaneously
+- DeepSeek V3.2 for cost-effective background processing (see CD-016)
+
+---
+
+### CD-016: AI Model Strategy (DeepSeek V3.2 Integration)
+| Field | Value |
+|-------|-------|
+| **Decision** | Use DeepSeek V3.2 series for background AI processing; Gemini for real-time voice |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | DeepSeek V3.2 is more cost-effective for complex reasoning tasks; Gemini required for latency-critical voice |
+| **Depends On** | CD-015 (psyOS Architecture) |
+| **Blocks** | All AI prompt routing decisions |
+
+**The Strategy:**
+The Pact uses a **multi-model architecture** where different AI models are assigned based on task characteristics:
+
+**Model Allocation:**
+
+| Use Case | Model | Rationale |
+|----------|-------|-----------|
+| **Real-time Voice (Sherlock)** | Gemini 3 Flash | Latency-critical; user waiting |
+| **Real-time Voice (TTS)** | Gemini 2.5 Flash TTS | Quality voice synthesis with SSML |
+| **Council AI Script Generation** | **DeepSeek V3.2** | Complex reasoning, cost-effective for single-shot |
+| **Root Psychology Synthesis** | **DeepSeek V3.2** | Deep analysis, not time-critical |
+| **Embedding Generation** | **DeepSeek V3.2** | Batch processing, cost-effective |
+| **Gap Analysis** | **DeepSeek V3.2** | Complex pattern detection |
+| **Conflict Detection** | **DeepSeek V3.2** | Pattern analysis across facets |
+| **JITAI Decision Logic** | Hardcoded | Deterministic, no AI variance needed |
+| **Chronotype-JITAI Matrix** | Hardcoded | Fixed rules, not learned |
+| **Treaty Enforcement** | Hardcoded | Deterministic logic hooks |
+
+**DeepSeek V3.2 Series:**
+- **Model ID:** `deepseek-v3.2-chat` (or latest in series)
+- **Strengths:** High reasoning capability, cost-effective, good at structured JSON output
+- **Limitations:** Not suitable for real-time conversation (latency)
+- **Use Pattern:** Background processing, batch analysis, one-shot complex prompts
+
+**Why Not Gemini for Everything:**
+1. **Cost:** DeepSeek V3.2 is significantly cheaper for complex reasoning tasks
+2. **Quality:** For non-realtime tasks, DeepSeek V3.2 provides comparable or better reasoning
+3. **Latency tolerance:** Background tasks don't require sub-second response times
+
+**Implementation Notes:**
+```dart
+// Model routing in ai_model_config.dart
+enum AITask {
+  realtimeVoice,      // → Gemini 3 Flash
+  voiceSynthesis,     // → Gemini 2.5 Flash TTS
+  councilScript,      // → DeepSeek V3.2
+  rootSynthesis,      // → DeepSeek V3.2
+  embeddingGen,       // → DeepSeek V3.2
+  gapAnalysis,        // → DeepSeek V3.2
+  conflictDetection,  // → DeepSeek V3.2
+}
+
+String getModelForTask(AITask task) {
+  switch (task) {
+    case AITask.realtimeVoice:
+      return 'gemini-3-flash-preview';
+    case AITask.voiceSynthesis:
+      return 'gemini-2.5-flash-preview-tts';
+    default:
+      return 'deepseek-v3.2-chat';  // DeepSeek for background tasks
+  }
+}
+```
+
+**Cost Projection:**
+| Task Type | Volume/Day | Model | Est. Cost/Day |
+|-----------|------------|-------|---------------|
+| Voice Sessions | ~5/user | Gemini 3 Flash | $0.02/user |
+| TTS Generation | ~10/user | Gemini 2.5 TTS | $0.01/user |
+| Council Sessions | ~0.5/user | DeepSeek V3.2 | $0.005/user |
+| Root Synthesis | ~0.1/user | DeepSeek V3.2 | $0.001/user |
+| Background Analysis | ~1/user | DeepSeek V3.2 | $0.003/user |
+
+**Migration from Current State:**
+Current `ROADMAP.md` shows:
+- `deepseek-chat` for Analysis Model
+- This confirms to `deepseek-v3.2-chat` (latest series)
 
 ---
 
@@ -1560,32 +1644,36 @@ The current Skill Tree (custom-painted) must be replaced by Constellation UX (an
 | Field | Value |
 |-------|-------|
 | **Question** | When should Council AI (roundtable simulation) be triggered vs normal coaching? |
-| **Status** | 🔴 PENDING — Requires RQ-016 |
+| **Status** | 🟡 READY FOR DECISION — RQ-016 Research Complete |
 | **Priority** | **CRITICAL** — Prevents feature gimmickry |
 | **Blocking** | AI prompt architecture, voice session design |
 | **Generated By** | CD-015 (psyOS Architecture) |
+| **Research** | RQ-016 (Council AI) ✅ COMPLETE |
 
 **The Risk:**
 Council AI could feel gimmicky if overused or triggered inappropriately. Must be reserved for genuine value moments.
 
-**Proposed Activation Rules:**
+**RQ-016 Research Findings (Deep Think):**
 
-| Trigger | Council? | Rationale |
-|---------|----------|-----------|
-| Life decision ("Should I take this job?") | ✅ Yes | High stakes, multiple facets affected |
-| Daily habit conflict | ❌ No | Too frequent, use simple coaching |
-| Facet tension score > 0.8 | 🟡 Maybe | Depends on user engagement level |
-| User explicitly requests Council | ✅ Yes | Respect user agency |
-| First major conflict detection | ✅ Yes | Introduce feature with real value |
+| Trigger | Council? | Implementation |
+|---------|----------|----------------|
+| **tension_score > 0.7** | ✅ Auto-Summon | "Your inner council wants to discuss this. Convene?" |
+| **User question with "should I" + multi-facet keywords** | ✅ Auto-Detect | Pattern matching in user input |
+| **User explicitly summons** | ✅ Yes | "Summon Council" button in UI |
+| **Daily habit conflict** | ❌ No | Use standard coaching |
+| **First major conflict detection** | ✅ Yes | Educational moment |
 
-**Questions to Answer:**
-1. What qualifies as a "life decision" vs routine conflict?
-2. Should Council be voice-only, text-only, or both?
-3. How do we prevent Council fatigue?
-4. Can Council run asynchronously (notification-based)?
-5. What's the user opt-out mechanism?
+**Questions Answered by RQ-016:**
+1. ✅ "Life decision" = tension_score > 0.7 OR "should I" pattern
+2. ✅ Both: Text-first (animated script), Voice optional (Audiobook Pattern)
+3. ✅ Fatigue prevention: Max 6 turns per session, once per conflict type per day
+4. ✅ Async Council: Phase 2 feature (notification-based mini-debates)
+5. ✅ Opt-out: "Not Now" on summon prompt; can dismiss Council mid-session
 
-**Depends On:** RQ-016 (Council AI research)
+**Decision Needed:**
+Confirm the tension_score threshold (0.7) and turn limit (6) from RQ-016.
+
+**Depends On:** RQ-016 ✅ COMPLETE
 
 ---
 
@@ -1688,6 +1776,80 @@ Voice: "You are a builder. The world is noise. This is the signal."
 5. Should each facet have a unique sonic signature?
 
 **Depends On:** RQ-018 (Airlock & Identity Priming research)
+
+---
+
+### PD-113: Treaty Priority Hierarchy
+| Field | Value |
+|-------|-------|
+| **Question** | How should Treaties interact with and override default JITAI logic? |
+| **Status** | 🔴 PENDING — Requires RQ-020 |
+| **Priority** | **HIGH** — Core to Council AI value |
+| **Blocking** | Treaty enforcement, JITAI modifications |
+| **Generated By** | RQ-016 (Council AI) Deep Think research |
+
+**The Challenge:**
+Deep Think specified that Treaties are "database objects that override default JITAI logic when specific conditions are met." This creates architectural questions:
+
+**Key Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | **Priority Order**: When do Treaties take precedence over JITAI? | Pipeline architecture |
+| 2 | **Conflict Resolution**: What if two Treaties conflict? | Priority rules |
+| 3 | **Override Scope**: Can Treaties override safety gates (Gottman ratio)? | Therapeutic ethics |
+| 4 | **Breach Threshold**: How many breaches before renegotiation? | User experience |
+| 5 | **Expiration Handling**: What happens when a Treaty expires? | Lifecycle management |
+
+**Proposed Priority Hierarchy:**
+```
+1. Safety Gates (Gottman ratio, fatigue limits) — NEVER overridden
+2. Active Treaties (logic_hooks) — Override default JITAI
+3. Standard JITAI logic — Fallback when no Treaty matches
+4. User preferences — Lowest priority
+```
+
+**Proposed Breach → Renegotiation Rules:**
+| Breach Count | Action |
+|--------------|--------|
+| 1 | Log, show reminder |
+| 2 | Log, show "You've broken this Treaty twice" |
+| 3 | Prompt: "This Treaty isn't working. Reconvene Council?" |
+| 5+ | Auto-suspend Treaty, notify user |
+
+**Depends On:** RQ-020 (Treaty-JITAI Integration Architecture)
+
+---
+
+### PD-114: Full Implementation Commitment
+| Field | Value |
+|-------|-------|
+| **Question** | Should psyOS be implemented in full at launch, or phased? |
+| **Status** | ✅ RESOLVED → Full Implementation |
+| **Resolution Date** | 05 January 2026 |
+| **Decision** | Full psyOS implementation at launch, not phased |
+| **Rationale** | User explicitly chose full vision despite technical debt |
+| **Generated By** | Deep Think RQ-012/RQ-016 research delivered phased recommendations |
+
+**What This Means:**
+
+| Deep Think Suggested | User Decided |
+|----------------------|--------------|
+| Phase 1 (Jan 16): Schema + basic UI | **ALL at launch** |
+| Phase 2 (Post-Launch): Intelligence | **ALL at launch** |
+| Phase 3 (Future): Voice Council | **ALL at launch** |
+| Phase 4 (Future): Auto-Detection | **ALL at launch** |
+
+**Technical Debt Accepted:**
+- More complex initial schema
+- All AI model integrations needed from day one
+- Full Council AI with Audiobook Pattern at launch
+- Treaty enforcement integrated with JITAI from day one
+
+**Mitigations:**
+- DeepSeek V3.2 for cost-effective background processing (CD-016)
+- Implementation tasks tracked in RESEARCH_QUESTIONS.md
+- Research questions (RQ-019, RQ-020) address critical unknowns
 
 ---
 

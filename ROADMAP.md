@@ -1,17 +1,29 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 05 January 2026
-> **Current Strategy:** psyOS Architecture with Phase-based Development
-> **Target Launch:** TBD (CD-015 psyOS requires revised timeline)
+> **Last Updated:** 05 January 2026 (Full implementation confirmed; CD-016 AI Model Strategy)
+> **Current Strategy:** psyOS Full Implementation at Launch (NOT phased per PD-114)
+> **Target Launch:** TBD (Full psyOS scope requires significant build)
 > **Identity:** Psychological Operating System (psyOS)
 
 ---
 
 ## 🔒 LOCKED CONFIGURATIONS (Stable)
-- **Interactive Model:** `gemini-3-flash-preview` (The Actor)
-- **Analysis Model:** `deepseek-chat` (The Analyst)
-- **Native Audio:** `gemini-2.5-flash-native-audio-preview-12-2025`
-- **TTS Model:** `gemini-2.5-flash-preview-tts` (Lazy Generation)
+
+### AI Model Strategy (CD-016)
+
+**Multi-Model Architecture:**
+| Use Case | Model | Model ID | Rationale |
+|----------|-------|----------|-----------|
+| **Real-time Voice (Sherlock)** | Gemini 3 Flash | `gemini-3-flash-preview` | Latency-critical |
+| **Real-time Voice (TTS)** | Gemini 2.5 Flash TTS | `gemini-2.5-flash-preview-tts` | Quality, SSML |
+| **Council AI Scripts** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Complex reasoning, cost-effective |
+| **Root Psychology Synthesis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Deep analysis |
+| **Embedding Generation** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Batch processing |
+| **Gap Analysis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Pattern detection |
+| **Native Audio** | Gemini 2.5 Flash Audio | `gemini-2.5-flash-native-audio-preview-12-2025` | Voice input |
+
+**Legacy Configuration (Deprecated):**
+- ~~**Analysis Model:** `deepseek-chat`~~ → Now `deepseek-v3.2-chat` (CD-016)
 
 ---
 
@@ -171,20 +183,29 @@ PHASE E: Airlock & Priming
 └── Effectiveness measurement
 ```
 
-### psyOS Task Breakdown
+### psyOS Task Breakdown (Full Implementation at Launch)
 
-| Phase | Component | RQ | PD | Status |
-|-------|-----------|----|----|--------|
-| **A** | `psychometric_roots` schema | RQ-012 | — | 🔴 Needs research |
-| **A** | `identity_facets` with status | RQ-011 ✅ | — | 🟢 Ready to implement |
+> **CRITICAL:** Per PD-114, ALL psyOS features will be implemented at launch, not phased.
+
+| Phase | Component | RQ | PD | Status | AI Model |
+|-------|-----------|----|----|--------|----------|
+| **A** | `psychometric_roots` schema (pgvector) | RQ-012 ✅ | — | 🟢 Ready to build | N/A |
+| **A** | `psychological_manifestations` schema | RQ-012 ✅ | — | 🟢 Ready to build | N/A |
+| **A** | `treaties` schema (logic_hooks JSONB) | RQ-016 ✅ | PD-113 | 🟢 Ready to build | N/A |
+| **A** | `identity_facets` with status | RQ-011 ✅ | — | 🟢 Ready to build | N/A |
 | **A** | `identity_topology` schema | RQ-013 | — | 🔴 Needs research |
 | **A** | `habit_facet_links` schema | RQ-015 | PD-111 | 🔴 Needs research |
-| **B** | Fractal Trinity extraction | RQ-012 | — | 🔴 Needs research |
+| **B** | Triangulation Protocol (Day 1→4→7) | RQ-012 ✅ | — | 🟢 Ready to build | Gemini 3 Flash |
+| **B** | Sherlock Day 7 root synthesis | RQ-012 ✅ | — | 🟢 Ready to build | **DeepSeek V3.2** |
+| **B** | Chronotype-JITAI Matrix | RQ-012 ✅ | — | 🟢 Ready to build | Hardcoded |
 | **B** | Topology inference | RQ-013 | — | 🔴 Needs research |
 | **B** | Energy State detection | RQ-014 | — | 🔴 Needs research |
 | **B** | Tension Score calculation | — | — | 🟡 Design ready |
-| **C** | Council AI prompts | RQ-016 | PD-109 | 🔴 Needs research |
-| **C** | Treaty mechanics | RQ-016 | — | 🔴 Needs research |
+| **C** | Single-Shot Playwright prompt | RQ-016 ✅ | — | 🟢 Ready to build | **DeepSeek V3.2** |
+| **C** | Council UI (text bubbles, avatars) | RQ-016 ✅ | — | 🟢 Ready to build | N/A |
+| **C** | Treaty signing flow | RQ-016 ✅ | PD-109 | 🟡 PD ready | N/A |
+| **C** | Treaty enforcement in JITAI | RQ-016 ✅ | PD-113 | 🟡 PD pending | Hardcoded |
+| **C** | Audiobook Pattern TTS | RQ-016 ✅ | — | 🟢 Ready to build | Gemini 2.5 TTS |
 | **D** | Constellation visualization | RQ-017 | PD-108 | 🔴 Needs research |
 | **D** | Skill Tree migration | — | PD-108 | 🔴 Needs decision |
 | **E** | Airlock triggers | RQ-018 | PD-110 | 🔴 Needs research |
@@ -221,12 +242,13 @@ RQ-014 (State Economics) ─────┤
 RQ-018 (Airlock/Priming) ─────┴──→ Phase E = Full psyOS Experience
 ```
 
-**Recommended Research Order:**
-1. **RQ-012 + RQ-016** (Signature features — Fractal Trinity + Council AI)
-2. **RQ-013** (Identity Topology — needed for conflict detection)
-3. **RQ-014 + RQ-018** (Energy States + Airlock — closely related)
-4. **RQ-015** (Polymorphic Habits — UX enhancement)
-5. **RQ-017** (Constellation UX — visual overhaul)
+**Research Status (Updated 05 Jan 2026):**
+1. ~~**RQ-012 + RQ-016** (Fractal Trinity + Council AI)~~ ✅ COMPLETE (Deep Think)
+2. **RQ-019 + RQ-020** (pgvector + Treaty-JITAI — implementation research) 🔴 NEXT
+3. **RQ-013** (Identity Topology — needed for conflict detection) 🔴 HIGH
+4. **RQ-014 + RQ-018** (Energy States + Airlock — closely related) 🔴 HIGH
+5. **RQ-015** (Polymorphic Habits — UX enhancement) 🔴 HIGH
+6. **RQ-017** (Constellation UX — visual overhaul) 🔴 HIGH
 
 ---
 

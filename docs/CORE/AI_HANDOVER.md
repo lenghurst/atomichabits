@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (RQ-012 + RQ-016 Deep Think Integration Session)
+> **Last Updated:** 05 January 2026 (Full Implementation + DeepSeek V3.2 Documentation Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,45 +36,82 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `full-implementation-deepseek-documentation` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~45 minutes |
+| **Focus** | Full implementation confirmation, DeepSeek V3.2 integration, new RQs/PDs |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **Full Implementation Confirmed (PD-114):**
+   - User explicitly chose full psyOS implementation at launch, NOT phased
+   - Updated RQ-012 and RQ-016 implementation roadmaps to reflect full scope
+   - Added PD-114 documenting this decision
+
+2. **CD-016: AI Model Strategy (DeepSeek V3.2) — ✅ CONFIRMED:**
+   - Documented multi-model architecture
+   - DeepSeek V3.2 for: Council AI, Root Synthesis, Embeddings, Gap Analysis
+   - Gemini for: Real-time voice, TTS
+   - Hardcoded for: JITAI logic, Chronotype matrix, Treaty enforcement
+   - Updated ROADMAP.md with model allocation table
+
+3. **New Research Questions Added:**
+   - **RQ-019**: pgvector Implementation Strategy (embedding infrastructure)
+   - **RQ-020**: Treaty-JITAI Integration Architecture (how treaties override JITAI)
+
+4. **New Product Decisions Added:**
+   - **PD-113**: Treaty Priority Hierarchy (how treaties interact with JITAI)
+   - **PD-114**: Full Implementation Commitment (resolved: full launch)
+   - **PD-109**: Council AI Activation Rules — Updated status (RQ-016 complete)
+
+5. **Implementation Tasks Added:**
+   - 8 tasks from RQ-012 (Fractal Trinity)
+   - 9 tasks from RQ-016 (Council AI)
+   - All tasks include AI model assignment
+
+6. **GLOSSARY.md Updated:**
+   - Added 7 new Deep Think terms: Triangulation Protocol, Treaty, Logic Hooks, Single-Shot Playwright, Audiobook Pattern, Chronotype-JITAI Matrix, DeepSeek V3.2
+
+7. **ROADMAP.md Updated:**
+   - Header reflects full implementation + CD-016
+   - Model configuration table with DeepSeek V3.2
+   - Task breakdown shows AI model assignments
+   - Research status updated
+
+---
+
+### Previous Session Summary (Same Day, Earlier)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `rq-012-016-deep-think-integration` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~30 minutes |
 | **Focus** | Integrate Deep Think RQ-012 (Fractal Trinity) + RQ-016 (Council AI) Research |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
 1. **RQ-012: Fractal Trinity Architecture — ✅ RESEARCH COMPLETE**
    - Integrated Google Deep Think's comprehensive specifications
-   - **Schema finalized** with pgvector for semantic pattern matching:
-     - `psychometric_roots` table (chronotype, neurotype, root_label, root_embedding, root_confidence)
-     - `psychological_manifestations` table (archetype_label, resistance_script, resistance_embedding, trigger_context, coaching_strategy)
-   - **Triangulation Protocol**: Extract manifestations over Days 1-7, use vector math to find root
-   - **Sherlock Day 7 Synthesis Prompt**: JSON output format for root extraction
-   - **Chronotype-JITAI Matrix**: Intervention timing per Lion/Bear/Wolf/Dolphin
+   - **Schema finalized** with pgvector for semantic pattern matching
+   - **Triangulation Protocol**: Extract manifestations over Days 1-7
+   - **Sherlock Day 7 Synthesis Prompt**: JSON output format
+   - **Chronotype-JITAI Matrix**: Intervention timing per chronotype
 
 2. **RQ-016: Council AI (Roundtable Simulation) — ✅ RESEARCH COMPLETE**
-   - Integrated Google Deep Think's comprehensive specifications
-   - **Architecture Decision**: Single-Shot Playwright Model (NOT multi-agent orchestration)
-   - **System Prompt**: Complete with CAST definition, rules, JSON output format
-   - **Facet Agent Templates**: 4 archetypes (professional_achiever, present_parent, health_guardian, creative_explorer)
-   - **Treaty Protocol**: Database schema with logic_hooks JSONB for JITAI overrides
+   - **Architecture Decision**: Single-Shot Playwright Model
+   - **Treaty Protocol**: Database schema with logic_hooks JSONB
    - **UX Flow**: Summon → The Show → The Deal → Binding → Enforcement
-   - **Voice Mode**: Audiobook Pattern (single narrator, not polyphonic)
-   - **Therapeutic Guardrails**: Veto Rule, No Bad Parts, Safety Switch, Turn Limit
-
-3. **Decision Dependencies Updated:**
-   - RQ-012 and RQ-016 moved from "PENDING" to "COMPLETED"
-   - Research Priority Order updated to reflect completion
-
-4. **Research Session Log Updated:**
-   - Added Deep Think session entry for RQ-012 + RQ-016
+   - **Voice Mode**: Audiobook Pattern (single narrator)
 
 ---
 
-### Previous Session Summary (Same Day, Earlier)
+### Previous Session Summary (Same Day, Even Earlier)
 | Field | Value |
 |-------|-------|
 | **Session ID** | `psyos-architecture-documentation` |
@@ -385,6 +422,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Full Implementation + DeepSeek V3.2 | ✅ PD-114, CD-016, RQ-019-020, PD-113; GLOSSARY + ROADMAP updated |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think Integration | ✅ RQ-012 + RQ-016 COMPLETE with schemas, prompts, protocols |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | psyOS Documentation | ✅ CD-015 confirmed, RQ-012-018 + PD-108-112 added, ROADMAP + GLOSSARY updated |
 | 05 Jan 2026 | Claude + Deep Think | `claude/pact-session-setup-QVINO` | RQ-011 + Deep Think Validation | ✅ Model validated, Blue Sky architecture documented, schema refined with status/energy fields |
@@ -412,31 +450,53 @@ This handover protocol was created because:
 3. Multiple agents working on the same codebase need coordination
 
 **Major Progress This Session:**
-Deep Think's comprehensive specifications for RQ-012 (Fractal Trinity) and RQ-016 (Council AI) have been integrated. The two CRITICAL psyOS research questions are now COMPLETE.
+Full implementation confirmed (not phased). DeepSeek V3.2 documented as primary backend AI model. New implementation research questions and product decisions added.
 
 **Research Status Update:**
 | Research Question | Status | Key Deliverables |
 |-------------------|--------|------------------|
 | RQ-012 (Fractal Trinity) | ✅ COMPLETE | pgvector schema, Triangulation Protocol, Chronotype-JITAI Matrix |
 | RQ-016 (Council AI) | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol, Audiobook Pattern |
+| RQ-019 (pgvector Implementation) | 🔴 NEEDS RESEARCH | NEW — Embedding infrastructure |
+| RQ-020 (Treaty-JITAI Integration) | 🔴 NEEDS RESEARCH | NEW — How treaties override JITAI |
 | RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — |
 | RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — |
 | RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | — |
 | RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | — |
 | RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | — |
 
+**New Confirmed Decisions:**
+| Decision | Summary |
+|----------|---------|
+| **CD-016** | AI Model Strategy — DeepSeek V3.2 for background, Gemini for realtime |
+| **PD-114** | Full Implementation — All psyOS at launch (not phased) |
+
+**New Pending Decisions:**
+| Decision | Summary |
+|----------|---------|
+| **PD-113** | Treaty Priority Hierarchy — How treaties interact with JITAI |
+| **PD-109** | Council AI Activation — 🟡 Ready for decision (RQ-016 complete) |
+
 **Your Action Items:**
 - **✅ RESOLVED:** PD-106 (Multiple Identity Architecture) — Now confirmed via CD-015
 - **✅ COMPLETE:** RQ-012 and RQ-016 — CRITICAL research done, ready for implementation
-- **🔴 REMAINING:** RQ-013 through RQ-018 — 5 HIGH priority research questions still need attention
-- **🔴 CRITICAL:** Decide on 5 new PDs (PD-108 through PD-112) as research completes
-- **🟡 TIMELINE:** Original Jan 16 launch date needs review — psyOS is more ambitious
-- Review the comprehensive RQ-012 and RQ-016 specifications in RESEARCH_QUESTIONS.md
+- **✅ CONFIRMED:** CD-016 (AI Model Strategy) — DeepSeek V3.2 for background tasks
+- **✅ CONFIRMED:** PD-114 (Full Implementation) — All psyOS features at launch
+- **🟡 READY:** PD-109 (Council AI Activation) — Needs confirmation of thresholds
+- **🔴 NEW:** RQ-019, RQ-020 — Implementation research needed before building
+- **🔴 REMAINING:** RQ-013-018 — 6 HIGH priority research questions
+- **🟡 TIMELINE:** Full psyOS scope — significant build required
 
 **Key Documentation Updated This Session:**
 | Document | Section | Change |
 |----------|---------|--------|
-| RESEARCH_QUESTIONS.md | RQ-012 | Full specification: pgvector schema, Triangulation Protocol, Sherlock prompts, Chronotype-JITAI Matrix |
-| RESEARCH_QUESTIONS.md | RQ-016 | Full specification: Single-Shot Playwright, Council system prompt, Treaty Protocol, Audiobook Pattern, Guardrails |
-| RESEARCH_QUESTIONS.md | Decision Dependencies | Updated to reflect completed research |
+| PRODUCT_DECISIONS.md | CD-016 | NEW: AI Model Strategy with DeepSeek V3.2 allocation |
+| PRODUCT_DECISIONS.md | PD-113, PD-114 | NEW: Treaty Priority + Full Implementation |
+| PRODUCT_DECISIONS.md | PD-109 | Updated status (RQ-016 complete) |
+| RESEARCH_QUESTIONS.md | RQ-019, RQ-020 | NEW: Implementation research questions |
+| RESEARCH_QUESTIONS.md | RQ-012, RQ-016 | Updated roadmaps for full implementation |
+| RESEARCH_QUESTIONS.md | Implementation Tasks | Added 17 tasks from RQ-012 + RQ-016 |
+| ROADMAP.md | Model Config | Added multi-model architecture table |
+| ROADMAP.md | Task Breakdown | Added AI model assignments |
+| GLOSSARY.md | Deep Think Terms | Added 7 new terms |
 | AI_HANDOVER.md | Session Log | Added this session entry |
