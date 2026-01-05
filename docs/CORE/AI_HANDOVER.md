@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (Dashboard Architecture Session)
+> **Last Updated:** 05 January 2026 (GLOSSARY Term Reconciliation Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,50 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `glossary-reconciliation-session` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~45 minutes (including context recovery) |
+| **Focus** | GLOSSARY Systematic Review, Ghost Term Resolution |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **Systematic GLOSSARY Review with User**
+   - Reviewed all terms against codebase reality
+   - Identified ghost terms, outdated terms, ambiguous terms
+   - User provided guidance on each category
+
+2. **GLOSSARY Term Updates:**
+   - **Hexis Score**: Marked DEPRECATED (never concretely defined, `hexis_calculator.dart` never built)
+   - **Shadow Presence**: Expanded with historical context — intended as "darkness" input for Living Garden, theoretical measurement approach documented
+   - **Gap Analysis Engine**: Added HIGH priority flag, documented architectural criticality and pending questions
+   - **Puck**: Marked DEPRECATED — consolidate to "Sherlock"
+   - **Loading Insights Screen**: Fixed description (generic spinner, needs future personalization sprint)
+   - **Habit vs Ritual**: Deferred with reasoning (part of wider dashboard/tracking/recommendation discussion)
+   - **Dashboard Terms**: Added Binary Interface, The Bridge, Skill Tree definitions
+
+3. **Created "Terms Contingent on Product Decisions" Section**
+   - Living Garden, Shadow Presence, Shadow Dialogue, Gap Analysis Engine, Power Words
+   - These are documented but not implemented — require PD resolution
+
+4. **Branch Commits:**
+   - `b0804e8`: docs: comprehensive GLOSSARY review and reconciliation
+   - `37174c8`: docs: finalize GLOSSARY term reconciliation
+
+---
+
+### Previous Session Summary (Same Day, Earlier)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `dashboard-docs-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~15 minutes |
 | **Focus** | Dashboard State Documentation, Living Garden Clarification |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session, Earlier)
 
 **Key Changes Made:**
 
@@ -64,52 +101,8 @@ This prevents:
 
 ---
 
-### Previous Session Summary (Same Day)
-| Field | Value |
-|-------|-------|
-| **Session ID** | `rq-reconciliation-session` |
-| **Date** | 05 January 2026 |
-| **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~30 minutes |
-| **Focus** | RQ Number Reconciliation, CD-014/CD-015 Updates |
-
-### What Was Accomplished (Previous Session)
-
-**Key Changes Made:**
-
-1. **CD-014 Importance → CRITICAL**
-   - Changed from LOW to CRITICAL
-   - Rationale: Updating Core files is crucial for agent context understanding
-   - Updated in Dependency Map and Quick Reference Table
-
-2. **CD-015 → PD-105 (Demoted to PENDING)**
-   - Renamed from "CD-015" (confirmed) to "PD-105" (pending decision)
-   - Requires research before architectural commitment
-   - Added Options A/B/C with arguments for/against
-   - Framed unified architecture as hypothesis needing validation
-
-3. **RQ Numbers Reconciled Across All Core Files**
-   - **Conflict Found:** IDENTITY_COACH_SPEC.md and RESEARCH_QUESTIONS.md both used RQ-005/006 for different questions
-   - **Resolution:** Renumbered by importance/dependency
-
-   | New # | Question | Priority | Previously |
-   |-------|----------|----------|------------|
-   | RQ-005 | Proactive Recommendation Algorithms | CRITICAL | IDENTITY_COACH_SPEC internal |
-   | RQ-006 | Content Library for Recommendations | HIGH | IDENTITY_COACH_SPEC internal |
-   | RQ-007 | Identity Roadmap Architecture | HIGH | Was RQ-006 in RESEARCH_QUESTIONS |
-   | RQ-008 | UI Logic Separation | MEDIUM | Was RQ-005 in RESEARCH_QUESTIONS |
-   | RQ-009 | LLM Coding Approach | MEDIUM | Was RQ-007 in RESEARCH_QUESTIONS |
-
-4. **Cross-References Updated**
-   - PRODUCT_DECISIONS.md CD-013 → RQ-008
-   - PRODUCT_DECISIONS.md PD-105 → RQ-007
-   - IDENTITY_COACH_SPEC.md added note that RQ-005/006 are canonical in RESEARCH_QUESTIONS.md
-
----
-
 ### What Was NOT Done (Deferred)
-- Track G-0 systematic GLOSSARY review
-- Habit vs Ritual data model decision (see GLOSSARY.md)
+- None — GLOSSARY review was completed this session
 
 ### Blockers Awaiting Human Input
 | Blocker | Question | Status |
@@ -239,6 +232,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | GLOSSARY Review | Deprecated Hexis Score, documented Shadow Presence, prioritized Gap Analysis Engine |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Dashboard Docs | Documented Bridge+SkillTree, fixed Living Garden references in AI_CONTEXT.md |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | RQ Reconciliation | CD-014→CRITICAL, CD-015→PD-105, RQ-005 through RQ-009 renumbered by importance |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Deep Protocol Review | 12 user points: Entry/Exit protocols, CD-015, Track G-0, RQ-007, Layer verification |
