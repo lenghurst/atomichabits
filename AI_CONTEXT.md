@@ -120,7 +120,9 @@ graph TD
 **The Pact** — An Identity Evidence Engine. The atomic unit is Identity Evidence.
 
 **Core Philosophy:**
-"We are building an app where the Atomic Unit is Identity Evidence. Through Magic Wand Voice Onboarding, the AI constructs a Dynamic Profile of the user's Shadow Archetypes and Core Values. Returning users encounter a Living Garden Visualization and interact via a Conversational Command Line, receiving Socratic Insights derived from real-time Gap Analysis between professed values and behavioral patterns."
+"We are building an app where the Atomic Unit is Identity Evidence. Through Magic Wand Voice Onboarding, the AI constructs a Dynamic Profile of the user's Shadow Archetypes and Core Values. Returning users encounter a Binary Interface Dashboard (The Bridge for doing + Skill Tree for being) and interact via a Conversational Command Line, receiving Socratic Insights derived from real-time Gap Analysis between professed values and behavioral patterns."
+
+**Note:** The "Living Garden Visualization" mentioned in original vision is aspirational (Layer 3). Currently implemented: Skill Tree (custom-painted tree metaphor).
 
 **Live URL:** [thepact.co](https://thepact.co)
 

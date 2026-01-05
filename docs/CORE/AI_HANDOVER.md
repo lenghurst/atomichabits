@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 05 January 2026 (Dashboard Architecture Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,53 +36,35 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `rq-reconciliation-session` |
+| **Session ID** | `dashboard-docs-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~30 minutes |
-| **Focus** | RQ Number Reconciliation, CD-014/CD-015 Updates |
+| **Duration** | ~15 minutes |
+| **Focus** | Dashboard State Documentation, Living Garden Clarification |
 
 ### What Was Accomplished
 
 **Key Changes Made:**
 
-1. **CD-014 Importance → CRITICAL**
-   - Changed from LOW to CRITICAL
-   - Rationale: Updating Core files is crucial for agent context understanding
-   - Updated in Dependency Map and Quick Reference Table
+1. **Verified Branch Merge Complete**
+   - Branch `claude/setup-ai-coordination-ZSkqC` was merged (commit `7d9c56b`)
+   - All prior session work is now on main
 
-2. **CD-015 → PD-105 (Demoted to PENDING)**
-   - Renamed from "CD-015" (confirmed) to "PD-105" (pending decision)
-   - Requires research before architectural commitment
-   - Added Options A/B/C with arguments for/against
-   - Framed unified architecture as hypothesis needing validation
+2. **Documented Current Dashboard State**
+   - Binary Interface: Two-state toggle between "Doing" and "Being"
+   - **The Bridge** (`the_bridge.dart`): Action deck with JITAI-powered habit sorting
+   - **Skill Tree** (`skill_tree.dart`): Custom-painted tree visualization of identity growth
+   - See "Current Dashboard Architecture" section below
 
-3. **RQ Numbers Reconciled Across All Core Files**
-   - **Conflict Found:** IDENTITY_COACH_SPEC.md and RESEARCH_QUESTIONS.md both used RQ-005/006 for different questions
-   - **Resolution:** Renumbered by importance/dependency
-
-   | New # | Question | Priority | Previously |
-   |-------|----------|----------|------------|
-   | RQ-005 | Proactive Recommendation Algorithms | CRITICAL | IDENTITY_COACH_SPEC internal |
-   | RQ-006 | Content Library for Recommendations | HIGH | IDENTITY_COACH_SPEC internal |
-   | RQ-007 | Identity Roadmap Architecture | HIGH | Was RQ-006 in RESEARCH_QUESTIONS |
-   | RQ-008 | UI Logic Separation | MEDIUM | Was RQ-005 in RESEARCH_QUESTIONS |
-   | RQ-009 | LLM Coding Approach | MEDIUM | Was RQ-007 in RESEARCH_QUESTIONS |
-
-4. **Cross-References Updated**
-   - PRODUCT_DECISIONS.md CD-013 → RQ-008
-   - PRODUCT_DECISIONS.md PD-105 → RQ-007
-   - IDENTITY_COACH_SPEC.md added note that RQ-005/006 are canonical in RESEARCH_QUESTIONS.md
-
-5. **Git Status Clarified**
-   - All changes on branch `claude/setup-ai-coordination-ZSkqC`
-   - NOT on main (system enforces claude/* branch)
-   - Provided Gemini merge prompt for user
+3. **Resolved Living Garden Documentation Discrepancy**
+   - AI_CONTEXT.md incorrectly stated "Living Garden Visualization" as if implemented
+   - **Reality:** Living Garden (Layer 3) is ASPIRATIONAL ONLY — not in codebase
+   - Fixed AI_CONTEXT.md to reflect actual state (Binary Interface: Bridge + Skill Tree)
+   - ROADMAP.md Track G-0 already correctly marked Living Garden as "aspirational only"
 
 ### What Was NOT Done (Deferred)
-- Merge to main (user will use Gemini)
-- Dashboard state documentation (current: Bridge + Skill Tree binary interface)
-- Layer 3 (Living Garden) decision (doesn't exist in codebase)
+- Track G-0 systematic GLOSSARY review
+- Habit vs Ritual data model decision (see GLOSSARY.md)
 
 ### Blockers Awaiting Human Input
 | Blocker | Question | Status |
@@ -102,6 +84,39 @@ This prevents:
 ---
 
 ## Context for Next Agent
+
+### Current Dashboard Architecture (Phase 67)
+
+The dashboard uses a **Binary Interface** — two distinct views the user toggles between:
+
+```
+lib/features/dashboard/
+├── habit_list_screen.dart           ← Main list view
+└── widgets/
+    ├── identity_dashboard.dart      ← Binary interface container (toggle)
+    ├── the_bridge.dart              ← "Doing" state (✅ IMPLEMENTED)
+    ├── skill_tree.dart              ← "Being" state (✅ IMPLEMENTED)
+    ├── comms_fab.dart               ← AI Persona FAB
+    └── habit_summary_card.dart      ← Individual habit cards
+```
+
+**The Bridge (Doing State)** — `the_bridge.dart:24-38`
+- Context-aware action deck with JITAI-powered priority sorting
+- Shows habits sorted by V-O scoring, cascade risk, timing
+- Features: Glass morphism cards, cascade risk warnings, tiny version buttons
+- "NOW" badge for highest priority habit
+- Identity votes counter per habit
+
+**Skill Tree (Being State)** — `skill_tree.dart:18-32`
+- Custom-painted living tree visualization of identity growth
+- Multi-part structure: Root (foundation) → Trunk (primary habit) → Branches (related habits) → Leaves (decorative)
+- Health scoring: Green (strong) → Yellow → Orange → Red (at risk)
+- Stats overlay showing votes, streak, completions
+
+**Living Garden (Layer 3)** — ❌ NOT IMPLEMENTED
+- Mentioned in ROADMAP.md Layer 3 as aspirational
+- Would use Rive animation with hexis_score, shadow_presence inputs
+- Current replacement: Skill Tree serves the visualization role
 
 ### Key Technical Discoveries This Session
 
@@ -179,6 +194,7 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Dashboard Docs | Documented Bridge+SkillTree, fixed Living Garden references in AI_CONTEXT.md |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | RQ Reconciliation | CD-014→CRITICAL, CD-015→PD-105, RQ-005 through RQ-009 renumbered by importance |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Deep Protocol Review | 12 user points: Entry/Exit protocols, CD-015, Track G-0, RQ-007, Layer verification |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Protocol Refinements | 8 action items: Git workflow, cross-doc checks, decision flow, Habit/Ritual defs, CD-013/14, Track G |
