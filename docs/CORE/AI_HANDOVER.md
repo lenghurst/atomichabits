@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (Deep Think RQ-019 + RQ-020 Integration Session)
+> **Last Updated:** 05 January 2026 (Deep Analysis: Gaps, New RQs/PDs, Impact Tracing)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,64 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `deep-analysis-gaps-new-rqs-pds` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~45 minutes |
+| **Focus** | Deep analysis of gaps, exhaustive documentation, new RQs/PDs, impact tracing |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **Gap Analysis Completed:**
+   - Identified missing specifications in RQ-019 and RQ-020
+   - Added Similarity Search Query Patterns (SQL + Dart)
+   - Added Population Learning Pipeline (privacy-first design)
+   - Added Treaties table complete SQL schema
+   - Added ContextSnapshot full Dart class (30+ fields)
+   - Added Tension Score calculation algorithm
+
+2. **New Research Questions Created:**
+   - **RQ-021**: Treaty Lifecycle & UX (creation, templates, management)
+   - **RQ-022**: Council Script Generation Prompts (DeepSeek V3.2 templates)
+   - **RQ-023**: Population Learning Privacy Framework (k-anonymity, opt-in)
+
+3. **New Product Decisions Created:**
+   - **PD-115**: Treaty Creation UX (Templates + Council AI recommended)
+   - **PD-116**: Population Learning Privacy (opt-in, k-anonymity k≥50)
+   - **PD-117**: ContextSnapshot Real-time Data (refresh strategies)
+
+4. **Impact Analysis Completed:**
+   - CD-015 (psyOS): ✅ Validated, implementation path clear
+   - CD-016 (AI Model): ✅ Updated with gemini-embedding-001
+   - PD-106 (Identity Architecture): ⚠️ Ready to resolve
+   - RQ-013 (Identity Topology): ✅ Unblocked by pgvector
+   - RQ-014 (State Economics): ⚠️ New dependency (ContextSnapshot)
+
+5. **GLOSSARY.md Updated — 4 New Terms:**
+   - ContextSnapshot
+   - Tension Score
+   - Population Resistance Clusters
+   - (Also: Breach Escalation now includes trigger)
+
+6. **ROADMAP.md Updated:**
+   - Full research status table (RQ-012 through RQ-023)
+   - New pending decisions listed (PD-115, PD-116, PD-117)
+   - Upstream/downstream impact analysis table
+
+---
+
+### Previous Session Summary (Same Day)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `deep-think-rq019-rq020-integration` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~30 minutes |
 | **Focus** | Deep Think RQ-019 + RQ-020 integration, embedding model correction |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
@@ -483,6 +534,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Analysis: Gaps + New RQs/PDs | ✅ RQ-021-023 NEW; PD-115-117 NEW; Treaties schema; ContextSnapshot class; Tension Score algorithm; Impact analysis |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think RQ-019 + RQ-020 Integration | ✅ RQ-019+020 COMPLETE; PD-109+113 RESOLVED; CD-016 corrected (gemini-embedding-001); 7 GLOSSARY terms added |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Full Implementation + DeepSeek V3.2 | ✅ PD-114, CD-016, RQ-019-020, PD-113; GLOSSARY + ROADMAP updated |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think Integration | ✅ RQ-012 + RQ-016 COMPLETE with schemas, prompts, protocols |
@@ -519,13 +571,23 @@ Full implementation confirmed (not phased). DeepSeek V3.2 documented as primary 
 |-------------------|--------|------------------|
 | RQ-012 (Fractal Trinity) | ✅ COMPLETE | pgvector schema, Triangulation Protocol, Chronotype-JITAI Matrix |
 | RQ-016 (Council AI) | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol, Audiobook Pattern |
-| RQ-019 (pgvector Implementation) | ✅ COMPLETE | gemini-embedding-001, HNSW index, Null-on-Update trigger, Edge Function |
-| RQ-020 (Treaty-JITAI Integration) | ✅ COMPLETE | json_logic_dart, TreatyEngine class, 5-level priority stack, breach escalation |
-| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — |
-| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — |
+| RQ-019 (pgvector Implementation) | ✅ COMPLETE | gemini-embedding-001, HNSW, similarity queries, population learning |
+| RQ-020 (Treaty-JITAI Integration) | ✅ COMPLETE | TreatyEngine, treaties schema, ContextSnapshot, tension score algorithm |
+| **RQ-021 (Treaty Lifecycle & UX)** | 🔴 NEW | Treaty creation flow, templates, management UI |
+| **RQ-022 (Council Script Prompts)** | 🔴 NEW | DeepSeek V3.2 prompt templates for facet dialogue |
+| **RQ-023 (Population Learning Privacy)** | 🔴 NEW | Privacy framework, k-anonymity, opt-in |
+| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — (unblocked by pgvector) |
+| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — (new dependency: ContextSnapshot) |
 | RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | — |
 | RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | — |
 | RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | — |
+
+**New Pending Decisions:**
+| Decision | Status | Depends On |
+|----------|--------|------------|
+| PD-115 (Treaty Creation UX) | 🔴 PENDING | RQ-021 |
+| PD-116 (Population Learning Privacy) | 🔴 PENDING | RQ-023 |
+| PD-117 (ContextSnapshot Real-time Data) | 🔴 PENDING | RQ-014 |
 
 **New Confirmed Decisions:**
 | Decision | Summary |

@@ -249,16 +249,39 @@ RQ-018 (Airlock/Priming) ─────┴──→ Phase E = Full psyOS Experi
 ```
 
 **Research Status (Updated 05 Jan 2026):**
-1. ~~**RQ-012 + RQ-016** (Fractal Trinity + Council AI)~~ ✅ COMPLETE (Deep Think)
-2. ~~**RQ-019 + RQ-020** (pgvector + Treaty-JITAI)~~ ✅ COMPLETE (Deep Think) — gemini-embedding-001, HNSW, json_logic_dart
-3. **RQ-013** (Identity Topology — needed for conflict detection) 🔴 HIGH
-4. **RQ-014 + RQ-018** (Energy States + Airlock — closely related) 🔴 HIGH
-5. **RQ-015** (Polymorphic Habits — UX enhancement) 🔴 HIGH
-6. **RQ-017** (Constellation UX — visual overhaul) 🔴 HIGH
+
+| RQ | Topic | Status | Key Deliverables |
+|----|-------|--------|------------------|
+| RQ-012 | Fractal Trinity | ✅ COMPLETE | pgvector schema, Triangulation Protocol |
+| RQ-016 | Council AI | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol |
+| RQ-019 | pgvector Implementation | ✅ COMPLETE | gemini-embedding-001, HNSW, similarity queries |
+| RQ-020 | Treaty-JITAI Integration | ✅ COMPLETE | TreatyEngine, treaties schema, ContextSnapshot |
+| **RQ-021** | **Treaty Lifecycle & UX** | 🔴 NEW | Treaty creation flow, templates, management UI |
+| **RQ-022** | **Council Script Prompts** | 🔴 NEW | DeepSeek V3.2 prompt templates |
+| **RQ-023** | **Population Learning Privacy** | 🔴 NEW | Privacy framework, k-anonymity |
+| RQ-013 | Identity Topology | 🔴 NEEDS RESEARCH | Graph modeling, conflict detection |
+| RQ-014 | State Economics | 🔴 NEEDS RESEARCH | Energy states, bio-energetic conflicts |
+| RQ-015 | Polymorphic Habits | 🔴 NEEDS RESEARCH | Habit-facet linkage |
+| RQ-017 | Constellation UX | 🔴 NEEDS RESEARCH | Solar system visualization |
+| RQ-018 | Airlock Protocol | 🔴 NEEDS RESEARCH | Transition rituals, sensory priming |
 
 **Decisions Resolved This Session:**
 - ✅ **PD-109** (Council AI Activation) — 0.7 threshold, 6 turns, keywords confirmed
 - ✅ **PD-113** (Treaty Priority Hierarchy) — 5-level stack, breach escalation confirmed
+
+**New Decisions Pending:**
+- 🔴 **PD-115** (Treaty Creation UX) — Requires RQ-021
+- 🔴 **PD-116** (Population Learning Privacy) — Requires RQ-023
+- 🔴 **PD-117** (ContextSnapshot Real-time Data) — Requires RQ-014
+
+**Upstream/Downstream Impact Analysis:**
+| Existing Decision | Impact | Action |
+|-------------------|--------|--------|
+| **CD-015** (psyOS) | ✅ Validated | Implementation path now clear |
+| **CD-016** (AI Model) | ✅ Updated | gemini-embedding-001 for embeddings |
+| **PD-106** (Identity Architecture) | ⚠️ Ready to resolve | Schema finalized via CD-015 + RQ-012 |
+| **RQ-013** (Identity Topology) | ✅ Unblocked | Can use pgvector infrastructure |
+| **RQ-014** (State Economics) | ⚠️ New dependency | ContextSnapshot references energy_state |
 
 ---
 

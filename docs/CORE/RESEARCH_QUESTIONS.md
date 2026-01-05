@@ -1868,6 +1868,145 @@ User edits resistance_script
 
 ---
 
+#### Similarity Search Query Patterns
+
+**Use Case 1: Find Similar Manifestations Within User**
+```sql
+-- Find manifestations similar to a specific one (same user)
+SELECT m2.id, m2.resistance_script,
+       1 - (m1.resistance_embedding <=> m2.resistance_embedding) AS similarity
+FROM psychological_manifestations m1
+JOIN psychological_manifestations m2 ON m1.user_id = m2.user_id
+WHERE m1.id = $manifestation_id
+  AND m2.id != m1.id
+  AND m1.resistance_embedding IS NOT NULL
+  AND m2.resistance_embedding IS NOT NULL
+ORDER BY m1.resistance_embedding <=> m2.resistance_embedding
+LIMIT 5;
+```
+
+**Use Case 2: Cross-Facet Pattern Detection**
+```sql
+-- Find if same resistance pattern appears across different facets
+SELECT
+  f1.label AS facet_1,
+  f2.label AS facet_2,
+  m1.resistance_script AS pattern_1,
+  m2.resistance_script AS pattern_2,
+  1 - (m1.resistance_embedding <=> m2.resistance_embedding) AS similarity
+FROM psychological_manifestations m1
+JOIN psychological_manifestations m2
+  ON m1.user_id = m2.user_id
+  AND m1.facet_id != m2.facet_id
+JOIN identity_facets f1 ON m1.facet_id = f1.id
+JOIN identity_facets f2 ON m2.facet_id = f2.id
+WHERE m1.user_id = $user_id
+  AND 1 - (m1.resistance_embedding <=> m2.resistance_embedding) > 0.85
+ORDER BY similarity DESC;
+```
+
+**Dart Query Wrapper:**
+```dart
+// lib/data/repositories/embedding_repository.dart
+class EmbeddingRepository {
+  final SupabaseClient _supabase;
+
+  /// Find manifestations similar to the given one
+  Future<List<SimilarManifestation>> findSimilar(
+    String manifestationId, {
+    double threshold = 0.7,
+    int limit = 5,
+  }) async {
+    final response = await _supabase.rpc(
+      'find_similar_manifestations',
+      params: {
+        'target_id': manifestationId,
+        'similarity_threshold': threshold,
+        'result_limit': limit,
+      },
+    );
+    return (response as List)
+        .map((e) => SimilarManifestation.fromJson(e))
+        .toList();
+  }
+
+  /// Detect cross-facet patterns for a user
+  Future<List<CrossFacetPattern>> detectCrossFacetPatterns(
+    String userId, {
+    double threshold = 0.85,
+  }) async {
+    final response = await _supabase.rpc(
+      'detect_cross_facet_patterns',
+      params: {
+        'target_user_id': userId,
+        'similarity_threshold': threshold,
+      },
+    );
+    return (response as List)
+        .map((e) => CrossFacetPattern.fromJson(e))
+        .toList();
+  }
+}
+```
+
+---
+
+#### Population Learning Pipeline
+
+**Purpose:** Aggregate anonymized patterns across users for:
+1. Identify common resistance archetypes (cluster analysis)
+2. Discover effective coaching strategies per archetype
+3. Cold-start recommendations for new users
+
+**Privacy-First Design:**
+```sql
+-- Population embeddings are ANONYMIZED (no user_id, no text)
+CREATE TABLE population_resistance_clusters (
+  cluster_id UUID PRIMARY KEY,
+  centroid_embedding VECTOR(768),  -- Truncated from 3072 for privacy
+  cluster_label TEXT,              -- "Perfectionist Resistance", "Procrastination Pattern"
+  member_count INT,
+  coaching_strategy TEXT,          -- What works for this cluster
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+);
+
+-- Users opt-in to population learning
+ALTER TABLE users ADD COLUMN population_learning_enabled BOOLEAN DEFAULT false;
+```
+
+**Cluster Update Job (Nightly):**
+```typescript
+// supabase/functions/update-population-clusters/index.ts
+// 1. Fetch all embeddings from opted-in users
+// 2. Truncate to 768 dimensions (Matryoshka)
+// 3. Run K-means clustering (k=20)
+// 4. Update centroid embeddings
+// 5. Label clusters via DeepSeek V3.2 analysis
+```
+
+**Cold-Start Matching:**
+```dart
+// For new users, match their first manifestation to population cluster
+Future<String?> suggestCoachingStrategy(String manifestationId) async {
+  final embedding = await getEmbedding(manifestationId);
+  final truncated = embedding.sublist(0, 768);  // Matryoshka truncation
+
+  final cluster = await findNearestCluster(truncated);
+  return cluster?.coachingStrategy;
+}
+```
+
+**Privacy Constraints (see PD-116):**
+| Data | Shared? | How |
+|------|---------|-----|
+| Raw text (resistance_script) | ❌ Never | — |
+| Full embedding (3072-dim) | ❌ Never | — |
+| Truncated embedding (768-dim) | ✅ If opted-in | Anonymized, no user_id |
+| Cluster membership | ✅ If opted-in | Aggregate only |
+
+---
+
 #### Output Delivered
 
 | Deliverable | Status |
@@ -1878,6 +2017,8 @@ User edits resistance_script
 | Invalidation logic | ✅ Null-on-Update trigger |
 | Edge Function code | ✅ TypeScript implementation |
 | Cost projection | ✅ 10K → 1M users |
+| Similarity search queries | ✅ SQL + Dart wrappers |
+| Population learning pipeline | ✅ Privacy-first cluster design |
 
 ---
 
@@ -2184,6 +2325,346 @@ bool shouldSummonCouncil(String userInput, double tensionScore) {
 
 ---
 
+#### Treaties Table Schema
+
+```sql
+-- treaties: Core treaty storage
+CREATE TABLE treaties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  -- Treaty metadata
+  title TEXT NOT NULL,                          -- "Tuesday Family Night"
+  terms_text TEXT NOT NULL,                     -- Human-readable terms
+  facets_involved UUID[] NOT NULL,              -- Array of facet IDs
+  status TEXT NOT NULL DEFAULT 'active',        -- 'active', 'probationary', 'suspended', 'expired'
+
+  -- Logic hooks (JSON Logic format)
+  logic_hooks JSONB NOT NULL,
+  /*
+    {
+      "condition": { "and": [...] },
+      "action": {
+        "type": "block_and_remind" | "warn" | "log_only",
+        "reminder_text": "...",
+        "severity": "hard" | "soft"
+      }
+    }
+  */
+
+  -- Council session reference (optional - treaties can be created ad-hoc)
+  council_session_id UUID REFERENCES council_sessions(id),
+
+  -- Breach tracking
+  breach_count INT DEFAULT 0,
+  last_breach_at TIMESTAMPTZ,
+  breach_window_start TIMESTAMPTZ,              -- Rolling 7-day window
+
+  -- Lifecycle
+  signed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- When treaty was agreed
+  expires_at TIMESTAMPTZ,                       -- NULL = never expires
+  suspended_at TIMESTAMPTZ,                     -- When suspended (if applicable)
+
+  -- Audit
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for treaty lookup
+CREATE INDEX idx_treaties_user_status ON treaties(user_id, status);
+CREATE INDEX idx_treaties_facets ON treaties USING GIN(facets_involved);
+
+-- RLS: Users can only see their own treaties
+ALTER TABLE treaties ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own treaties" ON treaties
+FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own treaties" ON treaties
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own treaties" ON treaties
+FOR UPDATE USING (auth.uid() = user_id);
+
+-- Breach tracking trigger
+CREATE OR REPLACE FUNCTION record_treaty_breach() RETURNS TRIGGER AS $$
+BEGIN
+  -- Reset window if outside 7-day period
+  IF NEW.breach_window_start IS NULL OR
+     NEW.breach_window_start < NOW() - INTERVAL '7 days' THEN
+    NEW.breach_window_start = NOW();
+    NEW.breach_count = 1;
+  ELSE
+    NEW.breach_count = OLD.breach_count + 1;
+  END IF;
+
+  NEW.last_breach_at = NOW();
+
+  -- Auto-transition to probationary at 3 breaches
+  IF NEW.breach_count >= 3 AND OLD.status = 'active' THEN
+    NEW.status = 'probationary';
+  END IF;
+
+  -- Auto-suspend at 5 breaches
+  IF NEW.breach_count >= 5 THEN
+    NEW.status = 'suspended';
+    NEW.suspended_at = NOW();
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**Treaty Dart Model:**
+```dart
+// lib/domain/models/treaty.dart
+@freezed
+class Treaty with _$Treaty {
+  const factory Treaty({
+    required String id,
+    required String userId,
+    required String title,
+    required String termsText,
+    required List<String> facetsInvolved,
+    required TreatyStatus status,
+    required Map<String, dynamic> logicHooks,
+    String? councilSessionId,
+    required int breachCount,
+    DateTime? lastBreachAt,
+    required DateTime signedAt,
+    DateTime? expiresAt,
+    DateTime? suspendedAt,
+  }) = _Treaty;
+
+  factory Treaty.fromJson(Map<String, dynamic> json) => _$TreatyFromJson(json);
+}
+
+enum TreatyStatus { active, probationary, suspended, expired }
+```
+
+---
+
+#### ContextSnapshot Class Definition
+
+```dart
+// lib/domain/models/context_snapshot.dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'context_snapshot.freezed.dart';
+part 'context_snapshot.g.dart';
+
+/// Complete context available to Treaty logic hooks and JITAI decisions.
+/// This is the single source of truth for "current state" when making decisions.
+@freezed
+class ContextSnapshot with _$ContextSnapshot {
+  const factory ContextSnapshot({
+    // ═══════════════════════════════════════════════════════════
+    // TEMPORAL CONTEXT
+    // ═══════════════════════════════════════════════════════════
+    required String dayOfWeek,        // 'monday', 'tuesday', etc.
+    required int hour,                // 0-23
+    required int minute,              // 0-59
+    required bool isWeekend,          // true if Saturday/Sunday
+    required String timeOfDay,        // 'morning', 'afternoon', 'evening', 'night'
+
+    // ═══════════════════════════════════════════════════════════
+    // LOCATION CONTEXT
+    // ═══════════════════════════════════════════════════════════
+    String? locationZone,             // 'home', 'work', 'gym', 'commute', 'other'
+    double? distanceFromHomeKm,       // Approximate distance
+    bool? isStationary,               // Has user been still for >5min?
+
+    // ═══════════════════════════════════════════════════════════
+    // IDENTITY CONTEXT
+    // ═══════════════════════════════════════════════════════════
+    String? activeFacetId,            // Currently active facet (if any)
+    String? activeFacetLabel,         // Human-readable label
+    String? previousFacetId,          // Last active facet (for transitions)
+
+    // ═══════════════════════════════════════════════════════════
+    // HABIT CONTEXT (when evaluating a specific habit)
+    // ═══════════════════════════════════════════════════════════
+    String? habitId,                  // Current habit being evaluated
+    String? habitName,                // Human-readable name
+    String? habitFacetId,             // Facet this habit belongs to
+    int? streakDays,                  // Current streak
+    double? lastCompletionHoursAgo,   // Hours since last completion
+
+    // ═══════════════════════════════════════════════════════════
+    // ENERGY STATE (from RQ-014)
+    // ═══════════════════════════════════════════════════════════
+    String? energyState,              // 'high_focus', 'low_energy', 'social', 'recovery'
+    String? chronotype,               // 'lion', 'bear', 'wolf', 'dolphin'
+    bool? isOptimalWindow,            // Is this chronotype's optimal time?
+
+    // ═══════════════════════════════════════════════════════════
+    // V-O STATE (Vulnerability-Opportunity)
+    // ═══════════════════════════════════════════════════════════
+    required double vulnerabilityScore, // 0.0-1.0, higher = more vulnerable
+    required double opportunityScore,   // 0.0-1.0, higher = better moment
+
+    // ═══════════════════════════════════════════════════════════
+    // CONFLICT DETECTION (for Council AI)
+    // ═══════════════════════════════════════════════════════════
+    double? tensionScore,             // 0.0-1.0, calculated from conflict signals
+    List<String>? conflictingFacetIds, // Facets currently in tension
+
+    // ═══════════════════════════════════════════════════════════
+    // CALENDAR CONTEXT (if calendar integration enabled)
+    // ═══════════════════════════════════════════════════════════
+    bool? hasUpcomingEvent,           // Event in next 30 minutes?
+    String? nextEventType,            // 'meeting', 'personal', 'travel', etc.
+    int? minutesToNextEvent,          // Minutes until next event
+  }) = _ContextSnapshot;
+
+  factory ContextSnapshot.fromJson(Map<String, dynamic> json) =>
+      _$ContextSnapshotFromJson(json);
+}
+
+extension ContextSnapshotJson on ContextSnapshot {
+  /// Convert to Map for JSON Logic evaluation
+  Map<String, dynamic> toLogicContext() {
+    return {
+      'day_of_week': dayOfWeek,
+      'hour': hour,
+      'minute': minute,
+      'is_weekend': isWeekend,
+      'time_of_day': timeOfDay,
+      'location_zone': locationZone,
+      'distance_from_home_km': distanceFromHomeKm,
+      'is_stationary': isStationary,
+      'active_facet': activeFacetLabel,
+      'active_facet_id': activeFacetId,
+      'previous_facet_id': previousFacetId,
+      'habit_id': habitId,
+      'habit_name': habitName,
+      'habit_facet_id': habitFacetId,
+      'streak_days': streakDays,
+      'last_completion_hours_ago': lastCompletionHoursAgo,
+      'energy_state': energyState,
+      'chronotype': chronotype,
+      'is_optimal_window': isOptimalWindow,
+      'vulnerability_score': vulnerabilityScore,
+      'opportunity_score': opportunityScore,
+      'tension_score': tensionScore,
+      'conflicting_facet_ids': conflictingFacetIds,
+      'has_upcoming_event': hasUpcomingEvent,
+      'next_event_type': nextEventType,
+      'minutes_to_next_event': minutesToNextEvent,
+    };
+  }
+}
+```
+
+**Context Gathering Service:**
+```dart
+// lib/domain/services/context_service.dart
+class ContextService {
+  final LocationService _location;
+  final CalendarService _calendar;
+  final EnergyStateService _energy;
+  final FacetService _facets;
+
+  /// Build complete context snapshot for current moment
+  Future<ContextSnapshot> captureContext({
+    String? habitId,
+    String? habitName,
+  }) async {
+    final now = DateTime.now();
+    final location = await _location.getCurrentZone();
+    final calendar = await _calendar.getUpcoming();
+    final energy = await _energy.getCurrentState();
+    final activeFacet = await _facets.getActiveFacet();
+    final vo = await _calculateVOState();
+    final tension = await _calculateTensionScore();
+
+    return ContextSnapshot(
+      dayOfWeek: _dayOfWeek(now),
+      hour: now.hour,
+      minute: now.minute,
+      isWeekend: now.weekday >= 6,
+      timeOfDay: _timeOfDay(now.hour),
+      locationZone: location?.zone,
+      activeFacetId: activeFacet?.id,
+      activeFacetLabel: activeFacet?.label,
+      habitId: habitId,
+      habitName: habitName,
+      energyState: energy?.state,
+      chronotype: energy?.chronotype,
+      vulnerabilityScore: vo.vulnerability,
+      opportunityScore: vo.opportunity,
+      tensionScore: tension,
+      // ... etc
+    );
+  }
+}
+```
+
+---
+
+#### Tension Score Calculation (for PD-109)
+
+**Question Answered:** How is `tension_score` calculated for Council AI activation?
+
+**Tension Score Algorithm:**
+```dart
+/// Calculate tension score from conflict signals
+/// Returns 0.0-1.0 where > 0.7 triggers Council AI auto-summon
+Future<double> calculateTensionScore(String userId) async {
+  double score = 0.0;
+
+  // 1. Facet time imbalance (0-0.3)
+  final imbalance = await _calculateFacetImbalance(userId);
+  score += imbalance * 0.3;
+
+  // 2. Recent treaty breaches (0-0.2)
+  final breaches = await _getRecentBreaches(userId, days: 7);
+  score += min(breaches.length / 5, 1.0) * 0.2;
+
+  // 3. Conflicting habit schedules (0-0.2)
+  final conflicts = await _detectScheduleConflicts(userId);
+  score += min(conflicts.length / 3, 1.0) * 0.2;
+
+  // 4. User-reported stress signals (0-0.3)
+  final stressSignals = await _getRecentStressSignals(userId);
+  score += stressSignals * 0.3;
+
+  return min(score, 1.0);
+}
+
+/// Detect facet time imbalance
+/// Returns 0.0 (balanced) to 1.0 (severely imbalanced)
+Future<double> _calculateFacetImbalance(String userId) async {
+  final facetTimes = await _getFacetTimeAllocation(userId, days: 7);
+
+  if (facetTimes.isEmpty) return 0.0;
+
+  // Calculate coefficient of variation
+  final mean = facetTimes.values.reduce((a, b) => a + b) / facetTimes.length;
+  final variance = facetTimes.values
+      .map((t) => pow(t - mean, 2))
+      .reduce((a, b) => a + b) / facetTimes.length;
+  final stdDev = sqrt(variance);
+  final cv = stdDev / mean;
+
+  // CV > 1.0 indicates severe imbalance
+  return min(cv, 1.0);
+}
+```
+
+**Tension Score Components:**
+| Signal | Weight | Source |
+|--------|--------|--------|
+| Facet time imbalance | 30% | Activity tracking |
+| Recent treaty breaches | 20% | Treaty breach_count |
+| Conflicting schedules | 20% | Habit scheduling |
+| User stress signals | 30% | Check-ins, language analysis |
+
+**Threshold:** `tension_score > 0.7` → Auto-summon Council AI (PD-109)
+
+---
+
 #### Output Delivered
 
 | Deliverable | Status |
@@ -2195,6 +2676,195 @@ bool shouldSummonCouncil(String userInput, double tensionScore) {
 | Breach escalation | ✅ Probationary → Auto-Suspend |
 | Council activation rules | ✅ PD-109 finalized (0.7 threshold, 6 turns, keywords) |
 | Conflict resolution | ✅ Hard > Soft, Newest > Oldest |
+| **Treaties table schema** | ✅ Complete SQL + Dart model |
+| **ContextSnapshot class** | ✅ Full Dart implementation |
+| **Tension score algorithm** | ✅ Multi-signal calculation |
+
+---
+
+### RQ-021: Treaty Lifecycle & UX
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should users create, view, modify, and manage Treaties throughout their lifecycle? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Core to Council AI value proposition |
+| **Blocking** | Treaty creation UI, treaty management screens, template system |
+| **Generated By** | RQ-020 (Treaty-JITAI Integration) gap analysis |
+| **Assigned** | Dedicated UX research session required |
+
+**Context:**
+RQ-020 specified the Treaty **engine** (TreatyEngine, logic hooks, breach tracking), but not the **user experience** of creating and managing treaties.
+
+**Key Uncertainty:** Should treaties be created exclusively through Council AI sessions, or should users be able to create ad-hoc treaties?
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | Should treaties require Council AI to create? | Gamification vs flexibility |
+| 2 | What's the treaty creation wizard flow? | UI complexity |
+| 3 | Should we offer pre-built treaty templates? | Onboarding acceleration |
+| 4 | How do users view and manage active treaties? | Dashboard real estate |
+| 5 | How do users modify or delete treaties? | Renegotiation flow |
+| 6 | Should treaties have a review cadence? | "Treaty anniversary" reminders |
+| 7 | Can users share treaty templates with each other? | Community features |
+
+**Proposed Treaty Templates (if PD-115 decides yes):**
+
+| Template | Facets | Logic Hook |
+|----------|--------|------------|
+| **Protected Family Night** | Family vs Work | Block work activities on specific evenings |
+| **Morning Routine Guardian** | Health vs All | Block distractions during morning routine hours |
+| **Focus Mode Treaty** | Creator vs Consumer | Block social media during creative work blocks |
+| **Weekend Reset** | All facets | Enforce balanced activity on weekends |
+| **Sacred Sleep** | Health vs All | Block stimulating activities after 9pm |
+
+**Output Expected:**
+- Treaty creation flow (Council AI vs ad-hoc)
+- Treaty management screens (list, detail, edit)
+- Treaty template library design
+- Treaty modification/deletion flow
+- Sharing mechanism (if applicable)
+
+**Depends On:** PD-115 (Treaty Creation UX)
+
+---
+
+### RQ-022: Council Script Generation Prompts
+
+| Field | Value |
+|-------|-------|
+| **Question** | What prompt templates should DeepSeek V3.2 use to generate Council AI scripts? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Core to Council AI quality |
+| **Blocking** | Council AI implementation, facet voice differentiation |
+| **Generated By** | RQ-016 (Council AI) + CD-016 (AI Model Strategy) |
+| **Assigned** | Prompt engineering session required |
+
+**Context:**
+CD-016 specifies DeepSeek V3.2 for Council script generation, and RQ-016 specifies the Single-Shot Playwright architecture. Missing: the actual prompt templates.
+
+**What DeepSeek V3.2 Needs to Generate:**
+```json
+{
+  "dialogue": [
+    {
+      "speaker": "THE_FATHER",
+      "voice_tone": "warm_concerned",
+      "text": "I hear you're considering that business trip...",
+      "internal_thought": "(worried about missing the school play)"
+    },
+    {
+      "speaker": "THE_BUILDER",
+      "voice_tone": "pragmatic",
+      "text": "This opportunity doesn't come twice...",
+      "internal_thought": "(excited about career advancement)"
+    }
+  ],
+  "facilitator_prompts": [
+    "What if we could protect Tuesday evenings regardless of travel?"
+  ],
+  "proposed_resolution": {
+    "treaty_title": "Protected Tuesdays",
+    "terms": "No work travel on Tuesday nights",
+    "logic_hook": { "condition": {...}, "action": {...} }
+  }
+}
+```
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | What's the optimal prompt length for DeepSeek V3.2? | Cost vs quality tradeoff |
+| 2 | How do we inject user's facet definitions into the prompt? | Personalization |
+| 3 | How do we inject user's resistance patterns? | Root psychology integration |
+| 4 | What's the output JSON schema for dialogue? | Frontend parsing |
+| 5 | How do we ensure voice differentiation between facets? | Character consistency |
+| 6 | How do we generate SSML-ready text for TTS? | Audiobook Pattern integration |
+| 7 | How do we handle multi-turn dialogues within token limits? | Context window management |
+
+**Proposed Prompt Template Structure:**
+```
+<system>
+You are a psychological playwright. Generate a roundtable dialogue between
+the user's identity facets discussing their current conflict.
+
+RULES:
+1. Each facet speaks from its own values and concerns
+2. No facet is "wrong" — all have valid perspectives
+3. The dialogue should surface underlying resistance patterns
+4. End with a facilitator question that moves toward resolution
+5. If natural, propose a Treaty that could help
+
+USER'S FACETS:
+{facet_definitions}
+
+USER'S KNOWN RESISTANCE PATTERNS:
+{resistance_patterns}
+
+CURRENT CONFLICT:
+{conflict_description}
+
+OUTPUT FORMAT:
+{json_schema}
+</system>
+```
+
+**Output Expected:**
+- Complete prompt template for Council script generation
+- Facet voice modulation guidelines
+- JSON output schema specification
+- Token budget recommendations
+- Example generated scripts
+
+**Depends On:** CD-016 ✅ COMPLETE, RQ-016 ✅ COMPLETE
+
+---
+
+### RQ-023: Population Learning Privacy Framework
+
+| Field | Value |
+|-------|-------|
+| **Question** | What data can be shared across users for population-level insights, and how do we ensure privacy? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **MEDIUM** — Enables cold-start and coaching optimization |
+| **Blocking** | Population cluster implementation, cold-start recommendations |
+| **Generated By** | RQ-019 (pgvector) population learning pipeline |
+| **Assigned** | Legal + technical review required |
+
+**Context:**
+RQ-019 specified the population learning infrastructure (cluster embeddings, anonymized patterns), but the **privacy framework** needs formal definition.
+
+**Privacy Hierarchy (Proposed):**
+| Data Type | Shareable? | Condition |
+|-----------|------------|-----------|
+| Raw text (resistance_script, facet labels) | ❌ Never | — |
+| Full embeddings (3072-dim) | ❌ Never | — |
+| Truncated embeddings (768-dim) | ✅ If opted-in | Anonymized, aggregated only |
+| Cluster membership | ✅ If opted-in | No individual identification |
+| Aggregate coaching effectiveness | ✅ Always | Statistical only |
+
+**Sub-Questions:**
+
+| # | Question | Implications |
+|---|----------|--------------|
+| 1 | What's the minimum anonymity set size (k-anonymity)? | Privacy vs utility |
+| 2 | Should population learning be opt-in or opt-out? | User control |
+| 3 | How do we explain population learning to users? | Transparency |
+| 4 | Can truncated embeddings be reverse-engineered? | Security review |
+| 5 | What's the data retention policy for population clusters? | GDPR compliance |
+| 6 | How do we handle user deletion requests? | Right to be forgotten |
+
+**Output Expected:**
+- Privacy policy language for population learning
+- Technical safeguards specification
+- Opt-in/opt-out UI design
+- k-anonymity implementation
+- Data deletion procedures
+
+**Depends On:** PD-116 (Population Learning Privacy)
 
 ---
 

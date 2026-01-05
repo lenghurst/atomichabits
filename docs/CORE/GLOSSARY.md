@@ -682,6 +682,80 @@ TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
 
 ---
 
+### ContextSnapshot
+**Definition:** A Dart class that captures the complete context for JITAI decisions and Treaty logic hook evaluation.
+
+**Context Categories:**
+| Category | Fields |
+|----------|--------|
+| Temporal | dayOfWeek, hour, minute, isWeekend, timeOfDay |
+| Location | locationZone, distanceFromHomeKm, isStationary |
+| Identity | activeFacetId, activeFacetLabel, previousFacetId |
+| Habit | habitId, habitName, streakDays, lastCompletionHoursAgo |
+| Energy | energyState, chronotype, isOptimalWindow |
+| V-O State | vulnerabilityScore, opportunityScore |
+| Conflict | tensionScore, conflictingFacetIds |
+| Calendar | hasUpcomingEvent, nextEventType, minutesToNextEvent |
+
+**Usage:**
+```dart
+// Capture current context
+final context = await contextService.captureContext(habitId: 'uuid');
+
+// Evaluate treaty logic hooks
+final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
+```
+
+**Status:** ✅ DESIGN COMPLETE — RQ-020
+
+**Code References:** `lib/domain/models/context_snapshot.dart` (to be implemented)
+
+---
+
+### Tension Score
+**Definition:** A calculated value (0.0-1.0) representing the level of internal conflict between a user's identity facets.
+
+**Calculation Components:**
+| Signal | Weight | Source |
+|--------|--------|--------|
+| Facet time imbalance | 30% | Activity tracking |
+| Recent treaty breaches | 20% | Treaty breach_count |
+| Conflicting schedules | 20% | Habit scheduling |
+| User stress signals | 30% | Check-ins, language |
+
+**Threshold:** `tension_score > 0.7` → Auto-summon Council AI (PD-109)
+
+**Why 0.7:**
+- High enough to avoid spam (most users stay below)
+- Low enough to catch real conflicts before crisis
+
+**Status:** ✅ CONFIRMED — PD-109, RQ-020
+
+**Code References:** `lib/domain/services/tension_calculator.dart` (to be implemented)
+
+---
+
+### Population Resistance Clusters
+**Definition:** Anonymized groupings of similar resistance patterns across users, used for cold-start recommendations and coaching optimization.
+
+**How It Works:**
+1. Users opt-in to population learning
+2. Their embeddings are truncated (3072→768) for privacy
+3. K-means clustering groups similar patterns
+4. DeepSeek V3.2 labels clusters ("Perfectionist Pattern", etc.)
+5. New users are matched to clusters for immediate coaching suggestions
+
+**Privacy Safeguards:**
+- Raw text never shared
+- Minimum cluster size k=50 (k-anonymity)
+- User can delete contribution anytime
+
+**Status:** 🔴 PENDING — RQ-023, PD-116
+
+**Code References:** `population_resistance_clusters` table (to be implemented)
+
+---
+
 ## Core Product Terms
 
 ### Habit (Foundational Definition)
