@@ -105,6 +105,7 @@ This prevents:
 ### Files You Should Read
 | File | Why |
 |------|-----|
+| `docs/CORE/NEXT_SESSION_PRIMER.md` | Copy-paste priming prompt for new sessions |
 | `docs/CORE/PRODUCT_DECISIONS.md` | All pending decisions documented |
 | `docs/CORE/GLOSSARY.md` | Terminology definitions |
 | `AI_CONTEXT.md` | Technical architecture (but contains stale info) |
