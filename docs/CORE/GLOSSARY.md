@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added RQ-019/020 terms: gemini-embedding-001, HNSW, JSON Logic, TreatyEngine, etc.)
+> **Last Updated:** 05 January 2026 (Added RQ-021/022 terms: The Constitution, Ratification Ritual, Voice Archetype, SSMLBuilder, Treaty Templates)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -753,6 +753,121 @@ final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
 **Status:** 🔴 PENDING — RQ-023, PD-116
 
 **Code References:** `population_resistance_clusters` table (to be implemented)
+
+---
+
+## Deep Think UX Terms (RQ-021 + RQ-022)
+
+> **Reference:** These terms were defined by Google Deep Think research on 05 January 2026 for RQ-021 (Treaty Lifecycle & UX) and RQ-022 (Council Script Generation).
+
+### The Constitution
+**Definition:** The dedicated treaty management dashboard in the Profile section (not Settings).
+
+**Visual Metaphor:** A solemn, legalistic dashboard. Dark mode default.
+
+**Sections:**
+| Section | Contents |
+|---------|----------|
+| **Active Laws** | Enforcing Treaties with "Wax Seal" badge |
+| **Probation** | Treaties breached 3+ times in 7 days (Pulsing Red Border) |
+| **The Archives** | Repealed or Suspended treaties |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-021
+
+**Code References:** `lib/features/profile/constitution_screen.dart` (to be implemented)
+
+---
+
+### Ratification Ritual
+**Definition:** The 3-second long-press interaction required to sign (ratify) a Treaty.
+
+**UX Flow:**
+| Time | Haptic | Visual |
+|------|--------|--------|
+| 0-1s | Ticking (clockwork) | Fingerprint/Seal icon |
+| 1-2s | Intensifying | Wax melting animation |
+| 3s | Heavy "Thud" | Screen flashes gold. "RATIFIED." |
+
+**Purpose:** Creates psychological weight — treaties feel like binding commitments, not settings toggles.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-021
+
+**Code References:** `lib/widgets/ratification_seal.dart` (to be implemented)
+
+---
+
+### Summon Token
+**Definition:** A mechanism that allows users to access Council AI even when their tension_score is below the automatic threshold (0.7).
+
+**Use Cases:**
+- User wants to proactively address an emerging conflict
+- User collected token as a reward/gamification element
+- User explicitly summons Council via UI
+
+**Status:** ✅ DESIGN COMPLETE — RQ-021
+
+**Code References:** Not yet implemented — gamification element
+
+---
+
+### Voice Archetype
+**Definition:** A category assigned to each line in a Council AI script that determines TTS prosody (rate, pitch, volume).
+
+**The 4 Archetypes:**
+| Archetype | SSML Prosody | Use Case |
+|-----------|--------------|----------|
+| `neutral` | `rate="1.0" pitch="0st"` | Sherlock narration |
+| `urgent` | `rate="1.15" pitch="+1st"` | Builder, Athlete (high energy) |
+| `warm` | `rate="0.85" pitch="-2st"` | Father, Partner (protective) |
+| `shadow` | `rate="1.1" pitch="+3st" volume="-1dB"` | Anxiety, Fear voices |
+
+**Key Insight:** LLM generates `voice_archetype` string; client-side Dart maps to SSML tags. This prevents LLM-generated SSML errors.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-022
+
+**Code References:** `lib/domain/services/ssml_builder.dart` (to be implemented)
+
+---
+
+### SSMLBuilder
+**Definition:** A Dart service that converts Council AI script lines into SSML-formatted text for Gemini 2.5 Flash TTS.
+
+**Responsibility:**
+- Map `voice_archetype` to prosody tags
+- Insert break times between dialogue lines
+- Wrap output in `<speak>` tags
+
+**Why Not LLM-Generated SSML:**
+- LLM-generated SSML is error-prone (mismatched tags, invalid syntax)
+- Client-side mapping is deterministic and testable
+- Allows voice tuning without re-prompting DeepSeek
+
+**Status:** ✅ DESIGN COMPLETE — RQ-022
+
+**Code References:** `lib/domain/services/ssml_builder.dart` (to be implemented)
+
+---
+
+### Treaty Templates (Launch Set)
+**Definition:** Pre-built treaty configurations for common conflicts, allowing 1-click activation without Council AI.
+
+**The 5 Launch Templates:**
+
+| Template | Purpose | Severity |
+|----------|---------|----------|
+| **The Sunset Clause** | Block work apps after specified time | Hard |
+| **Deep Work Decree** | Mute notifications during focus blocks | Hard |
+| **The Sabbath** | Suppress streak penalties on Sundays | Soft |
+| **Transition Airlock** | Prompt decompression ritual when arriving home | Soft |
+| **Presence Pact** | Nudge if phone unlocked at dinner | Hard |
+
+**Psychological Hierarchy:**
+- Templates = "Protocols" (Maintenance)
+- Council AI = "Arbitration" (Crisis)
+
+**Status:** ✅ DESIGN COMPLETE — RQ-021, PD-115
+
+**Code References:** `lib/data/repositories/treaty_template_repository.dart` (to be implemented)
 
 ---
 

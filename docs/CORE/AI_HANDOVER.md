@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (Deep Analysis: Gaps, New RQs/PDs, Impact Tracing)
+> **Last Updated:** 05 January 2026 (Deep Think RQ-021 + RQ-022 Integration, PD-115 Resolved)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,70 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `deep-think-rq021-rq022-pd115` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~30 minutes |
+| **Focus** | Integrate Deep Think research for RQ-021 (Treaty Lifecycle & UX), RQ-022 (Council Script Prompts), and resolve PD-115 |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **RQ-021: Treaty Lifecycle & UX — ✅ RESEARCH COMPLETE:**
+   - Integrated Google Deep Think specifications
+   - **The Constitution:** Treaty management dashboard (Active Laws, Probation, Archives)
+   - **Treaty Creation Wizard:** 3-step flow (Source → Drafting → Ratification)
+   - **Ratification Ritual:** 3-second haptic "wax seal" interaction
+   - **5 Treaty Templates:** Sunset Clause, Deep Work Decree, The Sabbath, Transition Airlock, Presence Pact
+   - Common Law Principle: Templates = Protocols (80%), Council = Arbitration (20%)
+
+2. **RQ-022: Council Script Generation Prompts — ✅ RESEARCH COMPLETE:**
+   - Complete DeepSeek V3.2 system prompt template
+   - "The Council Engine" role with Sherlock as narrator
+   - 6-turn arc structure (Thesis → Antithesis → Synthesis)
+   - **Voice Archetype system:** neutral, urgent, warm, shadow
+   - **SSMLBuilder:** Client-side prosody mapping (not LLM-generated)
+   - User context injection format (facets + resistance patterns)
+   - JSON output schema (`script[]` + `proposed_treaty`)
+   - Edge case handling (single facet, no conflict)
+
+3. **PD-115: Treaty Creation UX — ✅ RESOLVED:**
+   - **Decision:** Option C (Templates + Council AI)
+   - Templates for common conflicts (80%), Council for complex (20%)
+   - Summon Token allows Council access below tension threshold
+   - First-time users get low-stakes "Digital Sunset" on Day 1
+
+4. **PRODUCT_DECISIONS.md Updated:**
+   - PD-115 marked RESOLVED with full specification
+   - Treaty creation flow, templates, ratification ritual documented
+   - Treaty management screen specification added
+
+5. **RESEARCH_QUESTIONS.md Updated:**
+   - RQ-021 marked COMPLETE with full Treaty Lifecycle spec
+   - RQ-022 marked COMPLETE with system prompt + SSML strategy
+   - Sub-questions answered tables added to both
+
+6. **GLOSSARY.md Updated — 6 New Terms:**
+   - The Constitution (treaty dashboard)
+   - Ratification Ritual (3-second haptic seal)
+   - Summon Token (Council access mechanism)
+   - Voice Archetype (SSML modulation category)
+   - SSMLBuilder (Dart TTS service)
+   - Treaty Templates (5 launch templates)
+
+---
+
+### Previous Session Summary (Same Day)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `deep-analysis-gaps-new-rqs-pds` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~45 minutes |
 | **Focus** | Deep analysis of gaps, exhaustive documentation, new RQs/PDs, impact tracing |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
@@ -64,27 +121,9 @@ This prevents:
    - **PD-116**: Population Learning Privacy (opt-in, k-anonymity k≥50)
    - **PD-117**: ContextSnapshot Real-time Data (refresh strategies)
 
-4. **Impact Analysis Completed:**
-   - CD-015 (psyOS): ✅ Validated, implementation path clear
-   - CD-016 (AI Model): ✅ Updated with gemini-embedding-001
-   - PD-106 (Identity Architecture): ⚠️ Ready to resolve
-   - RQ-013 (Identity Topology): ✅ Unblocked by pgvector
-   - RQ-014 (State Economics): ⚠️ New dependency (ContextSnapshot)
-
-5. **GLOSSARY.md Updated — 4 New Terms:**
-   - ContextSnapshot
-   - Tension Score
-   - Population Resistance Clusters
-   - (Also: Breach Escalation now includes trigger)
-
-6. **ROADMAP.md Updated:**
-   - Full research status table (RQ-012 through RQ-023)
-   - New pending decisions listed (PD-115, PD-116, PD-117)
-   - Upstream/downstream impact analysis table
-
 ---
 
-### Previous Session Summary (Same Day)
+### Previous Session Summary (Same Day, Earlier)
 | Field | Value |
 |-------|-------|
 | **Session ID** | `deep-think-rq019-rq020-integration` |
