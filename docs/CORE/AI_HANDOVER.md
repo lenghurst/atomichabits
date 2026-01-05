@@ -33,7 +33,7 @@ This prevents:
 
 ## Current Session Status
 
-### Last Session Summary
+### Latest Session Summary
 | Field | Value |
 |-------|-------|
 | **Session ID** | `dashboard-docs-session` |
@@ -42,7 +42,7 @@ This prevents:
 | **Duration** | ~15 minutes |
 | **Focus** | Dashboard State Documentation, Living Garden Clarification |
 
-### What Was Accomplished
+### What Was Accomplished (This Session)
 
 **Key Changes Made:**
 
@@ -61,6 +61,51 @@ This prevents:
    - **Reality:** Living Garden (Layer 3) is ASPIRATIONAL ONLY — not in codebase
    - Fixed AI_CONTEXT.md to reflect actual state (Binary Interface: Bridge + Skill Tree)
    - ROADMAP.md Track G-0 already correctly marked Living Garden as "aspirational only"
+
+---
+
+### Previous Session Summary (Same Day)
+| Field | Value |
+|-------|-------|
+| **Session ID** | `rq-reconciliation-session` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~30 minutes |
+| **Focus** | RQ Number Reconciliation, CD-014/CD-015 Updates |
+
+### What Was Accomplished (Previous Session)
+
+**Key Changes Made:**
+
+1. **CD-014 Importance → CRITICAL**
+   - Changed from LOW to CRITICAL
+   - Rationale: Updating Core files is crucial for agent context understanding
+   - Updated in Dependency Map and Quick Reference Table
+
+2. **CD-015 → PD-105 (Demoted to PENDING)**
+   - Renamed from "CD-015" (confirmed) to "PD-105" (pending decision)
+   - Requires research before architectural commitment
+   - Added Options A/B/C with arguments for/against
+   - Framed unified architecture as hypothesis needing validation
+
+3. **RQ Numbers Reconciled Across All Core Files**
+   - **Conflict Found:** IDENTITY_COACH_SPEC.md and RESEARCH_QUESTIONS.md both used RQ-005/006 for different questions
+   - **Resolution:** Renumbered by importance/dependency
+
+   | New # | Question | Priority | Previously |
+   |-------|----------|----------|------------|
+   | RQ-005 | Proactive Recommendation Algorithms | CRITICAL | IDENTITY_COACH_SPEC internal |
+   | RQ-006 | Content Library for Recommendations | HIGH | IDENTITY_COACH_SPEC internal |
+   | RQ-007 | Identity Roadmap Architecture | HIGH | Was RQ-006 in RESEARCH_QUESTIONS |
+   | RQ-008 | UI Logic Separation | MEDIUM | Was RQ-005 in RESEARCH_QUESTIONS |
+   | RQ-009 | LLM Coding Approach | MEDIUM | Was RQ-007 in RESEARCH_QUESTIONS |
+
+4. **Cross-References Updated**
+   - PRODUCT_DECISIONS.md CD-013 → RQ-008
+   - PRODUCT_DECISIONS.md PD-105 → RQ-007
+   - IDENTITY_COACH_SPEC.md added note that RQ-005/006 are canonical in RESEARCH_QUESTIONS.md
+
+---
 
 ### What Was NOT Done (Deferred)
 - Track G-0 systematic GLOSSARY review
