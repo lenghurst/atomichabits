@@ -3,6 +3,7 @@
 > **Last Updated:** 05 January 2026
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
+> **Status:** RQ-001 RESEARCH COMPLETE — Awaiting human decision on implementation
 
 ---
 
@@ -21,26 +22,40 @@
 | Field | Value |
 |-------|-------|
 | **Question** | What is the minimum set of behavioral dimensions that predict differential intervention response? |
-| **Status** | IN RESEARCH |
+| **Status** | ✅ RESEARCH COMPLETE |
 | **Blocking** | PD-001 (Archetype Philosophy) |
-| **Researchers** | ChatGPT, Gemini, Claude |
-| **Target** | Scientifically-grounded archetype buckets for JITAI population learning |
+| **Researchers** | ChatGPT, Gemini Deep Research, Gemini Deep Think |
+| **Outcome** | 6-dimension continuous model with 4 UI clusters |
 
-**Current State:**
-- 6 hardcoded archetypes: PERFECTIONIST, REBEL, PROCRASTINATOR, OVERTHINKER, PLEASURE_SEEKER, PEOPLE_PLEASER
-- Mix of Rubin's Four Tendencies + general behavioral patterns
-- No empirical validation of bucket boundaries
+**Key Insight (Deep Think):**
+> ChatGPT identified **what to optimize** (Identity Evidence, Engagement, Async Delta).
+> Gemini identified **who the user is** (6 behavioral dimensions).
+> The dimensions serve as the **Context Vector (x)** that allows the Bandit to maximize the **Reward Function (r)**.
 
-**Research Approach:**
-1. **Prioritization:** Parsimony + Interpretability first (cold-start math requires data density)
-2. **Sources:** Peer-reviewed + preprints + JITAI lab grey literature
-3. **Population:** Self-selecting productivity/identity app users (25-45, knowledge workers, prior self-improvement attempts)
+**Research Conclusion: The 6 Dimensions**
 
-**Key Sub-Questions:**
-- [ ] Do current 6 archetypes map to distinct intervention responses?
-- [ ] What does JITAI literature use for behavioral segmentation?
-- [ ] Should we use continuous dimensions instead of discrete buckets?
-- [ ] How many users per bucket needed for population learning convergence?
+| # | Dimension | Continuum | Predicts |
+|---|-----------|-----------|----------|
+| 1 | **Regulatory Focus** | Promotion ↔ Prevention | Identity Evidence framing |
+| 2 | **Autonomy/Reactance** | Rebel ↔ Conformist | Anti-Identity risk |
+| 3 | **Action-State Orientation** | Executor ↔ Overthinker | Async Delta (rumination) |
+| 4 | **Temporal Discounting** | Future ↔ Present | Streak value perception |
+| 5 | **Perfectionistic Reactivity** | Adaptive ↔ Maladaptive | Failure Archetype risk |
+| 6 | **Social Rhythmicity** | Stable ↔ Chaotic | Async Delta normalization |
+
+**Holy Trinity Defense Mapping:**
+
+| Resistance Type | Primary Drivers | Detection Signal |
+|-----------------|-----------------|------------------|
+| **Anti-Identity** | High Reactance + Prevention + Maladaptive | Push-Pull ratio (notification vs manual opens) |
+| **Failure Archetype** | State Orientation + Steep Discounting + Low Rhythmicity | Recovery velocity (>48h = risk) |
+| **Resistance Lie** | High Reactance + State Orientation | Decision time (dwell before logging) |
+
+**Key Sub-Questions (ANSWERED):**
+- [x] Do current 6 archetypes map to distinct intervention responses? → **Partially. Merge to 4 clusters.**
+- [x] What does JITAI literature use for behavioral segmentation? → **Nahum-Shani: tailoring variables; Kuhl: action control**
+- [x] Should we use continuous dimensions instead of discrete buckets? → **Yes. Backend = 6-float vector; UI = 4 clusters**
+- [x] How many users per bucket needed for population learning convergence? → **4-8 dimensions optimal for cold-start**
 
 ---
 
@@ -128,19 +143,77 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 | Field | Value |
 |-------|-------|
 | **Question** | For each recommended behavioral dimension, what do we already track? |
-| **Status** | TEMPLATE READY |
-| **Action** | ChatGPT to populate after research |
+| **Status** | ✅ COMPLETE (Deep Think synthesized) |
 
-**Template (to be filled by ChatGPT):**
+**Unified Dimension-to-Tracking Table:**
 
-| Dimension | In Literature? | We Track? | Interpretability | Implementation Gap |
-|-----------|---------------|-----------|------------------|-------------------|
-| Autonomy Need | ✅ SDT | ⚠️ Inferred from REBEL | High | No direct measure |
-| Shame Sensitivity | ✅ Brené Brown | ❌ | Medium | Not tracked |
-| Friction Tolerance | ✅ BJ Fogg | ⚠️ Inferred from tiny version usage | High | Indirect only |
-| Reward Timing Pref | ✅ Behavioral Econ | ❌ | Medium | Not tracked |
-| External Validation Need | ✅ Rubin (Obliger) | ⚠️ Inferred from witness usage | High | Indirect only |
-| ... | ... | ... | ... | ... |
+| Dimension | Reward Driver | Passive Inference (Existing) | Cold-Start Question | Implementation |
+|-----------|---------------|------------------------------|---------------------|----------------|
+| **1. Social Rhythmicity** | Async Delta (normalization) | Schedule Entropy: σ of log timestamps over 14 days | "Is your daily schedule predictable?" | ⚠️ Calculate from existing time_context |
+| **2. Autonomy/Reactance** | Engagement (30%) | Push-Pull Ratio: notification opens ÷ manual opens | "Prefer pushy coach or silent partner?" | ⚠️ Track open source (notification vs organic) |
+| **3. Action-State Orientation** | Async Delta (15%) | Decision Time: ms between app open → log tap | None (infer from first 3 logs) | ❌ NEW: Add `decision_time_ms` tracking |
+| **4. Regulatory Focus** | Identity Evidence (50%) | Gap: Hard to infer without NLP | "Motivated by achieving dreams or preventing slides?" | ✅ Onboarding question only |
+| **5. Perfectionistic Reactivity** | Retention (churn) | Recovery Velocity: time to return after streak break | "If I miss a day, I feel guilty vs determined" | ⚠️ Calculate from existing streak data |
+| **6. Temporal Discounting** | Streak value | Burstiness: variance in usage patterns | "Small badge now vs rare badge later?" | ⚠️ Calculate from existing engagement data |
+
+**Implementation Status:**
+- ✅ = Already available / onboarding only
+- ⚠️ = Derivable from existing data (needs calculation logic)
+- ❌ = Requires new tracking implementation
+
+---
+
+### RQ-004: Archetype Migration Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | How do we migrate from 6 hardcoded archetypes to dimensional model? |
+| **Status** | ✅ RECOMMENDATION READY |
+| **Recommendation** | Hybrid: 6-float backend vector + 4 UI clusters |
+
+**Migration Map (Current → New):**
+
+| Current Archetype | New Cluster | Dimensional Profile | Intervention Strategy |
+|-------------------|-------------|---------------------|----------------------|
+| REBEL | **The Defiant Rebel** | High Reactance + Prevention | Autonomy-Supportive ("You decide when") |
+| PERFECTIONIST | **The Anxious Perfectionist** | Maladaptive Perfectionism + State Orientation | Self-Compassion ("A missed day is part of the process") |
+| PROCRASTINATOR + OVERTHINKER | **The Paralyzed Procrastinator** | State Orientation + High Reactance | Value Affirmation ("Remember why you started") |
+| PLEASURE_SEEKER | **The Chaotic Discounter** | Steep Discounting + Low Rhythmicity | Micro-Steps ("Just put on your shoes") |
+| PEOPLE_PLEASER | **⚠️ DEPRECATED** | (See Open Questions) | — |
+
+**Fallback Strategy:**
+- **Old:** PERFECTIONIST (problematic — triggers shame spiral)
+- **New:** Balanced Prevention (Low Reactance + Prevention Focus)
+- **Rationale:** "Don't break the chain" is universal baseline (Loss Aversion)
+
+**Reward Function Adjustments (Per Dimension):**
+
+| Dimension | Adjustment |
+|-----------|------------|
+| **Regulatory Focus** | Promotion users: boost Progress %. Prevention users: boost Streak Length. |
+| **Autonomy/Reactance** | High Reactance: Notification opens yield 0 reward. Manual opens yield 2x. Forces Bandit to learn "Invisible Support". |
+| **Social Rhythmicity** | Chaotic users: Normalize Async Delta by schedule entropy. Don't penalize busy parents for 2h delays. |
+
+**Implementation Roadmap:**
+
+| Phase | Timeframe | Deliverables |
+|-------|-----------|--------------|
+| **MVP** | Weeks 1-4 | Add `decision_time_ms` tracking. Calculate schedule entropy. Add 3 onboarding questions. |
+| **Dynamic Reward** | Weeks 5-8 | Pass 6-float vector as Context to Thompson Sampling. Modify scoring rules per dimension. |
+| **Anti-Fragile** | Weeks 9+ | Holy Trinity defense: Auto-trigger "Emergency Mode" for Maladaptive + Missed Day. |
+
+---
+
+## Open Questions for Human Decision
+
+These require Oliver's input before implementation:
+
+| # | Question | Options | Deep Think Recommendation |
+|---|----------|---------|---------------------------|
+| 1 | **People Pleaser void** | (A) Add "Social Sensitivity" as 7th dimension, (B) Delete archetype | Delete unless social leaderboard exists |
+| 2 | **Privacy vs Battery** | (A) Time-of-day variance only (low privacy), (B) Full GPS for entropy | Time-of-day for MVP |
+| 3 | **Content Library debt** | Need 4 message variants per trigger (Eager, Vigilant, Autonomy-Supportive, Directive) | Bandit can't optimize with only 1 generic message |
+| 4 | **Retention as metric** | (A) Add cohort tracking, (B) Skip (too confounded) | Skip for MVP, add later |
 
 ---
 
@@ -173,24 +246,27 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 
 | Date | Agent | Focus | Findings | Action Items |
 |------|-------|-------|----------|--------------|
+| 05 Jan 2026 | Gemini Deep Think | **SYNTHESIS** | ✅ COMPLETE — Reconciled ChatGPT + Gemini into actionable architecture | Integrated into RQ-004 |
+| 05 Jan 2026 | Gemini Deep Research | 6-Dimension Model | ✅ COMPLETE — Hexagonal phenotype with Holy Trinity mapping | Integrated into RQ-001 |
 | 05 Jan 2026 | ChatGPT | Intervention Effectiveness | ✅ COMPLETE — Validated reward function, added literature mapping | Integrated into RQ-002 |
-| 05 Jan 2026 | Gemini | Deep Research | IN PROGRESS — 7-point plan on archetype dimensions | Awaiting results |
-| 05 Jan 2026 | Gemini Deep Think | Synthesis | PENDING — Will compare ChatGPT + Gemini findings | Awaiting Gemini completion |
-| 05 Jan 2026 | Claude | Research coordination | Aligned both agents' parameters for comparison | ✅ Done |
+| 05 Jan 2026 | Claude | Research coordination | Aligned all agents' parameters for comparison | ✅ Done |
 | 05 Jan 2026 | Claude | Codebase audit | Documented current intervention measurement | ✅ Done |
-| 05 Jan 2026 | ChatGPT | Clarification Qs | Asked about effectiveness measurement | ✅ Answered |
-| 05 Jan 2026 | Gemini | Archetype analysis | Identified 6-bucket cold-start math | Hybrid recommended |
+
+**Research Status: COMPLETE** — Awaiting human decision on Open Questions before implementation.
 
 ---
 
 ## Decision Dependencies
 
 ```
-RQ-001 (Archetype Taxonomy)
-    ├── Depends on: RQ-002 (How do we measure success?)
-    ├── Depends on: RQ-003 (What do we already track?)
-    └── Blocks: PD-001 (Archetype Philosophy decision)
-                PD-102 (JITAI hardcoded vs AI)
+RQ-001 (Archetype Taxonomy) ✅ COMPLETE
+    ├── RQ-002 (Effectiveness Measurement) ✅ COMPLETE
+    ├── RQ-003 (Dimension-to-Tracking) ✅ COMPLETE
+    ├── RQ-004 (Migration Strategy) ✅ COMPLETE
+    │
+    └── NOW UNBLOCKS:
+        ├── PD-001 (Archetype Philosophy decision) → READY FOR DECISION
+        └── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
 ```
 
 ---
