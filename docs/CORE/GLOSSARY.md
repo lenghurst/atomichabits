@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 05 January 2026 (Systematic Review Session)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -94,9 +94,21 @@ Ritual = {
 | Should UI use both terms? | "Habit" only | (A) Both, (B) Rename to "Rituals" | **NEEDS RESEARCH** — User testing required |
 | How does data model relate? | Habit model exists, Ritual doesn't | Build Ritual as wrapper | Add to Track G (Identity Coach) |
 
-**Status:** 🔴 PENDING DECISION — See PRODUCT_DECISIONS.md PD-XXX (to be created)
+**Status:** 🟡 DEFERRED — Contingent on broader architecture decisions
 
-**Proposed Relationship:**
+**Why Deferred:**
+This decision is part of a wider discussion that includes:
+- Dashboard architecture (what views exist)
+- What we track (habits, rituals, or both)
+- How we track (metrics, scoring, streaks vs consistency)
+- How we recommend (content library, recommendation engine, JITAI integration)
+
+These interconnected decisions must be made together. See:
+- RQ-005: Proactive Recommendation Algorithms
+- RQ-006: Content Library for Recommendations
+- RQ-007: Identity Roadmap Architecture
+
+**Proposed Relationship (Pending Validation):**
 ```
 Ritual (Container)
 ├── Habit 1 (sequence: 1)
@@ -156,19 +168,42 @@ A Habit can exist:
 ### Archetype / Failure Archetype
 **Definition:** A behavioural pattern that explains why users quit habits.
 
-**Current Archetypes (Hardcoded):**
-| ID | Display Name | Description |
-|----|--------------|-------------|
-| PERFECTIONIST | The Perfectionist | Aims for 100%, often quits after one mistake |
-| REBEL | The Rebel | Resists expectations, needs to feel free |
-| PROCRASTINATOR | The Procrastinator | Delays until the last moment, needs tiny starts |
-| OVERTHINKER | The Overthinker | Paralyzed by analysis, needs clarity and permission |
-| PLEASURE_SEEKER | The Pleasure Seeker | Follows dopamine, needs bundling and immediate rewards |
-| PEOPLE_PLEASER | The People Pleaser | Motivated by others, needs witness accountability |
+**Architecture (CD-005 Decision):**
+- **Backend:** 6-dimension continuous model (float vector)
+- **UI:** 4 simplified clusters for user identification
+- **Status:** Research complete, implementation pending
+
+**The 6 Behavioral Dimensions (Backend):**
+| # | Dimension | Continuum | What It Predicts |
+|---|-----------|-----------|------------------|
+| 1 | Regulatory Focus | Promotion ↔ Prevention | Identity Evidence framing |
+| 2 | Autonomy/Reactance | Rebel ↔ Conformist | Anti-Identity risk |
+| 3 | Action-State Orientation | Executor ↔ Overthinker | Rumination patterns |
+| 4 | Temporal Discounting | Future ↔ Present | Streak value perception |
+| 5 | Perfectionistic Reactivity | Adaptive ↔ Maladaptive | Failure Archetype risk |
+| 6 | Social Rhythmicity | Stable ↔ Chaotic | Schedule normalization |
+
+**The 4 UI Clusters:**
+| Cluster | Maps From | Intervention Strategy |
+|---------|-----------|----------------------|
+| The Defiant Rebel | REBEL | Autonomy-Supportive ("You decide when") |
+| The Anxious Perfectionist | PERFECTIONIST | Self-Compassion ("A missed day is part of the process") |
+| The Paralyzed Procrastinator | PROCRASTINATOR + OVERTHINKER | Value Affirmation ("Remember why you started") |
+| The Chaotic Discounter | PLEASURE_SEEKER | Micro-Steps ("Just put on your shoes") |
+
+**Legacy Archetypes (Still in Code — Pending Migration):**
+| ID | Display Name | Status |
+|----|--------------|--------|
+| PERFECTIONIST | The Perfectionist | → Maps to Anxious Perfectionist |
+| REBEL | The Rebel | → Maps to Defiant Rebel |
+| PROCRASTINATOR | The Procrastinator | → Maps to Paralyzed Procrastinator |
+| OVERTHINKER | The Overthinker | → Maps to Paralyzed Procrastinator |
+| PLEASURE_SEEKER | The Pleasure Seeker | → Maps to Chaotic Discounter |
+| PEOPLE_PLEASER | The People Pleaser | 🟡 CONTINGENT — Awaiting 7th dimension (CD-007) |
 
 **Code References:** `archetype_registry.dart`, `archetype_evolution_service.dart`
 
-**Status:** UNDER REVIEW — hardcoded approach may be too limiting. See PRODUCT_DECISIONS.md.
+**Open Question:** Should users see their full 6-dimensional profile, or only the 4 simplified clusters? (Potential PD to create)
 
 ---
 
@@ -225,11 +260,19 @@ A Habit can exist:
 ---
 
 ### Puck
-**Definition:** The default coaching persona — a Stoic accountability coach.
+**Definition:** Legacy name for coaching persona — being consolidated to Sherlock.
 
-**Voice:** Deep, calm, punchy, British English.
+**Status:** 🔴 DEPRECATED — Consolidate to "Sherlock"
 
-**Code References:** `prompt_factory.dart:109-112`
+**Issue:** Two conflicting prompts exist:
+- `ai_prompts.dart:717-745` — Calls AI "Puck"
+- `prompt_factory.dart:47-67` — Calls AI "Sherlock"
+
+**Resolution:** Use "Sherlock" as canonical name. Puck references should be migrated.
+
+**Note:** Final persona naming may change once app direction is firmer.
+
+**Code References:** `prompt_factory.dart:109-112` (to be updated)
 
 ---
 
@@ -326,11 +369,16 @@ A Habit can exist:
 ### Loading Insights Screen
 **Definition:** The screen shown while processing Sherlock data.
 
-**Current State:** Generic spinner.
+**Current State:** Generic spinner with generic (non-personalized) insights. Shows animated insight cards cycling through categories (context, intent, baseline, population).
 
-**Intended State:** Should show personalized insights from Holy Trinity + permissions data.
+**Future Sprint Required:** Personalize insights based on:
+- Holy Trinity data from Sherlock
+- User permissions data
+- Behavioral dimensions
 
-**Status:** Major UX gap. See PRODUCT_DECISIONS.md.
+**Code References:** `loading_insights_screen.dart:1-427`, `onboarding_insights_service.dart`
+
+**Status:** Functional but not personalized. Future sprint needed.
 
 ---
 
@@ -338,6 +386,70 @@ A Habit can exist:
 **Definition:** The screen where the user's personalized Pact card is revealed.
 
 **Code References:** `PactRevealScreen`, `PactIdentityCard`
+
+---
+
+## Dashboard Terms
+
+### Binary Interface
+**Definition:** The two-state dashboard toggle between "Doing" (action) and "Being" (identity).
+
+**Current Implementation:** ✅ IMPLEMENTED in Phase 67
+
+**Components:**
+- `identity_dashboard.dart` — Container with toggle
+- `the_bridge.dart` — "Doing" state
+- `skill_tree.dart` — "Being" state
+
+**Status:** 🟡 Implemented but needs concrete definition within broader dashboard/recommendation architecture. See RQ-005, RQ-006, RQ-007.
+
+---
+
+### The Bridge (Doing State)
+**Definition:** Context-aware action deck with JITAI-powered habit sorting.
+
+**Features:**
+- Habits sorted by V-O scoring, cascade risk, timing
+- Glass morphism card design with priority indicators
+- "NOW" badge for highest priority habit
+- Quick completion (full or tiny version)
+- Identity votes counter per habit
+
+**Code References:** `the_bridge.dart:24-38`
+
+**Status:** 🟡 Implemented but definition may evolve with dashboard architecture decisions.
+
+---
+
+### Skill Tree (Being State)
+**Definition:** Custom-painted tree visualization of identity growth.
+
+**Features:**
+- Multi-part structure: Root (foundation) → Trunk (primary habit) → Branches (related habits) → Leaves (decorative)
+- Health scoring: Green (strong) → Yellow → Orange → Red (at risk)
+- Stats overlay showing votes, streak, completions
+
+**Code References:** `skill_tree.dart:18-32`
+
+**Status:** 🟡 Implemented but definition may evolve with dashboard architecture decisions.
+
+---
+
+### Identity Score vs Identity Evidence
+**Definition Clarification:**
+
+| Term | Meaning | Type |
+|------|---------|------|
+| **Identity Evidence** | A single action proving identity (philosophical unit) | Concept |
+| **Identity Score** | Composite score calculated from evidence + other factors | Metric |
+
+**Relationship:** Identity Score is likely composed of:
+- Identity Evidence (primary input)
+- Consistency metrics
+- Dimension-specific adjustments
+- Possibly Hexis Score (if implemented)
+
+**Status:** 🟡 Relationship needs clarification once JITAI Engine, Content Library, and Recommendation Engine architecture is finalized.
 
 ---
 
@@ -374,17 +486,98 @@ A Habit can exist:
 
 ---
 
-## Terms Needing Definition
+## Terms Contingent on Product Decisions
 
-These terms appear in the codebase but need formal definition:
+These terms appear in documentation but are either not implemented or require product/research decisions before implementation.
 
-| Term | Context | Status |
-|------|---------|--------|
-| Hexis Score | Referenced in README, unclear calculation | NEEDS DEFINITION |
-| Living Garden | Aspirational visualization feature | NOT IMPLEMENTED |
-| Shadow Dialogue | "Talk to my Rebel" feature | NOT IMPLEMENTED |
-| Power Words / Lexicon | Vocabulary builder feature | SPEC EXISTS, NOT IMPLEMENTED |
-| Gap Analysis | DeepSeek-powered value-behavior analysis | PARTIALLY IMPLEMENTED |
+### Hexis Score
+**Definition:** Proposed composite score for identity visualization.
+
+**Intended Calculation (from ARCHITECTURE_RECONCILIATION.md):**
+```
+Base score from habit completions
+- Doom scrolling penalty (−0.05 per session)
++ Positive emotion boost (+0.1 for confidence)
+= Hexis Score (0.0 - 1.0)
+```
+
+**Status:** ❌ NOT IMPLEMENTED — `hexis_calculator.dart` never built
+
+**Dependencies:**
+- Living Garden visualization (would consume this score)
+- Digital Truth Sensor (doom scroll detection)
+- Emotion Context (positive state detection)
+
+**Code References:** None (ghost term — exists only in docs)
+
+---
+
+### Living Garden
+**Definition:** Aspirational Rive-animated ecosystem visualization representing identity growth.
+
+**Planned Features:**
+- `garden_ecosystem` Rive state machine
+- Inputs: hexis_score, shadow_presence, season
+- Weather effects based on emotional state
+- "Wilts" during doom scrolling, "glows" during positive emotion
+
+**Status:** ❌ NOT IMPLEMENTED — Layer 3 in ROADMAP.md
+
+**Current Replacement:** Skill Tree (custom-painted, not animated)
+
+---
+
+### Shadow Presence
+**Definition:** Undefined metric for Living Garden visualization.
+
+**Status:** ❌ NOT IMPLEMENTED — No specification exists
+
+**Questions:**
+- How is "shadow presence" measured?
+- What behaviors indicate shadow activation?
+- How does this relate to Failure Archetype?
+
+---
+
+### Shadow Dialogue
+**Definition:** "Talk to my [Rebel/Perfectionist] part" feature — conversational interaction with user's shadow archetypes.
+
+**Status:** ❌ NOT IMPLEMENTED — Referenced in ROADMAP Layer 2
+
+**Concept:** IFS-inspired dialogue where user can converse directly with identified protector parts.
+
+---
+
+### Gap Analysis Engine
+**Definition:** DeepSeek-powered analysis detecting dissonance between stated values and actual behavior.
+
+**Status:** 🟡 PARTIALLY IMPLEMENTED — DeepSeek pipeline exists but `GapAnalysisEngine` class does not
+
+**Current State:**
+- DeepSeek integration exists for post-session analysis
+- Full gap analysis logic not yet built
+- Referenced in ROADMAP Layer 5
+
+**Note:** DeepSeek is intended to be a substantive part of the engine. Current partial state is a gap.
+
+---
+
+### Power Words / Lexicon
+**Definition:** Vocabulary builder where users collect "Power Words" that reinforce their identity.
+
+**Status:** ❌ NOT IMPLEMENTED — Spec exists in archive (LEXICON_SPEC.md)
+
+**Example:** User identifies as "Stoic" → collects words like "Antifragile", "Equanimity"
+
+---
+
+## Terms Needing Research
+
+| Term | Question | Depends On |
+|------|----------|------------|
+| Season | Time-based context for Living Garden — what defines "seasons"? | Living Garden design |
+| Cascade Risk | Currently implemented but threshold (0.6) may need tuning | JITAI research |
+| Doom Scrolling | Detection logic partially implemented — is it accurate enough? | Digital Truth Sensor |
 
 ---
 
