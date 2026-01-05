@@ -35,41 +35,55 @@ IMPLEMENTATION DETAILS (Tier 3)
 
 ### Decision Dependency Map
 
+**Tier Logic Explanation:**
+- **Tiers are organized by DEPENDENCY, not IMPORTANCE**
+- A Tier 0 decision has NO dependencies (can be made independently)
+- A Tier 3 decision DEPENDS on Tiers 0-2 being decided first
+- Lower tier ≠ Less important; Lower tier = Fewer blockers
+
 **All confirmed decisions organized by dependency tier:**
 
 ```
-TIER 0: FOUNDATIONAL (No dependencies — must be decided first)
-├── CD-001: App Name & Branding
-└── CD-002: AI as Default Witness
+TIER 0: FOUNDATIONAL (No dependencies — can be decided independently)
+├── CD-001: App Name & Branding [LOW importance]
+├── CD-002: AI as Default Witness [MEDIUM importance]
+├── CD-012: Git Workflow Protocol [LOW importance — process]
+├── CD-013: UI Logic Separation Principle [MEDIUM importance — code quality]
+└── CD-014: Core File Creation Guardrails [LOW importance — docs]
 
-TIER 1: CORE ARCHITECTURE (Blocks most other decisions)
-└── CD-005: 6-Dimension Archetype Model
+TIER 1: CORE ARCHITECTURE (Blocks most product decisions)
+└── CD-005: 6-Dimension Archetype Model [CRITICAL importance]
     └── Blocks: CD-006, CD-007, CD-008, CD-010
 
 TIER 2: ARCHITECTURE EXTENSIONS (Depend on Tier 1)
-├── CD-006: GPS Permission Usage → Depends on CD-005
-├── CD-007: 6+1 Dimension Model → Extends CD-005
-└── CD-008: Identity Development Coach → Uses CD-005 dimensions
+├── CD-006: GPS Permission Usage → Depends on CD-005 [MEDIUM]
+├── CD-007: 6+1 Dimension Model → Extends CD-005 [MEDIUM]
+└── CD-008: Identity Development Coach → Uses CD-005 [CRITICAL — VALUE PROP]
     └── Blocks: CD-009, CD-011
 
 TIER 3: SUPPORTING SYSTEMS (Depend on Tier 2)
-├── CD-009: Content Library → Supports CD-008
-├── CD-010: Retention Tracking → Uses CD-005 dimensions
-└── CD-011: Architecture Ramifications → Implements CD-008
+├── CD-009: Content Library → Supports CD-008 [HIGH — enables CD-008]
+├── CD-010: Retention Tracking → Uses CD-005 [MEDIUM]
+└── CD-011: Architecture Ramifications → Implements CD-008 [HIGH]
 
 TIER 4: UX/ONBOARDING (Depends on Sherlock design)
-└── CD-003: Sherlock Before Payment
+└── CD-003: Sherlock Before Payment [HIGH — conversion]
 
-TIER 5: PROCESS & QUALITY (Standalone — can be done anytime)
-├── CD-012: Git Workflow Protocol
-├── CD-013: UI Logic Separation Principle
-└── CD-014: Core File Creation Guardrails
-
-TIER 6: DEPRIORITIZED
-└── CD-004: Conversational CLI (rejected)
+TIER 5: DEPRIORITIZED
+└── CD-004: Conversational CLI (rejected) [NONE]
 ```
 
-**Reading Order:** If you're new to this project, read Tier 0 → Tier 1 → Tier 2 to understand the core philosophy. Tier 5 decisions apply to how you work, not what you build.
+**Critical Path (Most Important Decisions):**
+```
+CD-005 (Dimensions) → CD-008 (Identity Coach) → CD-009 (Content) → CD-011 (Implementation)
+```
+These four decisions form the core value proposition chain.
+
+**Reading Order:** Read by IMPORTANCE, not tier:
+1. CD-005 (6-Dimension Model) — Core architecture
+2. CD-008 (Identity Coach) — Value proposition
+3. CD-009 (Content Library) — What enables the coach
+4. CD-011 (Architecture Ramifications) — How it's implemented
 
 ### Quick Reference Table
 
@@ -78,17 +92,18 @@ TIER 6: DEPRIORITIZED
 | **CD-001** | App Name & Branding | 0 | — | Branding everywhere | LOW (cosmetic) |
 | **CD-002** | AI as Default Witness | 0 | — | Witness UX | MEDIUM |
 | **CD-003** | Sherlock Before Payment | 4 | Sherlock design | Onboarding flow | HIGH (conversion) |
-| **CD-004** | Conversational CLI | 6 | — | — | NONE (rejected) |
-| **CD-005** | 6-Dimension Model | 1 | — | CD-006,7,8,10 | **CRITICAL** (core) |
+| **CD-004** | Conversational CLI | 5 | — | — | NONE (rejected) |
+| **CD-005** | 6-Dimension Model | 1 | — | CD-006,7,8,10,15 | **CRITICAL** (core) |
 | **CD-006** | GPS Permission Usage | 2 | CD-005 | Social Rhythmicity | MEDIUM |
 | **CD-007** | 6+1 Dimension Model | 2 | CD-005 | Social features | MEDIUM |
-| **CD-008** | Identity Development Coach | 2 | CD-005 | CD-009,11 | **CRITICAL** (value prop) |
-| **CD-009** | Content Library | 3 | CD-008 | JITAI effectiveness | HIGH |
+| **CD-008** | Identity Development Coach | 2 | CD-005,15 | CD-009,11 | **CRITICAL** (value prop) |
+| **CD-009** | Content Library | 3 | CD-008,15 | JITAI effectiveness | HIGH |
 | **CD-010** | Retention Tracking | 3 | CD-005 | Analytics | MEDIUM |
-| **CD-011** | Architecture Ramifications | 3 | CD-008 | Onboarding, Dashboard | HIGH |
-| **CD-012** | Git Workflow Protocol | 5 | — | — | LOW (process) |
-| **CD-013** | UI Logic Separation | 5 | — | — | MEDIUM (code quality) |
-| **CD-014** | Core File Guardrails | 5 | — | — | LOW (docs) |
+| **CD-011** | Architecture Ramifications | 3 | CD-008,15 | Onboarding, Dashboard | HIGH |
+| **CD-012** | Git Workflow Protocol | 0 | — | — | LOW (process) |
+| **CD-013** | UI Logic Separation | 0 | — | — | MEDIUM (code quality) |
+| **CD-014** | Core File Guardrails | 0 | — | — | LOW (docs) |
+| **CD-015** | Unified AI Coaching Architecture | 1 | CD-005 | CD-008,9,11 | **CRITICAL** (architecture) |
 
 **Impact Legend:**
 - **CRITICAL:** Foundational to product identity; changes ripple everywhere
@@ -382,6 +397,95 @@ class HabitCard extends StatelessWidget {
 ```
 
 **Research Task:** See RQ-005 for best practices on articulating this principle for AI-assisted development.
+
+### CD-015: Unified AI Coaching Architecture (Identity Coach + JITAI + Content)
+| Field | Value |
+|-------|-------|
+| **Decision** | Identity Coach, JITAI, and Content Library are ONE integrated system, not three separate systems |
+| **Status** | CONFIRMED — CRITICAL |
+| **Date** | 05 January 2026 |
+| **Rationale** | False distinctions create fragmented architecture; unified system enables coherent user experience |
+
+**The Unified Architecture:**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        AI COACHING ENGINE                                    │
+│                        (Single Integrated System)                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                    IDENTITY COACH (Brain)                            │   │
+│  │                                                                      │   │
+│  │  Responsibilities:                                                   │   │
+│  │  • Understand user's aspirational identity                          │   │
+│  │  • Track progress toward identity goals                             │   │
+│  │  • Recommend habits/rituals aligned with identity                   │   │
+│  │  • Detect regression patterns                                       │   │
+│  │  • Orchestrate WHEN and WHAT to communicate                        │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                    ┌───────────────┴───────────────┐                       │
+│                    ↓                               ↓                        │
+│  ┌─────────────────────────────┐   ┌─────────────────────────────┐        │
+│  │    JITAI (Timing Engine)    │   │  Content Library (Messages) │        │
+│  │                             │   │                             │        │
+│  │  Responsibilities:          │   │  Responsibilities:          │        │
+│  │  • Determine WHEN to act    │   │  • Provide WHAT to say      │        │
+│  │  • Calculate V-O state      │   │  • Framing per dimension    │        │
+│  │  • Apply safety gates       │   │  • Personalized messaging   │        │
+│  │  • Learn optimal timing     │   │  • Intervention variants    │        │
+│  └─────────────────────────────┘   └─────────────────────────────┘        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**NOT Three Separate Systems:**
+```
+❌ WRONG MENTAL MODEL:
+   Identity Coach ← separate → JITAI ← separate → Content Library
+
+✅ CORRECT MENTAL MODEL:
+   Identity Coach (Brain)
+   ├── Uses JITAI to decide timing
+   └── Uses Content Library for messaging
+```
+
+**Why This Matters:**
+1. **Single Source of Truth:** One engine tracks user state, not three
+2. **Coherent Experience:** User sees one coach, not three systems
+3. **Unified Learning:** One reward function optimizes all behaviors
+4. **Simpler Architecture:** Fewer integration points, less tech debt
+
+**Implementation Implication:**
+- `IdentityCoachService` is the orchestrator
+- `JITAIDecisionEngine` is a timing calculator CALLED BY the coach
+- `ContentLibrary` is a message provider USED BY the coach
+
+**Code Architecture:**
+```dart
+class IdentityCoachService {
+  final JITAIDecisionEngine _timing;
+  final ContentLibrary _content;
+
+  Future<Recommendation?> getRecommendation(User user) async {
+    // 1. Identity Coach decides IF to recommend
+    if (!_shouldRecommend(user)) return null;
+
+    // 2. JITAI decides WHEN (timing optimal?)
+    final timing = await _timing.evaluateTiming(user);
+    if (!timing.isOptimal) return null;
+
+    // 3. Content Library provides WHAT (message)
+    final message = await _content.getPersonalized(
+      user: user,
+      dimension: user.dominantDimension,
+      context: timing.context,
+    );
+
+    return Recommendation(message: message, timing: timing);
+  }
+}
+```
 
 ### CD-014: Core File Creation Guardrails
 | Field | Value |

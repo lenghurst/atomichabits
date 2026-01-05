@@ -98,6 +98,24 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] **Betting Logic**: Inverse confidence slider + "Tough Truths AI" fallback.
 - [ ] **The Oracle**: Separate `VoiceSessionManager` state + Context Injection from Sherlock.
 
+### Track G-0: Terminology Alignment (URGENT — Prerequisite)
+
+**Status:** 🔴 NOT STARTED — Blocks clear communication
+
+| Task | Status | Priority | Notes |
+|------|--------|----------|-------|
+| Systematic GLOSSARY review | 🔴 NOT STARTED | **URGENT** | Terms undefined → miscommunication |
+| Habit vs Ritual decision | 🔴 NOT STARTED | HIGH | Are they separate concepts? (See GLOSSARY.md) |
+| Layer 3 "Living Garden" clarification | 🔴 NOT STARTED | MEDIUM | Does not exist in codebase — aspirational only |
+| Align terms across all Core docs | 🔴 NOT STARTED | HIGH | Ensure consistency |
+
+**Why Urgent:**
+- Agents and human must share vocabulary
+- Undefined terms lead to conflicting implementations
+- GLOSSARY should be source of truth
+
+---
+
 ### Track G: Identity Coach Implementation (Core Value Proposition)
 
 **Dependency Chain (Must Execute In Order):**

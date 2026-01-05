@@ -291,6 +291,47 @@ User shares dreams/fears
 
 ---
 
+### RQ-007: Optimal LLM Coding Approach ("Make it Work → Make it Right"?)
+
+| Field | Value |
+|-------|-------|
+| **Question** | Is "Make it work first, then refactor" the optimal approach for LLM-assisted coding? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Affects all coding work |
+| **Blocking** | Protocol 2 in AI_AGENT_PROTOCOL.md |
+| **Assigned** | Any agent |
+| **Trigger** | User questioned if this is really optimal for LLMs |
+
+**Context:**
+Current AI_AGENT_PROTOCOL.md Protocol 2 states:
+```
+1. Execute functionality completely (make it work)
+2. THEN refactor for cleanliness (make it right)
+3. NEVER sacrifice functionality for clean code principles
+```
+
+**Questions to Research:**
+1. Do LLMs produce better code when refactoring is separate from initial implementation?
+2. Or does explicit structure/planning BEFORE coding produce better results?
+3. What do AI-assisted development teams recommend?
+4. Are there studies comparing approaches?
+5. Does it depend on task complexity?
+
+**Alternative Approaches to Compare:**
+| Approach | Description | Potential Pros | Potential Cons |
+|----------|-------------|----------------|----------------|
+| **A: Work → Right** | Implement first, refactor second | Unblocks functionality | May create more tech debt |
+| **B: Plan → Work** | Plan structure, then implement | Cleaner initial code | May over-engineer |
+| **C: TDD** | Tests first, then implementation | Verified correctness | Slower initial progress |
+| **D: Iterative** | Small chunks: plan → code → test → refine | Balanced | More context switches |
+
+**Output Expected:**
+- Recommendation for which approach to use
+- Conditions when each approach is appropriate
+- Update AI_AGENT_PROTOCOL.md with findings
+
+---
+
 ## Open Questions for Human Decision
 
 These require Oliver's input before implementation:

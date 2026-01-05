@@ -12,21 +12,133 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 
 ---
 
+## Session Entry Protocol (Starting Work)
+
+**Every session MUST begin with this checklist:**
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        SESSION ENTRY PROTOCOL                                 │
+│                                                                              │
+│  STEP 1: Context Acquisition (Read in order)                                 │
+│  □ AI_HANDOVER.md — What did the last agent do?                             │
+│  □ PRODUCT_DECISIONS.md — What's decided? What's pending?                   │
+│  □ RESEARCH_QUESTIONS.md — What's being researched? Any blockers?           │
+│  □ GLOSSARY.md — What do terms mean in this codebase?                       │
+│  □ AI_CONTEXT.md — What's the current architecture?                         │
+│  □ ROADMAP.md — What are the current priorities?                            │
+│                                                                              │
+│  STEP 2: Orientation                                                         │
+│  □ Identify session scope (docs? code? research? all?)                      │
+│  □ Check for blockers from previous session                                  │
+│  □ Verify no conflicting work in progress                                    │
+│                                                                              │
+│  STEP 3: Confirm with Human                                                  │
+│  □ State what you understand the task to be                                 │
+│  □ Identify any unclear requirements                                         │
+│  □ Flag any PENDING decisions that block this work                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Why Entry Protocol Matters:**
+- Prevents duplicate work
+- Ensures awareness of blockers
+- Establishes shared context with human
+- Catches stale documentation early
+
+---
+
+## Session Exit Protocol (Ending Work / Handover)
+
+**Every session MUST end with this checklist:**
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        SESSION EXIT PROTOCOL                                  │
+│                                                                              │
+│  TIER 1: ALWAYS UPDATE (Non-negotiable)                                      │
+│  □ AI_HANDOVER.md — Summarize what you did, what remains                    │
+│  □ PRODUCT_DECISIONS.md — Log any new decisions/questions                   │
+│  □ RESEARCH_QUESTIONS.md — Update status, propose new RQs if needed         │
+│  □ ROADMAP.md — Update task status, add new items if discovered             │
+│  □ IMPACT_ANALYSIS.md — Log cascade effects of any decisions made           │
+│                                                                              │
+│  TIER 2: UPDATE IF RELEVANT                                                  │
+│  □ GLOSSARY.md — Add any new terms introduced                               │
+│  □ AI_CONTEXT.md — Update if architecture changed                           │
+│  □ IDENTITY_COACH_SPEC.md — Update if Identity Coach evolved                │
+│                                                                              │
+│  TIER 3: RARELY (Only when explicitly needed)                                │
+│  □ AI_AGENT_PROTOCOL.md — Only if behavioral rules change                   │
+│  □ README.md — Only if fundamental project info changes                     │
+│  □ CHANGELOG.md — Add entry summarizing session changes                     │
+│                                                                              │
+│  STEP 4: Git Operations                                                      │
+│  □ Commit with clear message                                                 │
+│  □ Push to main (per CD-012)                                                │
+│  □ Verify push succeeded                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Difference: Entry vs Exit:**
+
+| Entry Protocol | Exit Protocol |
+|----------------|---------------|
+| **READ** to understand context | **WRITE** to preserve context |
+| Check for blockers | Document new blockers |
+| Understand terminology | Add new terminology |
+| Learn what's decided | Record new decisions |
+| Verify architecture | Update architecture if changed |
+
+---
+
+## Research Trigger Protocol (When to Propose New Research)
+
+**An agent MUST propose new research when:**
+
+```
+RESEARCH TRIGGERS:
+1. UNCERTAINTY — "I don't know the best way to implement X"
+   → Propose RQ: "What is best practice for X?"
+
+2. TRADE-OFFS — "There are multiple valid approaches with unclear pros/cons"
+   → Propose RQ: "What are the trade-offs between A, B, C?"
+
+3. EXTERNAL VALIDATION — "This assumption hasn't been tested against literature"
+   → Propose RQ: "Does research support assumption X?"
+
+4. TECHNOLOGY CHANGE — "There may be a better/newer way to do this"
+   → Propose RQ: "Has the API/framework evolved? Is there a better approach?"
+
+5. FOUNDATIONAL QUESTION — "This affects many downstream decisions"
+   → Propose RQ with CRITICAL priority and blocking dependencies
+```
+
+**Research Proposal Format:**
+```markdown
+### RQ-XXX: [Title]
+| Field | Value |
+|-------|-------|
+| **Question** | What specific question needs answering? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | LOW / MEDIUM / HIGH / CRITICAL |
+| **Blocking** | What decisions/tasks are blocked by this? |
+| **Assigned** | Which agent type should research this? |
+| **Trigger** | What prompted this research need? |
+```
+
+**After Proposing Research:**
+1. Add to RESEARCH_QUESTIONS.md
+2. Update IMPACT_ANALYSIS.md with blocking dependencies
+3. Flag to human that research is needed before proceeding
+
+---
+
 ## Decision Flow Diagram (Reasoning Order)
 
 **All decisions flow through this hierarchy. Never skip levels.**
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           LEVEL 0: CONTEXT ACQUISITION                        │
-│                                                                              │
-│  Before ANY decision, read in this order:                                    │
-│  1. AI_HANDOVER.md (what was done)                                          │
-│  2. PRODUCT_DECISIONS.md (what's decided/pending)                           │
-│  3. RESEARCH_QUESTIONS.md (what's being researched)                         │
-│  4. GLOSSARY.md (terminology = shared vocabulary)                           │
-└──────────────────────────────────────────────────────────────────────────────┘
-                                    ↓
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                         LEVEL 1: DECISION CLASSIFICATION                      │
 │                                                                              │
@@ -36,13 +148,13 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  │   PHILOSOPHY    │    │    DIRECTION    │    │ IMPLEMENTATION  │          │
 │  │  (Why we do X)  │    │ (What we build) │    │   (How we do)   │          │
 │  │                 │    │                 │    │                 │          │
-│  │ → Needs human   │    │ → Derived from  │    │ → Agent can     │          │
-│  │   confirmation  │    │   philosophy    │    │   decide        │          │
+│  │ → Needs human   │    │ → Needs human   │    │ → Agent can     │          │
+│  │   confirmation  │    │   confirmation  │    │   recommend     │          │
 │  └─────────────────┘    └─────────────────┘    └─────────────────┘          │
 │         ↓                      ↓                      ↓                      │
-│  Log in PRODUCT_       Update ROADMAP.md      Execute + Document            │
-│  DECISIONS.md as                                                            │
-│  PENDING                                                                     │
+│  Log in PRODUCT_       Update ROADMAP.md      Search web for                │
+│  DECISIONS.md as       with human approval    best practices,               │
+│  PENDING                                      propose approach               │
 └──────────────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -53,7 +165,7 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  YES → Find the upstream decision                                            │
 │      → Is it CONFIRMED? → Proceed                                            │
 │      → Is it PENDING? → STOP. Document dependency. Wait for human.          │
-│      → Does it need RESEARCH? → Add to RESEARCH_QUESTIONS.md                │
+│      → Does it need RESEARCH? → Trigger Research Protocol                   │
 │                                                                              │
 │  NO → Proceed to Level 3                                                     │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -63,26 +175,35 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │                                                                              │
 │  What does this decision affect?                                             │
 │                                                                              │
-│  CHECK EACH LAYER:                                                           │
-│  □ Layer 1 (Evidence Engine) — Database/schema changes?                      │
-│  □ Layer 2 (Sherlock) — Onboarding extraction changes?                       │
-│  □ Layer 3 (Living Garden) — UI visualization changes?                       │
-│  □ Layer 4 (CLI) — Interaction pattern changes?                              │
-│  □ Layer 5 (Brain) — AI analysis changes?                                    │
-│  □ JITAI — Intervention timing/content changes?                              │
-│  □ Identity Coach — Recommendation logic changes?                            │
+│  CHECK EACH SYSTEM:                                                          │
+│  □ Evidence Engine — Database/schema changes?                                │
+│  □ Sherlock (Onboarding) — Extraction/prompt changes?                        │
+│  □ JITAI (Reactive) — Intervention timing/arm changes?                       │
+│  □ Identity Coach (Proactive) — Recommendation logic changes?                │
 │  □ Content Library — New message variants needed?                            │
+│  □ Dashboard/UI — User-facing changes?                                       │
 │                                                                              │
 │  → Document ALL impacts in IMPACT_ANALYSIS.md                                │
 └──────────────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                         LEVEL 4: EXECUTE + DOCUMENT                           │
+│                         LEVEL 4: IMPLEMENTATION APPROACH                      │
 │                                                                              │
-│  1. Make it work (functionality first)                                       │
-│  2. Make it right (refactor after working)                                   │
-│  3. Make it documented (update relevant docs)                                │
-│  4. Make it committed (atomic commits, clear messages)                       │
+│  For IMPLEMENTATION decisions, the agent MUST:                               │
+│                                                                              │
+│  1. Search the web for current best practices                                │
+│     → APIs evolve rapidly (Gemini, Firebase, etc.)                          │
+│     → New patterns may exist since last knowledge update                    │
+│                                                                              │
+│  2. Present options to human with trade-offs                                 │
+│     → Don't just pick one; explain alternatives                             │
+│                                                                              │
+│  3. If uncertain, trigger Research Protocol                                  │
+│     → Better to research than guess                                         │
+│                                                                              │
+│  4. Execute with verification                                                │
+│     → Test before committing                                                │
+│     → Run linters/tests                                                     │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -90,10 +211,10 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 
 | Decision Type | Example | Who Decides | Document |
 |--------------|---------|-------------|----------|
-| Philosophy | "Should archetypes be dynamic?" | Human | PRODUCT_DECISIONS.md |
-| Direction | "Add Social Leaderboard to MVP" | Human + Agent | ROADMAP.md |
-| Implementation | "Use Thompson Sampling for bandit" | Agent | Code + AI_CONTEXT.md |
-| Terminology | "What is an 'Identity Seed'?" | Define first | GLOSSARY.md |
+| Philosophy | "Should archetypes be dynamic?" | Human only | PRODUCT_DECISIONS.md |
+| Direction | "Add Social Leaderboard to MVP" | Human (agent proposes) | ROADMAP.md |
+| Implementation | "Use Thompson Sampling for bandit" | Agent recommends, human approves | Code + AI_CONTEXT.md |
+| Terminology | "What is an 'Identity Seed'?" | Define before using | GLOSSARY.md |
 
 ---
 

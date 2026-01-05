@@ -86,6 +86,35 @@ Ritual = {
 
 ---
 
+### Habit vs Ritual: Design Decision Required
+
+| Question | Current State | Options | Recommendation |
+|----------|---------------|---------|----------------|
+| Are they separate entities? | Undefined in code | (A) Separate models, (B) Ritual is habit container | **B** — Ritual contains ordered habits |
+| Should UI use both terms? | "Habit" only | (A) Both, (B) Rename to "Rituals" | **NEEDS RESEARCH** — User testing required |
+| How does data model relate? | Habit model exists, Ritual doesn't | Build Ritual as wrapper | Add to Track G (Identity Coach) |
+
+**Status:** 🔴 PENDING DECISION — See PRODUCT_DECISIONS.md PD-XXX (to be created)
+
+**Proposed Relationship:**
+```
+Ritual (Container)
+├── Habit 1 (sequence: 1)
+├── Habit 2 (sequence: 2)
+└── Habit 3 (sequence: 3)
+
+A Habit can exist:
+- Standalone (not part of any Ritual)
+- Within one or more Rituals
+```
+
+**Why This Matters:**
+- If Habits and Rituals are separate, we need two recommendation systems
+- If Rituals contain Habits, recommendations are unified
+- User mental model affects onboarding and dashboard design
+
+---
+
 ### The Pact
 **Definition:** The app's name and the commitment a user makes to become their target identity.
 
