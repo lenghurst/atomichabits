@@ -36,59 +36,88 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `protocol-refinement-session` |
+| **Session ID** | `deep-protocol-review-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~45 minutes (comprehensive refinements) |
-| **Focus** | 8 User Action Items — Protocol and Documentation Refinements |
+| **Duration** | ~60 minutes (deep review) |
+| **Focus** | 12 User Feedback Points — Deep Protocol and Architecture Review |
 
 ### What Was Accomplished
 
-**8 Action Items Completed:**
+**12 User Points Addressed:**
 
-1. **CD-012: Git Workflow → Push to Main**
-   - Changed from feature branches to direct push to main
-   - Rationale: Linear workflow, one agent at a time
-   - Added pre-commit safeguards
+1. **GLOSSARY Systematic Review → Track G-0**
+   - Added to ROADMAP as URGENT prerequisite
+   - Terms undefined = miscommunication risk
+   - Habit vs Ritual flagged as PENDING DECISION
 
-2. **Cross-Doc Consistency Expanded**
-   - All 11 Core docs now categorized (Static/Dynamic/Ephemeral)
-   - Tiered checking system (Always/If Relevant/Rarely)
-   - Cross-reference matrix added
+2. **Session Entry/Exit Protocols (Separate)**
+   - Session Entry Protocol: READ to understand context
+   - Session Exit Protocol: WRITE to preserve context
+   - Key difference table added
 
-3. **Decision Flow Diagram Created**
-   - Added to AI_AGENT_PROTOCOL.md
-   - 4-level hierarchy: Context → Classification → Dependencies → Impact → Execute
+3. **Tier 1/2/3 Consistency Checks Revised**
+   - Exit Tier 1 now includes: AI_HANDOVER, PRODUCT_DECISIONS, RESEARCH_QUESTIONS, ROADMAP, IMPACT_ANALYSIS (all non-negotiable)
+   - Entry protocol added with 6-doc read order
 
-4. **Habit vs Ritual Definitions**
-   - Added foundational definitions to GLOSSARY.md
-   - Internal (data layer) and External (UI layer) perspectives
-   - Identity Coach role documented for each
+4. **IDENTITY_COACH_SPEC.md Reviewed**
+   - Contains 6-component proactive engine spec
+   - RQ numbers in spec need reconciliation (RQ-005/006 conflict)
+   - Needs update based on CD-015
 
-5. **CD-013: UI Logic Separation Principle**
-   - UI = presentation only; logic in services/providers
-   - Enables "vibe coding" for AI-assisted development
-   - RQ-005 created for further research
+5. **Research Trigger Protocol Created**
+   - 5 triggers: Uncertainty, Trade-offs, External Validation, Technology Change, Foundational Question
+   - Proposal format defined
+   - Links to RESEARCH_QUESTIONS.md
 
-6. **CD-014: Core File Creation Guardrails**
-   - Agents must use existing 11 Core files first
-   - New .md files require human approval
-   - Table of which info goes where
+6. **Decision Flow Diagram Revised**
+   - Removed LEVEL 0 (now in Entry Protocol)
+   - Level 4 now includes web search requirement
+   - Direction decisions need human confirmation
 
-7. **Track G: Identity Coach in ROADMAP**
-   - Full dependency chain documented
-   - RQ-006 created (Identity Roadmap research)
-   - 10-step implementation sequence
+7. **Habit vs Ritual Relationship**
+   - PENDING DECISION in GLOSSARY.md
+   - Proposed: Ritual = container of ordered Habits
+   - Needs user testing research
 
-8. **CD Items Reordered by Dependency Tier**
-   - Tier 0-6 hierarchy documented
-   - Quick reference table with impact levels
-   - Dependency map visualization
+8. **Layer 3 (Living Garden) Verified**
+   - **DOES NOT EXIST** in codebase
+   - No `*garden*` or `*rive*` files found
+   - Aspirational only — added to Track G-0
+
+9. **"Make it Work → Make it Right" Question**
+   - RQ-007 created
+   - Question: Is this optimal for LLM-assisted coding?
+   - Needs research on alternatives
+
+10. **CD Tier Logic Clarified**
+    - Tier = DEPENDENCY order, not IMPORTANCE
+    - Added importance indicators to all CDs
+    - Critical path marked: CD-005 → CD-015 → CD-008 → CD-009 → CD-011
+
+11. **CD-013 (UI Logic Separation) Verified**
+    - RQ-005 already exists for research
+    - Principle is sound but needs validation
+
+12. **CD-015: Unified AI Coaching Architecture (NEW)**
+    - Identity Coach + JITAI + Content = ONE system
+    - Identity Coach = Brain (orchestrator)
+    - JITAI = Timing (WHEN)
+    - Content Library = Messages (WHAT)
+    - Critical architectural clarification
+
+### Key Findings This Session
+
+- **Layer 3 (Living Garden)** does not exist in codebase — aspirational only
+- **Habit vs Ritual** relationship undefined — needs decision
+- **CLI (Layer 4)** was deprioritized per CD-004 — remove from impact analysis
+- **Sherlock** is onboarding-only, not a "Layer"
+- **IDENTITY_COACH_SPEC.md** uses RQ-005/006 but those now exist with different content — needs reconciliation
 
 ### Previous Sessions (for reference)
+- **Protocol Refinements:** 8 action items, CD-012/13/14, Track G
 - **Identity Coach Elevation:** Renamed PROACTIVE_ENGINE_SPEC → IDENTITY_COACH_SPEC
 - **Research Complete:** ChatGPT + Gemini synthesized into 6-dimension model
-- **Protocols Established:** 6 mandatory AI behaviors
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -194,6 +223,7 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Deep Protocol Review | 12 user points: Entry/Exit protocols, CD-015, Track G-0, RQ-007, Layer verification |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Protocol Refinements | 8 action items: Git workflow, cross-doc checks, decision flow, Habit/Ritual defs, CD-013/14, Track G |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Identity Coach Elevation | Elevated Identity Coach as core value prop, added CD-011/CD-012, doc maintenance protocol |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Research Coordination | Aligned ChatGPT + Gemini research for PD-001 |
