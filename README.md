@@ -20,8 +20,9 @@ If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MU
 2. docs/CORE/AI_HANDOVER.md (session context from last agent)
 3. docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
 4. docs/CORE/GLOSSARY.md (terminology definitions)
-5. AI_CONTEXT.md (technical architecture — note: may contain stale info)
-6. ROADMAP.md (current priorities)
+5. docs/CORE/RESEARCH_QUESTIONS.md (active research — check before implementing)
+6. AI_CONTEXT.md (technical architecture — note: may contain stale info)
+7. ROADMAP.md (current priorities)
 ```
 
 ### Before Making ANY Code Changes
@@ -76,6 +77,7 @@ Code Changes
 | **[AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | What the last agent did | Every session end |
 | **[PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Why we chose X over Y | When decisions made/needed |
 | **[GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Definition of all terms | When new terms introduced |
+| **[RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Active Research | Cross-agent research tracking | When research progresses |
 
 ### What Makes a Core Document
 
@@ -198,6 +200,7 @@ Create `secrets.json` in project root:
 | **[docs/CORE/AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | Last agent's work |
 | **[docs/CORE/PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Confirmed & pending decisions |
 | **[docs/CORE/GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Term definitions |
+| **[docs/CORE/RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Research | Active cross-agent research |
 
 ### Technical Guides
 

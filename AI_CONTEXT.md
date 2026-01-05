@@ -1,10 +1,51 @@
 # AI_CONTEXT.md — The Pact
 
-> **Last Updated:** 04 January 2026  
-> **Current Phase:** Onboarding Calibration & Auth Repair (Phase 68 Verified)  
-> **Identity:** The Pact  
-> **Domain:** thepact.co  
+> **Last Updated:** 05 January 2026
+> **Current Phase:** Onboarding Calibration & Auth Repair (Phase 68 Verified)
+> **Identity:** The Pact
+> **Domain:** thepact.co
 > **Core Concept:** Identity Evidence Engine
+
+---
+
+## Active Research (Check Before Implementing)
+
+Before implementing features related to archetypes, JITAI, or behavioral segmentation, check:
+- **[docs/CORE/RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** — Active research tracking
+
+### Current Research Blockers
+
+| Topic | Status | Impact |
+|-------|--------|--------|
+| Archetype Taxonomy (RQ-001) | IN RESEARCH | Blocks PD-001 decision |
+| Intervention Measurement (RQ-002) | DOCUMENTED | Informs dimension selection |
+
+### Intervention Effectiveness (How We Measure Success)
+
+The JITAI system optimizes for **identity evidence**, not task completion:
+
+```
+REWARD FUNCTION (0.0 - 1.0):
+
+Identity Evidence (50%)
+├── Habit completed 24h:  +0.35
+├── Streak maintained:    +0.15
+└── Used tiny version:    +0.25
+
+Engagement (30%)
+├── Notification opened:  +0.20
+├── Took action:          +0.10
+└── Dismissed:            -0.10
+
+Async Identity Delta (15%)
+└── Identity score change: ±0.15
+
+Penalties
+├── Annoyance signal:     -0.40
+└── Notification disabled: -0.60
+```
+
+**Code:** `jitai_decision_engine.dart:772-838`
 
 ---
 

@@ -55,6 +55,12 @@ This prevents:
     - PD-102 (JITAI): Documented full pipeline, hardcoded vs adaptive components
     - PD-103 (Sensitivity): Confirmed NOT IMPLEMENTED
     - PD-104 (Loading Insights): Corrected status — IS implemented, decision is about content
+- **Research Infrastructure (NEW):**
+  - Created `docs/CORE/RESEARCH_QUESTIONS.md` for cross-agent research tracking
+  - Documented intervention effectiveness measurement (RQ-002) with reward function
+  - Added RQ-001 (Archetype Taxonomy) and RQ-003 (Dimension Mapping) templates
+  - Updated README.md mandatory reading order to include RESEARCH_QUESTIONS.md
+  - Updated AI_CONTEXT.md with research blockers and reward function summary
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -107,12 +113,18 @@ This prevents:
 
 5. **LoadingInsightsScreen** is ALREADY implemented with animated insight cards — decision is about WHAT insights to show, not whether to implement
 
+6. **Intervention Effectiveness** is well-implemented (`jitai_decision_engine.dart:772-838`):
+   - Reward function optimizes for identity evidence (50%), engagement (30%), async identity delta (15%)
+   - Tracks: notification open, time-to-open, interaction type, habit completion, streak, annoyance signals
+   - **Gap:** No post-intervention emotion capture, no retention tracking, no self-report "was this helpful?"
+
 ### Files You Should Read
 | File | Why |
 |------|-----|
 | `docs/CORE/PRODUCT_DECISIONS.md` | All pending decisions documented |
 | `docs/CORE/GLOSSARY.md` | Terminology definitions |
-| `AI_CONTEXT.md` | Technical architecture (but contains stale info) |
+| `docs/CORE/RESEARCH_QUESTIONS.md` | Active research (check before implementing) |
+| `AI_CONTEXT.md` | Technical architecture (includes research blockers) |
 | `ROADMAP.md` | Current priorities (needs reconciliation) |
 
 ### Files That Need Attention
