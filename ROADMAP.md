@@ -98,6 +98,69 @@ We are ignoring linear versions (v1, v2). We are building 5 interconnected layer
 - [ ] **Betting Logic**: Inverse confidence slider + "Tough Truths AI" fallback.
 - [ ] **The Oracle**: Separate `VoiceSessionManager` state + Context Injection from Sherlock.
 
+### Track G-0: Terminology Alignment (URGENT — Prerequisite)
+
+**Status:** 🔴 NOT STARTED — Blocks clear communication
+
+| Task | Status | Priority | Notes |
+|------|--------|----------|-------|
+| Systematic GLOSSARY review | 🔴 NOT STARTED | **URGENT** | Terms undefined → miscommunication |
+| Habit vs Ritual decision | 🔴 NOT STARTED | HIGH | Are they separate concepts? (See GLOSSARY.md) |
+| Layer 3 "Living Garden" clarification | 🔴 NOT STARTED | MEDIUM | Does not exist in codebase — aspirational only |
+| Align terms across all Core docs | 🔴 NOT STARTED | HIGH | Ensure consistency |
+
+**Why Urgent:**
+- Agents and human must share vocabulary
+- Undefined terms lead to conflicting implementations
+- GLOSSARY should be source of truth
+
+---
+
+### Track G: Identity Coach Implementation (Core Value Proposition)
+
+**Dependency Chain (Must Execute In Order):**
+
+```
+RESEARCH PHASE (RQ-006)
+├── 1. Aspiration Extraction Research ← FIRST
+│   └── Output: Sherlock prompt changes
+│
+├── 2. Identity Roadmap Data Model ← Depends on #1
+│   └── Output: Schema design
+│
+├── 3. Habit Matching Algorithm ← Depends on #2
+│   └── Output: Recommendation logic
+│
+├── 4. Progress/Regression Metrics ← Depends on #3
+│   └── Output: Metric definitions
+│
+└── 5. Coherence Engine ← Depends on #4
+    └── Output: Gap detection logic
+
+IMPLEMENTATION PHASE (After Research)
+├── 6. Update Sherlock Prompt ← Depends on research #1
+├── 7. Schema Migration ← Depends on research #2
+├── 8. Build Recommendation Engine ← Depends on research #3
+├── 9. Dashboard Redesign ← Depends on #8
+└── 10. Widget Implementation ← Depends on #9
+```
+
+| Task | Status | Depends On | Blocking |
+|------|--------|------------|----------|
+| **RQ-006 Research** | 🔴 NOT STARTED | — | All below |
+| Aspiration Extraction (research) | 🔴 NOT STARTED | — | Data Model |
+| Identity Roadmap Data Model | 🔴 NOT STARTED | Extraction | Matching |
+| Habit Matching Algorithm | 🔴 NOT STARTED | Data Model | Metrics |
+| Progress/Regression Metrics | 🔴 NOT STARTED | Matching | Coherence |
+| Coherence Engine | 🔴 NOT STARTED | Metrics | Implementation |
+| Sherlock Prompt Update | 🔴 NOT STARTED | RQ-006 complete | — |
+| Schema Migration | 🔴 NOT STARTED | Data Model | — |
+| Recommendation Engine | 🔴 NOT STARTED | Matching | Dashboard |
+| Dashboard Redesign | 🔴 NOT STARTED | Engine | Widgets |
+| Widget Implementation | 🔴 NOT STARTED | Dashboard | — |
+
+**Reference:** See `docs/CORE/IDENTITY_COACH_SPEC.md` for full specification.
+
 ---
 
 ## ✅ Completed Legacy Phases (Reference)

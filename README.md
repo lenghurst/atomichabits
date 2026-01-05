@@ -20,8 +20,11 @@ If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MU
 2. docs/CORE/AI_HANDOVER.md (session context from last agent)
 3. docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
 4. docs/CORE/GLOSSARY.md (terminology definitions)
-5. AI_CONTEXT.md (technical architecture — note: may contain stale info)
-6. ROADMAP.md (current priorities)
+5. docs/CORE/RESEARCH_QUESTIONS.md (active research — check before implementing)
+6. docs/CORE/AI_AGENT_PROTOCOL.md (mandatory AI behaviors)
+7. docs/CORE/IMPACT_ANALYSIS.md (research-to-roadmap traceability)
+8. AI_CONTEXT.md (technical architecture — note: may contain stale info)
+9. ROADMAP.md (current priorities)
 ```
 
 ### Before Making ANY Code Changes
@@ -76,6 +79,10 @@ Code Changes
 | **[AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | What the last agent did | Every session end |
 | **[PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Why we chose X over Y | When decisions made/needed |
 | **[GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Definition of all terms | When new terms introduced |
+| **[RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Active Research | Cross-agent research tracking | When research progresses |
+| **[AI_AGENT_PROTOCOL.md](./docs/CORE/AI_AGENT_PROTOCOL.md)** | Behavioral Rules | Mandatory AI agent behaviors | When protocols change |
+| **[IMPACT_ANALYSIS.md](./docs/CORE/IMPACT_ANALYSIS.md)** | Traceability | Research → Roadmap impacts | After research/decisions |
+| **[IDENTITY_COACH_SPEC.md](./docs/CORE/IDENTITY_COACH_SPEC.md)** | Specification | AI identity development coach | When spec evolves |
 
 ### What Makes a Core Document
 
@@ -88,6 +95,91 @@ A document is "Core" if it meets ALL criteria:
    - Philosophy (why we make choices)
    - Context (what happened in past sessions)
 4. **Has clear ownership** (who is responsible for updates)
+
+### Why Each Doc Exists (Quick Reference)
+
+| Doc | Exists Because | Without It |
+|-----|----------------|------------|
+| **AI_HANDOVER.md** | Context is lost between sessions | Agents repeat work, miss context |
+| **PRODUCT_DECISIONS.md** | Philosophy drives architecture | Agents make conflicting choices |
+| **GLOSSARY.md** | Terms have specific meanings | "Archetype" means different things |
+| **RESEARCH_QUESTIONS.md** | Research informs decisions | Decisions made without evidence |
+| **AI_AGENT_PROTOCOL.md** | Behaviors must be consistent | Agents skip critical steps |
+| **IMPACT_ANALYSIS.md** | Decisions have cascading effects | Downstream impacts missed |
+
+### Doc Maintenance Protocol (Preventing Reality Drift)
+
+**Problem:** Docs become stale when they don't reflect actual code/decisions.
+
+**Solution:** Mandatory update triggers and consistency checks.
+
+#### Update Triggers
+
+| Event | Must Update |
+|-------|-------------|
+| Code architecture changes | AI_CONTEXT.md |
+| Product decision made | PRODUCT_DECISIONS.md |
+| Research concludes | RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md |
+| Session ends | AI_HANDOVER.md |
+| New term introduced | GLOSSARY.md |
+| Feature implemented | ROADMAP.md (mark complete) |
+
+#### Cross-Doc Consistency Checks
+
+**All 11 Core Documents Categorized by Update Frequency:**
+
+| Doc | Category | Static/Dynamic | Update Trigger |
+|-----|----------|----------------|----------------|
+| **README.md** | Entry Point | Semi-Static | Only when fundamentals change |
+| **CHANGELOG.md** | History | Append-Only | Every release |
+| **GLOSSARY.md** | Terminology | Mostly Static | New term introduced |
+| **AI_AGENT_PROTOCOL.md** | Behavioral Rules | Mostly Static | Protocol changes |
+| **AI_CONTEXT.md** | Technical Truth | Dynamic | Architecture changes |
+| **ROADMAP.md** | Direction | Dynamic | Priority changes |
+| **PRODUCT_DECISIONS.md** | Philosophy | Dynamic | Decisions made/needed |
+| **RESEARCH_QUESTIONS.md** | Research | Dynamic | Research progresses |
+| **IMPACT_ANALYSIS.md** | Traceability | Dynamic | After research/decisions |
+| **AI_HANDOVER.md** | Session Context | Ephemeral | Every session end |
+| **IDENTITY_COACH_SPEC.md** | Specification | Dynamic | Spec evolves |
+
+**Before Ending Session — Full Consistency Check:**
+
+```
+□ TIER 1 (Always Check):
+  □ AI_HANDOVER.md — Updated with session summary
+  □ PRODUCT_DECISIONS.md — Any new decisions documented
+  □ RESEARCH_QUESTIONS.md — Status reflects actual state
+
+□ TIER 2 (If Relevant):
+  □ IMPACT_ANALYSIS.md — Cascade effects logged (if research/decisions made)
+  □ ROADMAP.md — Priorities align with confirmed decisions
+  □ AI_CONTEXT.md — Architecture diagrams current (if code changes)
+  □ GLOSSARY.md — Contains all terms used in other docs
+
+□ TIER 3 (Rarely):
+  □ AI_AGENT_PROTOCOL.md — Only if behavioral rules change
+  □ IDENTITY_COACH_SPEC.md — Only if Identity Coach spec evolves
+  □ README.md — Only if fundamental project info changes
+  □ CHANGELOG.md — Only on release
+```
+
+**Cross-Reference Matrix (What Must Stay Aligned):**
+
+| If This Changes... | ...Update These |
+|--------------------|-----------------|
+| Product Decision confirmed | PRODUCT_DECISIONS.md → ROADMAP.md → IMPACT_ANALYSIS.md |
+| Research concludes | RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md → PRODUCT_DECISIONS.md |
+| Architecture changes | AI_CONTEXT.md → README.md (if fundamental) |
+| New term introduced | GLOSSARY.md → All docs using the term |
+| Feature implemented | ROADMAP.md (mark complete) → CHANGELOG.md (on release) |
+| Session ends | AI_HANDOVER.md (always) |
+
+#### Reality Alignment Rules
+
+1. **Code Changes → Doc Updates:** Any code change affecting architecture must include doc updates
+2. **Weekly Audit:** Human reviews docs against codebase weekly
+3. **AI Verification:** Each session starts with consistency check
+4. **Flag Staleness:** If a doc seems wrong, flag it rather than assuming it's correct
 
 ### Other Documentation
 
@@ -198,6 +290,7 @@ Create `secrets.json` in project root:
 | **[docs/CORE/AI_HANDOVER.md](./docs/CORE/AI_HANDOVER.md)** | Session Context | Last agent's work |
 | **[docs/CORE/PRODUCT_DECISIONS.md](./docs/CORE/PRODUCT_DECISIONS.md)** | Philosophy | Confirmed & pending decisions |
 | **[docs/CORE/GLOSSARY.md](./docs/CORE/GLOSSARY.md)** | Terminology | Term definitions |
+| **[docs/CORE/RESEARCH_QUESTIONS.md](./docs/CORE/RESEARCH_QUESTIONS.md)** | Research | Active cross-agent research |
 
 ### Technical Guides
 

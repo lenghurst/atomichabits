@@ -19,6 +19,102 @@ Multiple AI agents and developers work on this codebase. Inconsistent terminolog
 
 ## Core Product Terms
 
+### Habit (Foundational Definition)
+
+**Definition:** A single, repeatable action that builds toward an identity.
+
+**Internal (Data Layer):**
+```
+Habit = {
+  id: UUID,
+  name: string,              // What the action is
+  frequency: enum,           // Daily, Weekly, Custom
+  identity_link: string,     // "I am a..."
+  dimension_vector: float[6], // Which behavioral dimensions this reinforces
+  evidence_count: int,       // Times completed
+  streak: int,               // Consecutive completions (legacy)
+  graceful_score: float      // Rolling consistency (preferred)
+}
+```
+
+**External (UI Layer):**
+- Presented as "daily actions that prove who you are"
+- Never called "tasks" or "to-dos"
+- Always linked to identity statement
+
+**Identity Coach Role:**
+- Recommends habits based on user's aspirational identity
+- Detects habits misaligned with stated values
+- Suggests habit additions/removals
+
+---
+
+### Ritual (Foundational Definition)
+
+**Definition:** A sequence of habits performed together in a specific order, often time-anchored.
+
+**Internal (Data Layer):**
+```
+Ritual = {
+  id: UUID,
+  name: string,              // "Morning Power Hour"
+  habits: Habit[],           // Ordered list of habits
+  anchor: TimeWindow,        // When this ritual occurs
+  trigger: string,           // "After waking up"
+  sequence_matters: bool,    // Order is important
+  total_duration: int        // Minutes
+}
+```
+
+**External (UI Layer):**
+- Presented as "sacred routines" or "power sequences"
+- Visual distinction from single habits (grouped, sequential)
+- Progress shown as ritual completion, not individual habit ticks
+
+**Key Distinction:**
+| Aspect | Habit | Ritual |
+|--------|-------|--------|
+| Scope | Single action | Sequence of actions |
+| Timing | Flexible within day | Time-anchored |
+| Order | N/A | Matters |
+| Examples | "Drink water" | "Morning routine: meditate → journal → exercise" |
+
+**Identity Coach Role:**
+- Suggests ritual templates based on user goals
+- Detects broken ritual sequences
+- Recommends ritual restructuring for consistency
+
+---
+
+### Habit vs Ritual: Design Decision Required
+
+| Question | Current State | Options | Recommendation |
+|----------|---------------|---------|----------------|
+| Are they separate entities? | Undefined in code | (A) Separate models, (B) Ritual is habit container | **B** — Ritual contains ordered habits |
+| Should UI use both terms? | "Habit" only | (A) Both, (B) Rename to "Rituals" | **NEEDS RESEARCH** — User testing required |
+| How does data model relate? | Habit model exists, Ritual doesn't | Build Ritual as wrapper | Add to Track G (Identity Coach) |
+
+**Status:** 🔴 PENDING DECISION — See PRODUCT_DECISIONS.md PD-XXX (to be created)
+
+**Proposed Relationship:**
+```
+Ritual (Container)
+├── Habit 1 (sequence: 1)
+├── Habit 2 (sequence: 2)
+└── Habit 3 (sequence: 3)
+
+A Habit can exist:
+- Standalone (not part of any Ritual)
+- Within one or more Rituals
+```
+
+**Why This Matters:**
+- If Habits and Rituals are separate, we need two recommendation systems
+- If Rituals contain Habits, recommendations are unified
+- User mental model affects onboarding and dashboard design
+
+---
+
 ### The Pact
 **Definition:** The app's name and the commitment a user makes to become their target identity.
 
