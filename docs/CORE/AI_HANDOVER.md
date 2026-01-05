@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (Full Implementation + DeepSeek V3.2 Documentation Session)
+> **Last Updated:** 05 January 2026 (Deep Think RQ-019 + RQ-020 Integration Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,74 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `deep-think-rq019-rq020-integration` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~30 minutes |
+| **Focus** | Deep Think RQ-019 + RQ-020 integration, embedding model correction |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **RQ-019: pgvector Implementation — ✅ RESEARCH COMPLETE:**
+   - Integrated full Deep Think specifications
+   - **Corrected embedding model**: `gemini-embedding-001` (not text-embedding-004)
+   - HNSW index with parameters (m=16, ef_construction=64)
+   - Null-on-Update trigger for embedding invalidation
+   - Edge Function code for async embedding generation
+   - Cost projection: $7/mo at 10K users → $700/mo at 1M users
+
+2. **RQ-020: Treaty-JITAI Integration — ✅ RESEARCH COMPLETE:**
+   - Pipeline position: Stage 3 (Post-Safety, Pre-Optimization)
+   - Parser: `json_logic_dart` package (not custom eval)
+   - Full TreatyEngine Dart class implementation
+   - Conflict resolution: Hard > Soft, then Newest > Oldest
+   - Breach escalation: 3 breaches in 7 days → Probationary → Auto-Suspend
+   - Council activation keywords (regex patterns)
+
+3. **PD-109: Council AI Activation — ✅ RESOLVED:**
+   - Tension threshold: `0.7` confirmed
+   - Turn limit: `6` per session confirmed
+   - Rate limit: `1 auto-summon per 24h per conflict topic`
+   - Activation keyword regex patterns documented
+
+4. **PD-113: Treaty Priority Hierarchy — ✅ RESOLVED:**
+   - 5-level priority stack confirmed
+   - Safety Gates > Hard Treaties > Soft Treaties > JITAI > User Prefs
+   - Breach escalation thresholds confirmed
+
+5. **CD-016: AI Model Strategy — Updated:**
+   - **Critical correction**: Embeddings use `gemini-embedding-001`, NOT DeepSeek V3.2
+   - DeepSeek V3.2 for reasoning tasks (Council AI, Root Synthesis, Gap Analysis)
+   - Gemini for real-time (voice, TTS) + embeddings
+
+6. **GLOSSARY.md Updated — 7 New Terms:**
+   - gemini-embedding-001
+   - Matryoshka Representation Learning (MRL)
+   - HNSW (Hierarchical Navigable Small World)
+   - JSON Logic
+   - TreatyEngine
+   - Treaty Priority Stack
+   - Breach Escalation
+
+7. **ROADMAP.md Updated:**
+   - Model configuration table corrected (gemini-embedding-001)
+   - Research status: RQ-019 + RQ-020 marked complete
+   - PD-109 + PD-113 resolutions documented
+
+---
+
+### Previous Session Summary (Same Day, Earlier)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `full-implementation-deepseek-documentation` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~45 minutes |
 | **Focus** | Full implementation confirmation, DeepSeek V3.2 integration, new RQs/PDs |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
@@ -53,7 +114,7 @@ This prevents:
 
 2. **CD-016: AI Model Strategy (DeepSeek V3.2) — ✅ CONFIRMED:**
    - Documented multi-model architecture
-   - DeepSeek V3.2 for: Council AI, Root Synthesis, Embeddings, Gap Analysis
+   - DeepSeek V3.2 for: Council AI, Root Synthesis, Gap Analysis
    - Gemini for: Real-time voice, TTS
    - Hardcoded for: JITAI logic, Chronotype matrix, Treaty enforcement
    - Updated ROADMAP.md with model allocation table
@@ -422,6 +483,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think RQ-019 + RQ-020 Integration | ✅ RQ-019+020 COMPLETE; PD-109+113 RESOLVED; CD-016 corrected (gemini-embedding-001); 7 GLOSSARY terms added |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Full Implementation + DeepSeek V3.2 | ✅ PD-114, CD-016, RQ-019-020, PD-113; GLOSSARY + ROADMAP updated |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think Integration | ✅ RQ-012 + RQ-016 COMPLETE with schemas, prompts, protocols |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | psyOS Documentation | ✅ CD-015 confirmed, RQ-012-018 + PD-108-112 added, ROADMAP + GLOSSARY updated |
@@ -457,8 +519,8 @@ Full implementation confirmed (not phased). DeepSeek V3.2 documented as primary 
 |-------------------|--------|------------------|
 | RQ-012 (Fractal Trinity) | ✅ COMPLETE | pgvector schema, Triangulation Protocol, Chronotype-JITAI Matrix |
 | RQ-016 (Council AI) | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol, Audiobook Pattern |
-| RQ-019 (pgvector Implementation) | 🔴 NEEDS RESEARCH | NEW — Embedding infrastructure |
-| RQ-020 (Treaty-JITAI Integration) | 🔴 NEEDS RESEARCH | NEW — How treaties override JITAI |
+| RQ-019 (pgvector Implementation) | ✅ COMPLETE | gemini-embedding-001, HNSW index, Null-on-Update trigger, Edge Function |
+| RQ-020 (Treaty-JITAI Integration) | ✅ COMPLETE | json_logic_dart, TreatyEngine class, 5-level priority stack, breach escalation |
 | RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — |
 | RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — |
 | RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | — |

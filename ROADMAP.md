@@ -16,14 +16,20 @@
 |----------|-------|----------|-----------|
 | **Real-time Voice (Sherlock)** | Gemini 3 Flash | `gemini-3-flash-preview` | Latency-critical |
 | **Real-time Voice (TTS)** | Gemini 2.5 Flash TTS | `gemini-2.5-flash-preview-tts` | Quality, SSML |
+| **Embedding Generation** | **gemini-embedding-001** | `gemini-embedding-001` | Purpose-built, Matryoshka, 3072-dim |
 | **Council AI Scripts** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Complex reasoning, cost-effective |
 | **Root Psychology Synthesis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Deep analysis |
-| **Embedding Generation** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Batch processing |
 | **Gap Analysis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Pattern detection |
 | **Native Audio** | Gemini 2.5 Flash Audio | `gemini-2.5-flash-native-audio-preview-12-2025` | Voice input |
 
+**Model Split:**
+- **Gemini**: Real-time voice, TTS, embeddings (latency-critical + purpose-built)
+- **DeepSeek V3.2**: Reasoning tasks (Council AI, Root Synthesis, Gap Analysis)
+- **Hardcoded**: JITAI logic, Treaty enforcement (json_logic_dart)
+
 **Legacy Configuration (Deprecated):**
 - ~~**Analysis Model:** `deepseek-chat`~~ → Now `deepseek-v3.2-chat` (CD-016)
+- ~~**Embedding Model:** text-embedding-004~~ → Now `gemini-embedding-001` (RQ-019)
 
 ---
 
@@ -244,11 +250,15 @@ RQ-018 (Airlock/Priming) ─────┴──→ Phase E = Full psyOS Experi
 
 **Research Status (Updated 05 Jan 2026):**
 1. ~~**RQ-012 + RQ-016** (Fractal Trinity + Council AI)~~ ✅ COMPLETE (Deep Think)
-2. **RQ-019 + RQ-020** (pgvector + Treaty-JITAI — implementation research) 🔴 NEXT
+2. ~~**RQ-019 + RQ-020** (pgvector + Treaty-JITAI)~~ ✅ COMPLETE (Deep Think) — gemini-embedding-001, HNSW, json_logic_dart
 3. **RQ-013** (Identity Topology — needed for conflict detection) 🔴 HIGH
 4. **RQ-014 + RQ-018** (Energy States + Airlock — closely related) 🔴 HIGH
 5. **RQ-015** (Polymorphic Habits — UX enhancement) 🔴 HIGH
 6. **RQ-017** (Constellation UX — visual overhaul) 🔴 HIGH
+
+**Decisions Resolved This Session:**
+- ✅ **PD-109** (Council AI Activation) — 0.7 threshold, 6 turns, keywords confirmed
+- ✅ **PD-113** (Treaty Priority Hierarchy) — 5-level stack, breach escalation confirmed
 
 ---
 

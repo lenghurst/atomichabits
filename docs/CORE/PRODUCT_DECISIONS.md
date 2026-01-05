@@ -1,6 +1,6 @@
 # PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
 
-> **Last Updated:** 05 January 2026 (CD-015 psyOS Architecture, RQ-012 through RQ-018)
+> **Last Updated:** 05 January 2026 (PD-109 + PD-113 RESOLVED, CD-016 updated with gemini-embedding-001)
 > **Purpose:** Central source of truth for product decisions and open questions
 > **Owner:** Product Team (Oliver)
 
@@ -861,13 +861,14 @@ User explicitly chose psyOS despite increased complexity:
 
 ---
 
-### CD-016: AI Model Strategy (DeepSeek V3.2 Integration)
+### CD-016: AI Model Strategy (Multi-Model Architecture)
 | Field | Value |
 |-------|-------|
-| **Decision** | Use DeepSeek V3.2 series for background AI processing; Gemini for real-time voice |
+| **Decision** | Use multi-model architecture: Gemini for voice + embeddings, DeepSeek V3.2 for reasoning |
 | **Status** | CONFIRMED |
 | **Date** | 05 January 2026 |
-| **Rationale** | DeepSeek V3.2 is more cost-effective for complex reasoning tasks; Gemini required for latency-critical voice |
+| **Updated** | 05 January 2026 (Added gemini-embedding-001 for embeddings per RQ-019) |
+| **Rationale** | Each model optimized for specific task characteristics |
 | **Depends On** | CD-015 (psyOS Architecture) |
 | **Blocks** | All AI prompt routing decisions |
 
@@ -876,18 +877,38 @@ The Pact uses a **multi-model architecture** where different AI models are assig
 
 **Model Allocation:**
 
-| Use Case | Model | Rationale |
-|----------|-------|-----------|
-| **Real-time Voice (Sherlock)** | Gemini 3 Flash | Latency-critical; user waiting |
-| **Real-time Voice (TTS)** | Gemini 2.5 Flash TTS | Quality voice synthesis with SSML |
-| **Council AI Script Generation** | **DeepSeek V3.2** | Complex reasoning, cost-effective for single-shot |
-| **Root Psychology Synthesis** | **DeepSeek V3.2** | Deep analysis, not time-critical |
-| **Embedding Generation** | **DeepSeek V3.2** | Batch processing, cost-effective |
-| **Gap Analysis** | **DeepSeek V3.2** | Complex pattern detection |
-| **Conflict Detection** | **DeepSeek V3.2** | Pattern analysis across facets |
-| **JITAI Decision Logic** | Hardcoded | Deterministic, no AI variance needed |
-| **Chronotype-JITAI Matrix** | Hardcoded | Fixed rules, not learned |
-| **Treaty Enforcement** | Hardcoded | Deterministic logic hooks |
+| Use Case | Model | Model ID | Rationale |
+|----------|-------|----------|-----------|
+| **Real-time Voice (Sherlock)** | Gemini 3 Flash | `gemini-3-flash-preview` | Latency-critical; user waiting |
+| **Real-time Voice (TTS)** | Gemini 2.5 Flash TTS | `gemini-2.5-flash-preview-tts` | Quality voice synthesis with SSML |
+| **Embedding Generation** | **gemini-embedding-001** | `gemini-embedding-001` | Purpose-built, Matryoshka support, 3072-dim |
+| **Council AI Script Generation** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Complex reasoning, cost-effective for single-shot |
+| **Root Psychology Synthesis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Deep analysis, not time-critical |
+| **Gap Analysis** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Complex pattern detection |
+| **Conflict Detection** | **DeepSeek V3.2** | `deepseek-v3.2-chat` | Pattern analysis across facets |
+| **JITAI Decision Logic** | Hardcoded | — | Deterministic, no AI variance needed |
+| **Chronotype-JITAI Matrix** | Hardcoded | — | Fixed rules, not learned |
+| **Treaty Enforcement** | Hardcoded | — | Deterministic logic hooks (json_logic_dart) |
+
+---
+
+**Gemini vs DeepSeek Task Split:**
+
+| Task Category | Model | Why |
+|---------------|-------|-----|
+| **Real-time (User Waiting)** | Gemini | Latency-critical |
+| **Embedding Generation** | Gemini gemini-embedding-001 | Purpose-built, Matryoshka, 3072-dim |
+| **Complex Reasoning (Background)** | DeepSeek V3.2 | Cost-effective, high quality |
+| **Deterministic Logic** | Hardcoded | No AI variance needed |
+
+**Why gemini-embedding-001 for Embeddings (RQ-019):**
+- Purpose-built for embeddings (not a general chat model)
+- 3072-dimension vectors with Matryoshka support (can truncate to 768/1536)
+- Replaces deprecated text-embedding-004 (deprecated Jan 14, 2026)
+- +1.9% F1 improvement over previous model
+- Unified multilingual + code support
+
+---
 
 **DeepSeek V3.2 Series:**
 - **Model ID:** `deepseek-v3.2-chat` (or latest in series)
@@ -900,15 +921,22 @@ The Pact uses a **multi-model architecture** where different AI models are assig
 2. **Quality:** For non-realtime tasks, DeepSeek V3.2 provides comparable or better reasoning
 3. **Latency tolerance:** Background tasks don't require sub-second response times
 
+**Why Not DeepSeek for Embeddings:**
+1. **Purpose-built:** gemini-embedding-001 is specifically designed for embeddings
+2. **Matryoshka:** Flexible dimension truncation (3072→1536→768) without re-embedding
+3. **Quality:** Optimized for semantic similarity, not general reasoning
+
+---
+
 **Implementation Notes:**
 ```dart
 // Model routing in ai_model_config.dart
 enum AITask {
   realtimeVoice,      // → Gemini 3 Flash
   voiceSynthesis,     // → Gemini 2.5 Flash TTS
+  embeddingGen,       // → gemini-embedding-001 (NOT DeepSeek)
   councilScript,      // → DeepSeek V3.2
   rootSynthesis,      // → DeepSeek V3.2
-  embeddingGen,       // → DeepSeek V3.2
   gapAnalysis,        // → DeepSeek V3.2
   conflictDetection,  // → DeepSeek V3.2
 }
@@ -919,8 +947,10 @@ String getModelForTask(AITask task) {
       return 'gemini-3-flash-preview';
     case AITask.voiceSynthesis:
       return 'gemini-2.5-flash-preview-tts';
+    case AITask.embeddingGen:
+      return 'gemini-embedding-001';  // Dedicated embedding model
     default:
-      return 'deepseek-v3.2-chat';  // DeepSeek for background tasks
+      return 'deepseek-v3.2-chat';    // DeepSeek for reasoning tasks
   }
 }
 ```
@@ -930,14 +960,14 @@ String getModelForTask(AITask task) {
 |-----------|------------|-------|---------------|
 | Voice Sessions | ~5/user | Gemini 3 Flash | $0.02/user |
 | TTS Generation | ~10/user | Gemini 2.5 TTS | $0.01/user |
+| Embedding Gen | ~0.5/user | gemini-embedding-001 | $0.0001/user |
 | Council Sessions | ~0.5/user | DeepSeek V3.2 | $0.005/user |
 | Root Synthesis | ~0.1/user | DeepSeek V3.2 | $0.001/user |
 | Background Analysis | ~1/user | DeepSeek V3.2 | $0.003/user |
 
 **Migration from Current State:**
-Current `ROADMAP.md` shows:
-- `deepseek-chat` for Analysis Model
-- This confirms to `deepseek-v3.2-chat` (latest series)
+- `deepseek-chat` → `deepseek-v3.2-chat` (latest series)
+- Embedding generation → `gemini-embedding-001` (not DeepSeek)
 
 ---
 
@@ -1644,36 +1674,62 @@ The current Skill Tree (custom-painted) must be replaced by Constellation UX (an
 | Field | Value |
 |-------|-------|
 | **Question** | When should Council AI (roundtable simulation) be triggered vs normal coaching? |
-| **Status** | 🟡 READY FOR DECISION — RQ-016 Research Complete |
+| **Status** | ✅ RESOLVED |
+| **Resolution Date** | 05 January 2026 |
 | **Priority** | **CRITICAL** — Prevents feature gimmickry |
 | **Blocking** | AI prompt architecture, voice session design |
 | **Generated By** | CD-015 (psyOS Architecture) |
-| **Research** | RQ-016 (Council AI) ✅ COMPLETE |
+| **Research** | RQ-016 (Council AI) ✅ COMPLETE + RQ-020 (Treaty-JITAI) ✅ COMPLETE |
 
 **The Risk:**
-Council AI could feel gimmicky if overused or triggered inappropriately. Must be reserved for genuine value moments.
+Council AI could feel gimmicky if overused or triggered inappropriately. Reserved for genuine value moments.
 
-**RQ-016 Research Findings (Deep Think):**
+**Confirmed Activation Rules (RQ-020 Deep Think):**
+
+| Parameter | Confirmed Value | Rationale |
+|-----------|-----------------|-----------|
+| **Tension Threshold** | `0.7` | High enough to avoid spam, low enough to catch real conflicts |
+| **Turn Limit** | `6` per session | Prevents fatigue, keeps sessions focused |
+| **Rate Limit** | `1 auto-summon per 24h per conflict topic` | Prevents notification spam |
+| **Manual Summon** | Unlimited | User always has control |
+
+**Confirmed Trigger Taxonomy:**
 
 | Trigger | Council? | Implementation |
 |---------|----------|----------------|
 | **tension_score > 0.7** | ✅ Auto-Summon | "Your inner council wants to discuss this. Convene?" |
-| **User question with "should I" + multi-facet keywords** | ✅ Auto-Detect | Pattern matching in user input |
+| **User language matches conflict patterns** | ✅ Auto-Detect | Regex: `/(part of me|torn|conflict|versus|vs|sacrificing)/i` |
+| **Guilt/shame + domain pattern** | ✅ Auto-Detect | Regex: `/(guilty|ashamed) about (work|family|rest)/i` |
+| **Decision language** | ✅ Auto-Detect | Regex: `/should i (choose|pick)/i` |
 | **User explicitly summons** | ✅ Yes | "Summon Council" button in UI |
 | **Daily habit conflict** | ❌ No | Use standard coaching |
-| **First major conflict detection** | ✅ Yes | Educational moment |
 
-**Questions Answered by RQ-016:**
-1. ✅ "Life decision" = tension_score > 0.7 OR "should I" pattern
-2. ✅ Both: Text-first (animated script), Voice optional (Audiobook Pattern)
-3. ✅ Fatigue prevention: Max 6 turns per session, once per conflict type per day
-4. ✅ Async Council: Phase 2 feature (notification-based mini-debates)
-5. ✅ Opt-out: "Not Now" on summon prompt; can dismiss Council mid-session
+**Auto-Summon Logic (Dart):**
+```dart
+bool shouldSummonCouncil(String userInput, double tensionScore) {
+  if (tensionScore > 0.7) return true;
 
-**Decision Needed:**
-Confirm the tension_score threshold (0.7) and turn limit (6) from RQ-016.
+  final conflictPatterns = [
+    RegExp(r'(part of me|torn|conflict|versus|vs|sacrificing)', caseSensitive: false),
+    RegExp(r'(guilty|ashamed) about (work|family|rest)', caseSensitive: false),
+    RegExp(r'should i (choose|pick)', caseSensitive: false),
+  ];
 
-**Depends On:** RQ-016 ✅ COMPLETE
+  for (final pattern in conflictPatterns) {
+    if (pattern.hasMatch(userInput)) return true;
+  }
+
+  return false;
+}
+```
+
+**Session Constraints:**
+- Max 6 turns per Council session
+- One auto-summon per conflict topic per 24 hours
+- User can dismiss with "Not Now"
+- User can manually summon anytime via UI
+
+**Depends On:** RQ-016 ✅ COMPLETE, RQ-020 ✅ COMPLETE
 
 ---
 
@@ -1783,41 +1839,89 @@ Voice: "You are a builder. The world is noise. This is the signal."
 | Field | Value |
 |-------|-------|
 | **Question** | How should Treaties interact with and override default JITAI logic? |
-| **Status** | 🔴 PENDING — Requires RQ-020 |
+| **Status** | ✅ RESOLVED |
+| **Resolution Date** | 05 January 2026 |
 | **Priority** | **HIGH** — Core to Council AI value |
 | **Blocking** | Treaty enforcement, JITAI modifications |
 | **Generated By** | RQ-016 (Council AI) Deep Think research |
+| **Research** | RQ-020 (Treaty-JITAI Integration) ✅ COMPLETE |
 
 **The Challenge:**
-Deep Think specified that Treaties are "database objects that override default JITAI logic when specific conditions are met." This creates architectural questions:
+Deep Think specified that Treaties are "database objects that override default JITAI logic when specific conditions are met."
 
-**Key Questions:**
+---
 
-| # | Question | Implications |
-|---|----------|--------------|
-| 1 | **Priority Order**: When do Treaties take precedence over JITAI? | Pipeline architecture |
-| 2 | **Conflict Resolution**: What if two Treaties conflict? | Priority rules |
-| 3 | **Override Scope**: Can Treaties override safety gates (Gottman ratio)? | Therapeutic ethics |
-| 4 | **Breach Threshold**: How many breaches before renegotiation? | User experience |
-| 5 | **Expiration Handling**: What happens when a Treaty expires? | Lifecycle management |
+**Confirmed Priority Hierarchy (5-Level Stack):**
 
-**Proposed Priority Hierarchy:**
+| Rank | Component | Behavior | Example |
+|------|-----------|----------|---------|
+| 1 | **Safety Gates** | ABSOLUTE (Never Overridden) | Gottman ratio, fatigue limits |
+| 2 | **Hard Treaties** | BLOCKING — stops action | "No work travel on Tuesdays" |
+| 3 | **Soft Treaties** | WARNING — reminds but allows | "Try to avoid screens after 9pm" |
+| 4 | **JITAI Algorithm** | DEFAULT — learned interventions | Thompson Sampling selection |
+| 5 | **User Preferences** | PASSIVE — lowest priority | Notification timing preferences |
+
+**Key Insight:** Safety Gates > User Values > AI Optimization > User Preferences
+
+---
+
+**Confirmed JITAI Pipeline Position:**
+
 ```
-1. Safety Gates (Gottman ratio, fatigue limits) — NEVER overridden
-2. Active Treaties (logic_hooks) — Override default JITAI
-3. Standard JITAI logic — Fallback when no Treaty matches
-4. User preferences — Lowest priority
+JITAI Decision Pipeline (Finalized)
+├── 1. Calculate V-O State
+├── 2. Safety Gates (Gottman, fatigue) ← NEVER OVERRIDDEN
+├── 3. ★ TREATY CHECK ★ (Stage 3)
+│   ├── Load active treaties for user
+│   ├── Evaluate logic_hooks against ContextSnapshot
+│   ├── If Hard Treaty matches → BLOCK (override pipeline)
+│   └── If Soft Treaty matches → WARN (continue with reminder)
+├── 4. Optimal Timing Analysis
+├── 5. Quadrant-based Strategy
+├── 6. Hierarchical Bandit Selection
+└── 7. Content Generation (may inject Treaty reminder_text)
 ```
 
-**Proposed Breach → Renegotiation Rules:**
-| Breach Count | Action |
-|--------------|--------|
-| 1 | Log, show reminder |
-| 2 | Log, show "You've broken this Treaty twice" |
-| 3 | Prompt: "This Treaty isn't working. Reconvene Council?" |
-| 5+ | Auto-suspend Treaty, notify user |
+---
 
-**Depends On:** RQ-020 (Treaty-JITAI Integration Architecture)
+**Confirmed Treaty Conflict Resolution:**
+
+| Priority | Rule |
+|----------|------|
+| 1 | **Hard > Soft** — Hard treaties always win |
+| 2 | **Newest > Oldest** — More recent treaty wins ties |
+
+---
+
+**Confirmed Breach → Renegotiation Rules:**
+
+| Breach Count (7 days) | Status | Action |
+|----------------------|--------|--------|
+| 0 | Active | Normal enforcement |
+| 1 | Active | Log only, show gentle reminder |
+| 2 | Active | "You've broken this Treaty twice this week" |
+| **3** | **Probationary** | "This Treaty isn't working. Reconvene Council?" |
+| 4 | Probationary | Continue prompting for renegotiation |
+| 5+ | **Auto-Suspended** | Treaty suspended, user notified |
+
+**Auto-Suspension on Dismiss:**
+If user dismisses renegotiation prompt 3 times:
+- Treaty enters "suspended" status
+- Notification: "Your [Treaty Name] has been paused. Tap to reactivate or delete."
+
+---
+
+**Key Questions Answered:**
+
+| # | Question | Answer | Rationale |
+|---|----------|--------|-----------|
+| 1 | Pipeline position? | **Stage 3 (Post-Safety)** | Safety Gates must remain absolute |
+| 2 | Conflict resolution? | **Hard > Soft, then Newest > Oldest** | Clear priority rules |
+| 3 | Override safety gates? | **NEVER** | Therapeutic ethics |
+| 4 | Breach threshold? | **3 breaches in 7 days → Probationary** | Balanced enforcement |
+| 5 | Expired treaties? | Status = 'expired', retain for history | Clean lifecycle |
+
+**Depends On:** RQ-020 ✅ COMPLETE
 
 ---
 

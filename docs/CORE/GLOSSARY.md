@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added Deep Think research terms: Triangulation Protocol, Treaty, Single-Shot Playwright, etc.)
+> **Last Updated:** 05 January 2026 (Added RQ-019/020 terms: gemini-embedding-001, HNSW, JSON Logic, TreatyEngine, etc.)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -472,7 +472,7 @@ Sherlock (as Father): "'But at what cost? They won't be little forever.'"
 ---
 
 ### DeepSeek V3.2
-**Definition:** The cost-effective AI model series used for background processing tasks in The Pact.
+**Definition:** The cost-effective AI model series used for background **reasoning** tasks in The Pact.
 
 **Model ID:** `deepseek-v3.2-chat`
 
@@ -481,9 +481,10 @@ Sherlock (as Father): "'But at what cost? They won't be little forever.'"
 |------|-------------------|
 | Council AI Scripts | Complex reasoning, not latency-critical |
 | Root Psychology Synthesis | Deep analysis |
-| Embedding Generation | Batch processing |
 | Gap Analysis | Pattern detection |
 | Conflict Detection | Cross-facet analysis |
+
+**Note:** Embedding generation uses `gemini-embedding-001`, not DeepSeek. See CD-016.
 
 **Why Not Gemini for Everything:**
 1. **Cost:** DeepSeek V3.2 is significantly cheaper
@@ -493,6 +494,191 @@ Sherlock (as Father): "'But at what cost? They won't be little forever.'"
 **Status:** ✅ CONFIRMED — CD-016
 
 **Code References:** Model routing in `ai_model_config.dart` (to be implemented)
+
+---
+
+## Deep Think Implementation Terms (RQ-019 + RQ-020)
+
+> **Reference:** These terms were defined by Google Deep Think research on 05 January 2026 for RQ-019 (pgvector Implementation) and RQ-020 (Treaty-JITAI Integration).
+
+### gemini-embedding-001
+**Definition:** Google's dedicated embedding model used for semantic vector generation in psyOS.
+
+**Model ID:** `gemini-embedding-001`
+
+**Key Features:**
+| Feature | Value |
+|---------|-------|
+| Dimensions | 3072 (default) |
+| Matryoshka | Truncatable to 768/1536/3072 |
+| Languages | Unified multilingual + code |
+| F1 Score | +1.9% vs text-embedding-004 |
+
+**Replaces:** `text-embedding-004` (deprecated January 14, 2026)
+
+**Use Cases:**
+- `root_embedding` in psychometric_roots table
+- `resistance_embedding` in psychological_manifestations table
+- Semantic similarity for Triangulation Protocol
+- Cross-facet pattern detection
+
+**Why Not DeepSeek:**
+- gemini-embedding-001 is purpose-built for embeddings
+- Matryoshka support allows flexible dimension truncation
+- DeepSeek V3.2 is for reasoning, not embedding
+
+**Status:** ✅ CONFIRMED — CD-016, RQ-019
+
+**Code References:** Edge Function in `supabase/functions/embed-manifestation/` (to be implemented)
+
+---
+
+### Matryoshka Representation Learning (MRL)
+**Definition:** A technique that allows embedding vectors to be truncated to smaller dimensions without re-embedding, like Russian nesting dolls.
+
+**How It Works:**
+```
+Full embedding:   3072 dimensions (best quality)
+                    ↓ truncate
+Medium embedding: 1536 dimensions (good quality, smaller)
+                    ↓ truncate
+Compact embedding:  768 dimensions (acceptable quality, smallest)
+```
+
+**Benefits:**
+- Store full 3072-dim embeddings once
+- Query with 768-dim for speed (90%+ of similarity)
+- No re-embedding needed when changing dimension requirements
+
+**Status:** ✅ CONFIRMED — RQ-019
+
+**Code References:** Used with gemini-embedding-001
+
+---
+
+### HNSW (Hierarchical Navigable Small World)
+**Definition:** The vector index type used for fast approximate nearest neighbor (ANN) search in pgvector.
+
+**Why HNSW over IVFFlat:**
+| Factor | HNSW | IVFFlat |
+|--------|------|---------|
+| Query Speed | Faster at our scale | Slower |
+| Build Time | Slower | Faster |
+| Memory | Higher | Lower |
+| Accuracy | Higher | Lower |
+
+**Tuning Parameters:**
+| Parameter | Value | Meaning |
+|-----------|-------|---------|
+| `m` | 16 | Connections per node |
+| `ef_construction` | 64 | Build-time accuracy |
+| `vector_cosine_ops` | — | Cosine similarity |
+
+**SQL:**
+```sql
+CREATE INDEX ON psychological_manifestations
+USING hnsw (resistance_embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+
+**Status:** ✅ CONFIRMED — RQ-019
+
+**Code References:** Supabase migration (to be implemented)
+
+---
+
+### JSON Logic
+**Definition:** A standard grammar for expressing logical rules as JSON, used for Treaty logic hooks.
+
+**Why JSON Logic:**
+- Standardized (jsonlogic.com)
+- Safe (no eval() security risks)
+- Expressive (covers most use cases)
+- Library exists: `json_logic_dart`
+
+**Example:**
+```json
+{
+  "and": [
+    { "==": [{ "var": "day_of_week" }, "tuesday"] },
+    { ">=": [{ "var": "hour" }, 18] }
+  ]
+}
+```
+
+**Supported Operators:**
+| Category | Operators |
+|----------|-----------|
+| Logic | `and`, `or`, `!`, `if` |
+| Comparison | `==`, `!=`, `>`, `>=`, `<`, `<=` |
+| Data | `var`, `missing` |
+
+**Status:** ✅ CONFIRMED — RQ-020
+
+**Code References:** `json_logic_dart` package, TreatyEngine class (to be implemented)
+
+---
+
+### TreatyEngine
+**Definition:** The Dart class responsible for evaluating Treaties against the current context and returning appropriate actions.
+
+**Responsibilities:**
+1. Load active treaties for user
+2. Evaluate logic_hooks against ContextSnapshot
+3. Resolve conflicts (Hard > Soft, Newest > Oldest)
+4. Return action (block, warn, log, none)
+
+**Key Methods:**
+```dart
+Treaty? checkTreaties(ContextSnapshot context, List<Treaty> activeTreaties)
+TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
+```
+
+**Pipeline Position:** Stage 3 (Post-Safety, Pre-Optimization)
+
+**Status:** ✅ DESIGN COMPLETE — RQ-020
+
+**Code References:** `lib/domain/services/treaty_engine.dart` (to be implemented)
+
+---
+
+### Treaty Priority Stack
+**Definition:** The 5-level hierarchy determining which system takes precedence in JITAI decision-making.
+
+**Stack (Highest to Lowest):**
+| Rank | Component | Behavior |
+|------|-----------|----------|
+| 1 | **Safety Gates** | ABSOLUTE — Never overridden |
+| 2 | **Hard Treaties** | BLOCKING — Stops action |
+| 3 | **Soft Treaties** | WARNING — Reminds but allows |
+| 4 | **JITAI Algorithm** | DEFAULT — Learned interventions |
+| 5 | **User Preferences** | PASSIVE — Lowest priority |
+
+**Key Insight:** Safety > Values > AI > Preferences
+
+**Status:** ✅ CONFIRMED — PD-113
+
+**Code References:** TreatyEngine (to be implemented)
+
+---
+
+### Breach Escalation
+**Definition:** The process by which repeated Treaty violations lead to renegotiation or suspension.
+
+**Escalation Ladder:**
+| Breaches (7 days) | Status | Action |
+|-------------------|--------|--------|
+| 0 | Active | Normal |
+| 1 | Active | Gentle reminder |
+| 2 | Active | "Broken twice" message |
+| **3** | **Probationary** | "Reconvene Council?" |
+| 5+ | **Suspended** | Treaty paused |
+
+**Auto-Suspend Trigger:** Dismiss renegotiation prompt 3 times
+
+**Status:** ✅ CONFIRMED — PD-113, RQ-020
+
+**Code References:** TreatyEngine (to be implemented)
 
 ---
 
