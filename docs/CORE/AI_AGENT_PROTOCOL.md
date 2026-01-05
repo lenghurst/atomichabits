@@ -12,6 +12,91 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 
 ---
 
+## Decision Flow Diagram (Reasoning Order)
+
+**All decisions flow through this hierarchy. Never skip levels.**
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           LEVEL 0: CONTEXT ACQUISITION                        │
+│                                                                              │
+│  Before ANY decision, read in this order:                                    │
+│  1. AI_HANDOVER.md (what was done)                                          │
+│  2. PRODUCT_DECISIONS.md (what's decided/pending)                           │
+│  3. RESEARCH_QUESTIONS.md (what's being researched)                         │
+│  4. GLOSSARY.md (terminology = shared vocabulary)                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         LEVEL 1: DECISION CLASSIFICATION                      │
+│                                                                              │
+│  What type of decision is this?                                             │
+│                                                                              │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐          │
+│  │   PHILOSOPHY    │    │    DIRECTION    │    │ IMPLEMENTATION  │          │
+│  │  (Why we do X)  │    │ (What we build) │    │   (How we do)   │          │
+│  │                 │    │                 │    │                 │          │
+│  │ → Needs human   │    │ → Derived from  │    │ → Agent can     │          │
+│  │   confirmation  │    │   philosophy    │    │   decide        │          │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘          │
+│         ↓                      ↓                      ↓                      │
+│  Log in PRODUCT_       Update ROADMAP.md      Execute + Document            │
+│  DECISIONS.md as                                                            │
+│  PENDING                                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         LEVEL 2: DEPENDENCY CHECK                             │
+│                                                                              │
+│  Does this decision depend on another?                                       │
+│                                                                              │
+│  YES → Find the upstream decision                                            │
+│      → Is it CONFIRMED? → Proceed                                            │
+│      → Is it PENDING? → STOP. Document dependency. Wait for human.          │
+│      → Does it need RESEARCH? → Add to RESEARCH_QUESTIONS.md                │
+│                                                                              │
+│  NO → Proceed to Level 3                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         LEVEL 3: IMPACT ANALYSIS                              │
+│                                                                              │
+│  What does this decision affect?                                             │
+│                                                                              │
+│  CHECK EACH LAYER:                                                           │
+│  □ Layer 1 (Evidence Engine) — Database/schema changes?                      │
+│  □ Layer 2 (Sherlock) — Onboarding extraction changes?                       │
+│  □ Layer 3 (Living Garden) — UI visualization changes?                       │
+│  □ Layer 4 (CLI) — Interaction pattern changes?                              │
+│  □ Layer 5 (Brain) — AI analysis changes?                                    │
+│  □ JITAI — Intervention timing/content changes?                              │
+│  □ Identity Coach — Recommendation logic changes?                            │
+│  □ Content Library — New message variants needed?                            │
+│                                                                              │
+│  → Document ALL impacts in IMPACT_ANALYSIS.md                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         LEVEL 4: EXECUTE + DOCUMENT                           │
+│                                                                              │
+│  1. Make it work (functionality first)                                       │
+│  2. Make it right (refactor after working)                                   │
+│  3. Make it documented (update relevant docs)                                │
+│  4. Make it committed (atomic commits, clear messages)                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Decision Type Quick Reference:**
+
+| Decision Type | Example | Who Decides | Document |
+|--------------|---------|-------------|----------|
+| Philosophy | "Should archetypes be dynamic?" | Human | PRODUCT_DECISIONS.md |
+| Direction | "Add Social Leaderboard to MVP" | Human + Agent | ROADMAP.md |
+| Implementation | "Use Thompson Sampling for bandit" | Agent | Code + AI_CONTEXT.md |
+| Terminology | "What is an 'Identity Seed'?" | Define first | GLOSSARY.md |
+
+---
+
 ## Protocol 1: Research-to-Roadmap Cascade (MANDATORY)
 
 ### Trigger

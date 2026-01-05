@@ -33,6 +33,71 @@ IMPLEMENTATION DETAILS (Tier 3)
 
 ## Confirmed Decisions
 
+### Decision Dependency Map
+
+**All confirmed decisions organized by dependency tier:**
+
+```
+TIER 0: FOUNDATIONAL (No dependencies — must be decided first)
+├── CD-001: App Name & Branding
+└── CD-002: AI as Default Witness
+
+TIER 1: CORE ARCHITECTURE (Blocks most other decisions)
+└── CD-005: 6-Dimension Archetype Model
+    └── Blocks: CD-006, CD-007, CD-008, CD-010
+
+TIER 2: ARCHITECTURE EXTENSIONS (Depend on Tier 1)
+├── CD-006: GPS Permission Usage → Depends on CD-005
+├── CD-007: 6+1 Dimension Model → Extends CD-005
+└── CD-008: Identity Development Coach → Uses CD-005 dimensions
+    └── Blocks: CD-009, CD-011
+
+TIER 3: SUPPORTING SYSTEMS (Depend on Tier 2)
+├── CD-009: Content Library → Supports CD-008
+├── CD-010: Retention Tracking → Uses CD-005 dimensions
+└── CD-011: Architecture Ramifications → Implements CD-008
+
+TIER 4: UX/ONBOARDING (Depends on Sherlock design)
+└── CD-003: Sherlock Before Payment
+
+TIER 5: PROCESS & QUALITY (Standalone — can be done anytime)
+├── CD-012: Git Workflow Protocol
+├── CD-013: UI Logic Separation Principle
+└── CD-014: Core File Creation Guardrails
+
+TIER 6: DEPRIORITIZED
+└── CD-004: Conversational CLI (rejected)
+```
+
+**Reading Order:** If you're new to this project, read Tier 0 → Tier 1 → Tier 2 to understand the core philosophy. Tier 5 decisions apply to how you work, not what you build.
+
+### Quick Reference Table
+
+| CD# | Decision | Tier | Depends On | Blocks | Impact |
+|-----|----------|------|------------|--------|--------|
+| **CD-001** | App Name & Branding | 0 | — | Branding everywhere | LOW (cosmetic) |
+| **CD-002** | AI as Default Witness | 0 | — | Witness UX | MEDIUM |
+| **CD-003** | Sherlock Before Payment | 4 | Sherlock design | Onboarding flow | HIGH (conversion) |
+| **CD-004** | Conversational CLI | 6 | — | — | NONE (rejected) |
+| **CD-005** | 6-Dimension Model | 1 | — | CD-006,7,8,10 | **CRITICAL** (core) |
+| **CD-006** | GPS Permission Usage | 2 | CD-005 | Social Rhythmicity | MEDIUM |
+| **CD-007** | 6+1 Dimension Model | 2 | CD-005 | Social features | MEDIUM |
+| **CD-008** | Identity Development Coach | 2 | CD-005 | CD-009,11 | **CRITICAL** (value prop) |
+| **CD-009** | Content Library | 3 | CD-008 | JITAI effectiveness | HIGH |
+| **CD-010** | Retention Tracking | 3 | CD-005 | Analytics | MEDIUM |
+| **CD-011** | Architecture Ramifications | 3 | CD-008 | Onboarding, Dashboard | HIGH |
+| **CD-012** | Git Workflow Protocol | 5 | — | — | LOW (process) |
+| **CD-013** | UI Logic Separation | 5 | — | — | MEDIUM (code quality) |
+| **CD-014** | Core File Guardrails | 5 | — | — | LOW (docs) |
+
+**Impact Legend:**
+- **CRITICAL:** Foundational to product identity; changes ripple everywhere
+- **HIGH:** Affects user experience or revenue significantly
+- **MEDIUM:** Important for quality/consistency but localized impact
+- **LOW:** Process/cosmetic; can be changed without major consequences
+
+---
+
 ### CD-001: App Name & Branding
 | Field | Value |
 |-------|-------|
@@ -227,31 +292,134 @@ ASPIRATIONAL IDENTITY (New — Who they want to become)
 - Recommendation Widget: "Try this habit today"
 - Coherence Widget: "Alignment with stated values"
 
-### CD-012: Git Branching Protocol
+### CD-012: Git Workflow Protocol
 | Field | Value |
 |-------|-------|
-| **Decision** | All AI agents use feature branches; human merges to main |
+| **Decision** | All AI agents push directly to main (linear workflow) |
+| **Status** | CONFIRMED (Revised) |
+| **Date** | 05 January 2026 |
+| **Rationale** | User works linearly with one agent at a time; branches add unnecessary friction |
+
+**Workflow:**
+```
+Agent works → Commits to main → Pushes to main → Next agent continues
+```
+
+**Why Direct to Main:**
+- Linear workflow (one agent at a time, not parallel)
+- TDD is inherent in the workflow (tests run before each commit)
+- Reduces merge friction and context-switching overhead
+- Human is always in the loop directing work
+
+**Safeguards:**
+1. **Pre-commit checks:** Run tests/linters before committing
+2. **Atomic commits:** Small, focused commits with clear messages
+3. **Human oversight:** User directs all work, no autonomous multi-agent scenarios
+4. **Rollback ready:** Git history allows easy revert if needed
+
+**Exception:** If human requests a feature branch for experimental work, create one.
+
+**Agent Responsibilities:**
+- Commit frequently (atomic changes)
+- Write clear commit messages
+- Run tests before pushing
+- Never force-push to main
+
+### CD-013: UI Logic Separation Principle
+| Field | Value |
+|-------|-------|
+| **Decision** | UI files contain ONLY presentation; all logic lives in services/providers |
 | **Status** | CONFIRMED |
 | **Date** | 05 January 2026 |
-| **Rationale** | Safety, review gate, conflict prevention |
+| **Rationale** | Enables "vibe coding" (rapid UI iteration), testability, and AI-assisted development |
 
-**Branch Naming:**
-- Claude: `claude/{task-description}-{session-id}`
-- Gemini: `gemini/{task-description}-{session-id}`
-- ChatGPT: N/A (research only, no code)
+**The Principle:**
+```
+UI Layer (screens, widgets)     →  PRESENTATION ONLY
+├── Layout and styling          →  ✅ Belongs here
+├── User input handling         →  ✅ Belongs here (call provider methods)
+├── Navigation                  →  ✅ Belongs here
+├── Conditional rendering       →  ✅ Belongs here (based on provider state)
+│
+├── Business logic              →  ❌ Move to service/provider
+├── Data transformation         →  ❌ Move to service/provider
+├── API calls                   →  ❌ Move to repository
+├── State mutations             →  ❌ Move to provider
+└── Calculations                →  ❌ Move to service
+```
 
-**Merge Protocol:**
-1. Agent pushes to feature branch
-2. Human reviews changes
-3. Human merges to main (or requests changes)
-4. For docs-only changes: Human can fast-merge without detailed review
+**Why This Matters for AI Development:**
+1. **Vibe Coding:** UI changes don't break logic; logic changes don't break UI
+2. **Testing:** Services/providers can be unit tested without UI
+3. **AI Assistance:** AI can modify UI without understanding business rules
+4. **Parallel Work:** UI and logic can evolve independently
 
-**Why Not Direct to Main:**
-- Multiple agents working simultaneously → conflicts
-- No review gate → bad commits affect everyone
-- Harder to rollback
+**Current Pattern:**
+```dart
+// ✅ CORRECT: UI calls provider, provider handles logic
+class HabitCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final habit = ref.watch(habitProvider);
+    return GestureDetector(
+      onTap: () => ref.read(habitProvider.notifier).toggleComplete(),
+      child: Text(habit.name),
+    );
+  }
+}
 
-**Note:** This is a protocol decision, not a Claude Code limitation. Claude CAN push to main if instructed.
+// ❌ WRONG: Logic in UI file
+class HabitCard extends StatelessWidget {
+  void _handleTap() {
+    final today = DateTime.now();
+    if (!habit.isCompleteToday(today)) {
+      habit.completions.add(today);
+      _updateStreak();  // Logic should not be here
+      _saveToDatabase(); // API call should not be here
+    }
+  }
+}
+```
+
+**Research Task:** See RQ-005 for best practices on articulating this principle for AI-assisted development.
+
+### CD-014: Core File Creation Guardrails
+| Field | Value |
+|-------|-------|
+| **Decision** | Agents must NOT create new MD files without explicit approval; use existing 11 Core files |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | Prevents doc sprawl; ensures all information flows to the right place |
+
+**The Rule:**
+```
+Before creating a new .md file, ask:
+1. Does this belong in an existing Core file? → YES → Add it there
+2. Is this truly new documentation? → ASK HUMAN
+3. Is this temporary/task-specific? → Don't create file; use TODO comments or handover notes
+```
+
+**Core File Purposes (Use These First):**
+
+| Information Type | Where It Belongs |
+|-----------------|------------------|
+| What was done this session | AI_HANDOVER.md |
+| Product philosophy/decisions | PRODUCT_DECISIONS.md |
+| Term definitions | GLOSSARY.md |
+| Research status/findings | RESEARCH_QUESTIONS.md |
+| Agent behavioral rules | AI_AGENT_PROTOCOL.md |
+| Decision impact tracing | IMPACT_ANALYSIS.md |
+| Identity Coach details | IDENTITY_COACH_SPEC.md |
+| Architecture diagrams | AI_CONTEXT.md |
+| Task priorities | ROADMAP.md |
+| Version history | CHANGELOG.md |
+| Project overview | README.md |
+
+**When New Files Are OK:**
+- Explicit human request: "Create a spec for X"
+- ADR (Architecture Decision Record): `/docs/architecture/ADR-NNN.md`
+- Technical guide: `/docs/{topic}.md`
+- Audit report: `/docs/audits/{date}-{topic}.md`
 
 ---
 

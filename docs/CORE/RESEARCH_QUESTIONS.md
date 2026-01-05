@@ -204,6 +204,93 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 
 ---
 
+### RQ-005: UI Logic Separation for AI-Assisted Development
+
+| Field | Value |
+|-------|-------|
+| **Question** | What are best practices for articulating UI/logic separation that enables effective "vibe coding"? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Blocking** | CD-013 refinement |
+| **Assigned** | Any agent |
+
+**Context:**
+The Pact uses Flutter with Riverpod for state management. We want UI files to contain ONLY presentation logic so that:
+1. AI agents can safely modify UI without breaking business logic
+2. Business logic can be tested without UI
+3. "Vibe coding" (rapid UI iteration) is safe
+
+**Research Questions:**
+1. What patterns do production Flutter apps use for strict UI/logic separation?
+2. How do other AI-assisted development teams articulate this principle?
+3. What linting rules or code review checks can enforce this?
+4. How does this apply to animation logic (UI or business)?
+5. Where does navigation routing logic belong?
+
+**Output Expected:**
+- Code pattern examples (✅ correct vs ❌ wrong)
+- Linting configuration recommendations
+- Boundary definitions (what counts as "UI" vs "logic")
+
+---
+
+### RQ-006: Identity Roadmap Architecture (User Aspiration → Habit Recommendation)
+
+| Field | Value |
+|-------|-------|
+| **Question** | How do we architect the full flow from user aspirations to AI-guided habit recommendations? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Blocking** | CD-008 (Identity Coach), CD-011 (Architecture Ramifications) |
+| **Assigned** | Any agent |
+| **Priority** | HIGH — Core value proposition |
+
+**The Required Flow:**
+```
+User shares dreams/fears
+    → AI constructs Identity Roadmap
+    → App recommends habits/rituals
+    → Tracks progress
+    → JITAI intervenes when at risk
+    → Identity Coach guides growth
+```
+
+**Research Questions:**
+1. **Aspiration Extraction:** How should Sherlock extract aspirational identity (not just Holy Trinity blocks)?
+2. **Roadmap Construction:** What data structure represents an "Identity Roadmap"?
+3. **Habit Matching:** How do we map aspirations to habit recommendations?
+4. **Progress Tracking:** What metrics indicate "progress toward aspirational self"?
+5. **Regression Detection:** How do we detect when someone is moving AWAY from their aspiration?
+6. **Coherence Check:** How do we detect when current habits don't match stated aspirations?
+
+**Dependencies (Must Be Researched In Order):**
+```
+1. Aspiration Extraction (Sherlock changes)
+   └── Needs: New onboarding questions, prompt updates
+
+2. Identity Roadmap Data Model
+   └── Needs: Schema design, storage strategy
+   └── Depends on: #1 (what data to store)
+
+3. Habit Matching Algorithm
+   └── Needs: Recommendation logic
+   └── Depends on: #2 (what to match against)
+
+4. Progress/Regression Detection
+   └── Needs: Metric definitions
+   └── Depends on: #3 (what to measure against)
+
+5. Coherence Engine
+   └── Needs: Gap analysis logic
+   └── Depends on: #4 (what signals to use)
+```
+
+**Output Expected:**
+- Data model for Identity Roadmap
+- Algorithm for habit-to-aspiration matching
+- Metrics for progress/regression
+- Integration points with existing JITAI
+
+---
+
 ## Open Questions for Human Decision
 
 These require Oliver's input before implementation:

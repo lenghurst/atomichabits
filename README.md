@@ -126,14 +126,53 @@ A document is "Core" if it meets ALL criteria:
 
 #### Cross-Doc Consistency Checks
 
-Before ending any session, verify:
+**All 11 Core Documents Categorized by Update Frequency:**
+
+| Doc | Category | Static/Dynamic | Update Trigger |
+|-----|----------|----------------|----------------|
+| **README.md** | Entry Point | Semi-Static | Only when fundamentals change |
+| **CHANGELOG.md** | History | Append-Only | Every release |
+| **GLOSSARY.md** | Terminology | Mostly Static | New term introduced |
+| **AI_AGENT_PROTOCOL.md** | Behavioral Rules | Mostly Static | Protocol changes |
+| **AI_CONTEXT.md** | Technical Truth | Dynamic | Architecture changes |
+| **ROADMAP.md** | Direction | Dynamic | Priority changes |
+| **PRODUCT_DECISIONS.md** | Philosophy | Dynamic | Decisions made/needed |
+| **RESEARCH_QUESTIONS.md** | Research | Dynamic | Research progresses |
+| **IMPACT_ANALYSIS.md** | Traceability | Dynamic | After research/decisions |
+| **AI_HANDOVER.md** | Session Context | Ephemeral | Every session end |
+| **IDENTITY_COACH_SPEC.md** | Specification | Dynamic | Spec evolves |
+
+**Before Ending Session — Full Consistency Check:**
+
 ```
-□ Decisions in PRODUCT_DECISIONS.md match code behavior
-□ RESEARCH_QUESTIONS.md status reflects actual state
-□ AI_CONTEXT.md architecture diagrams are current
-□ ROADMAP.md priorities align with confirmed decisions
-□ GLOSSARY.md contains all terms used in other docs
+□ TIER 1 (Always Check):
+  □ AI_HANDOVER.md — Updated with session summary
+  □ PRODUCT_DECISIONS.md — Any new decisions documented
+  □ RESEARCH_QUESTIONS.md — Status reflects actual state
+
+□ TIER 2 (If Relevant):
+  □ IMPACT_ANALYSIS.md — Cascade effects logged (if research/decisions made)
+  □ ROADMAP.md — Priorities align with confirmed decisions
+  □ AI_CONTEXT.md — Architecture diagrams current (if code changes)
+  □ GLOSSARY.md — Contains all terms used in other docs
+
+□ TIER 3 (Rarely):
+  □ AI_AGENT_PROTOCOL.md — Only if behavioral rules change
+  □ IDENTITY_COACH_SPEC.md — Only if Identity Coach spec evolves
+  □ README.md — Only if fundamental project info changes
+  □ CHANGELOG.md — Only on release
 ```
+
+**Cross-Reference Matrix (What Must Stay Aligned):**
+
+| If This Changes... | ...Update These |
+|--------------------|-----------------|
+| Product Decision confirmed | PRODUCT_DECISIONS.md → ROADMAP.md → IMPACT_ANALYSIS.md |
+| Research concludes | RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md → PRODUCT_DECISIONS.md |
+| Architecture changes | AI_CONTEXT.md → README.md (if fundamental) |
+| New term introduced | GLOSSARY.md → All docs using the term |
+| Feature implemented | ROADMAP.md (mark complete) → CHANGELOG.md (on release) |
+| Session ends | AI_HANDOVER.md (always) |
 
 #### Reality Alignment Rules
 
