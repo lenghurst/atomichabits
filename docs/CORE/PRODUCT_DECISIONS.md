@@ -1,6 +1,6 @@
 # PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 05 January 2026 (Expanded with codebase context)
 > **Purpose:** Central source of truth for product decisions and open questions
 > **Owner:** Product Team (Oliver)
 
@@ -84,6 +84,34 @@ These decisions BLOCK other work. They must be resolved first.
 | **Blocking** | Evolution logic, coaching personalization, JITAI seeding |
 | **Current State** | 6 hardcoded archetypes with PERFECTIONIST as fallback |
 
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/domain/services/archetype_registry.dart` | 174-210 | Static registry with 6 archetypes, `get()` defaults to PERFECTIONIST |
+| `lib/domain/entities/psychometric_profile.dart` | 23-24 | `failureArchetype` stored as nullable String |
+| `lib/domain/services/archetype_evolution_service.dart` | — | Evolution logic (assumes first classification is correct) |
+
+**Current Implementation Details:**
+```dart
+// archetype_registry.dart:185-187
+static Archetype get(String id) {
+  return _archetypes[id.toUpperCase()] ?? _archetypes['PERFECTIONIST']!;
+}
+```
+- **Problem:** Unknown archetypes silently become PERFECTIONIST
+- **Problem:** User never sees/confirms their archetype
+- **Problem:** Sherlock extracts freeform text, forced into 6 buckets
+
+**The 6 Hardcoded Archetypes:**
+| ID | Display Name | Coaching Style | Core Weakness |
+|----|--------------|----------------|---------------|
+| PERFECTIONIST | The Perfectionist | Supportive | Quits after one mistake |
+| REBEL | The Rebel | Socratic | Resists being told what to do |
+| PROCRASTINATOR | The Procrastinator | Tough Love | Delays until pressure |
+| OVERTHINKER | The Overthinker | Supportive | Analysis paralysis |
+| PLEASURE_SEEKER | The Pleasure Seeker | Supportive | Follows dopamine |
+| PEOPLE_PLEASER | The People Pleaser | Supportive | Needs external validation |
+
 **Options:**
 | Option | Description | Pros | Cons |
 |--------|-------------|------|------|
@@ -96,6 +124,8 @@ These decisions BLOCK other work. They must be resolved first.
 1. Do users need to "identify" with their archetype label?
 2. Is the archetype for internal use (coaching) or external display?
 3. Should archetype change over time or be permanent?
+4. **NEW:** What happens when Sherlock extracts something that doesn't map cleanly to 6 buckets?
+5. **NEW:** Should we show users their archetype and let them confirm/correct it?
 
 ---
 
@@ -106,6 +136,43 @@ These decisions BLOCK other work. They must be resolved first.
 | **Status** | PENDING |
 | **Blocking** | Evolution milestones, UI messaging, gamification strategy |
 | **Current State** | Code uses streaks heavily; messaging says "streaks are vanity metrics" |
+
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/data/services/consistency_service.dart` | 1-525 | Implements "Graceful Consistency" philosophy |
+| `lib/data/models/consistency_metrics.dart` | — | Data model for metrics |
+| `lib/data/models/habit.dart` | — | `currentStreak`, `longestStreak` properties |
+
+**Current Implementation (PHILOSOPHICAL TENSION):**
+
+The **code** implements a sophisticated "Graceful Consistency" system:
+```dart
+// consistency_service.dart:25-31
+/// Formula:
+/// - Base (40%): 7-day rolling average
+/// - Recovery Bonus (20%): Quick recovery count
+/// - Stability Bonus (20%): Consistency of completion times
+/// - Never Miss Twice Bonus (20%): Single-miss recovery rate
+```
+
+But the **UI and habits model** still use traditional streaks:
+- `habit.currentStreak` — consecutive days
+- `habit.longestStreak` — historical best
+- 21/66/100 day milestones (hardcoded in UI)
+
+**Key Metrics Already Implemented:**
+| Metric | What It Measures | Philosophy |
+|--------|------------------|------------|
+| `gracefulScore` | 0-100 composite score | Rewards recovery, not perfection |
+| `neverMissTwiceRate` | % of single-miss recoveries | "Missing once is human, twice is a pattern" |
+| `showUpRate` | Total days / possible days | "Identity votes" concept |
+| `quickRecoveryCount` | Bounced back within 1 day | Resilience tracking |
+
+**The Philosophical Conflict:**
+- `prompt_factory.dart:186-189` says: "Streaks are vanity metrics. We measure rolling consistency."
+- But `habit.dart` still has `currentStreak` as primary metric
+- UI shows streak counts prominently
 
 **Options:**
 | Option | Description | Pros | Cons |
@@ -119,6 +186,9 @@ These decisions BLOCK other work. They must be resolved first.
 1. What does our philosophy say about failure recovery?
 2. How do we handle the "Never Miss Twice" moment?
 3. Should evolution milestones use consecutive or total days?
+4. **NEW:** Do we deprecate `currentStreak` in favour of `gracefulScore`?
+5. **NEW:** Should the UI prioritise "7-day rolling average" over "consecutive streak"?
+6. **NEW:** How do we migrate existing users who are emotionally attached to their streaks?
 
 ---
 
@@ -130,11 +200,61 @@ These decisions BLOCK other work. They must be resolved first.
 | **Blocking** | Sherlock prompt design, personalization strategy |
 | **Current State** | Implemented but extraction quality is uncertain |
 
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/domain/entities/psychometric_profile.dart` | 17-29 | Holy Trinity field definitions |
+| `lib/data/services/ai/prompt_factory.dart` | 119-170 | How Holy Trinity is used in coaching prompts |
+| `lib/config/ai_prompts.dart` | 717-745 | Sherlock extraction prompt |
+
+**The Holy Trinity Model:**
+```dart
+// psychometric_profile.dart:17-29
+// 1. Anti-Identity (Fear) - Day 1 Activation
+final String? antiIdentityLabel;     // e.g., "The Sleepwalker", "The Ghost"
+final String? antiIdentityContext;   // e.g., "Hits snooze 5 times, hates the mirror"
+
+// 2. Failure Archetype (History) - Day 7 Trial Conversion
+final String? failureArchetype;      // e.g., "PERFECTIONIST", "NOVELTY_SEEKER"
+final String? failureTriggerContext; // e.g., "Missed 3 days, felt guilty, quit"
+
+// 3. Resistance Pattern (The Lie) - Day 30+ Retention
+final String? resistanceLieLabel;    // e.g., "The Bargain", "The Tomorrow Trap"
+final String? resistanceLieContext;  // e.g., "I'll do double tomorrow"
+```
+
+**How It's Used in Coaching:**
+```dart
+// prompt_factory.dart:139-147
+## USER DOSSIER
+- Name: $userName
+- Target Identity: "$identity"
+- The Enemy (Anti-Identity): "$antiIdentity"
+  └─ Context: $antiIdentityContext
+- Failure Risk: $failureMode
+  └─ History: $failureTriggerContext
+- The Resistance Lie: "$lie"
+  └─ Exact phrase: "$lieContext"
+```
+
+**Extraction Gate (app_router.dart:106-110):**
+```dart
+bool get hasHolyTrinity =>
+    antiIdentityLabel != null &&
+    failureArchetype != null &&
+    resistanceLieLabel != null;
+```
+- All 3 must be non-null to pass onboarding (AND logic, not OR)
+- Fixed in Phase 68 after critical bug
+
 **Questions to Answer:**
 1. Are all 3 traits equally important?
 2. Is freeform AI extraction accurate enough?
 3. Should we validate extracted traits with the user?
 4. Do we need more than 3 traits?
+5. **NEW:** What's the fallback when Sherlock fails to extract all 3?
+6. **NEW:** Should users see their extracted Holy Trinity and confirm accuracy?
+7. **NEW:** Is the "Day 1 / Day 7 / Day 30+" timing framework correct, or should all 3 be used from Day 1?
 
 ---
 
@@ -146,10 +266,44 @@ These decisions BLOCK other work. They must be resolved first.
 | **Blocking** | Production safety, testing workflow |
 | **Current State** | Controls premium toggle, skip onboarding, nav shortcuts, logs |
 
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/features/dev/dev_tools_overlay.dart` | 1-462 | Full DevTools implementation |
+| `lib/features/dev/debug_console_view.dart` | — | Log viewer component |
+
+**Current DevTools Features:**
+| Feature | What It Does | Production Risk |
+|---------|--------------|-----------------|
+| Premium Mode Toggle | Switches Tier 1/Tier 2 AI | **HIGH** — bypasses payment |
+| Skip Onboarding | Creates dummy habit, skips to dashboard | **MEDIUM** — bad UX state |
+| Quick Navigation | Jump to any screen | LOW — testing convenience |
+| View Voice Logs | Real-time Gemini logs | LOW — debugging only |
+| Test Voice Connection | Pings servers for latency | LOW — diagnostic |
+| Copy Debug Info | Clipboard dump of config | LOW — support tool |
+
+**Access Control (dev_tools_overlay.dart:452-455):**
+```dart
+// Only enable in debug mode
+if (!kDebugMode) {
+  return widget.child;
+}
+```
+- Triple-tap gesture only works in debug builds
+- **Not accessible in release builds** currently
+
+**The Naming Confusion:**
+- `settings.developerMode` — actually controls Premium/Tier 2 access
+- Used in: `AIModelConfig.selectTier(isPremiumUser: settings.developerMode)`
+- This is NOT dev mode, it's premium mode stored in wrong field name
+
 **Questions to Answer:**
 1. Is dev mode only for testing or should it exist in production?
 2. Should dev mode be accessible in release builds?
 3. What safeguards prevent dev mode abuse?
+4. **NEW:** Should we rename `developerMode` → `isPremium` to fix the semantic confusion?
+5. **NEW:** Do we need a separate "staff mode" for support/debugging in production?
+6. **NEW:** Should triple-tap be removed entirely from release builds?
 
 ---
 
@@ -165,11 +319,42 @@ These decisions depend on Tier 1 resolutions.
 | **Depends On** | PD-001 (Archetype Philosophy), PD-003 (Holy Trinity Validity) |
 | **Current State** | Simplistic prompt with no turn limit or success criteria |
 
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/config/ai_prompts.dart` | 717-745 | Main Sherlock prompt (`voiceOnboardingSystemPrompt`) |
+| `lib/data/services/ai/prompt_factory.dart` | 47-67 | `_sherlockPrompt` constant |
+| `lib/config/ai_tools_config.dart` | — | Tool schema for `update_user_psychometrics` |
+
+**Current Sherlock Prompt (ai_prompts.dart:717-745):**
+```
+You are Puck, a high-performance psychological accountability engine...
+
+## THE 3 VARIABLES (THE HOLY TRINITY)
+1. ANTI-IDENTITY (The Enemy): Who do they fear becoming?
+2. FAILURE ARCHETYPE (History): Why did they fail in the past?
+3. RESISTANCE LIE (The Excuse): What exact phrase does their brain whisper?
+
+## TOOL USE (CRITICAL)
+- As soon as you capture a variable, call `update_user_psychometrics` IMMEDIATELY.
+- Do NOT wait for all three. Save them one by one as they come up.
+```
+
+**Alternative Prompt (prompt_factory.dart:47-67):**
+```
+You are Sherlock, an expert Parts Detective and Identity Architect.
+Your Goal: Help users identify their "Protector Parts"...
+```
+- **Problem:** Two different Sherlock prompts exist!
+- One calls itself "Puck", the other "Sherlock"
+
 **Current Issues:**
 - No maximum turn count (conversation fatigue risk)
 - No extraction success criteria
 - No handling for user confusion
 - "Parts Detective" framing may confuse users
+- **NEW:** Two conflicting prompts — which is canonical?
+- **NEW:** Cheat code exists: user says "skip" → outputs `[APPROVED]`
 
 **Proposed Improvements:**
 1. Add turn limit (5-7 turns max)
@@ -177,6 +362,8 @@ These decisions depend on Tier 1 resolutions.
 3. Add progress indicators ("We're almost there")
 4. Add escape hatch for frustrated users
 5. Follow prompt engineering best practices
+6. **NEW:** Consolidate to single canonical prompt
+7. **NEW:** Remove or secure the cheat code for production
 
 ---
 
@@ -188,18 +375,56 @@ These decisions depend on Tier 1 resolutions.
 | **Depends On** | PD-001 (Archetype Philosophy) |
 | **Current State** | Hybrid — hardcoded weights with Thompson Sampling |
 
-**Current Components:**
-| Component | Current Approach | Alternative |
-|-----------|-----------------|-------------|
-| Base vulnerability weights | Hardcoded | AI-learned |
-| V-O thresholds | Hardcoded (0.5) | User-configurable |
-| Intervention taxonomy | Hardcoded 7 arms | Dynamically generated |
-| Population priors | Seeded from archetype | Individual learning |
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/domain/services/jitai_decision_engine.dart` | 1-200+ | Main orchestrator |
+| `lib/domain/services/vulnerability_opportunity_calculator.dart` | — | V-O calculation |
+| `lib/domain/services/hierarchical_bandit.dart` | — | Thompson Sampling |
+| `lib/domain/services/population_learning.dart` | — | Cross-user learning |
+
+**JITAI Decision Pipeline (jitai_decision_engine.dart:63-187):**
+```
+1. Calculate V-O State (vulnerability + opportunity)
+2. Safety Gates (Gottman ratio, fatigue)
+3. Optimal Timing Analysis (ML Workstream #1)
+4. Cascade Detection (weather, travel, patterns)
+5. Quadrant-based Strategy (silence/wait/light/intervene)
+6. Hierarchical Bandit Selection
+7. Content Generation
+```
+
+**Hardcoded vs Adaptive Components:**
+| Component | Hardcoded | Adaptive | Notes |
+|-----------|-----------|----------|-------|
+| V-O thresholds | ✅ 0.5 | ❌ | Fixed threshold for all users |
+| Max interventions/day | ✅ 8 | ❌ | `_maxInterventionsPerDay = 8` |
+| Gottman ratio | ✅ 5:1 | ❌ | Positive:Negative interactions |
+| Min timing score | ✅ 0.35 | ❌ | Gate for poor timing |
+| Cascade risk threshold | ✅ 0.6 | ❌ | Proactive intervention trigger |
+| Intervention taxonomy | ✅ 7 arms | ❌ | Fixed intervention types |
+| Thompson Sampling | ❌ | ✅ | Learns which interventions work |
+| Population priors | ❌ | ✅ | Seeded from archetype |
+| Optimal timing | ❌ | ✅ | ML-learned from history |
+
+**The 7 Intervention Arms (Hardcoded):**
+| Arm | Description | Use Case |
+|-----|-------------|----------|
+| SILENCE_TRUST | No intervention | Low V-O |
+| GENTLE_REMINDER | Light nudge | Light touch quadrant |
+| SHADOW_AUTONOMY | Rebel-friendly framing | Rebel archetype |
+| TOUGH_LOVE | Direct accountability | Post-miss |
+| CELEBRATION | Positive reinforcement | After completion |
+| RESCUE_PROTOCOL | Emergency intervention | High cascade risk |
+| ENVIRONMENT_CUE | Contextual trigger | Location-based |
 
 **Questions to Answer:**
 1. What's industry best practice for JITAI systems?
 2. How much personalization is too much vs too little?
 3. Do we have enough data to train AI models?
+4. **NEW:** Should V-O thresholds be archetype-specific?
+5. **NEW:** Is 8 interventions/day too many or too few?
+6. **NEW:** Should we add more intervention arms or is 7 sufficient?
 
 ---
 
@@ -209,6 +434,17 @@ These decisions depend on Tier 1 resolutions.
 | **Question** | How should we detect sensitive goals (addiction, private issues)? |
 | **Status** | PENDING — Proposed Approach Ready |
 | **Depends On** | Demographic/firmographic data collection |
+
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| (Not implemented) | — | No sensitivity detection exists in codebase |
+
+**Current State:**
+- **NOT IMPLEMENTED** — No sensitivity detection logic exists
+- All habits treated equally regardless of sensitivity
+- Witness invites shown to all users
+- Share prompts not gated by sensitivity
 
 **Proposed Approach:**
 ```dart
@@ -229,6 +465,12 @@ class SensitivityAssessment {
 
 **Key Principle:** Never assume — always ask, but frame based on AI assessment.
 
+**Questions to Answer:**
+1. **NEW:** When should sensitivity be assessed? (During Sherlock? On habit creation?)
+2. **NEW:** Should we use keyword detection or AI inference?
+3. **NEW:** How do we handle false positives (user says "I'm addicted to coffee" casually)?
+4. **NEW:** Does this require a privacy policy update?
+
 ---
 
 ### PD-104: LoadingInsightsScreen Personalization
@@ -237,9 +479,39 @@ class SensitivityAssessment {
 | **Question** | What personalized insights should be shown during loading? |
 | **Status** | PENDING |
 | **Depends On** | PD-003 (Holy Trinity), JITAI baseline calculations |
-| **Current State** | Generic spinner |
+| **Current State** | **ALREADY IMPLEMENTED** — Shows animated insights |
 
-**Proposed Insights:**
+**Code References:**
+| File | Lines | What It Does |
+|------|-------|--------------|
+| `lib/features/onboarding/screens/loading_insights_screen.dart` | 1-427 | Full implementation |
+| `lib/domain/services/onboarding_insights_service.dart` | — | Insight generation logic |
+
+**Current Implementation (loading_insights_screen.dart):**
+- **NOT a generic spinner** — Shows animated insight cards
+- Cycles through up to 4 insights with fade/slide animations
+- Shows confidence bar for each insight
+- Categories: context, intent, baseline, population
+
+**Insight Categories (SignalCategory enum):**
+| Category | Color | Example |
+|----------|-------|---------|
+| context | Blue | Time-based insights |
+| intent | Green | Goal-based insights |
+| baseline | Orange | Pattern insights |
+| population | Purple | Archetype-based insights |
+
+**Current Data Sources:**
+```dart
+// loading_insights_screen.dart:77-98
+await for (final status in _insightsService.captureSignals(
+  habits: habits,
+  hasWitnesses: hasWitnesses,
+  bigWhy: bigWhy,
+))
+```
+
+**Proposed Insights (from ROADMAP):**
 1. Holy Trinity insight: "We see the [Archetype] in you"
 2. Baseline insight: "Your energy peaks at [time]"
 3. Risk insight: "[Weekends/Evenings] are your drop-off zone"
@@ -248,6 +520,9 @@ class SensitivityAssessment {
 1. What permissions data can we use?
 2. How do we calculate baseline without history?
 3. How confident do we need to be before showing insight?
+4. **NEW (Clarification):** The screen IS implemented — decision is about WHAT insights to show, not whether to show them
+5. **NEW:** Should Holy Trinity data (from Sherlock) be displayed back to user here?
+6. **NEW:** Is the current `OnboardingInsightsService` generating the right insights?
 
 ---
 

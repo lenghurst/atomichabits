@@ -36,25 +36,25 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `phase-68-complete` |
+| **Session ID** | `ai-coordination-setup` |
 | **Date** | 05 January 2026 |
-| **Agent** | Gemini (Phase 68) |
-| **Duration** | ~4 hours |
-| **Focus** | Phase 68 Completion, Product Vision, Docs Restructure |
+| **Agent** | Claude (Opus) |
+| **Duration** | ~30 mins |
+| **Focus** | Documentation Enhancement, AI Coordination Setup |
 
 ### What Was Accomplished
-- **Completed Phase 68 (Onboarding Polish):**
-  - Integrated 3 test suites (Identity, Conversational, Offline).
-  - Implemented `AnalyticsService` and `RetryPolicy` (Auth/Psychometric).
-  - Fixed critical `hasHolyTrinity` bug (OR -> AND).
-  - Enhanced Loading State ("Neural Link" UI).
-- **Product Strategy:**
-  - Created `docs/PRODUCT_VISION.md` capturing strategic pivots (Anti-Identity as Shadow Clusters, Value-First Tiers).
-  - Established `thepact://` branding decision.
-- **Documentation:**
-  - Merged `claude/docs-core-restructure-b6wmg`.
-  - Cleaned up redundant `docs/PRODUCT_DECISIONS.md`.
-  - Updated `CHANGELOG.md` (v6.16.0) and `ROADMAP.md` (Phase 68.5).
+- **Documentation Improvements:**
+  - Created symlink `AI_HANDOVER.md` → `docs/CORE/AI_HANDOVER.md` at project root for easier access
+  - Expanded ALL Tier 1 Pending Decisions with detailed codebase context:
+    - PD-001 (Archetype Philosophy): Added 6 archetype table, code refs, fallback issue
+    - PD-002 (Streaks vs Rolling): Documented philosophical tension between code and messaging
+    - PD-003 (Holy Trinity): Added extraction gate logic, field definitions
+    - PD-004 (Dev Mode): Documented naming confusion (`developerMode` vs `isPremium`)
+  - Expanded ALL Tier 2 Pending Decisions with codebase context:
+    - PD-101 (Sherlock Prompt): Found TWO conflicting prompts, documented cheat code issue
+    - PD-102 (JITAI): Documented full pipeline, hardcoded vs adaptive components
+    - PD-103 (Sensitivity): Confirmed NOT IMPLEMENTED
+    - PD-104 (Loading Insights): Corrected status — IS implemented, decision is about content
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -68,9 +68,13 @@ This prevents:
 ### Blockers Awaiting Human Input
 | Blocker | Question | Status |
 |---------|----------|--------|
+| Archetype Philosophy (PD-001) | Hardcoded vs Dynamic vs Hybrid? | BLOCKED |
+| Streaks vs Consistency (PD-002) | Use `gracefulScore` or `currentStreak`? | BLOCKED |
+| Holy Trinity Validity (PD-003) | Is 3-trait model sufficient? | BLOCKED |
+| Dev Mode Purpose (PD-004) | Rename `developerMode` → `isPremium`? | BLOCKED |
+| Sherlock Prompt (PD-101) | Which of 2 prompts is canonical? | BLOCKED |
 | Invite Code Mechanics | Format, validation, tiers? | BLOCKED |
 | Legacy Persistence | Deprecate `tier_selection` & `value_prop`? | BLOCKED |
-| Back Navigation | Strategy for `PopScope` blocking? | DEFERRED |
 
 ---
 
@@ -88,11 +92,12 @@ This prevents:
    - Adaptive: Thompson Sampling learns which interventions work
    - NOT AI: No LLM calls in decision flow
 
-3. **Sherlock Prompt is simplistic** (`prompt_factory.dart:47-67`):
-   - No turn limit
+3. **TWO Sherlock Prompts exist** (CONFLICTING):
+   - `ai_prompts.dart:717-745` — Calls AI "Puck", uses tool calling
+   - `prompt_factory.dart:47-67` — Calls AI "Sherlock", has cheat code
+   - No turn limit in either
    - No extraction success criteria
-   - No conversation fatigue handling
-   - Needs major overhaul
+   - Needs consolidation before overhaul
 
 4. **Holy Trinity** (`psychometric_profile.dart:17-29`):
    - Anti-Identity (Fear) — Day 1 Activation
@@ -100,7 +105,7 @@ This prevents:
    - Resistance Lie (Excuse) — Day 30+ Retention
    - Philosophy is sound but extraction may be too simplistic
 
-5. **LoadingInsightsScreen** is a generic spinner — should show personalized insights from permissions data + JITAI baseline
+5. **LoadingInsightsScreen** is ALREADY implemented with animated insight cards — decision is about WHAT insights to show, not whether to implement
 
 ### Files You Should Read
 | File | Why |
@@ -144,6 +149,7 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus) | `claude/setup-ai-coordination-ZSkqC` | AI Coordination Setup | Expanded PRODUCT_DECISIONS.md with codebase context, created root symlink |
 | 05 Jan 2026 | Claude (Opus) | `claude/docs-core-restructure-b6wmg` | Core docs restructure | Created CORE folder, handover template, glossary, product decisions |
 | 05 Jan 2026 | Gemini | `main` | Phase 68 & Docs Restructure | Closed Phase 68, Merged Core Docs, Created Product Vision |
 | 05 Jan 2026 | Claude (Opus) | `claude/docs-core-restructure-b6wmg` | Core docs restructure | Created CORE folder, handover template, glossary, product decisions |
