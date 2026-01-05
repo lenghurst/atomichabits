@@ -49,7 +49,7 @@
 | Field | Value |
 |-------|-------|
 | **Question** | How should "intervention response" be defined and measured? |
-| **Status** | DOCUMENTED (see below) |
+| **Status** | ✅ VALIDATED (ChatGPT confirmed codebase audit) |
 | **Blocking** | RQ-001 (what dimensions predict response) |
 
 **Current Implementation (from codebase audit):**
@@ -96,10 +96,30 @@ PENALTIES:
 | **Retention** | ❌ Not directly | No long-term retention tracking tied to interventions |
 | **Self-Report** | ❌ Not implemented | No "was this helpful?" prompt |
 
-**Recommended Additions:**
-1. Post-intervention emotion capture (for delta)
-2. Intervention-linked retention cohort analysis
-3. Optional "helpful?" micro-feedback (one tap)
+**Recommended Additions (ChatGPT validated):**
+1. **Post-intervention emotion capture** — Quick mood check-in or sentiment analysis of post-intervention journal entry to measure emotional delta
+2. **Retention cohort tracking** — Link interventions to 7-day and 30-day retention rates to identify strategies that sustain engagement
+3. **Micro-feedback prompt** — Optional one-tap "Was this helpful? [👍/👎]" (occasional, not every intervention)
+
+**ChatGPT's Literature-Grounded Evaluation:**
+
+| Dimension | Tracked? | Literature Prevalence | Interpretability |
+|-----------|----------|----------------------|------------------|
+| **Engagement** (tap/interact) | ✅ Yes | High — widely used in digital intervention research | Medium — easy to measure but indirect proxy |
+| **Behavior Change** (habit done) | ✅ Yes | Very High — primary outcome in habit formation studies | High — direct measure of success |
+| **Emotional Shift** (mood delta) | ⚠️ Partial | Moderate — studied in wellness/therapy interventions | Medium — subjective, external factors |
+| **Retention** (long-term use) | ❌ No | High — commonly reported as long-term effectiveness | Opaque — many confounding factors |
+| **Self-Report** (user feedback) | ❌ No | High — frequently collected via surveys/ratings | High — direct but prone to bias |
+
+**Thompson Sampling Mechanism (ChatGPT explanation):**
+
+The bandit updates Beta distribution posteriors with each reward:
+```
+posterior_alpha += reward          // e.g., +0.8
+posterior_beta  += (1.0 - reward)  // e.g., +0.2
+```
+
+This happens for both the MetaLever (strategy) and individual arm (variant). Over time, high-reward interventions get selected more frequently.
 
 ---
 
@@ -153,9 +173,10 @@ PENALTIES:
 
 | Date | Agent | Focus | Findings | Action Items |
 |------|-------|-------|----------|--------------|
-| 05 Jan 2026 | ChatGPT | Literature review | IN PROGRESS — behavioral dimensions for JITAI | Awaiting results |
-| 05 Jan 2026 | Gemini | Deep Research | IN PROGRESS — 7-point plan aligned with ChatGPT | Awaiting results |
-| 05 Jan 2026 | Claude | Research coordination | Aligned both agents' parameters for comparison | Monitor results |
+| 05 Jan 2026 | ChatGPT | Intervention Effectiveness | ✅ COMPLETE — Validated reward function, added literature mapping | Integrated into RQ-002 |
+| 05 Jan 2026 | Gemini | Deep Research | IN PROGRESS — 7-point plan on archetype dimensions | Awaiting results |
+| 05 Jan 2026 | Gemini Deep Think | Synthesis | PENDING — Will compare ChatGPT + Gemini findings | Awaiting Gemini completion |
+| 05 Jan 2026 | Claude | Research coordination | Aligned both agents' parameters for comparison | ✅ Done |
 | 05 Jan 2026 | Claude | Codebase audit | Documented current intervention measurement | ✅ Done |
 | 05 Jan 2026 | ChatGPT | Clarification Qs | Asked about effectiveness measurement | ✅ Answered |
 | 05 Jan 2026 | Gemini | Archetype analysis | Identified 6-bucket cold-start math | Hybrid recommended |
