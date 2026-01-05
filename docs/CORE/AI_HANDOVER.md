@@ -80,13 +80,78 @@ This prevents:
    - RQ-022 marked COMPLETE with system prompt + SSML strategy
    - Sub-questions answered tables added to both
 
-6. **GLOSSARY.md Updated — 6 New Terms:**
+6. **GLOSSARY.md Updated — 7 New Terms:**
    - The Constitution (treaty dashboard)
    - Ratification Ritual (3-second haptic seal)
    - Summon Token (Council access mechanism)
+   - The Chamber (Council session UI)
    - Voice Archetype (SSML modulation category)
    - SSMLBuilder (Dart TTS service)
    - Treaty Templates (5 launch templates)
+
+7. **New Research Questions Generated (RQ-024 through RQ-027):**
+   - **RQ-024**: Treaty Modification & Renegotiation Flow
+   - **RQ-025**: Summon Token Economy
+   - **RQ-026**: Sound Design & Haptic Specification
+   - **RQ-027**: Treaty Template Versioning Strategy
+
+8. **New Product Decisions Generated (PD-118 through PD-120):**
+   - **PD-118**: Treaty Modification UX
+   - **PD-119**: Summon Token Economy
+   - **PD-120**: The Chamber Visual Design
+
+9. **Implementation Checklist Added (14 tasks across 4 phases):**
+   - Phase 1: Foundation (4 tasks)
+   - Phase 2: Council Engine (3 tasks)
+   - Phase 3: UX Frontend (4 tasks)
+   - Phase 4: Integration (3 tasks)
+
+---
+
+### Upstream/Downstream Impact Analysis (RQ-021 + RQ-022)
+
+**How this research affects existing decisions:**
+
+| Decision | Type | Impact | Details |
+|----------|------|--------|---------|
+| **CD-015** (psyOS) | ✅ Enhanced | Council AI now fully specified | Treaty lifecycle completes the Parliament metaphor |
+| **CD-016** (AI Model) | ✅ Validated | DeepSeek V3.2 + Gemini TTS confirmed | System prompt template + SSML strategy delivered |
+| **PD-109** (Council Activation) | ✅ Extended | Summon Token adds manual access | tension > 0.7 OR Summon Token |
+| **PD-110** (Airlock) | ⚠️ Connected | "Transition Airlock" template implements | Template provides concrete airlock example |
+| **PD-113** (Treaty Priority) | ✅ Validated | Hierarchy confirmed | Hard > Soft > JITAI remains |
+| **RQ-016** (Council AI) | ✅ Extended | Implementation details added | System prompt, voice archetypes, JSON schema |
+| **RQ-018** (Airlock Protocol) | ⚠️ Partial | Template exists, full protocol pending | "Transition Airlock" is one use case |
+| **RQ-020** (Treaty-JITAI) | ✅ Completed | TreatyEngine pipeline position confirmed | Stage 3 in JITAI pipeline |
+
+**New dependencies created:**
+
+```
+RQ-021 (Treaty Lifecycle)
+├── → RQ-024 (Modification Flow)     [NEW - HIGH]
+├── → RQ-025 (Summon Token Economy)  [NEW - MEDIUM]
+├── → RQ-026 (Sound Design)          [NEW - MEDIUM]
+└── → RQ-027 (Template Versioning)   [NEW - LOW]
+
+RQ-022 (Council Prompts)
+├── → PD-120 (Chamber Visual Design) [NEW - HIGH]
+└── → RQ-026 (Sound Design)          [Shared dependency]
+
+PD-115 (Treaty Creation UX)
+├── → PD-118 (Modification UX)       [NEW - HIGH]
+└── → PD-119 (Summon Token Economy)  [NEW - MEDIUM]
+```
+
+**Research Status Summary (Post-Session):**
+
+| RQ | Status | Blocking |
+|----|--------|----------|
+| RQ-021 | ✅ COMPLETE | — |
+| RQ-022 | ✅ COMPLETE | — |
+| RQ-023 | 🔴 PENDING | PD-116 |
+| **RQ-024** | 🔴 **NEW** | PD-118 |
+| **RQ-025** | 🔴 **NEW** | PD-119 |
+| **RQ-026** | 🔴 **NEW** | Audio assets |
+| **RQ-027** | 🔴 **NEW** | Template launch |
 
 ---
 

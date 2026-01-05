@@ -810,6 +810,31 @@ final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
 
 ---
 
+### The Chamber
+**Definition:** The immersive Council AI session UI where users witness their identity facets debating.
+
+**Visual Design:**
+- Dark mode overlay (creates focused, dramatic atmosphere)
+- Pulsing avatar icons representing each active facet
+- Audio streaming with TTS voice modulation
+- Text bubbles showing dialogue as it plays
+
+**Session Flow:**
+1. Chamber appears as modal overlay
+2. Sherlock (narrator) introduces the conflict
+3. Facet avatars pulse when "speaking"
+4. Audio plays Audiobook Pattern (single narrator, varied prosody)
+5. Dialogue completes → Treaty Card appears
+6. User proceeds to Ratification Ritual
+
+**Key UX Principle:** The Chamber should feel like "watching a therapy session" where your inner parts negotiate, not like a chatbot interface.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-021, RQ-022
+
+**Code References:** `lib/features/council/chamber_screen.dart` (to be implemented)
+
+---
+
 ### Voice Archetype
 **Definition:** A category assigned to each line in a Council AI script that determines TTS prosody (rate, pitch, volume).
 
