@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (Major Roadmap Restructure Session)
+> **Last Updated:** 05 January 2026 (RQ-011 Multiple Identity Research Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,57 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `rq-011-multiple-identity-research` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~45 minutes |
+| **Focus** | RQ-011 Multiple Identity Architecture Research |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **RQ-011: Multiple Identity Architecture — ✅ RESEARCH COMPLETE**
+   - Explored current identity data model in codebase
+   - Analyzed three philosophical frames (Integration/IFS, Context-Switching, Hierarchy)
+   - Evaluated four architecture options (Single, Flat Multiple, Hierarchical, Facets)
+   - **Recommended: Identity Facets Model** — One Self with multiple facets
+   - Designed conflict detection strategies (temporal, resource, value, behavioral)
+   - Proposed dashboard UX (unified tree with facet branches)
+   - Documented migration path (4 phases)
+
+2. **RESEARCH_QUESTIONS.md Updates**
+   - RQ-011 status changed: 🔴 NEEDS RESEARCH → ✅ RESEARCH COMPLETE
+   - Added comprehensive research findings (schema, recommendations, migration)
+   - Updated Decision Dependencies to reflect RQ-011 completion
+   - PD-106 now marked as READY FOR DECISION
+
+3. **PRODUCT_DECISIONS.md Updates**
+   - PD-106 status changed: 🔴 PENDING → 🟡 READY FOR DECISION
+   - Added research findings and recommendations
+   - Proposed schema for `identity_facets` and `habit_facet_links` tables
+   - Clear decision options for Oliver to choose from
+
+4. **Key Research Findings:**
+   - Current: Single identity enforced at DB level (`UNIQUE (user_id)`)
+   - Recommendation: "Identity Facets" model preserving unified Self
+   - Holy Trinity stays unified (psychological patterns consistent)
+   - Aspirational facets can diverge (up to 5 soft limit)
+   - Conflicts are coaching opportunities, not bugs
+   - Habits link to facets via many-to-many relationship
+
+---
+
+### Previous Session Summary (Same Day, Earlier)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `roadmap-restructure-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~60 minutes |
 | **Focus** | Major Roadmap Restructure, New RQs/PDs, Phase Model |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
@@ -243,6 +287,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | RQ-011 Research | ✅ Research complete: Identity Facets model recommended, PD-106 ready for decision |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Roadmap Restructure | Phases replace Layers, RQ-010/011, PD-106/107, PGS hierarchy, Track G-0 complete |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | GLOSSARY Review | Deprecated Hexis Score, documented Shadow Presence, prioritized Gap Analysis Engine |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Dashboard Docs | Documented Bridge+SkillTree, fixed Living Garden references in AI_CONTEXT.md |
@@ -266,7 +311,8 @@ This handover protocol was created because:
 3. Multiple agents working on the same codebase need coordination
 
 **Your Action Items:**
-- Review PRODUCT_DECISIONS.md and resolve PENDING items
+- **🔴 CRITICAL:** Review and decide PD-106 (Multiple Identity Architecture) — Research complete, 4 options presented
+- Review PRODUCT_DECISIONS.md and resolve other PENDING items
 - Confirm core docs structure is acceptable
 - Decide on archetype philosophy (future sprint)
 - Decide on Sherlock prompt direction (future sprint)

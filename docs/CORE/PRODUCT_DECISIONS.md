@@ -606,10 +606,11 @@ These decisions BLOCK other work. They must be resolved first.
 | Field | Value |
 |-------|-------|
 | **Question** | How should the app handle users with multiple aspirational identities? |
-| **Status** | 🔴 PENDING — Requires Research (RQ-011) |
+| **Status** | 🟡 READY FOR DECISION — Research Complete (RQ-011) |
 | **Priority** | **CRITICAL** — Fundamental to data model and philosophy |
 | **Blocking** | Phase 1 (schema), Phase 2 (recommendations), Phase 3 (dashboard) |
-| **Research** | RQ-011 in RESEARCH_QUESTIONS.md |
+| **Research** | RQ-011 in RESEARCH_QUESTIONS.md ✅ COMPLETE |
+| **Research Date** | 05 January 2026 |
 
 **The Core Question:**
 Users have multiple aspirational identities ("Worldclass SaaS Salesman" + "Consistent Swimmer" + "Present Father"). How do we:
@@ -618,36 +619,84 @@ Users have multiple aspirational identities ("Worldclass SaaS Salesman" + "Consi
 3. Handle conflicts between them?
 4. Prioritize recommendations?
 
-**Options:**
+---
 
-| Option | Description | Pros | Cons |
-|--------|-------------|------|------|
-| **A: Single Identity** | Force one primary identity | Simple data model, clear focus | Limiting, doesn't reflect reality |
-| **B: Multiple + Conflict Detection** | Allow multiple, AI flags conflicts | Deep reflection opportunity | Complex logic |
-| **C: Multiple + User Resolves** | Allow multiple, user handles conflicts | Maximum autonomy | May overwhelm user |
-| **D: Hierarchical** | Primary + secondary identities | Clear prioritization | Artificial hierarchy |
+#### Research Finding: Identity Facets Model (Recommended)
 
-**Example Conflict:**
-- Identity 1: "Early Riser" → wake 5am, morning run
-- Identity 2: "Night Owl Creative" → work until 2am, sleep late
-- These directly conflict — what should the app do?
+**Philosophy:** One integrated Self with multiple **facets** — not competing identities.
 
-**Philosophical Opportunity:**
-Identity conflicts could be the app's MOST valuable coaching moments. Surfacing tension between "who I want to be" in different domains enables genuine self-reflection.
+**Key Insight:** The Holy Trinity (anti-identity, failure archetype, resistance lie) stays **unified** because psychological patterns are consistent. But aspirational facets can diverge.
 
-**Data Model Implications:**
+| Option | Description | Research Verdict |
+|--------|-------------|------------------|
+| **A: Single Identity** | Force one primary | ❌ Too limiting |
+| **B: Multiple Flat** | N identities, equal | ⚠️ No unified self |
+| **C: Hierarchical** | Primary + secondary | ⚠️ Feels artificial |
+| **D: Identity Facets** | One Self → N Facets | ✅ **RECOMMENDED** |
+
+---
+
+#### Research Recommendations
+
+| Question | Recommendation | Rationale |
+|----------|----------------|-----------|
+| Max identities? | **5 (soft limit)** | Cognitive load, focus |
+| Hierarchy? | **Flat with optional "focus"** | Avoids artificial ranking |
+| Conflicts? | **Yes — detect and surface** | Core value differentiator |
+| Habits → Identities? | **Many-to-many** | A habit can serve multiple facets |
+| Dimension vector? | **One per user + per-facet adjustments** | Base personality + context tweaks |
+| Dashboard UX? | **Unified tree with facet branches** | Emphasizes integrated self |
+
+---
+
+#### Proposed Schema
+
+```sql
+CREATE TABLE identity_facets (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  domain TEXT NOT NULL,          -- "professional", "physical", "relational"
+  label TEXT NOT NULL,           -- "Early Riser"
+  aspiration TEXT,               -- "I wake before the world awakens"
+  dimension_adjustments JSONB,   -- Per-facet tweaks to base dimensions
+  conflicts_with UUID[],         -- Array of conflicting facet IDs
+  integration_status TEXT,       -- "harmonized", "in_tension", "unexamined"
+  created_at TIMESTAMPTZ
+);
+
+CREATE TABLE habit_facet_links (
+  habit_id UUID NOT NULL,
+  facet_id UUID NOT NULL,
+  contribution_weight FLOAT DEFAULT 1.0,
+  PRIMARY KEY (habit_id, facet_id)
+);
 ```
-Current: User → 1 Identity → N Habits
-Option B: User → N Identities → N Habits (many-to-many?)
-         Identity → Dimension Vector (per identity or composite?)
+
+---
+
+#### Migration Path
+
+```
+Phase 1 (MVP): Add facets table, optional linking
+Phase 2: Dashboard shows facets (optional view)
+Phase 3: Sherlock extracts facets during onboarding
+Phase 4: Conflict detection + coaching
 ```
 
-**Questions to Resolve:**
-1. Max number of identities?
-2. Can habits serve multiple identities?
-3. Does each identity have its own dimension vector?
-4. How does dashboard visualize multiple identities?
-5. How do conflicts surface in coaching?
+---
+
+#### Decision Required
+
+**Options for Oliver:**
+
+| Choice | What Happens |
+|--------|--------------|
+| **Approve Facets Model** | Implement schema + migration path |
+| **Approve with modifications** | Specify changes to recommendations |
+| **Request more research** | Identify specific gaps |
+| **Defer** | Document why and when to revisit |
+
+**See:** RQ-011 in RESEARCH_QUESTIONS.md for full analysis
 
 ---
 

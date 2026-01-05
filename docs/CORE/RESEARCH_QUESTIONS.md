@@ -464,10 +464,12 @@ The app requests extensive permissions but hasn't formalized:
 | Field | Value |
 |-------|-------|
 | **Question** | How should the app handle users with multiple aspirational identities? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ RESEARCH COMPLETE — Awaiting PD-106 Decision |
 | **Priority** | **CRITICAL** — Fundamental to data model, coaching logic, and philosophy |
 | **Blocking** | Phase 1 (schema), Phase 2 (recommendations), Phase 3 (dashboard) |
 | **Related PD** | PD-106 (Product Decision required) |
+| **Research Date** | 05 January 2026 |
+| **Researcher** | Claude (Opus 4.5) |
 
 **Context:**
 Users have multiple aspirational identities:
@@ -478,44 +480,173 @@ Users have multiple aspirational identities:
 
 These may complement or conflict with each other.
 
-**Sub-Questions:**
+---
 
-| # | Question | Options | Implications |
-|---|----------|---------|--------------|
-| 1 | How many identities can a user have? | 1, 3, unlimited | Data model, UI complexity |
-| 2 | Do identities have hierarchy? | Primary/secondary, equal | Recommendation prioritization |
-| 3 | Can identities conflict? | Yes (detect), No (ignore) | Conflict detection logic |
-| 4 | What does conflict mean philosophically? | Trade-off, integration, surfacing | Coaching response |
-| 5 | Do habits belong to identities? | 1:1, many:many | Data model |
-| 6 | Does each identity have its own dimension vector? | Yes, No, Composite | JITAI complexity |
-| 7 | How does dashboard show multiple identities? | Tabs, unified, toggle | UI design |
+#### Current State Analysis
 
-**Example Conflict:**
+**Finding:** The app currently enforces **single identity per user** at the database level.
+
+| Component | Current Implementation |
+|-----------|----------------------|
+| **Database** | `identity_seeds` with `UNIQUE (user_id)` |
+| **Habit linking** | `habit.identity` is a single string |
+| **Growth tracking** | Single `strongestIdentity` metric |
+| **JITAI context** | Uses one `PsychometricProfile` |
+| **Dashboard** | Single growth visualization (Seed → Oak) |
+
+**Key Files:**
+- `supabase/migrations/20260102_identity_seeds.sql` — One-to-one user-identity
+- `lib/domain/entities/psychometric_profile.dart` — Holy Trinity + dimensions
+- `lib/data/models/habit.dart` — `identity: String` (single)
+- `lib/domain/services/identity_growth_service.dart` — Single identity metrics
+
+---
+
+#### Philosophical Analysis
+
+**Three Frames for Understanding Multiple Identities:**
+
+| Frame | Philosophy | App Role |
+|-------|------------|----------|
+| **Integration (IFS/Jung)** | All identities are "parts" of one Self | Help user **integrate** parts |
+| **Context-Switching (Goffman)** | We perform different identities in contexts | Help user **switch** cleanly |
+| **Hierarchy (Maslow)** | One core identity; others serve it | Help user **prioritize** |
+
+**Key Insight:** Identity conflicts are not bugs — they're the app's **deepest value proposition**. Surfacing tension enables genuine self-reflection.
+
+---
+
+#### Architecture Options Evaluated
+
+| Option | Description | Recommendation |
+|--------|-------------|----------------|
+| **A: Single Identity** | Force one primary (status quo) | ❌ Too limiting |
+| **B: Multiple Flat** | N identities, equal weight | ⚠️ No unified self |
+| **C: Hierarchical** | Primary + secondary identities | ⚠️ Feels artificial |
+| **D: Identity Facets** | One Self → N Facets (IFS model) | ✅ **RECOMMENDED** |
+
+---
+
+#### Recommended Architecture: Identity Facets
+
+**Philosophy:** One integrated Self with multiple **facets** (not competing identities).
+
+**Key Principle:** Holy Trinity (anti-identity, failure archetype, resistance lie) stays **unified** because psychological patterns are consistent. But aspirational facets can diverge.
+
+**Proposed Schema:**
+```sql
+-- Core psychometric profile stays (represents integrated self)
+-- New: Facets table
+CREATE TABLE identity_facets (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  domain TEXT NOT NULL,          -- "professional", "physical", "relational", "temporal"
+  label TEXT NOT NULL,           -- "Early Riser"
+  aspiration TEXT,               -- "I wake before the world awakens"
+
+  -- Per-facet behavioral adjustments (overlay on base dimensions)
+  dimension_adjustments JSONB,   -- {"temporal_discounting": +0.2}
+
+  -- Conflict tracking
+  conflicts_with UUID[],         -- Array of conflicting facet IDs
+  integration_status TEXT,       -- "harmonized", "in_tension", "unexamined"
+
+  created_at TIMESTAMPTZ,
+  last_reflected_at TIMESTAMPTZ  -- When user last engaged with this facet
+);
+
+-- Habits link to facets (many-to-many)
+CREATE TABLE habit_facet_links (
+  habit_id UUID NOT NULL,
+  facet_id UUID NOT NULL,
+  contribution_weight FLOAT DEFAULT 1.0,
+  PRIMARY KEY (habit_id, facet_id)
+);
 ```
-Identity 1: "Early Riser"
-  → Habits: Wake 5am, morning run
 
-Identity 2: "Night Owl Creative"
-  → Habits: Work until 2am, sleep late
+---
 
-These directly conflict. What should the app do?
+#### Sub-Questions Answered
+
+| # | Question | Recommendation | Rationale |
+|---|----------|----------------|-----------|
+| 1 | How many identities? | **5 (soft limit)** | Cognitive load, focus |
+| 2 | Hierarchy? | **Flat with optional "focus"** | Avoids artificial ranking |
+| 3 | Can they conflict? | **Yes — detect and surface** | Core value differentiator |
+| 4 | Conflict meaning? | **Integration opportunity** | IFS philosophy |
+| 5 | Habits → Identities? | **Many-to-many** | A habit can serve multiple facets |
+| 6 | Dimension vector? | **One per user + per-facet adjustments** | Base personality + context tweaks |
+| 7 | Dashboard UX? | **Unified tree with facet branches** | Emphasizes integrated self |
+
+---
+
+#### Conflict Detection Strategy
+
+**Types of Conflicts:**
+| Type | Example | Detection Method |
+|------|---------|------------------|
+| **Temporal** | Early Riser vs Night Owl | Time-based habit comparison |
+| **Resource** | Career Focus vs Family Time | Time allocation analysis |
+| **Value** | Minimalist vs Collector | AI semantic analysis |
+| **Behavioral** | Social Butterfly vs Deep Worker | Context clash detection |
+
+**Resolution Strategies:**
+| Strategy | When to Use |
+|----------|-------------|
+| **Surface** | First detection — "I notice tension between X and Y" |
+| **Socratic** | User engagement — "If you could only be one, which?" |
+| **Integration** | User seeks resolution — "Could you be a 'Morning Creative'?" |
+| **Acceptance** | User acknowledges — "It's okay to hold tension" |
+
+---
+
+#### Dashboard UX Recommendation
+
+**Hybrid Approach:**
+- **Default:** Unified Skill Tree (trunk = core self, branches = facets)
+- **Drill-down:** Facet Cards for per-facet metrics
+- **Tension surfacing:** Conflict Banner when detected
+
+```
+         🌳 Core Self
+        /|\\
+       / | \\
+      ◉  ◉  ◉   ← Facet branches
+     /|  |  |\\
+    ○○  ○  ○○○  ← Habit leaves
+
+⚠️ TENSION: Early Riser ↔ Night Owl
+   Tap to explore this conflict
 ```
 
-**Philosophical Depth:**
-This touches on "Who am I really?" — a core human question. Options:
-- **A) Force single primary identity** — simpler but limiting
-- **B) Allow multiple, flag conflicts** — deeper reflection opportunity
-- **C) Allow multiple, user resolves** — maximum autonomy
+---
 
-**Opportunity:**
-Identity conflicts could be the app's MOST valuable coaching moments — surfacing the tension between "who I want to be" in different domains.
+#### Migration Path
 
-**Output Expected:**
-- Data model for multiple identities
-- Conflict detection algorithm
-- Coaching strategy for conflicts
-- Dashboard UX for multiple identities
-- Recommendation engine changes
+```
+Phase 1 (MVP): Add facets table, optional linking
+   ↓ Current habits work without facets
+Phase 2: Dashboard shows facets (optional view)
+   ↓ Users can organize existing habits
+Phase 3: Sherlock extracts facets during onboarding
+   ↓ New users get richer profile
+Phase 4: Conflict detection + coaching
+   ↓ Full value realized
+```
+
+---
+
+#### Output Delivered
+
+| Deliverable | Status |
+|-------------|--------|
+| Data model for multiple identities | ✅ Identity Facets schema |
+| Conflict detection algorithm | ✅ Temporal + Semantic + Behavioral |
+| Coaching strategy for conflicts | ✅ Surface → Socratic → Integration |
+| Dashboard UX for multiple identities | ✅ Unified Tree + Facet Cards |
+| Recommendation engine changes | ✅ Facet-aware JITAI |
+
+**Next Step:** PD-106 decision required to confirm approach before implementation
 
 ---
 
@@ -619,16 +750,18 @@ RQ-001 (Archetype Taxonomy) ✅ COMPLETE
     ├── RQ-003 (Dimension-to-Tracking) ✅ COMPLETE
     └── RQ-004 (Migration Strategy) ✅ COMPLETE
 
+RQ-011 (Multiple Identity Architecture) ✅ COMPLETE (05 Jan 2026)
+    └── Recommendation: Identity Facets model
+    └── Awaiting: PD-106 decision
+
 UNBLOCKED DECISIONS:
     ├── PD-001 (Archetype Philosophy) → ✅ RESOLVED via CD-005
-    └── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
+    ├── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
+    └── PD-106 (Multiple Identities) → READY FOR DECISION (RQ-011 complete)
 
 PENDING RESEARCH (Core Architecture - BLOCKING):
 RQ-010 (Permission Data Philosophy) 🔴 NEEDS RESEARCH
     └── Blocks: Phase 2 Intelligence, JITAI refinement, Gap Analysis
-RQ-011 (Multiple Identity Architecture) 🔴 NEEDS RESEARCH
-    └── Blocks: Phase 1 Schema, Phase 2 Recommendations, Phase 3 Dashboard
-    └── Related: PD-106
 
 PENDING RESEARCH (Identity Coach - Core Value Proposition):
 RQ-005 (Proactive Recommendation Algorithms) 🔴 NEEDS RESEARCH
@@ -651,7 +784,7 @@ RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 - **CD** = Confirmed Decision (locked choice)
 
 **Research Priority Order:**
-1. **BLOCKING:** RQ-011 (Multiple Identities — fundamental to data model)
+1. **READY:** PD-106 (Multiple Identities — research complete, awaiting decision)
 2. **BLOCKING:** RQ-005, RQ-006 (Proactive Guidance System — core value prop)
 3. **HIGH:** RQ-010 (Permission Data — affects all phases)
 4. **HIGH:** RQ-007 (Identity Roadmap Architecture)
