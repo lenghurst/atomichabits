@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added PGS hierarchy, Behavioral Dimensions, Ghost Term Policy)
+> **Last Updated:** 05 January 2026 (Added psyOS terminology per CD-015)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -14,6 +14,291 @@ Multiple AI agents and developers work on this codebase. Inconsistent terminolog
 - User-facing inconsistency
 
 **Rule:** When introducing new terminology, add it here FIRST.
+
+---
+
+## psyOS (Psychological Operating System) — Core Concepts
+
+> **Reference:** CD-015 confirmed psyOS architecture on 05 January 2026. These terms define the foundational concepts.
+
+### psyOS
+**Definition:** Psychological Operating System — the architectural philosophy that treats the user as a dynamic system of negotiating parts (Parliament of Selves), not a monolithic self requiring discipline.
+
+**Status:** ✅ CONFIRMED — CD-015
+
+**Key Shift:**
+| Old Frame | New Frame (psyOS) |
+|-----------|-------------------|
+| Habit Tracker | Psychological Operating System |
+| Monolithic Self | Parliament of Selves |
+| Discipline | Governance (Coalition) |
+| Conflict = Bug | Conflict = Core Value |
+| Single Identity | Fractal Identity (Facets) |
+| Tree Visualization | Constellation UX |
+
+**Code References:** New architecture — not yet implemented
+
+---
+
+### Parliament of Selves
+**Definition:** The conceptual model where the user is treated as a "Parliament" of negotiating identity parts, not a single unified self.
+
+**Components:**
+- **The Self** = Speaker of the House (conscious observer/decider)
+- **Facets** = MPs (each with goals, values, fears, neurochemistry)
+- **Conflict** = Debate to be governed, not bug to be squashed
+- **Goal** = Governance (coalition building), not Tyranny (discipline)
+
+**Status:** ✅ CONFIRMED — CD-015
+
+**Philosophical Basis:** Internal Family Systems (IFS), Context-Aware Personality Systems (CAPS), Polyvagal Theory
+
+**Code References:** Not yet implemented
+
+---
+
+### Identity Facets
+**Definition:** Distinct aspects of a user's identity that have their own goals, values, and habits. Each facet is an "MP" in the Parliament of Selves.
+
+**Examples:**
+- "The Founder" (professional aspirations)
+- "The Father" (family relationships)
+- "The Athlete" (physical wellness)
+- "The Morning Person" (temporal identity)
+
+**Status:** ✅ CONFIRMED — CD-015, schema designed
+
+**Key Fields:**
+| Field | Type | Purpose |
+|-------|------|---------|
+| `domain` | TEXT | "professional", "physical", "relational", "temporal" |
+| `label` | TEXT | User-facing name |
+| `status` | TEXT | 'active', 'maintenance', 'dormant' |
+| `energy_state` | TEXT | 'high_focus', 'high_physical', 'social', 'recovery' |
+
+**Code References:** Proposed `identity_facets` table — not yet implemented
+
+---
+
+### Fractal Trinity
+**Definition:** The hierarchical model of psychological blocks where the Holy Trinity (Root) manifests differently across facets (Manifestations).
+
+**Structure:**
+```
+Root Psychology (Global)
+├── Root Fear: "I am unworthy of love"
+├── Base Temperament: Biological baseline
+└── Chronotype: Wolf, Lion, Bear, Dolphin
+
+Contextual Manifestations (Per Facet)
+├── Facet: "The Founder"
+│   └── Manifests as: Perfectionist ("I need more research")
+├── Facet: "The Athlete"
+│   └── Manifests as: Perfectionist ("I'll start Monday when conditions are perfect")
+```
+
+**Key Insight:** The same root fear creates different surface excuses in different contexts. AI must link: "Same delay tactic in fitness as career. Perfectionist root again."
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-012
+
+**Code References:** Proposed `psychometric_roots` and `psychological_manifestations` tables
+
+---
+
+### Identity Topology
+**Definition:** The graph model representing relationships between identity facets — how they interact, conflict, and influence each other.
+
+**Interaction Types:**
+| Type | Meaning | Example |
+|------|---------|---------|
+| SYNERGISTIC | Reinforce each other | "Athlete" + "Morning Person" |
+| ANTAGONISTIC | Directly conflict | "Night Owl" + "Early Riser" |
+| COMPETITIVE | Compete for resources | "Founder" + "Present Father" (time) |
+
+**Key Fields:**
+| Field | Type | Purpose |
+|-------|------|---------|
+| `friction_coefficient` | FLOAT | 0.0 (Flow) to 1.0 (Gridlock) |
+| `switching_cost_minutes` | INT | Bio-energetic recovery time |
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-013
+
+**Code References:** Proposed `identity_topology` table
+
+---
+
+### Tension Score
+**Definition:** A continuous measure (0.0-1.0) of conflict between two facets, replacing binary conflict detection.
+
+**Scale:**
+| Range | Meaning |
+|-------|---------|
+| 0.0-0.3 | Synergy (habits reinforce each other) |
+| 0.4-0.6 | Neutral (independent) |
+| 0.7-0.8 | Friction (needs attention) |
+| 0.9-1.0 | Incompatibility (hard choice required) |
+
+**Status:** ✅ DESIGN READY — Part of CD-015
+
+**Code References:** `identity_topology.friction_coefficient`
+
+---
+
+### State Economics
+**Definition:** The model of bio-energetic conflicts — understanding that switching between identity states has neurochemical costs beyond just time.
+
+**Energy States:**
+| State | Neurochemistry | Recovery Time |
+|-------|----------------|---------------|
+| `high_focus` | Dopamine/Acetylcholine | 45-90 min |
+| `high_physical` | Adrenaline/Endorphin | 30-60 min |
+| `social` | Oxytocin/Serotonin | 20-40 min |
+| `recovery` | Parasympathetic | 15-30 min |
+
+**Key Insight:** "Deep Work Coder" (high_focus) → "Present Father" (social) has massive switching cost even if time is available.
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-014
+
+**Code References:** `identity_facets.energy_state`, `identity_topology.switching_cost_minutes`
+
+---
+
+### Polymorphic Habits
+**Definition:** The concept that the same action can be encoded differently based on which facet it serves.
+
+**Example:**
+| Action | Active Facet | Metric | Feedback |
+|--------|--------------|--------|----------|
+| Morning Run | Athlete | Pace, HR Zone | "+10 Physical Points" |
+| Morning Run | Founder | Silence, Ideas | "+10 Clarity Points" |
+| Morning Run | Father | Stress Regulation | "Cortisol burned. Safe to go home." |
+
+**Implementation:** When checking off habit, user validates "Who did this serve?" reinforcing specific neural pathway.
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-015
+
+**Code References:** `habit_facet_links` table with per-facet attribution
+
+---
+
+### Council AI
+**Definition:** The feature where AI simulates a "roundtable" of the user's identity facets for conflict resolution, with Sherlock as mediator.
+
+**Example Interaction:**
+```
+User: "Should I take this promotion requiring travel?"
+
+The Executive Agent: "Take it. Growth we promised."
+The Father Agent: "You'll miss soccer practice. Violates 'Present' rule."
+
+Sherlock (Mediator): "Proposal: Take job, negotiate 'No Travel Tuesdays'.
+Executive gets growth; Father gets consistency. Treaty?"
+```
+
+**Components:**
+- **Facet Agents** — AI personas representing each identity facet
+- **Mediator** — Sherlock proposes treaties/compromises
+- **Treaty** — Resolution proposal for user approval
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-016
+
+**Code References:** Not yet implemented
+
+---
+
+### Constellation UX
+**Definition:** The dashboard visualization replacing Skill Tree — a living solar system where facets are planets orbiting the Self (sun).
+
+**Visual Elements:**
+| Element | Represents |
+|---------|------------|
+| **Sun** | The Self (center of gravity) |
+| **Planets** | Identity Facets |
+| **Planet Mass** | Habit volume / importance |
+| **Orbit Distance** | Integration with Core Self |
+| **Planet Brightness** | Activity level (dim = neglected) |
+| **Orbit Stability** | Consistency (wobble = instability) |
+
+**Key Visual Insight:** A massive "Career" planet pulling "Health" planet out of orbit shows life's gravity distortion in real-time.
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-017
+
+**Code References:** Will replace `skill_tree.dart`
+
+---
+
+### Airlock Protocol
+**Definition:** Mandatory transition rituals inserted when switching between conflicting energy states.
+
+**Example:**
+```
+"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
+Do not enter yet. 5-minute Box Breathing."
+```
+
+**Purpose:** Reduce state switching costs, prevent emotional spillover between facets.
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-018
+
+**Code References:** Not yet implemented
+
+---
+
+### Identity Priming
+**Definition:** Sensory triggers (audio + voice) that prime the user for a state shift before a habit begins.
+
+**Example:**
+```
+Trigger: 5 mins before "Deep Work"
+Action: Play Sonic Trigger specific to "Architect" facet
+Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
+         This is the signal. Enter the Cathedral."
+Result: Immediate state shift via sensory anchoring.
+```
+
+**Distinction from Notifications:**
+- **Notification:** Cognitive reminder ("Time to work")
+- **Identity Priming:** Sensory state shift (audio + voice + ritual)
+
+**Status:** 🔴 NEEDS RESEARCH — RQ-018
+
+**Code References:** Not yet implemented
+
+---
+
+### Maintenance Mode
+**Definition:** A facet status indicating reduced habit load without anxiety — "active" facets get full tracking, "maintenance" facets get minimal checking.
+
+**Statuses:**
+| Status | Meaning | Habit Load |
+|--------|---------|------------|
+| `active` | Full growth mode | Daily habits |
+| `maintenance` | Sustainment mode | 1x/week minimum |
+| `dormant` | Parked | No active habits |
+
+**Philosophy:** "High performers sequence, not balance. You can't be Level 10 Founder AND Level 10 Athlete this quarter. Which is the Driver?"
+
+**Status:** ✅ DESIGN READY — Part of CD-015
+
+**Code References:** `identity_facets.status`
+
+---
+
+### Keystone Onboarding
+**Definition:** Progressive facet extraction over time, not all at once.
+
+**Schedule:**
+| Day | Session | Extraction |
+|-----|---------|------------|
+| Day 1 | The Hook | ONE Keystone Identity + Holy Trinity Root |
+| Day 3 | The Shadow | "What's being neglected?" → Facet 2 |
+| Day 7+ | The Garden | Unlock full facet creation |
+
+**Rationale:** Extracting 5 facets on Day 1 creates cognitive overload. Progressive unlocking builds understanding.
+
+**Status:** ✅ DESIGN READY — Part of CD-015
+
+**Code References:** Onboarding flow changes — not yet implemented
 
 ---
 

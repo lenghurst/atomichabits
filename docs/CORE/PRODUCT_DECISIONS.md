@@ -1,6 +1,6 @@
 # PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
 
-> **Last Updated:** 05 January 2026 (Added PD-106, PD-107, Phase structure)
+> **Last Updated:** 05 January 2026 (CD-015 psyOS Architecture, RQ-012 through RQ-018)
 > **Purpose:** Central source of truth for product decisions and open questions
 > **Owner:** Product Team (Oliver)
 
@@ -86,8 +86,10 @@ TIER 0: FOUNDATIONAL (No dependencies — can be decided independently)
 └── CD-014: Core File Creation Guardrails [**CRITICAL** importance — agent context]
 
 TIER 1: CORE ARCHITECTURE (Blocks most product decisions)
-└── CD-005: 6-Dimension Archetype Model [CRITICAL importance]
-    └── Blocks: CD-006, CD-007, CD-008, CD-010
+├── CD-005: 6-Dimension Archetype Model [CRITICAL importance]
+│   └── Blocks: CD-006, CD-007, CD-008, CD-010
+└── CD-015: psyOS Architecture [**CRITICAL** — foundational philosophy]
+    └── Blocks: ALL downstream (PD-108 through PD-112)
 
 TIER 2: ARCHITECTURE EXTENSIONS (Depend on Tier 1)
 ├── CD-006: GPS Permission Usage → Depends on CD-005 [MEDIUM]
@@ -137,9 +139,10 @@ These four decisions form the core value proposition chain.
 | **CD-012** | Git Workflow Protocol | 0 | — | — | LOW (process) |
 | **CD-013** | UI Logic Separation | 0 | — | — | MEDIUM (code quality) |
 | **CD-014** | Core File Guardrails | 0 | — | — | **CRITICAL** (agent context) |
-| **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, Research | CD-008,9,11 | **CRITICAL** (architecture) — SUPERSEDED by PD-107 |
-| **PD-106** | Multiple Identity Architecture | 1 | RQ-011 | Phase 1,2,3 | **CRITICAL** (data model) — NEEDS RESEARCH |
-| **PD-107** | Proactive Guidance System | 1 | RQ-005,6,7 | Gap Analysis, Recommendations | **CRITICAL** (intelligence) — NEEDS RESEARCH |
+| **CD-015** | psyOS Architecture | 1 | CD-005, RQ-011 | ALL | **CRITICAL** (foundational) — CONFIRMED |
+| **PD-105** | Unified AI Coaching Architecture | 1 | CD-005, CD-015 | CD-008,9,11 | **CRITICAL** (architecture) — SUPERSEDED by PD-107 |
+| **PD-106** | Multiple Identity Architecture | 1 | RQ-011, CD-015 | Phase 1,2,3 | **CRITICAL** (data model) — RESOLVED via CD-015 |
+| **PD-107** | Proactive Guidance System | 1 | RQ-005,6,7, CD-015 | Gap Analysis, Recommendations | **CRITICAL** (intelligence) — NEEDS RESEARCH |
 
 **Impact Legend:**
 - **CRITICAL:** Foundational to product identity; changes ripple everywhere
@@ -587,6 +590,273 @@ Before creating a new .md file, ask:
 
 ---
 
+### CD-015: psyOS (Psychological Operating System) Architecture
+| Field | Value |
+|-------|-------|
+| **Decision** | The Pact will be built as a **psyOS** — a Psychological Operating System — not a habit tracker |
+| **Status** | CONFIRMED |
+| **Date** | 05 January 2026 |
+| **Rationale** | User explicitly chose Blue Sky architecture over MVP; identity conflicts are the core value proposition |
+| **Depends On** | CD-005 (6-Dimension Model), RQ-011 (Multiple Identity Research) |
+| **Blocks** | ALL downstream architecture, schema, UX, and intelligence decisions |
+
+**The Vision:**
+The Pact is not a habit tracker with identity features. It is a **Psychological Operating System** that treats the user as a dynamic system of negotiating parts, not a monolithic self requiring discipline.
+
+**Core Philosophy Shift:**
+
+| Old Frame | New Frame (psyOS) |
+|-----------|-------------------|
+| Habit Tracker | Psychological Operating System |
+| Monolithic Self | Parliament of Selves |
+| Discipline | Governance (Coalition) |
+| Conflict = Bug | Conflict = Core Value |
+| Single Identity | Fractal Identity (Facets) |
+| Linear Progress | Identity Topology (Graph) |
+| Time-only scheduling | State Economics (Bio-energetic) |
+| Generic habits | Polymorphic Habits |
+| AI Assistant | Council AI (Parliament Mediator) |
+| Tree Visualization | Constellation UX (Solar System) |
+
+**7 Core Architectural Elements:**
+
+#### 1. Parliament of Selves
+User is not a monolith but a **Parliament**:
+- **The Self** = Speaker of the House (conscious observer)
+- **Facets** = MPs (each with goals, values, fears, neurochemistry)
+- **Conflict** = Debate to be governed, not bug to be squashed
+- **Goal** = Governance (coalition building), not Tyranny (discipline)
+
+```
+USER = {
+  Self: "The Observer/Decider",
+  Facets: [
+    { name: "The Founder", goals: [...], fears: [...], energy: "high_focus" },
+    { name: "The Father", goals: [...], fears: [...], energy: "social" },
+    { name: "The Athlete", goals: [...], fears: [...], energy: "high_physical" }
+  ],
+  Tensions: [
+    { source: "Founder", target: "Father", score: 0.7 }
+  ]
+}
+```
+
+#### 2. Fractal Trinity (Hierarchical Psychology)
+The Holy Trinity isn't flat — it's fractal:
+
+```sql
+-- THE DEEP SOURCE (Global/Biological)
+CREATE TABLE psychometric_roots (
+  user_id UUID PRIMARY KEY,
+  root_fear TEXT,                    -- "I am unworthy of love" (Core Wound)
+  base_temperament_vector JSONB,     -- Biological baseline (Big 5, etc.)
+  chronotype TEXT                    -- "Wolf" (Night Owl), "Lion" (Early Bird)
+);
+
+-- THE CONTEXTUAL MANIFESTATION (Local)
+CREATE TABLE psychological_manifestations (
+  id UUID PRIMARY KEY,
+  facet_id UUID REFERENCES identity_facets(id),
+  root_id UUID REFERENCES psychometric_roots(user_id),
+  archetype_label TEXT,              -- Root: "Abandoned Child" → Facet: "People Pleaser"
+  resistance_script TEXT,            -- "If I say no, I will be fired (abandoned)"
+  coaching_strategy TEXT             -- "Compassionate Inquiry" vs "Direct Challenge"
+);
+```
+
+**Key Insight:** If you only cure the leaf (specific excuse), the root grows new weeds. AI Coach must link: "Same delay tactic in fitness as career. Perfectionist root again."
+
+#### 3. Identity Topology (Graph Model)
+Facets don't just exist — they **relate**:
+
+```sql
+CREATE TABLE identity_topology (
+  source_facet_id UUID,
+  target_facet_id UUID,
+  interaction_type TEXT,             -- 'SYNERGISTIC', 'ANTAGONISTIC', 'COMPETITIVE'
+  friction_coefficient FLOAT,        -- 0.0 (Flow) to 1.0 (Gridlock)
+  switching_cost_minutes INT         -- Time to reset biology between them
+);
+```
+
+| Interaction Type | Meaning | Example |
+|------------------|---------|---------|
+| SYNERGISTIC | Reinforce each other | "Athlete" + "Morning Person" |
+| ANTAGONISTIC | Directly conflict | "Night Owl" + "Early Riser" |
+| COMPETITIVE | Compete for resources | "Founder" + "Present Father" (time) |
+
+#### 4. State Economics (Bio-Energetic Conflicts)
+Beyond time conflicts — **energy state** conflicts:
+
+| Energy State | Neurochemistry | Recovery Time |
+|--------------|----------------|---------------|
+| `high_focus` | Dopamine/Acetylcholine | 45-90 min |
+| `high_physical` | Adrenaline/Endorphin | 30-60 min |
+| `social` | Oxytocin/Serotonin | 20-40 min |
+| `recovery` | Parasympathetic | 15-30 min |
+
+**Example Conflict:**
+- "Deep Work Coder" (high_focus) → "Present Father" (social)
+- Time may be free, but **switching cost** is massive
+- Detection: Adjacent habits with mismatched energy states
+
+#### 5. Polymorphic Habits
+Same action, different encoding based on active facet:
+
+| Action | Active Facet | Metric | Feedback |
+|--------|--------------|--------|----------|
+| Morning Run | Athlete | Pace, HR Zone | "+10 Physical Points" |
+| Morning Run | Founder | Silence, Ideas | "+10 Clarity Points" |
+| Morning Run | Father | Stress Regulation | "Cortisol burned. Safe to go home." |
+
+**Implementation:** When checking off habit, user validates "Who did this serve?" reinforcing specific neural pathway.
+
+#### 6. Council AI (Roundtable Simulation)
+Not 1:1 chat — **simulate the parliament**:
+
+```
+User: "Should I take this promotion requiring travel?"
+
+[COUNCIL SIMULATION]
+The Executive Agent: "Take it. Growth we promised."
+The Father Agent: "You'll miss soccer practice. Violates 'Present' rule."
+
+Sherlock (Mediator): "Proposal: Take job, negotiate 'No Travel Tuesdays'.
+Executive gets growth; Father gets consistency. Treaty?"
+
+[OPTIONS]
+1. Accept Treaty
+2. Reject — Executive wins
+3. Reject — Father wins
+4. Request different proposal
+```
+
+#### 7. Constellation UX (Solar System)
+Dashboard as **Living Solar System**:
+- **Sun** = The Self (center of gravity)
+- **Planets** = Facets (orbiting)
+  - **Mass** = Habit volume
+  - **Gravity** = Pull on time/energy
+  - **Orbit Distance** = Integration with Core Self
+- **Ignored planets** don't shrink — they **cool** (dim), orbit becomes **erratic** (wobbles)
+
+```
+             ⭐ SELF
+            / | \
+         🔵   🟢   🟠
+        /     |     \
+    Career  Health  Family
+   (LARGE)  (Medium) (WOBBLING)
+
+⚠️ Family planet showing orbital decay
+   Tap to stabilize
+```
+
+**Visual Insight:** User sees their life's gravity distortion in real-time.
+
+---
+
+**Supporting Architectural Elements:**
+
+#### Airlock Protocol (State Transitions)
+When Energy State Conflict detected, insert mandatory **Transition Ritual**:
+```
+"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
+Do not enter yet. 5-minute Box Breathing."
+```
+
+#### Identity Priming (Pavlovian Anchors)
+Nudges shouldn't just remind (Cognitive); they should **prime** (Sensory):
+```
+Trigger: 5 mins before "Deep Work"
+Action: Play Sonic Trigger specific to "Architect" facet
+Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
+         This is the signal. Enter the Cathedral."
+Result: Immediate state shift via sensory anchoring.
+```
+
+#### Keystone Onboarding (Progressive Extraction)
+Don't extract 5 facets on Day 1:
+
+| Day | Session | Extraction |
+|-----|---------|------------|
+| Day 1 | The Hook | ONE Keystone Identity + Holy Trinity Root |
+| Day 3 | The Shadow | "What's being neglected?" → Facet 2 |
+| Day 7+ | The Garden | Unlock full facet creation |
+
+#### Maintenance Mode (Seasonality)
+High performers sequence, not balance:
+
+| Status | Meaning | Habit Load |
+|--------|---------|------------|
+| `active` | Full growth mode | Full daily habits |
+| `maintenance` | Low volume | 1x/week minimum |
+| `dormant` | Parked | No active habits |
+
+Coaching: "You can't be Level 10 Founder AND Level 10 Athlete this quarter. Which is the Driver?"
+
+---
+
+**Schema Summary (psyOS):**
+
+```sql
+-- CORE TABLES
+psychometric_roots           -- Global psychology (root fears, temperament)
+identity_facets              -- User's identity parts (with status, energy)
+psychological_manifestations -- How roots manifest per facet
+identity_topology            -- Relationships between facets (graph)
+habit_facet_links            -- Many-to-many: habits serve facets
+
+-- KEY FIELDS
+identity_facets.status       -- 'active', 'maintenance', 'dormant'
+identity_facets.energy_state -- 'high_focus', 'high_physical', 'social', 'recovery'
+identity_topology.friction_coefficient  -- 0.0-1.0 tension score
+identity_topology.switching_cost_minutes -- Bio-energetic recovery
+```
+
+---
+
+**Impact on Existing Decisions:**
+
+| Decision | Impact |
+|----------|--------|
+| **CD-005** (6-Dimension) | EXTENDED — Dimensions now context-aware per facet |
+| **CD-008** (Identity Coach) | ELEVATED — Coach becomes Parliament Mediator |
+| **CD-009** (Content Library) | EXPANDED — Need facet-specific content + transition rituals |
+| **PD-106** | RESOLVED — Identity Facets model confirmed via psyOS |
+| **PD-107** | RESHAPED — PGS must support Council AI pattern |
+
+---
+
+**New Research Questions Generated:**
+- RQ-012: Fractal Trinity Architecture
+- RQ-013: Identity Topology & Graph Modeling
+- RQ-014: State Economics & Bio-Energetic Conflicts
+- RQ-015: Polymorphic Habits Implementation
+- RQ-016: Council AI (Roundtable Simulation)
+- RQ-017: Constellation UX (Solar System Visualization)
+- RQ-018: Airlock Protocol & Identity Priming
+
+---
+
+**Technical Debt Acknowledgment:**
+User explicitly chose psyOS despite increased complexity:
+> "psyOS architecture is what I want to pursue for launch. Not the MVP Version. I want this despite the technical debt it might incur."
+
+**Accepted Trade-offs:**
+- Higher implementation complexity
+- Longer time to market
+- More sophisticated AI requirements
+- Richer schema with more tables
+- Custom visualization (Constellation UX)
+
+**Mitigations:**
+- Phased rollout (Keystone → Shadow → Garden)
+- Schema designed for progressive enhancement
+- Core value proposition validated before full build
+
+---
+
 ## Pending Decisions — Tier 1 (Foundational)
 
 These decisions BLOCK other work. They must be resolved first.
@@ -750,10 +1020,11 @@ Phase 4 (Blue Sky):
 | Field | Value |
 |-------|-------|
 | **Question** | How should the Proactive Guidance System (PGS) be architected? |
-| **Status** | 🔴 PENDING — Requires Research (RQ-005, RQ-006, RQ-007) |
+| **Status** | 🟡 RESHAPED BY CD-015 — Must integrate Council AI pattern |
 | **Priority** | **CRITICAL** — Defines core intelligence architecture |
 | **Blocking** | Gap Analysis Engine, Recommendation Engine, Content structure |
 | **Supersedes** | Clarifies relationship between JITAI, Content Library, and Identity Coach |
+| **Reshaped By** | CD-015 (psyOS) — PGS must now support Council AI for conflict resolution |
 
 **The Problem:**
 Three overlapping concepts need reconciliation:
@@ -1247,6 +1518,176 @@ await for (final status in _insightsService.captureSignals(
 4. **NEW (Clarification):** The screen IS implemented — decision is about WHAT insights to show, not whether to show them
 5. **NEW:** Should Holy Trinity data (from Sherlock) be displayed back to user here?
 6. **NEW:** Is the current `OnboardingInsightsService` generating the right insights?
+
+---
+
+## Pending Decisions — psyOS Architecture (Generated by CD-015)
+
+These decisions are required to implement the psyOS architecture.
+
+### PD-108: Constellation UX Migration Strategy
+| Field | Value |
+|-------|-------|
+| **Question** | How do we transition from Skill Tree to Constellation (Solar System) visualization? |
+| **Status** | 🔴 PENDING — Requires RQ-017 |
+| **Priority** | **HIGH** — Core visual identity change |
+| **Blocking** | Dashboard redesign, animation implementation |
+| **Generated By** | CD-015 (psyOS Architecture) |
+
+**The Transition Challenge:**
+The current Skill Tree (custom-painted) must be replaced by Constellation UX (animated solar system). This is a significant visual and technical change.
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Big Bang** | Replace Tree with Constellation at launch | Clean cut, no legacy | High risk, big build |
+| **B: Parallel** | Offer both as toggle (Tree/Constellation) | User choice, lower risk | Maintenance burden |
+| **C: Progressive** | Tree → Tree+Orbits → Full Constellation | Gradual, testable | Longer timeline |
+| **D: New Users Only** | Constellation for new, Tree for existing | Split test opportunity | Fragmented experience |
+
+**Questions to Answer:**
+1. What's the minimum viable Constellation (v1)?
+2. Can we A/B test engagement between Tree and Constellation?
+3. What happens to existing users' mental model?
+4. Should Tree remain as simplified "focus mode"?
+
+**Depends On:** RQ-017 (Constellation UX research)
+
+---
+
+### PD-109: Council AI Activation Rules
+| Field | Value |
+|-------|-------|
+| **Question** | When should Council AI (roundtable simulation) be triggered vs normal coaching? |
+| **Status** | 🔴 PENDING — Requires RQ-016 |
+| **Priority** | **CRITICAL** — Prevents feature gimmickry |
+| **Blocking** | AI prompt architecture, voice session design |
+| **Generated By** | CD-015 (psyOS Architecture) |
+
+**The Risk:**
+Council AI could feel gimmicky if overused or triggered inappropriately. Must be reserved for genuine value moments.
+
+**Proposed Activation Rules:**
+
+| Trigger | Council? | Rationale |
+|---------|----------|-----------|
+| Life decision ("Should I take this job?") | ✅ Yes | High stakes, multiple facets affected |
+| Daily habit conflict | ❌ No | Too frequent, use simple coaching |
+| Facet tension score > 0.8 | 🟡 Maybe | Depends on user engagement level |
+| User explicitly requests Council | ✅ Yes | Respect user agency |
+| First major conflict detection | ✅ Yes | Introduce feature with real value |
+
+**Questions to Answer:**
+1. What qualifies as a "life decision" vs routine conflict?
+2. Should Council be voice-only, text-only, or both?
+3. How do we prevent Council fatigue?
+4. Can Council run asynchronously (notification-based)?
+5. What's the user opt-out mechanism?
+
+**Depends On:** RQ-016 (Council AI research)
+
+---
+
+### PD-110: Airlock Protocol User Control
+| Field | Value |
+|-------|-------|
+| **Question** | How much control should users have over Airlock (mandatory transition rituals)? |
+| **Status** | 🔴 PENDING — Requires RQ-018 |
+| **Priority** | **HIGH** — Affects user experience and autonomy |
+| **Blocking** | Airlock implementation, notification design |
+| **Generated By** | CD-015 (psyOS Architecture) |
+
+**The Tension:**
+Airlock is designed to be "mandatory" (insert transition ritual before state change), but forcing rituals risks user frustration and app abandonment.
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Mandatory** | Always show Airlock, no skip | Full value, consistency | User frustration, abandonment |
+| **B: Skippable** | Show Airlock, allow skip | User control | Undermines value |
+| **C: Earned Skip** | Must complete 3x before skip unlocks | Training period | Complex UX |
+| **D: Severity-Based** | Mandatory for high friction, optional for low | Intelligent gating | Detection complexity |
+| **E: User Preference** | Per-facet toggle in settings | Full control | Opt-out risk |
+
+**Questions to Answer:**
+1. What's the minimum Airlock experience (5 sec vs 5 min)?
+2. How do we measure if Airlock is working (state transition quality)?
+3. Should Airlock be different for different energy state pairs?
+4. What's the user feedback loop ("That helped" / "Skip forever")?
+
+**Depends On:** RQ-018 (Airlock & Identity Priming research)
+
+---
+
+### PD-111: Polymorphic Habit Attribution
+| Field | Value |
+|-------|-------|
+| **Question** | Should facet attribution for habits be automatic or user-selected? |
+| **Status** | 🔴 PENDING — Requires RQ-015 |
+| **Priority** | **HIGH** — Core UX decision for habit completion |
+| **Blocking** | Habit completion flow, metrics tracking |
+| **Generated By** | CD-015 (psyOS Architecture) |
+
+**The Trade-off:**
+- **Automatic:** Less friction, but may attribute incorrectly
+- **User-selected:** More accurate, but adds tap per completion
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Auto-primary** | Attribute to primary linked facet | Fast, no friction | May miss multi-facet value |
+| **B: Auto-multi** | Attribute to all linked facets equally | Comprehensive | Dilutes meaning |
+| **C: User-select** | Ask "Who did this serve?" on each completion | Accurate, reinforcing | Friction |
+| **D: Occasional ask** | Auto most, ask 20% of time | Balance | Inconsistent experience |
+| **E: Context-aware** | AI infers from time/location/pattern | Smart, low friction | Inference errors |
+
+**Questions to Answer:**
+1. Does the "Who did this serve?" prompt add value or friction?
+2. Can we infer from context (morning run before work = Founder; morning run on weekend = Father)?
+3. Should users be able to override attribution retroactively?
+4. How does attribution affect gamification (points per facet)?
+
+**Depends On:** RQ-015 (Polymorphic Habits research)
+
+---
+
+### PD-112: Identity Priming Audio Strategy
+| Field | Value |
+|-------|-------|
+| **Question** | How should audio assets for Identity Priming be sourced and customized? |
+| **Status** | 🔴 PENDING — Requires RQ-018 |
+| **Priority** | **MEDIUM** — Differentiating feature but not blocking |
+| **Blocking** | Asset pipeline, notification design |
+| **Generated By** | CD-015 (psyOS Architecture) |
+
+**The Vision:**
+Identity Priming uses sensory triggers (audio + voice) to prime the user for a state shift:
+```
+Trigger: 5 mins before "Deep Work"
+Audio: Hans Zimmer-style drone
+Voice: "You are a builder. The world is noise. This is the signal."
+```
+
+**Options:**
+
+| Option | Description | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Pre-built library** | Ship 10-20 curated audio primes | Consistent quality, fast | Limited variety |
+| **B: AI-generated** | Generate audio on-demand with AI | Infinite variety | Quality inconsistent, cost |
+| **C: User-selected** | User uploads their own audio | Personal, powerful | Setup friction |
+| **D: Hybrid** | Library + AI fallback + user option | Best of all | Complex to build |
+
+**Questions to Answer:**
+1. What audio characteristics prime state effectively? (Research needed)
+2. Should voice be TTS or human-recorded?
+3. How do we handle audio in notification-only contexts (silent mode)?
+4. What's the licensing situation for "Hans Zimmer style" audio?
+5. Should each facet have a unique sonic signature?
+
+**Depends On:** RQ-018 (Airlock & Identity Priming research)
 
 ---
 

@@ -1,9 +1,9 @@
 # ROADMAP.md — The Pact
 
 > **Last Updated:** 05 January 2026
-> **Current Strategy:** Phase-based Development with Parallel Tracks
-> **Target Launch:** 16 Jan 2026
-> **Identity:** Identity Evidence Engine
+> **Current Strategy:** psyOS Architecture with Phase-based Development
+> **Target Launch:** TBD (CD-015 psyOS requires revised timeline)
+> **Identity:** Psychological Operating System (psyOS)
 
 ---
 
@@ -38,8 +38,22 @@ Track G (Identity)     ████ blocked   ░            ░           ░�
 - Product Decisions (PD-XXX) — Pending choices
 - Confirmed Decisions (CD-XXX) — Locked choices
 
-**Currently Blocking:**
-- RQ-011 (Multiple Identities) → Blocks Phase 1 schema
+**Major Decision: CD-015 — psyOS Architecture**
+On 05 January 2026, the decision was made to pursue **psyOS (Psychological Operating System)** architecture for launch, not the simpler MVP approach. This generates new research questions:
+
+**psyOS Research Queue (CRITICAL):**
+- RQ-012: Fractal Trinity Architecture
+- RQ-013: Identity Topology & Graph Modeling
+- RQ-014: State Economics & Bio-Energetic Conflicts
+- RQ-015: Polymorphic Habits Implementation
+- RQ-016: Council AI (Roundtable Simulation)
+- RQ-017: Constellation UX (Solar System Visualization)
+- RQ-018: Airlock Protocol & Identity Priming
+
+**Resolved:**
+- ~~RQ-011 (Multiple Identities)~~ → ✅ Resolved via CD-015
+
+**Still Blocking:**
 - RQ-005/006 (Proactive Guidance) → Blocks Phase 2 intelligence
 - RQ-010 (Permission Data) → Blocks Phase 2 JITAI refinement
 
@@ -91,10 +105,128 @@ These are parked until blocking decisions are made.
 
 | Feature | Blocking Decision |
 |---------|-------------------|
-| Living Garden | Visualization philosophy TBD |
+| Living Garden | SUPERSEDED by Constellation UX (CD-015) |
 | Conversational CLI | CD-004 rejected this |
 | Power Words / Lexicon | Content strategy TBD |
-| Shadow Dialogue | IFS integration TBD |
+| Shadow Dialogue | Now part of Council AI (CD-015) |
+
+---
+
+## 🧠 psyOS Implementation Roadmap (CD-015)
+
+The psyOS architecture represents a fundamental shift from "habit tracker" to "Psychological Operating System." This section outlines the implementation phases.
+
+### psyOS Philosophy
+```
+OLD: Habit Tracker with Identity Features
+NEW: Psychological Operating System
+
+Key Shifts:
+- Monolithic Self → Parliament of Selves
+- Discipline → Governance (Coalition)
+- Conflict = Bug → Conflict = Core Value
+- Linear Progress → Identity Topology (Graph)
+- Time Scheduling → State Economics (Bio-energetic)
+- Generic Habits → Polymorphic Habits
+- AI Assistant → Council AI (Parliament Mediator)
+- Tree Visualization → Constellation UX (Solar System)
+```
+
+### psyOS Implementation Phases
+
+```
+PHASE A: Schema & Foundation
+├── psychometric_roots table (Root fears, temperament)
+├── identity_facets table (with status, energy_state)
+├── psychological_manifestations table (Fractal Trinity)
+├── identity_topology table (Graph relationships)
+└── habit_facet_links table (Many-to-many)
+
+PHASE B: Core Intelligence
+├── Fractal Trinity extraction (Sherlock updates)
+├── Identity Topology inference
+├── Energy State detection
+├── Tension Score calculation (0.0-1.0)
+└── JITAI integration with facets
+
+PHASE C: Council AI
+├── Multi-agent prompt architecture
+├── Facet agent character design
+├── Treaty proposal mechanics
+├── Async Council notifications
+└── Voice + text integration
+
+PHASE D: Constellation UX
+├── Solar System visualization
+├── Planet metrics mapping
+├── Orbital mechanics (decay, wobble)
+├── Interaction design
+└── Migration from Skill Tree
+
+PHASE E: Airlock & Priming
+├── Energy state conflict detection
+├── Transition ritual content
+├── Audio asset pipeline
+├── Identity Priming notifications
+└── Effectiveness measurement
+```
+
+### psyOS Task Breakdown
+
+| Phase | Component | RQ | PD | Status |
+|-------|-----------|----|----|--------|
+| **A** | `psychometric_roots` schema | RQ-012 | — | 🔴 Needs research |
+| **A** | `identity_facets` with status | RQ-011 ✅ | — | 🟢 Ready to implement |
+| **A** | `identity_topology` schema | RQ-013 | — | 🔴 Needs research |
+| **A** | `habit_facet_links` schema | RQ-015 | PD-111 | 🔴 Needs research |
+| **B** | Fractal Trinity extraction | RQ-012 | — | 🔴 Needs research |
+| **B** | Topology inference | RQ-013 | — | 🔴 Needs research |
+| **B** | Energy State detection | RQ-014 | — | 🔴 Needs research |
+| **B** | Tension Score calculation | — | — | 🟡 Design ready |
+| **C** | Council AI prompts | RQ-016 | PD-109 | 🔴 Needs research |
+| **C** | Treaty mechanics | RQ-016 | — | 🔴 Needs research |
+| **D** | Constellation visualization | RQ-017 | PD-108 | 🔴 Needs research |
+| **D** | Skill Tree migration | — | PD-108 | 🔴 Needs decision |
+| **E** | Airlock triggers | RQ-018 | PD-110 | 🔴 Needs research |
+| **E** | Identity Priming audio | RQ-018 | PD-112 | 🔴 Needs research |
+
+### psyOS Schema Summary
+
+```sql
+-- CORE TABLES (New for psyOS)
+psychometric_roots           -- Global psychology (root fears, temperament)
+identity_facets              -- User's identity parts (with status, energy)
+psychological_manifestations -- How roots manifest per facet
+identity_topology            -- Relationships between facets (graph)
+habit_facet_links            -- Many-to-many: habits serve facets
+
+-- KEY FIELDS
+identity_facets.status       -- 'active', 'maintenance', 'dormant'
+identity_facets.energy_state -- 'high_focus', 'high_physical', 'social', 'recovery'
+identity_topology.friction_coefficient  -- 0.0-1.0 tension score
+identity_topology.switching_cost_minutes -- Bio-energetic recovery
+```
+
+### Critical Path for psyOS
+
+```
+RQ-012 (Fractal Trinity) ─────┐
+RQ-016 (Council AI) ──────────┼──→ Phase A + C = Core psyOS Value
+RQ-013 (Topology) ────────────┘
+
+RQ-017 (Constellation) ───────┐
+RQ-015 (Polymorphic) ─────────┼──→ Phase D + Habits = UX Differentiator
+                              │
+RQ-014 (State Economics) ─────┤
+RQ-018 (Airlock/Priming) ─────┴──→ Phase E = Full psyOS Experience
+```
+
+**Recommended Research Order:**
+1. **RQ-012 + RQ-016** (Signature features — Fractal Trinity + Council AI)
+2. **RQ-013** (Identity Topology — needed for conflict detection)
+3. **RQ-014 + RQ-018** (Energy States + Airlock — closely related)
+4. **RQ-015** (Polymorphic Habits — UX enhancement)
+5. **RQ-017** (Constellation UX — visual overhaul)
 
 ---
 
