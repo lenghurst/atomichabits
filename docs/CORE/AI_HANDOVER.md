@@ -36,44 +36,47 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `rq-011-multiple-identity-research` |
+| **Session ID** | `rq-011-deep-think-validation` |
 | **Date** | 05 January 2026 |
-| **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~45 minutes |
-| **Focus** | RQ-011 Multiple Identity Architecture Research |
+| **Agent** | Claude (Opus 4.5) + Google Deep Think |
+| **Duration** | ~90 minutes |
+| **Focus** | RQ-011 Research + Deep Think External Validation |
 
 ### What Was Accomplished (This Session)
 
 **Key Changes Made:**
 
-1. **RQ-011: Multiple Identity Architecture — ✅ RESEARCH COMPLETE**
-   - Explored current identity data model in codebase
-   - Analyzed three philosophical frames (Integration/IFS, Context-Switching, Hierarchy)
-   - Evaluated four architecture options (Single, Flat Multiple, Hierarchical, Facets)
-   - **Recommended: Identity Facets Model** — One Self with multiple facets
-   - Designed conflict detection strategies (temporal, resource, value, behavioral)
-   - Proposed dashboard UX (unified tree with facet branches)
-   - Documented migration path (4 phases)
+1. **RQ-011: Multiple Identity Architecture — ✅ RESEARCH COMPLETE + VALIDATED**
+   - Initial research by Claude (Identity Facets model)
+   - **External validation by Google Deep Think**
+   - Model validated with critical refinements identified
 
-2. **RESEARCH_QUESTIONS.md Updates**
-   - RQ-011 status changed: 🔴 NEEDS RESEARCH → ✅ RESEARCH COMPLETE
-   - Added comprehensive research findings (schema, recommendations, migration)
-   - Updated Decision Dependencies to reflect RQ-011 completion
-   - PD-106 now marked as READY FOR DECISION
+2. **Deep Think Critical Findings:**
+   - **Invariance Fallacy**: Holy Trinity manifestations differ by domain (Sherlock must contextualize)
+   - **Energy Blind Spot**: Missing State Switching conflicts (not just Time conflicts)
+   - **New: Maintenance Mode** — High performers sequence, not balance ("Driver vs Passenger")
+   - **New: Keystone Onboarding** — 1 facet Day 1, progressive unlock over 7 days
+   - **New: Archetypal Templates** — Hardcoded dimension adjustments (users can't self-report)
+   - **New: Tension Score** — Graded (0.0-1.0), not binary conflicts
 
-3. **PRODUCT_DECISIONS.md Updates**
-   - PD-106 status changed: 🔴 PENDING → 🟡 READY FOR DECISION
-   - Added research findings and recommendations
-   - Proposed schema for `identity_facets` and `habit_facet_links` tables
-   - Clear decision options for Oliver to choose from
+3. **Blue Sky Architecture Documented:**
+   - **Parliament of Selves** — User as dynamic system of negotiating parts
+   - **Fractal Trinity** — Root archetypes with contextual manifestations
+   - **Identity Topology** — Graph-based facet relationships
+   - **Polymorphic Habits** — Same action, different encoding by context
+   - **Council AI** — Roundtable simulation for conflict resolution
+   - **Constellation UX** — Solar system visualization
 
-4. **Key Research Findings:**
-   - Current: Single identity enforced at DB level (`UNIQUE (user_id)`)
-   - Recommendation: "Identity Facets" model preserving unified Self
-   - Holy Trinity stays unified (psychological patterns consistent)
-   - Aspirational facets can diverge (up to 5 soft limit)
-   - Conflicts are coaching opportunities, not bugs
-   - Habits link to facets via many-to-many relationship
+4. **Schema Refined:**
+   - Added `status` field: `active`, `maintenance`, `dormant`
+   - Added `archetypal_template` for hardcoded presets
+   - Added `tension_scores` JSONB for graded conflicts
+   - Added `energy_state` to habit_facet_links
+
+5. **Guardrails Added:**
+   - "Ought Self" detection (Sherlock asks: want vs should)
+   - Capacity cap: 3 Active Facets for new users
+   - Visual tree "leaning" for imbalance feedback
 
 ---
 
@@ -287,6 +290,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude + Deep Think | `claude/pact-session-setup-QVINO` | RQ-011 + Deep Think Validation | ✅ Model validated, Blue Sky architecture documented, schema refined with status/energy fields |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | RQ-011 Research | ✅ Research complete: Identity Facets model recommended, PD-106 ready for decision |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Roadmap Restructure | Phases replace Layers, RQ-010/011, PD-106/107, PGS hierarchy, Track G-0 complete |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | GLOSSARY Review | Deprecated Hexis Score, documented Shadow Presence, prioritized Gap Analysis Engine |

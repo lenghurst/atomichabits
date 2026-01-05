@@ -649,39 +649,85 @@ Users have multiple aspirational identities ("Worldclass SaaS Salesman" + "Consi
 
 ---
 
-#### Proposed Schema
+#### Proposed Schema (Refined with Deep Think Input)
 
 ```sql
 CREATE TABLE identity_facets (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL,
-  domain TEXT NOT NULL,          -- "professional", "physical", "relational"
-  label TEXT NOT NULL,           -- "Early Riser"
-  aspiration TEXT,               -- "I wake before the world awakens"
-  dimension_adjustments JSONB,   -- Per-facet tweaks to base dimensions
-  conflicts_with UUID[],         -- Array of conflicting facet IDs
-  integration_status TEXT,       -- "harmonized", "in_tension", "unexamined"
-  created_at TIMESTAMPTZ
+  domain TEXT NOT NULL,              -- "professional", "physical", "relational", "temporal"
+  label TEXT NOT NULL,               -- "Early Riser"
+  aspiration TEXT,                   -- "I wake before the world awakens"
+
+  -- Seasonality (Deep Think addition)
+  status TEXT DEFAULT 'active',      -- 'active', 'maintenance', 'dormant'
+
+  -- Per-facet behavioral adjustments
+  dimension_adjustments JSONB,       -- Per-facet tweaks (or use Archetypal Template)
+  archetypal_template TEXT,          -- "Entrepreneur", "Parent", "Athlete" (hardcoded presets)
+
+  -- Conflict tracking
+  conflicts_with UUID[],             -- Array of conflicting facet IDs
+  tension_scores JSONB,              -- {"facet_id": 0.7} (graded, not binary)
+  integration_status TEXT,           -- "harmonized", "in_tension", "unexamined"
+
+  created_at TIMESTAMPTZ,
+  last_reflected_at TIMESTAMPTZ
 );
 
 CREATE TABLE habit_facet_links (
   habit_id UUID NOT NULL,
   facet_id UUID NOT NULL,
   contribution_weight FLOAT DEFAULT 1.0,
+  energy_state TEXT,                 -- 'high_focus', 'high_physical', 'social', 'recovery'
   PRIMARY KEY (habit_id, facet_id)
 );
+
+-- Archetypal Templates (Hardcoded for MVP)
+-- "Entrepreneur": {"risk_tolerance": +0.2, "action_orientation": +0.3}
+-- "Parent": {"social_rhythmicity": +0.2}
+-- "Athlete": {"temporal_discounting": -0.2}
 ```
 
 ---
 
-#### Migration Path
+#### Migration Path (Updated with Deep Think)
 
 ```
-Phase 1 (MVP): Add facets table, optional linking
-Phase 2: Dashboard shows facets (optional view)
-Phase 3: Sherlock extracts facets during onboarding
-Phase 4: Conflict detection + coaching
+Phase 1 (MVP - Jan 16):
+├── Add identity_facets table with status field
+├── 1 Keystone Facet only at onboarding
+├── Archetypal Templates (hardcoded dimension adjustments)
+└── Time conflicts only (defer Energy)
+
+Phase 2 (Post-Launch):
+├── Dashboard shows facets (optional view)
+├── Users organize existing habits into facets
+├── Add energy_state tagging to habits
+└── Tension Score (graded conflicts)
+
+Phase 3 (Q2):
+├── Sherlock extracts multiple facets progressively
+├── Day 1: Keystone, Day 3: Shadow, Day 7+: Garden
+└── AI-inferred dimension adjustments
+
+Phase 4 (Blue Sky):
+├── Energy State conflict detection
+├── Airlock Protocol (transition rituals)
+├── Council AI (roundtable simulation)
+└── Constellation UX (solar system)
 ```
+
+---
+
+#### Deep Think Guardrails
+
+| Risk | Guardrail | Implementation |
+|------|-----------|----------------|
+| "Ought Self" | Sherlock asks: "Do you *want* this or *should* this?" | Prompt engineering |
+| Capacity overload | Hard limit: 3 Active Facets for new users | Schema constraint |
+| Tree imbalance | Visual "leaning" when facets uneven | UI feedback |
+| Cognitive overload | Keystone onboarding (1 facet Day 1) | Onboarding flow |
 
 ---
 

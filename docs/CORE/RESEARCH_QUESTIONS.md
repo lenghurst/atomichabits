@@ -650,6 +650,227 @@ Phase 4: Conflict detection + coaching
 
 ---
 
+#### External Validation: Google Deep Think Analysis (05 Jan 2026)
+
+**Verdict:** Model validated with critical refinements required.
+
+##### What Deep Think Validated ✅
+
+| Element | Status | Notes |
+|---------|--------|-------|
+| Identity Facets model | ✅ Validated | Maps to IFS + CAPS literature |
+| Unified Self philosophy | ✅ Validated | Correct frame for high-functioning adults |
+| Conflicts as coaching | ✅ Validated | Core differentiator |
+| Unified Tree UX | ✅ Validated | Recommended with "leaning tree" enhancement |
+
+##### Critical Gaps Identified ⚠️
+
+**1. The Invariance Fallacy**
+> "You assume the Resistance Lie is consistent across domains. It is not."
+
+| Root Archetype | Work Manifestation | Health Manifestation |
+|----------------|-------------------|---------------------|
+| Perfectionist | "I need to research more" | "I'll start Monday when it's perfect" |
+| Rebel | "Don't tell me what to do" | "I work out when I feel like it" |
+
+**Fix:** Don't split Holy Trinity table. Instruct Sherlock (AI) to **contextualize** the archetype per-facet. DB stores Root; prompt injects Manifestation.
+
+**2. The Energy Blind Spot**
+> "You are tracking Time conflicts but ignoring **Energy State** conflicts."
+
+Current conflicts (Time, Resource, Value) miss **State Switching** costs:
+- "Deep Work Coder" (High Cognitive, Low Arousal) → "Present Father" (High Emotional, High Arousal)
+- Time is free, but **switching cost** is massive
+
+**New Conflict Type: Energy State**
+```
+Tag habits with energy_state:
+- high_focus (Dopamine/Acetylcholine)
+- high_physical (Adrenaline/Endorphin)
+- social (Oxytocin/Serotonin)
+- recovery (Parasympathetic)
+
+Flag adjacent mismatched states.
+```
+
+##### New Architectural Elements
+
+**1. Maintenance Mode (Seasonality)**
+> "High performers don't balance; they sequence."
+
+Add `status` field to facets:
+- `active` — Full habit load, growth expected
+- `maintenance` — Low volume (1x/week), no streak anxiety
+- `dormant` — Parked, no habits active
+
+Coaching: "You can't be Level 10 Founder AND Level 10 Athlete this quarter. Which is the Driver?"
+
+**2. Tension Score (Graded Conflicts)**
+Move from binary (conflict/no-conflict) to continuous:
+```
+0.0-0.3: Synergy (habits reinforce each other)
+0.4-0.6: Neutral (independent)
+0.7-0.8: Friction (needs attention)
+0.9-1.0: Incompatibility (hard choice required)
+```
+
+**3. Keystone Onboarding**
+> "Extracting 5 facets on Day 1 is cognitive suicide."
+
+| Day | Action | Extraction |
+|-----|--------|------------|
+| Day 1 | The Hook | ONE Keystone Identity |
+| Day 3 | The Shadow | "What's being neglected?" → Facet 2 |
+| Day 7+ | The Garden | Unlock full facet creation |
+
+**4. Archetypal Templates**
+> "Users cannot self-report dimension adjustments."
+
+Hardcode templates for launch:
+```json
+"Entrepreneur": {"risk_tolerance": +0.2, "action_orientation": +0.3}
+"Parent": {"social_rhythmicity": +0.2}
+"Athlete": {"temporal_discounting": -0.2}
+```
+
+Later: AI infers from behavior.
+
+**5. Airlock Protocol (State Transitions)**
+When Energy State Conflict detected, insert **Transition Ritual**:
+```
+"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
+Do not enter yet. 5-minute Box Breathing."
+```
+
+**6. High Leverage Habits**
+If habit serves multiple facets, frame as **double vote**:
+```
+"This 10-minute meditation centers the Founder and grounds the Father.
+Double vote."
+```
+
+**7. Conflict Silence**
+If `tension_score > 0.8` (Active Conflict), **suppress nudges**. Don't nag about reading when user is pulling an all-nighter.
+
+##### Guardrails Added
+
+| Risk | Guardrail |
+|------|-----------|
+| "Ought Self" (external pressure identities) | Sherlock asks: "Do you *want* this, or *should* this?" |
+| Capacity overload | Hard limit: 3 Active Facets for new users |
+| Tree imbalance | Visual feedback: Tree "leans" when facets uneven |
+
+---
+
+#### Blue Sky Architecture (No Time Constraints)
+
+**Philosophy Shift:** From "Habit Tracker" to **Psychological Operating System (psyOS)**.
+
+##### 1. Parliament of Selves
+User is not a monolith but a **Parliament**:
+- **The Self** = Speaker of the House (conscious observer)
+- **Facets** = MPs (each with goals, values, fears, neurochemistry)
+- **Conflict** = Debate to be governed, not bug to be squashed
+- **Goal** = Governance (coalition), not Tyranny (discipline)
+
+##### 2. Fractal Trinity (Hierarchical Blocks)
+```sql
+-- THE DEEP SOURCE (Global/Biological)
+CREATE TABLE psychometric_roots (
+  user_id UUID PRIMARY KEY,
+  root_fear TEXT,                    -- "I am unworthy of love" (Core Wound)
+  base_temperament_vector JSONB,     -- Biological baseline
+  chronotype TEXT                    -- "Wolf" (Night Owl)
+);
+
+-- THE CONTEXTUAL MANIFESTATION (Local)
+CREATE TABLE psychological_manifestations (
+  id UUID PRIMARY KEY,
+  facet_id UUID REFERENCES identity_facets(id),
+  root_id UUID REFERENCES psychometric_roots(user_id),
+  archetype_label TEXT,              -- Root: "Abandoned Child" → Facet: "People Pleaser"
+  resistance_script TEXT,            -- "If I say no, I will be fired (abandoned)"
+  coaching_strategy TEXT             -- "Compassionate Inquiry" vs "Direct Challenge"
+);
+```
+
+**Insight:** If you only cure the leaf (specific excuse), the root grows new weeds. AI Coach must link: "Same delay tactic in fitness as career. Perfectionist root again."
+
+##### 3. Identity Topology (Graph Model)
+```sql
+CREATE TABLE identity_topology (
+  source_facet_id UUID,
+  target_facet_id UUID,
+  interaction_type TEXT,             -- 'SYNERGISTIC', 'ANTAGONISTIC', 'COMPETITIVE'
+  friction_coefficient FLOAT,        -- 0.0 (Flow) to 1.0 (Gridlock)
+  switching_cost_minutes INT         -- Time to reset biology between them
+);
+```
+
+##### 4. Polymorphic Habits
+Same action, different encoding based on active facet:
+
+| Action | Active Facet | Metric | Feedback |
+|--------|--------------|--------|----------|
+| Morning Run | Athlete | Pace, HR Zone | "+10 Physical Points" |
+| Morning Run | Founder | Silence, Ideas | "+10 Clarity Points" |
+| Morning Run | Father | Stress Regulation | "Cortisol burned. Safe to go home." |
+
+**Implementation:** When checking off habit, user validates "Who did this?" reinforcing specific neural pathway.
+
+##### 5. Council AI (Roundtable Simulation)
+Instead of 1:1 chat, **simulate the parliament**:
+
+```
+User: "Should I take this promotion requiring travel?"
+
+The Executive Agent: "Take it. Growth we promised."
+The Father Agent: "You'll miss soccer practice. Violates 'Present' rule."
+
+Sherlock (Mediator): "Proposal: Take job, negotiate 'No Travel Tuesdays'.
+Executive gets growth; Father gets consistency. Treaty?"
+```
+
+##### 6. Constellation UX (Solar System)
+Dashboard as **Living Solar System**:
+- **Sun** = The Self (center)
+- **Planets** = Facets (orbiting)
+  - **Mass** = Habit volume
+  - **Gravity** = Pull on time/energy
+  - **Orbit Distance** = Integration with Core Self
+- **Entropy**: Ignored planet doesn't shrink — it **cools** (dims), orbit becomes **erratic** (wobbles)
+
+**Visual Insight:** Massive "Career" planet pulling "Health" planet out of orbit. User sees life's gravity distortion.
+
+##### 7. Identity Priming (Pavlovian Anchors)
+Nudges shouldn't just remind (Cognitive); they should **prime** (Sensory):
+
+```
+Trigger: 5 mins before "Deep Work"
+Action: Play Sonic Trigger specific to "Architect" facet
+Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
+         This is the signal. Enter the Cathedral."
+Result: Immediate state shift via sensory anchoring.
+```
+
+---
+
+#### MVP vs Blue Sky Summary
+
+| Element | MVP (Jan 16) | Blue Sky |
+|---------|--------------|----------|
+| Schema | `identity_facets` + `status` field | + `psychometric_roots` + `identity_topology` |
+| Onboarding | 1 Keystone Facet | Progressive extraction over 7 days |
+| Dimensions | Archetypal Templates (hardcoded) | AI-inferred from behavior |
+| Conflicts | Time only | + Energy State + Identity Standard |
+| Detection | Binary | Tension Score (0.0-1.0) |
+| Resolution | Surface → Socratic | + Airlock + Council AI |
+| UX | Unified Tree | Constellation (Solar System) |
+| Habits | Single encoding | Polymorphic (context-aware) |
+| JITAI | Facet-aware messages | + Identity Priming (sensory) |
+
+---
+
 ## Implementation Tasks from Research
 
 **Purpose:** Track actionable items generated by completed research.
