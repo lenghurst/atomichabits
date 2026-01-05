@@ -118,6 +118,11 @@ This prevents:
 | `ios/Runner/Info.plist` | Rename `CFBundleURLSchemes` to `thepact` |
 | `docs/CORE/PRODUCT_DECISIONS.md` | Single source of truth for philosophy |
 
+### Recently Archived
+| File | Reason |
+|------|--------|
+| `docs/archive/PRODUCT_VISION.md` | Content consolidated into PRODUCT_DECISIONS.md (05 Jan 2026) |
+
 ---
 
 ## Handover Checklist for Incoming Agent
@@ -144,9 +149,10 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
-| 05 Jan 2026 | Claude (Opus) | `claude/docs-core-restructure-b6wmg` | Core docs restructure | Created CORE folder, handover template, glossary, product decisions |
+| 05 Jan 2026 | Claude (Opus) | `claude/explore-onboarding-codebase-b6wmg` | Session continuation | Archived PRODUCT_VISION.md, updated handover |
 | 05 Jan 2026 | Gemini | `main` | Phase 68 & Docs Restructure | Closed Phase 68, Merged Core Docs, Created Product Vision |
 | 05 Jan 2026 | Claude (Opus) | `claude/docs-core-restructure-b6wmg` | Core docs restructure | Created CORE folder, handover template, glossary, product decisions |
+| 04 Jan 2026 | Gemini | `main` | Phase 68 onboarding fixes | Integration tests, security fix, analytics, bug fixes |
 
 ---
 

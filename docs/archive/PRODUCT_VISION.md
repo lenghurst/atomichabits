@@ -1,7 +1,15 @@
+> **⚠️ DEPRECATED — ARCHIVED 05 January 2026**
+>
+> This document has been superseded by `/docs/CORE/PRODUCT_DECISIONS.md`.
+> Content has been consolidated into the structured decision framework.
+> Kept for historical reference only.
+
+---
+
 # Product Vision: The Pact (V4)
 
 **Last Updated:** 2026-01-05
-**Status:** Living Document
+**Status:** ARCHIVED (see PRODUCT_DECISIONS.md)
 
 ## 1. Brand Identity & URL Schema
 - **Decision:** The app is **The Pact**, not "Atomic Habits".
