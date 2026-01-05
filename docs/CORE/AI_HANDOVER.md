@@ -36,41 +36,59 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `identity-coach-elevation-session` |
+| **Session ID** | `protocol-refinement-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~30 minutes (clarification session) |
-| **Focus** | Identity Coach Elevation + Doc Maintenance Protocol |
+| **Duration** | ~45 minutes (comprehensive refinements) |
+| **Focus** | 8 User Action Items — Protocol and Documentation Refinements |
 
 ### What Was Accomplished
-- **🎯 IDENTITY COACH ELEVATED TO CORE VALUE PROPOSITION:**
-  - Renamed `PROACTIVE_ENGINE_SPEC.md` → `IDENTITY_COACH_SPEC.md`
-  - Reframed from "analytics engine" to "identity transformation coach"
-  - Documented key distinction: JITAI (WHEN) vs Content Library (WHAT) vs Identity Coach (WHO + HOW)
 
-- **📋 DECISIONS CLARIFIED/ADDED (CD-007 to CD-012):**
-  - CD-007: Clarified as "6+1 Model" (6 core dimensions now, 7th blocked until social features)
-  - CD-008: Elevated to "Identity Development Coach" (not just analytics)
-  - CD-011: Architecture Ramifications (onboarding extracts Aspirational Identity, dashboard adds recommendations)
-  - CD-012: Git Branching Protocol (feature branches, human merges to main)
+**8 Action Items Completed:**
 
-- **📚 DOCUMENTATION ENHANCED:**
-  - Added doc maintenance protocol to README.md (preventing reality drift)
-  - Added "Why Each Doc Exists" reference table to README.md
-  - Added cross-doc consistency checks
+1. **CD-012: Git Workflow → Push to Main**
+   - Changed from feature branches to direct push to main
+   - Rationale: Linear workflow, one agent at a time
+   - Added pre-commit safeguards
 
-- **🔍 CRITICAL DISTINCTION DOCUMENTED:**
-  ```
-  JITAI = WHEN to intervene (reactive timing)
-  Content Library = WHAT to say in interventions
-  Identity Coach = WHO to become + HOW to get there
-  ```
-  **The Identity Coach is not an add-on — it's the reason the app exists.**
+2. **Cross-Doc Consistency Expanded**
+   - All 11 Core docs now categorized (Static/Dynamic/Ephemeral)
+   - Tiered checking system (Always/If Relevant/Rarely)
+   - Cross-reference matrix added
 
-### Previous Session (for reference)
-- **🎉 RESEARCH COMPLETE:** ChatGPT + Gemini research synthesized into 6-dimension model
-- **📚 CORE DOCS CREATED:** AI_AGENT_PROTOCOL.md, IMPACT_ANALYSIS.md
-- **✅ PROTOCOLS ESTABLISHED:** 6 mandatory AI behaviors
+3. **Decision Flow Diagram Created**
+   - Added to AI_AGENT_PROTOCOL.md
+   - 4-level hierarchy: Context → Classification → Dependencies → Impact → Execute
+
+4. **Habit vs Ritual Definitions**
+   - Added foundational definitions to GLOSSARY.md
+   - Internal (data layer) and External (UI layer) perspectives
+   - Identity Coach role documented for each
+
+5. **CD-013: UI Logic Separation Principle**
+   - UI = presentation only; logic in services/providers
+   - Enables "vibe coding" for AI-assisted development
+   - RQ-005 created for further research
+
+6. **CD-014: Core File Creation Guardrails**
+   - Agents must use existing 11 Core files first
+   - New .md files require human approval
+   - Table of which info goes where
+
+7. **Track G: Identity Coach in ROADMAP**
+   - Full dependency chain documented
+   - RQ-006 created (Identity Roadmap research)
+   - 10-step implementation sequence
+
+8. **CD Items Reordered by Dependency Tier**
+   - Tier 0-6 hierarchy documented
+   - Quick reference table with impact levels
+   - Dependency map visualization
+
+### Previous Sessions (for reference)
+- **Identity Coach Elevation:** Renamed PROACTIVE_ENGINE_SPEC → IDENTITY_COACH_SPEC
+- **Research Complete:** ChatGPT + Gemini synthesized into 6-dimension model
+- **Protocols Established:** 6 mandatory AI behaviors
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -176,6 +194,7 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Protocol Refinements | 8 action items: Git workflow, cross-doc checks, decision flow, Habit/Ritual defs, CD-013/14, Track G |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Identity Coach Elevation | Elevated Identity Coach as core value prop, added CD-011/CD-012, doc maintenance protocol |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Research Coordination | Aligned ChatGPT + Gemini research for PD-001 |
 | 05 Jan 2026 | Claude (Opus) | `claude/setup-ai-coordination-ZSkqC` | AI Coordination Setup | Expanded PRODUCT_DECISIONS.md with codebase context, created root symlink |
