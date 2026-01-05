@@ -204,44 +204,86 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 
 ---
 
-### RQ-005: UI Logic Separation for AI-Assisted Development
+### RQ-005: Proactive Recommendation Algorithms
 
 | Field | Value |
 |-------|-------|
-| **Question** | What are best practices for articulating UI/logic separation that enables effective "vibe coding"? |
+| **Question** | What algorithms should drive identity-aligned habit/ritual recommendations? |
 | **Status** | 🔴 NEEDS RESEARCH |
-| **Blocking** | CD-013 refinement |
+| **Blocking** | CD-008 (Identity Coach), PD-105 (AI Coaching Architecture) |
+| **Priority** | **CRITICAL** — Core value proposition |
 | **Assigned** | Any agent |
+| **Source** | IDENTITY_COACH_SPEC.md |
 
-**Context:**
-The Pact uses Flutter with Riverpod for state management. We want UI files to contain ONLY presentation logic so that:
-1. AI agents can safely modify UI without breaking business logic
-2. Business logic can be tested without UI
-3. "Vibe coding" (rapid UI iteration) is safe
+**Sub-Questions:**
 
-**Research Questions:**
-1. What patterns do production Flutter apps use for strict UI/logic separation?
-2. How do other AI-assisted development teams articulate this principle?
-3. What linting rules or code review checks can enforce this?
-4. How does this apply to animation logic (UI or business)?
-5. Where does navigation routing logic belong?
+| Sub-Question | Notes |
+|--------------|-------|
+| What algorithms recommend identity-aligned goals? | Collaborative filtering? Content-based? Hybrid? |
+| How do we avoid overwhelming users? | Rate limiting, importance scoring |
+| How does this integrate with JITAI? | Same bandit? Separate system? (See PD-105) |
+| What's the feedback loop? | How do we learn if recommendations worked? |
+| How do we handle user rejection? | Snooze vs dismiss vs never show again |
 
 **Output Expected:**
-- Code pattern examples (✅ correct vs ❌ wrong)
-- Linting configuration recommendations
-- Boundary definitions (what counts as "UI" vs "logic")
+- Algorithm recommendation with rationale
+- Integration pattern with existing JITAI
+- Feedback loop design
+- User rejection handling strategy
 
 ---
 
-### RQ-006: Identity Roadmap Architecture (User Aspiration → Habit Recommendation)
+### RQ-006: Content Library for Recommendations
+
+| Field | Value |
+|-------|-------|
+| **Question** | What content library is needed to support proactive recommendations? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Blocking** | CD-009 (Content Library), RQ-005 implementation |
+| **Priority** | HIGH — Enables RQ-005 |
+| **Assigned** | Any agent |
+| **Source** | IDENTITY_COACH_SPEC.md |
+
+**Sub-Questions:**
+
+| Sub-Question | Notes |
+|--------------|-------|
+| What habits are "universal starters"? | Evidence-based default recommendations |
+| How many ritual templates needed? | Morning, evening, transition, recovery |
+| What progression milestones are meaningful? | 7 days, 21 days, 66 days, 1 year? |
+| How do we phrase warnings without shame? | Regression messaging strategy |
+
+**Content Quantity Estimate:**
+```
+PROACTIVE CONTENT (Growth):
+├── 50+ habit recommendation templates
+├── 20+ ritual templates
+├── 10+ progression path templates
+├── 15+ regression warning templates
+└── 30+ goal alignment prompts
+
+TOTAL: ~125+ content pieces needed
+```
+
+**Output Expected:**
+- Content taxonomy and categories
+- Template structures per category
+- Dimensional framing variants (per 6 dimensions)
+- Minimum viable content set for launch
+
+---
+
+### RQ-007: Identity Roadmap Architecture (User Aspiration → Habit Recommendation)
 
 | Field | Value |
 |-------|-------|
 | **Question** | How do we architect the full flow from user aspirations to AI-guided habit recommendations? |
 | **Status** | 🔴 NEEDS RESEARCH |
 | **Blocking** | CD-008 (Identity Coach), CD-011 (Architecture Ramifications) |
+| **Priority** | HIGH — Supports Identity Coach |
 | **Assigned** | Any agent |
-| **Priority** | HIGH — Core value proposition |
+| **Depends On** | RQ-005, RQ-006 |
+| **Previously** | Was RQ-006 before renumbering |
 
 **The Required Flow:**
 ```
@@ -291,7 +333,38 @@ User shares dreams/fears
 
 ---
 
-### RQ-007: Optimal LLM Coding Approach ("Make it Work → Make it Right"?)
+### RQ-008: UI Logic Separation for AI-Assisted Development
+
+| Field | Value |
+|-------|-------|
+| **Question** | What are best practices for articulating UI/logic separation that enables effective "vibe coding"? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Blocking** | CD-013 refinement |
+| **Priority** | MEDIUM — Code quality |
+| **Assigned** | Any agent |
+| **Previously** | Was RQ-005 before renumbering |
+
+**Context:**
+The Pact uses Flutter with Riverpod for state management. We want UI files to contain ONLY presentation logic so that:
+1. AI agents can safely modify UI without breaking business logic
+2. Business logic can be tested without UI
+3. "Vibe coding" (rapid UI iteration) is safe
+
+**Research Questions:**
+1. What patterns do production Flutter apps use for strict UI/logic separation?
+2. How do other AI-assisted development teams articulate this principle?
+3. What linting rules or code review checks can enforce this?
+4. How does this apply to animation logic (UI or business)?
+5. Where does navigation routing logic belong?
+
+**Output Expected:**
+- Code pattern examples (✅ correct vs ❌ wrong)
+- Linting configuration recommendations
+- Boundary definitions (what counts as "UI" vs "logic")
+
+---
+
+### RQ-009: Optimal LLM Coding Approach ("Make it Work → Make it Right"?)
 
 | Field | Value |
 |-------|-------|
@@ -301,6 +374,7 @@ User shares dreams/fears
 | **Blocking** | Protocol 2 in AI_AGENT_PROTOCOL.md |
 | **Assigned** | Any agent |
 | **Trigger** | User questioned if this is really optimal for LLMs |
+| **Previously** | Was RQ-007 before renumbering |
 
 **Context:**
 Current AI_AGENT_PROTOCOL.md Protocol 2 states:
@@ -387,15 +461,31 @@ These require Oliver's input before implementation:
 ## Decision Dependencies
 
 ```
+COMPLETED RESEARCH:
 RQ-001 (Archetype Taxonomy) ✅ COMPLETE
     ├── RQ-002 (Effectiveness Measurement) ✅ COMPLETE
     ├── RQ-003 (Dimension-to-Tracking) ✅ COMPLETE
-    ├── RQ-004 (Migration Strategy) ✅ COMPLETE
-    │
-    └── NOW UNBLOCKS:
-        ├── PD-001 (Archetype Philosophy decision) → READY FOR DECISION
-        └── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
+    └── RQ-004 (Migration Strategy) ✅ COMPLETE
+
+UNBLOCKED DECISIONS:
+    ├── PD-001 (Archetype Philosophy) → READY FOR DECISION
+    └── PD-102 (JITAI hardcoded vs AI) → READY FOR DECISION
+
+PENDING RESEARCH (Identity Coach - Core Value Proposition):
+RQ-005 (Proactive Recommendation Algorithms) 🔴 NEEDS RESEARCH
+    └── RQ-006 (Content Library) 🔴 NEEDS RESEARCH
+        └── RQ-007 (Identity Roadmap Architecture) 🔴 NEEDS RESEARCH
+            └── Blocks: CD-008, CD-009, CD-011, PD-105
+
+PENDING RESEARCH (Process/Code Quality):
+RQ-008 (UI Logic Separation) 🔴 NEEDS RESEARCH → Blocks CD-013
+RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 ```
+
+**Research Priority Order:**
+1. **CRITICAL:** RQ-005, RQ-006 (Identity Coach is core value prop)
+2. **HIGH:** RQ-007 (Enables Identity Roadmap)
+3. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
 
 ---
 

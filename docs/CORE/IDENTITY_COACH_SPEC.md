@@ -161,15 +161,20 @@ class ProactiveRecommendation {
 
 ## Research Required
 
+> **Note:** These research questions are now canonical in `RESEARCH_QUESTIONS.md`.
+> RQ-005 and RQ-006 below match the canonical definitions.
+
 ### RQ-005: Proactive Recommendation Algorithms
 
 | Sub-Question | Notes |
 |--------------|-------|
 | What algorithms recommend identity-aligned goals? | Collaborative filtering? Content-based? Hybrid? |
 | How do we avoid overwhelming users? | Rate limiting, importance scoring |
-| How does this integrate with JITAI? | Same bandit? Separate system? |
+| How does this integrate with JITAI? | Same bandit? Separate system? (See PD-105) |
 | What's the feedback loop? | How do we learn if recommendations worked? |
 | How do we handle user rejection? | Snooze vs dismiss vs never show again |
+
+**Status:** 🔴 NEEDS RESEARCH — See `RESEARCH_QUESTIONS.md` RQ-005
 
 ### RQ-006: Content Library for Recommendations
 
@@ -179,6 +184,8 @@ class ProactiveRecommendation {
 | How many ritual templates needed? | Morning, evening, transition, recovery |
 | What progression milestones are meaningful? | 7 days, 21 days, 66 days, 1 year? |
 | How do we phrase warnings without shame? | Regression messaging strategy |
+
+**Status:** 🔴 NEEDS RESEARCH — See `RESEARCH_QUESTIONS.md` RQ-006
 
 ---
 

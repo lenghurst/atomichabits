@@ -396,7 +396,7 @@ class HabitCard extends StatelessWidget {
 }
 ```
 
-**Research Task:** See RQ-005 for best practices on articulating this principle for AI-assisted development.
+**Research Task:** See RQ-008 for best practices on articulating this principle for AI-assisted development.
 
 ### PD-105: Unified AI Coaching Architecture (Identity Coach + JITAI + Content)
 | Field | Value |
@@ -509,7 +509,7 @@ class IdentityCoachService {
 }
 ```
 
-**See:** RQ-006 (Identity Roadmap Architecture) for research tracking
+**See:** RQ-007 (Identity Roadmap Architecture) for research tracking
 
 ### CD-014: Core File Creation Guardrails
 | Field | Value |
