@@ -153,8 +153,11 @@ PENALTIES:
 
 | Date | Agent | Focus | Findings | Action Items |
 |------|-------|-------|----------|--------------|
-| 05 Jan 2026 | Claude | Codebase audit | Documented current intervention measurement | Update this doc |
-| 05 Jan 2026 | ChatGPT | Clarification Qs | Asked about effectiveness measurement | Awaiting research |
+| 05 Jan 2026 | ChatGPT | Literature review | IN PROGRESS — behavioral dimensions for JITAI | Awaiting results |
+| 05 Jan 2026 | Gemini | Deep Research | IN PROGRESS — 7-point plan aligned with ChatGPT | Awaiting results |
+| 05 Jan 2026 | Claude | Research coordination | Aligned both agents' parameters for comparison | Monitor results |
+| 05 Jan 2026 | Claude | Codebase audit | Documented current intervention measurement | ✅ Done |
+| 05 Jan 2026 | ChatGPT | Clarification Qs | Asked about effectiveness measurement | ✅ Answered |
 | 05 Jan 2026 | Gemini | Archetype analysis | Identified 6-bucket cold-start math | Hybrid recommended |
 
 ---
