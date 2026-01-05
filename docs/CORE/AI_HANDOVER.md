@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (RQ-011 Multiple Identity Research Session)
+> **Last Updated:** 05 January 2026 (RQ-012 + RQ-016 Deep Think Integration Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,54 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `rq-012-016-deep-think-integration` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~30 minutes |
+| **Focus** | Integrate Deep Think RQ-012 (Fractal Trinity) + RQ-016 (Council AI) Research |
+
+### What Was Accomplished (This Session)
+
+**Key Changes Made:**
+
+1. **RQ-012: Fractal Trinity Architecture — ✅ RESEARCH COMPLETE**
+   - Integrated Google Deep Think's comprehensive specifications
+   - **Schema finalized** with pgvector for semantic pattern matching:
+     - `psychometric_roots` table (chronotype, neurotype, root_label, root_embedding, root_confidence)
+     - `psychological_manifestations` table (archetype_label, resistance_script, resistance_embedding, trigger_context, coaching_strategy)
+   - **Triangulation Protocol**: Extract manifestations over Days 1-7, use vector math to find root
+   - **Sherlock Day 7 Synthesis Prompt**: JSON output format for root extraction
+   - **Chronotype-JITAI Matrix**: Intervention timing per Lion/Bear/Wolf/Dolphin
+
+2. **RQ-016: Council AI (Roundtable Simulation) — ✅ RESEARCH COMPLETE**
+   - Integrated Google Deep Think's comprehensive specifications
+   - **Architecture Decision**: Single-Shot Playwright Model (NOT multi-agent orchestration)
+   - **System Prompt**: Complete with CAST definition, rules, JSON output format
+   - **Facet Agent Templates**: 4 archetypes (professional_achiever, present_parent, health_guardian, creative_explorer)
+   - **Treaty Protocol**: Database schema with logic_hooks JSONB for JITAI overrides
+   - **UX Flow**: Summon → The Show → The Deal → Binding → Enforcement
+   - **Voice Mode**: Audiobook Pattern (single narrator, not polyphonic)
+   - **Therapeutic Guardrails**: Veto Rule, No Bad Parts, Safety Switch, Turn Limit
+
+3. **Decision Dependencies Updated:**
+   - RQ-012 and RQ-016 moved from "PENDING" to "COMPLETED"
+   - Research Priority Order updated to reflect completion
+
+4. **Research Session Log Updated:**
+   - Added Deep Think session entry for RQ-012 + RQ-016
+
+---
+
+### Previous Session Summary (Same Day, Earlier)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `psyos-architecture-documentation` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~60 minutes |
 | **Focus** | CD-015 psyOS Architecture Documentation + New RQs/PDs |
 
-### What Was Accomplished (This Session)
+### What Was Accomplished (Previous Session)
 
 **Key Changes Made:**
 
@@ -87,7 +128,7 @@ This prevents:
 
 ---
 
-### Previous Session Summary (Same Day, Earlier)
+### Previous Session Summary (Same Day, Even Earlier)
 | Field | Value |
 |-------|-------|
 | **Session ID** | `rq-011-deep-think-validation` |
@@ -344,6 +385,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think Integration | ✅ RQ-012 + RQ-016 COMPLETE with schemas, prompts, protocols |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | psyOS Documentation | ✅ CD-015 confirmed, RQ-012-018 + PD-108-112 added, ROADMAP + GLOSSARY updated |
 | 05 Jan 2026 | Claude + Deep Think | `claude/pact-session-setup-QVINO` | RQ-011 + Deep Think Validation | ✅ Model validated, Blue Sky architecture documented, schema refined with status/energy fields |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | RQ-011 Research | ✅ Research complete: Identity Facets model recommended, PD-106 ready for decision |
@@ -369,22 +411,32 @@ This handover protocol was created because:
 2. Context is lost between sessions
 3. Multiple agents working on the same codebase need coordination
 
-**Major Decision Made This Session:**
-You explicitly chose psyOS (Blue Sky architecture) for launch, accepting the technical debt. This has been documented as **CD-015** and generates significant new work.
+**Major Progress This Session:**
+Deep Think's comprehensive specifications for RQ-012 (Fractal Trinity) and RQ-016 (Council AI) have been integrated. The two CRITICAL psyOS research questions are now COMPLETE.
+
+**Research Status Update:**
+| Research Question | Status | Key Deliverables |
+|-------------------|--------|------------------|
+| RQ-012 (Fractal Trinity) | ✅ COMPLETE | pgvector schema, Triangulation Protocol, Chronotype-JITAI Matrix |
+| RQ-016 (Council AI) | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol, Audiobook Pattern |
+| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — |
+| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — |
+| RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | — |
+| RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | — |
+| RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | — |
 
 **Your Action Items:**
 - **✅ RESOLVED:** PD-106 (Multiple Identity Architecture) — Now confirmed via CD-015
-- **🔴 CRITICAL:** Prioritize the 7 new RQs (RQ-012 through RQ-018) — these need research before implementation
+- **✅ COMPLETE:** RQ-012 and RQ-016 — CRITICAL research done, ready for implementation
+- **🔴 REMAINING:** RQ-013 through RQ-018 — 5 HIGH priority research questions still need attention
 - **🔴 CRITICAL:** Decide on 5 new PDs (PD-108 through PD-112) as research completes
 - **🟡 TIMELINE:** Original Jan 16 launch date needs review — psyOS is more ambitious
-- Review the psyOS Implementation Roadmap in ROADMAP.md
-- Review psyOS terminology in GLOSSARY.md
+- Review the comprehensive RQ-012 and RQ-016 specifications in RESEARCH_QUESTIONS.md
 
-**Key Documentation Created:**
-| Document | Section | Content |
-|----------|---------|---------|
-| PRODUCT_DECISIONS.md | CD-015 | Full psyOS architecture specification |
-| PRODUCT_DECISIONS.md | PD-108-112 | New psyOS product decisions |
-| RESEARCH_QUESTIONS.md | RQ-012-018 | psyOS research questions |
-| ROADMAP.md | psyOS Roadmap | Implementation phases A-E |
-| GLOSSARY.md | psyOS Terms | 14 new terminology definitions |
+**Key Documentation Updated This Session:**
+| Document | Section | Change |
+|----------|---------|--------|
+| RESEARCH_QUESTIONS.md | RQ-012 | Full specification: pgvector schema, Triangulation Protocol, Sherlock prompts, Chronotype-JITAI Matrix |
+| RESEARCH_QUESTIONS.md | RQ-016 | Full specification: Single-Shot Playwright, Council system prompt, Treaty Protocol, Audiobook Pattern, Guardrails |
+| RESEARCH_QUESTIONS.md | Decision Dependencies | Updated to reflect completed research |
+| AI_HANDOVER.md | Session Log | Added this session entry |
