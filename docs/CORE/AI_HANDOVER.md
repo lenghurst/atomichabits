@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 05 January 2026 (GLOSSARY Term Reconciliation Session)
+> **Last Updated:** 05 January 2026 (Major Roadmap Restructure Session)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,48 +36,59 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `glossary-reconciliation-session` |
+| **Session ID** | `roadmap-restructure-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~45 minutes (including context recovery) |
-| **Focus** | GLOSSARY Systematic Review, Ghost Term Resolution |
+| **Duration** | ~60 minutes |
+| **Focus** | Major Roadmap Restructure, New RQs/PDs, Phase Model |
 
 ### What Was Accomplished (This Session)
 
 **Key Changes Made:**
 
-1. **Systematic GLOSSARY Review with User**
-   - Reviewed all terms against codebase reality
-   - Identified ghost terms, outdated terms, ambiguous terms
-   - User provided guidance on each category
+1. **ROADMAP.md — Major Restructure**
+   - **Deprecated "5 Parallel Layers"** — concept was misleading
+   - **Introduced Phase Model:** Phase 0 (Research/Perpetual) → Phase 1 (Foundation) → Phase 2 (Intelligence) → Phase 3 (User Experience)
+   - **Future Features** section for parked items (Living Garden, CLI, etc.)
+   - **Track G-0 (Terminology)** marked ✅ COMPLETE
+   - Legacy layers preserved in collapsed section
 
-2. **GLOSSARY Term Updates:**
-   - **Hexis Score**: Marked DEPRECATED (never concretely defined, `hexis_calculator.dart` never built)
-   - **Shadow Presence**: Expanded with historical context — intended as "darkness" input for Living Garden, theoretical measurement approach documented
-   - **Gap Analysis Engine**: Added HIGH priority flag, documented architectural criticality and pending questions
-   - **Puck**: Marked DEPRECATED — consolidate to "Sherlock"
-   - **Loading Insights Screen**: Fixed description (generic spinner, needs future personalization sprint)
-   - **Habit vs Ritual**: Deferred with reasoning (part of wider dashboard/tracking/recommendation discussion)
-   - **Dashboard Terms**: Added Binary Interface, The Bridge, Skill Tree definitions
+2. **RESEARCH_QUESTIONS.md — New RQs**
+   - **RQ-010: Permission Data Philosophy** — How to use Health, Location, Usage data
+   - **RQ-011: Multiple Identity Architecture** — CRITICAL, fundamental to data model
+   - Added "Implementation Tasks from Research" tracking section
+   - Updated priority order with BLOCKING tier
 
-3. **Created "Terms Contingent on Product Decisions" Section**
-   - Living Garden, Shadow Presence, Shadow Dialogue, Gap Analysis Engine, Power Words
-   - These are documented but not implemented — require PD resolution
+3. **PRODUCT_DECISIONS.md — New PDs**
+   - **PD-106: Multiple Identity Architecture** — How to handle multiple aspirational identities
+   - **PD-107: Proactive Guidance System Architecture** — JITAI + Content + Recommendations hierarchy
+   - Added RQ/PD hierarchy documentation
 
-4. **Branch Commits:**
-   - `b0804e8`: docs: comprehensive GLOSSARY review and reconciliation
-   - `37174c8`: docs: finalize GLOSSARY term reconciliation
+4. **GLOSSARY.md — Major Additions**
+   - **Proactive Guidance System (PGS)** definition with full hierarchy
+   - **Behavioral Dimensions** — All 6 dimensions with detailed definitions
+   - **Ghost Term Policy** — Requires PD/RQ reference for aspirational terms
+   - **Signposting Guidance** — When to reference GLOSSARY from other docs
+
+5. **Key Conceptual Clarifications:**
+   - **Phases** = Vertical dependency (what before what)
+   - **Tracks** = Horizontal workstreams (domain-specific)
+   - **Phase 0 is perpetual** — never completes
+   - **Identity-First Design** = Philosophy; **PGS** = Implementation
+
+6. **Branch Commits:**
+   - `9680a39`: docs: major roadmap restructure - Phases replace Layers
 
 ---
 
 ### Previous Session Summary (Same Day, Earlier)
 | Field | Value |
 |-------|-------|
-| **Session ID** | `dashboard-docs-session` |
+| **Session ID** | `glossary-reconciliation-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~15 minutes |
-| **Focus** | Dashboard State Documentation, Living Garden Clarification |
+| **Duration** | ~45 minutes |
+| **Focus** | GLOSSARY Systematic Review, Ghost Term Resolution |
 
 ### What Was Accomplished (Previous Session, Earlier)
 
@@ -232,6 +243,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Roadmap Restructure | Phases replace Layers, RQ-010/011, PD-106/107, PGS hierarchy, Track G-0 complete |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | GLOSSARY Review | Deprecated Hexis Score, documented Shadow Presence, prioritized Gap Analysis Engine |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/continue-pact-development-3vnbh` | Dashboard Docs | Documented Bridge+SkillTree, fixed Living Garden references in AI_CONTEXT.md |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | RQ Reconciliation | CD-014→CRITICAL, CD-015→PD-105, RQ-005 through RQ-009 renumbered by importance |
