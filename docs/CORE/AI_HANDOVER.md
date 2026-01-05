@@ -36,44 +36,41 @@ This prevents:
 ### Last Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `strategic-foundation-session` |
+| **Session ID** | `identity-coach-elevation-session` |
 | **Date** | 05 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~2 hours (comprehensive session) |
-| **Focus** | Research Synthesis + Strategic Foundation + Protocol Establishment |
+| **Duration** | ~30 minutes (clarification session) |
+| **Focus** | Identity Coach Elevation + Doc Maintenance Protocol |
 
 ### What Was Accomplished
-- **🎉 RESEARCH COMPLETE:**
-  - **ChatGPT:** Validated intervention effectiveness measurement (RQ-002)
-  - **Gemini Deep Research:** Proposed 6-dimension hexagonal phenotype model
-  - **Gemini Deep Think:** Synthesized both into actionable architecture
-  - **Outcome:** 6-float backend vector + 4 UI clusters + 7th social dimension planned
+- **🎯 IDENTITY COACH ELEVATED TO CORE VALUE PROPOSITION:**
+  - Renamed `PROACTIVE_ENGINE_SPEC.md` → `IDENTITY_COACH_SPEC.md`
+  - Reframed from "analytics engine" to "identity transformation coach"
+  - Documented key distinction: JITAI (WHEN) vs Content Library (WHAT) vs Identity Coach (WHO + HOW)
 
-- **📋 NEW CONFIRMED DECISIONS (CD-005 to CD-010):**
-  - CD-005: 6-Dimension Archetype Model
-  - CD-006: GPS Permission Usage (full GPS, time-only option)
-  - CD-007: Social Leaderboard + 7th Dimension
-  - CD-008: Proactive Analytics Engine
-  - CD-009: Content Library Priority
-  - CD-010: Retention Tracking Philosophy (dual perspective)
+- **📋 DECISIONS CLARIFIED/ADDED (CD-007 to CD-012):**
+  - CD-007: Clarified as "6+1 Model" (6 core dimensions now, 7th blocked until social features)
+  - CD-008: Elevated to "Identity Development Coach" (not just analytics)
+  - CD-011: Architecture Ramifications (onboarding extracts Aspirational Identity, dashboard adds recommendations)
+  - CD-012: Git Branching Protocol (feature branches, human merges to main)
 
-- **📚 NEW CORE DOCUMENTS CREATED:**
-  - `docs/CORE/AI_AGENT_PROTOCOL.md` — Mandatory AI behaviors (6 protocols)
-  - `docs/CORE/IMPACT_ANALYSIS.md` — Research-to-roadmap traceability
-  - `docs/CORE/PROACTIVE_ENGINE_SPEC.md` — AI recommendation system spec
+- **📚 DOCUMENTATION ENHANCED:**
+  - Added doc maintenance protocol to README.md (preventing reality drift)
+  - Added "Why Each Doc Exists" reference table to README.md
+  - Added cross-doc consistency checks
 
-- **🔍 GAPS IDENTIFIED:**
-  - **Proactive Analytics Engine:** JITAI is reactive; need proactive recommendations
-  - **Content Library:** 28 JITAI + 125+ proactive messages needed
-  - **Social Features:** Required for 7th dimension
+- **🔍 CRITICAL DISTINCTION DOCUMENTED:**
+  ```
+  JITAI = WHEN to intervene (reactive timing)
+  Content Library = WHAT to say in interventions
+  Identity Coach = WHO to become + HOW to get there
+  ```
+  **The Identity Coach is not an add-on — it's the reason the app exists.**
 
-- **✅ PROTOCOL ESTABLISHED:**
-  - Research-to-Roadmap Cascade (mandatory)
-  - Clean Code Reconciliation (functionality first)
-  - AI Acceleration Timeline (final version default)
-  - Dual-Perspective Analysis (App + User)
-  - Gap Identification (proactive vs reactive)
-  - Content-Capability Parity check
+### Previous Session (for reference)
+- **🎉 RESEARCH COMPLETE:** ChatGPT + Gemini research synthesized into 6-dimension model
+- **📚 CORE DOCS CREATED:** AI_AGENT_PROTOCOL.md, IMPACT_ANALYSIS.md
+- **✅ PROTOCOLS ESTABLISHED:** 6 mandatory AI behaviors
 
 ### What Was NOT Done (Deferred)
 - **Phase 69 (Product Decisions):**
@@ -141,6 +138,7 @@ This prevents:
 | `docs/CORE/PRODUCT_DECISIONS.md` | All pending decisions documented |
 | `docs/CORE/GLOSSARY.md` | Terminology definitions |
 | `docs/CORE/RESEARCH_QUESTIONS.md` | Active research (check before implementing) |
+| `docs/CORE/IDENTITY_COACH_SPEC.md` | Core value proposition specification |
 | `AI_CONTEXT.md` | Technical architecture (includes research blockers) |
 | `ROADMAP.md` | Current priorities (needs reconciliation) |
 
@@ -178,6 +176,7 @@ This prevents:
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Identity Coach Elevation | Elevated Identity Coach as core value prop, added CD-011/CD-012, doc maintenance protocol |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/setup-ai-coordination-ZSkqC` | Research Coordination | Aligned ChatGPT + Gemini research for PD-001 |
 | 05 Jan 2026 | Claude (Opus) | `claude/setup-ai-coordination-ZSkqC` | AI Coordination Setup | Expanded PRODUCT_DECISIONS.md with codebase context, created root symlink |
 | 05 Jan 2026 | Claude (Opus) | `claude/docs-core-restructure-b6wmg` | Core docs restructure | Created CORE folder, handover template, glossary, product decisions |
