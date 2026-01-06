@@ -10,12 +10,12 @@
 
 | Resource | Purpose | Location |
 |----------|---------|----------|
-| **CD Quick Reference** | All Confirmed Decisions at a glance | `index/CD_INDEX.md` |
-| **PD Quick Reference** | All Pending Decisions at a glance | `index/PD_INDEX.md` |
+| **CD Quick Reference** | All Confirmed Decisions at a glance (start here) | `index/CD_INDEX.md` |
+| **PD Quick Reference** | All Pending Decisions at a glance (start here) | `index/PD_INDEX.md` |
 | **Archived Decisions** | Full rationale for CONFIRMED/RESOLVED items | `archive/CD_PD_ARCHIVE_Q1_2026.md` |
-| **Active Decisions** | Pending items needing resolution | This file (Pending Decisions section) |
+| **Active Decisions** | Full details for pending items | This file (Pending Decisions section) |
 
-**For CONFIRMED CDs and RESOLVED PDs:** See archive for full rationale. This file contains summaries only.
+**Workflow:** Check index first → Read archive for resolved items → This file for pending decision details.
 
 ---
 

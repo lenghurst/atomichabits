@@ -1,6 +1,6 @@
 # AI_AGENT_PROTOCOL.md — Mandatory Behaviors for AI Agents
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 06 January 2026
 > **Purpose:** Codify reflexive behaviors that ALL AI agents must exhibit
 > **Scope:** Claude, Gemini, ChatGPT, any future AI agents working on The Pact
 
@@ -22,8 +22,10 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │                                                                              │
 │  STEP 1: Context Acquisition (Read in order)                                 │
 │  □ AI_HANDOVER.md — What did the last agent do?                             │
-│  □ PRODUCT_DECISIONS.md — What's decided? What's pending?                   │
-│  □ RESEARCH_QUESTIONS.md — What's being researched? Any blockers?           │
+│  □ index/CD_INDEX.md + index/PD_INDEX.md — Quick decision status lookup     │
+│  □ index/RQ_INDEX.md — Quick research status lookup                         │
+│  □ PRODUCT_DECISIONS.md — Full details for pending decisions                │
+│  □ RESEARCH_QUESTIONS.md — Full details for active research                 │
 │  □ GLOSSARY.md — What do terms mean in this codebase?                       │
 │  □ AI_CONTEXT.md — What's the current architecture?                         │
 │  □ ROADMAP.md — What are the current priorities?                            │

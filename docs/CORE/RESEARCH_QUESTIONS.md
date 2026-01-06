@@ -11,11 +11,11 @@
 
 | Resource | Purpose | Location |
 |----------|---------|----------|
-| **Quick Reference** | All RQs at a glance | `index/RQ_INDEX.md` |
+| **Quick Reference** | All RQs at a glance (start here) | `index/RQ_INDEX.md` |
 | **Completed Research** | Full findings for COMPLETE RQs | `archive/RQ_ARCHIVE_Q1_2026.md` |
-| **Active Research** | Items needing work | This file (below) |
+| **Active Research** | Full details for items needing work | This file (below) |
 
-**For COMPLETE RQs:** See archive for full findings. This file contains summaries only.
+**Workflow:** Check index first → Read archive for completed items → This file for active research details.
 
 ---
 

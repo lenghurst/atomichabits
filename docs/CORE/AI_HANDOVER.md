@@ -70,6 +70,12 @@ This prevents:
    - Solution: Quick reference indexes + archives reduce cognitive load
    - Agents can now start with index files for rapid lookup
 
+6. **Verification Fixes Applied (Trust & Verify Pass):**
+   - Fixed misleading "summaries only" claim in headers → Now says "full details"
+   - Updated AI_AGENT_PROTOCOL.md Session Entry Protocol to include index files
+   - Updated README.md Mandatory Reading Order to include index files (steps 3-4)
+   - All documentation now congruent with archiving strategy
+
 **Archiving Strategy Applied:**
 | Item | Action | Location |
 |------|--------|----------|
