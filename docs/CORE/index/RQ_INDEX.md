@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 06 January 2026 (RQ-005/006/007 Identity Coach Complete)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -24,9 +24,9 @@
 | **RQ-002** | Intervention Effectiveness Measurement | ✅ COMPLETE | RQ-001 | Q1-2026 |
 | **RQ-003** | Dimension-to-Implementation Mapping | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-004** | Archetype Migration Strategy | ✅ COMPLETE | RQ-001,2,3 | Q1-2026 |
-| **RQ-005** | Proactive Recommendation Algorithms | 🔴 NEEDS RESEARCH | — | — |
-| **RQ-006** | Content Library for Recommendations | 🔴 NEEDS RESEARCH | RQ-005 | — |
-| **RQ-007** | Identity Roadmap Architecture | 🔴 NEEDS RESEARCH | RQ-005,6 | — |
+| **RQ-005** | Proactive Recommendation Algorithms | ✅ COMPLETE | — | Q1-2026 |
+| **RQ-006** | Content Library for Recommendations | ✅ COMPLETE | RQ-005 | Q1-2026 |
+| **RQ-007** | Identity Roadmap Architecture | ✅ COMPLETE* | RQ-005,6 | Q1-2026 |
 | **RQ-008** | UI Logic Separation | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-009** | Optimal LLM Coding Approach | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-010** | Permission Data Philosophy | 🔴 NEEDS RESEARCH | — | — |
@@ -55,8 +55,10 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs** | 27 |
-| **✅ COMPLETE** | 15 (56%) |
-| **🔴 NEEDS RESEARCH** | 12 (44%) |
+| **✅ COMPLETE** | 18 (67%) |
+| **🔴 NEEDS RESEARCH** | 9 (33%) |
+
+**Note:** *RQ-007 has 2 ESCALATE items pending human decision (Visualization: Tree vs Constellation, Archetype count: 8 vs 12). See reconciliation document.*
 
 ---
 
@@ -69,9 +71,9 @@ FOUNDATIONAL (No dependencies):
 │   ├── RQ-003 (Tracking) ✅
 │   └── RQ-004 (Migration) ✅
 │
-├── RQ-005 (Recommendations) 🔴
-│   └── RQ-006 (Content) 🔴
-│       └── RQ-007 (Roadmap) 🔴
+├── RQ-005 (Recommendations) ✅
+│   └── RQ-006 (Content) ✅
+│       └── RQ-007 (Roadmap) ✅*
 │
 ├── RQ-008 (UI Logic) 🔴
 ├── RQ-009 (LLM Coding) 🔴
@@ -80,16 +82,16 @@ FOUNDATIONAL (No dependencies):
 
 PSYOS ARCHITECTURE (CD-015):
 ├── RQ-012 (Fractal Trinity) ✅
-│   ├── RQ-013 (Identity Topology) 🔴
-│   ├── RQ-014 (State Economics) 🔴
-│   ├── RQ-015 (Polymorphic Habits) 🔴
+│   ├── RQ-013 (Identity Topology) ✅
+│   ├── RQ-014 (State Economics) ✅
+│   ├── RQ-015 (Polymorphic Habits) ✅
 │   ├── RQ-016 (Council AI) ✅
 │   │   ├── RQ-021 (Treaty Lifecycle) ✅
 │   │   │   ├── RQ-024 (Treaty Modification) 🔴
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
 │   │   └── RQ-025 (Summon Tokens) 🔴
-│   ├── RQ-017 (Constellation UX) 🔴
+│   ├── RQ-017 (Constellation UX) 🔴 ← Pending ESCALATE-1 (Tree vs Constellation)
 │   ├── RQ-018 (Airlock Protocol) 🔴
 │   ├── RQ-019 (pgvector) ✅
 │   │   └── RQ-023 (Privacy Framework) 🔴

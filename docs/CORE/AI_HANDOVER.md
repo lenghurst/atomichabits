@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 06 January 2026 (Android-First Strategy + Deep Think Reconciliation)
+> **Last Updated:** 06 January 2026 (Identity Coach Deep Think Reconciliation — RQ-005/006/007)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,77 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `session-primer-prZr1` |
+| **Date** | 06 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~45 minutes |
+| **Focus** | Identity Coach Deep Think Reconciliation (RQ-005, RQ-006, RQ-007) |
+
+### What Was Accomplished (This Latest Session)
+
+**Deep Think Reconciliation Completed (Protocol 9):**
+- **Source:** DeepSeek Deep Think (Identity Coach Architecture Report)
+- **Target:** RQ-005, RQ-006, RQ-007
+- **Reconciliation File:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`
+- **Results:** 15 ACCEPT, 6 MODIFY, 1 REJECT, 2 ESCALATE
+
+**RQs Marked COMPLETE:**
+- **RQ-005:** Proactive Recommendation Algorithms — Two-Stage Hybrid Retrieval (Semantic + Psychometric)
+- **RQ-006:** Content Library for Recommendations — 84 content pieces spec'd (50 habits, 8 archetypes, 6 rituals, 12 framings)
+- **RQ-007:** Identity Roadmap Architecture — Schema + ICS metric + Regression detection (⚠️ 2 ESCALATE items)
+
+**Key Algorithm Decisions:**
+
+| Component | Decision |
+|-----------|----------|
+| Recommendation Algorithm | Two-Stage Hybrid: pgvector semantic (Stage 1) + 6-dim psychometric (Stage 2) |
+| JITAI Integration | "Architect" (async Coach) feeds "Commander" (real-time JITAI) |
+| Rate Limiting | "Pace Car" Protocol: 1 rec/day, only if <5 active habits per facet |
+| Cold Start | "Trinity Seed": Use Day 1 Holy Trinity data |
+| Rejection Handling | "Snooze vs Ban": "Not Now" = 14 days, "Not Me" = permanent |
+| Feedback Loop | Implicit-dominant signals, weekly batch updates |
+
+**Content Library Spec (Reconciled):**
+
+| Category | Count | Status |
+|----------|-------|--------|
+| Universal Habits ("Atomic 20" + archetype-specific) | 50 | ❌ To create |
+| Global Archetypes | 8 (reduced from 12) | ❌ To create |
+| Ritual Templates | 6 | ❌ To create |
+| Framing Templates (6 dims × 2 poles) | 12 | ❌ To create |
+| Stage Messaging (Spark/Dip/Groove) | 3 | ❌ To create |
+| Regression Messages | 5 | ❌ To create |
+
+**Schema Additions Specified:**
+- `habit_templates.ideal_dimension_vector FLOAT[6]`
+- `habit_templates.global_archetype_id UUID`
+- `global_archetypes` table (8 archetypes with embeddings)
+- `identity_roadmaps` table
+- `roadmap_nodes` table
+
+**⚠️ ESCALATE Items Pending Human Decision:**
+
+| # | Decision | Options | Recommendation |
+|---|----------|---------|----------------|
+| ESCALATE-1 | Visualization: Tree vs Constellation | A: Tree, B: Constellation, C: Hybrid | **B: Constellation** — Better fits Parliament of Selves metaphor |
+| ESCALATE-2 | Global Archetype Count | A: 12, B: 8, C: 6 | **B: 8** — Manageable content creation burden |
+
+**New Implementation Tasks Generated (22 tasks):**
+- Phase A: 5 schema tasks (A-14 through A-18)
+- Phase B: 8 service tasks (B-14 through B-21)
+- Phase C: 6 content creation tasks (C-06 through C-11)
+- Phase D: 4 UX/frontend tasks (D-01 through D-04)
+
+---
+
+### Previous Session Summary (Android-First + Deep Think)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `session-priming-docs-r6fCh` (continued x3) |
 | **Date** | 06 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~90 minutes (session continued from third context recovery) |
 | **Focus** | Android-First Strategy + Deep Think Reconciliation Protocol + Engineering Threshold Framework |
-
-### What Was Accomplished (This Latest Session)
 
 **Major Decisions Confirmed:**
 1. **CD-017: Android-First Development Strategy** — Primary development targets Android for richer API access
@@ -79,9 +143,6 @@ This prevents:
 **PDs Marked RESOLVED:**
 - PD-111: Polymorphic Habit Attribution (via RQ-015)
 - PD-117: ContextSnapshot Real-time Data (via RQ-014)
-
-**Pending Human Decision:**
-- **Heart Rate:** Option A (include as nullable) vs Option B (defer entirely)
 
 ---
 
@@ -811,6 +872,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 06 Jan 2026 | Claude (Opus 4.5) | `claude/setup-session-primer-prZr1` | Identity Coach Deep Think Reconciliation | ✅ RQ-005/006/007 COMPLETE; 15 ACCEPT, 6 MODIFY, 1 REJECT, 2 ESCALATE; 22 new implementation tasks |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Analysis: Gaps + New RQs/PDs | ✅ RQ-021-023 NEW; PD-115-117 NEW; Treaties schema; ContextSnapshot class; Tension Score algorithm; Impact analysis |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think RQ-019 + RQ-020 Integration | ✅ RQ-019+020 COMPLETE; PD-109+113 RESOLVED; CD-016 corrected (gemini-embedding-001); 7 GLOSSARY terms added |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Full Implementation + DeepSeek V3.2 | ✅ PD-114, CD-016, RQ-019-020, PD-113; GLOSSARY + ROADMAP updated |
@@ -843,21 +905,26 @@ This handover protocol was created because:
 **Major Progress This Session:**
 Full implementation confirmed (not phased). DeepSeek V3.2 documented as primary backend AI model. New implementation research questions and product decisions added.
 
-**Research Status Update:**
+**Research Status Update (06 Jan 2026):**
 | Research Question | Status | Key Deliverables |
 |-------------------|--------|------------------|
+| RQ-005 (Proactive Recommendations) | ✅ COMPLETE | Two-Stage Hybrid Retrieval, Pace Car Protocol, Trinity Seed |
+| RQ-006 (Content Library) | ✅ COMPLETE | 84 content pieces spec'd (50 habits, 8 archetypes, 6 rituals) |
+| RQ-007 (Identity Roadmap) | ✅ COMPLETE* | Schema + ICS + Regression Detection (*2 ESCALATE items) |
 | RQ-012 (Fractal Trinity) | ✅ COMPLETE | pgvector schema, Triangulation Protocol, Chronotype-JITAI Matrix |
+| RQ-013 (Identity Topology) | ✅ COMPLETE | Directed graph, friction coefficients, Council trigger |
+| RQ-014 (State Economics) | ✅ COMPLETE | 4-state energy model, switching costs, BurnoutDetector |
+| RQ-015 (Polymorphic Habits) | ✅ COMPLETE | Waterfall attribution, shadow bonus, custom_metrics |
 | RQ-016 (Council AI) | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol, Audiobook Pattern |
-| RQ-019 (pgvector Implementation) | ✅ COMPLETE | gemini-embedding-001, HNSW, similarity queries, population learning |
-| RQ-020 (Treaty-JITAI Integration) | ✅ COMPLETE | TreatyEngine, treaties schema, ContextSnapshot, tension score algorithm |
-| **RQ-021 (Treaty Lifecycle & UX)** | 🔴 NEW | Treaty creation flow, templates, management UI |
-| **RQ-022 (Council Script Prompts)** | 🔴 NEW | DeepSeek V3.2 prompt templates for facet dialogue |
-| **RQ-023 (Population Learning Privacy)** | 🔴 NEW | Privacy framework, k-anonymity, opt-in |
-| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | — (unblocked by pgvector) |
-| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | — (new dependency: ContextSnapshot) |
-| RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | — |
-| RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | — |
+| RQ-019 (pgvector Implementation) | ✅ COMPLETE | gemini-embedding-001, HNSW, similarity queries |
+| RQ-020 (Treaty-JITAI Integration) | ✅ COMPLETE | TreatyEngine, treaties schema, ContextSnapshot |
+| RQ-021 (Treaty Lifecycle & UX) | ✅ COMPLETE | Treaty creation flow, templates, management UI |
+| RQ-022 (Council Script Prompts) | ✅ COMPLETE | DeepSeek V3.2 prompt templates for facet dialogue |
+| RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | BLOCKED by ESCALATE-1 (Tree vs Constellation) |
 | RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | — |
+| RQ-023 (Population Learning Privacy) | 🔴 NEEDS RESEARCH | Privacy framework, k-anonymity, opt-in |
+
+**COMPLETE: 18/27 (67%)**
 
 **New Pending Decisions:**
 | Decision | Status | Depends On |

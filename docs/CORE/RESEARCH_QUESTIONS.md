@@ -221,27 +221,54 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 | Field | Value |
 |-------|-------|
 | **Question** | What algorithms should drive identity-aligned habit/ritual recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ RESEARCH COMPLETE |
 | **Blocking** | CD-008 (Identity Coach), PD-105 (AI Coaching Architecture) |
 | **Priority** | **CRITICAL** — Core value proposition |
-| **Assigned** | Any agent |
-| **Source** | IDENTITY_COACH_SPEC.md |
+| **Researcher** | DeepSeek Deep Think |
+| **Reconciled By** | Claude (Opus 4.5) |
+| **Reconciliation Date** | 06 January 2026 |
+| **Source** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**Sub-Questions:**
+**Sub-Questions Answered:**
 
-| Sub-Question | Notes |
-|--------------|-------|
-| What algorithms recommend identity-aligned goals? | Collaborative filtering? Content-based? Hybrid? |
-| How do we avoid overwhelming users? | Rate limiting, importance scoring |
-| How does this integrate with JITAI? | Same bandit? Separate system? (See PD-105) |
-| What's the feedback loop? | How do we learn if recommendations worked? |
-| How do we handle user rejection? | Snooze vs dismiss vs never show again |
+| Sub-Question | Answer |
+|--------------|--------|
+| What algorithms recommend identity-aligned goals? | **Two-Stage Hybrid Retrieval:** Stage 1 = Semantic search (pgvector, 768-dim); Stage 2 = Psychometric re-ranking (6-dim) |
+| How do we avoid overwhelming users? | **"Pace Car" Protocol:** Max 1 recommendation/day; only if user has <5 active habits per facet |
+| How does this integrate with JITAI? | **"Architect" vs "Commander":** Identity Coach (async) generates cards; JITAI (real-time) decides when to show |
+| What's the feedback loop? | **Implicit-Dominant Signals:** Adoption (+5), Validation (+10), Dismiss (-5), Decay (-0.5); weekly batch update |
+| How do we handle user rejection? | **"Snooze vs Ban":** "Not Now" = 14-day suppress; "Not Me" = permanent block + vector subtraction |
+| How do we handle cold start? | **"Trinity Seed":** Leverage Day 1 Holy Trinity data (Anti-Identity → habit framing, Archetype → difficulty) |
 
-**Output Expected:**
-- Algorithm recommendation with rationale
-- Integration pattern with existing JITAI
-- Feedback loop design
-- User rejection handling strategy
+**Algorithm Specification:**
+
+```
+TWO-STAGE HYBRID RETRIEVAL
+│
+├── STAGE 1: Semantic Retrieval (The "What")
+│   ├── Input: activeFacet.embedding (768-dim)
+│   ├── Search: pgvector cosine similarity on habit_templates
+│   ├── Threshold: 0.7 similarity
+│   └── Output: Top 50 candidates
+│
+├── STAGE 1.5: Hard Filters (Gating)
+│   ├── Energy Gate: Remove if habit.required_energy ≠ facet.energy_state
+│   └── Topology Gate: Remove high-friction habits if antagonistic facet active
+│
+└── STAGE 2: Psychometric Re-ranking (The "How")
+    ├── Input: user.dimensionVector (6-dim), habit.idealDimensionVector (6-dim)
+    ├── Score: cosine_similarity(user, habit_ideal)
+    └── Output: Top 5 ranked by match score
+```
+
+**Architecture Decision:**
+
+| Component | Role | Runtime |
+|-----------|------|---------|
+| **Identity Coach ("Architect")** | Strategic: generates recommendations | Async (nightly/weekly Edge Function) |
+| **JITAI ("Commander")** | Tactical: decides when to show | Real-time (on-device) |
+
+**Rejected Option:** Collaborative Filtering — Fatal cold start problem at launch (zero users).
 
 ---
 
@@ -250,38 +277,71 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 | Field | Value |
 |-------|-------|
 | **Question** | What content library is needed to support proactive recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ RESEARCH COMPLETE |
 | **Blocking** | CD-009 (Content Library), RQ-005 implementation |
 | **Priority** | HIGH — Enables RQ-005 |
-| **Assigned** | Any agent |
-| **Source** | IDENTITY_COACH_SPEC.md |
+| **Researcher** | DeepSeek Deep Think |
+| **Reconciled By** | Claude (Opus 4.5) |
+| **Reconciliation Date** | 06 January 2026 |
+| **Source** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**Sub-Questions:**
+**Sub-Questions Answered:**
 
-| Sub-Question | Notes |
-|--------------|-------|
-| What habits are "universal starters"? | Evidence-based default recommendations |
-| How many ritual templates needed? | Morning, evening, transition, recovery |
-| What progression milestones are meaningful? | 7 days, 21 days, 66 days, 1 year? |
-| How do we phrase warnings without shame? | Regression messaging strategy |
+| Sub-Question | Answer |
+|--------------|--------|
+| What habits are "universal starters"? | **"Atomic 20":** Evidence-based, low-friction habits (Hydrate First, Digital Sunset, Floor Press, etc.) |
+| How many ritual templates needed? | **6 Rituals:** Morning, Evening, Transition, Recovery, Focus, Social (aligned with State Economics) |
+| What progression milestones are meaningful? | **3 Stages:** Spark (Day 1-7), Dip (Day 8-21), Groove (Day 66+) |
+| How do we phrase warnings without shame? | **Data-Driven Normalization:** "Day 8 is the most common drop-off. You are normal. Let's resume." |
+| How do we map facets to content? | **8 Global Archetypes:** Builder, Nurturer, Warrior, Scholar, Artist, Leader, Healer, Explorer |
+| How do we personalize framing? | **6-Dimension Matrix:** Each dimension pole gets unique copy (e.g., Promotion: "Boost your energy" / Prevention: "Secure your health") |
 
-**Content Quantity Estimate:**
+**Content Specification (Reconciled):**
+
 ```
-PROACTIVE CONTENT (Growth):
-├── 50+ habit recommendation templates
-├── 20+ ritual templates
-├── 10+ progression path templates
-├── 15+ regression warning templates
-└── 30+ goal alignment prompts
-
-TOTAL: ~125+ content pieces needed
+IDENTITY COACH CONTENT LIBRARY (Launch)
+│
+├── HABITS (50 total)
+│   ├── "Atomic 20" Universal Starters (20)
+│   ├── Archetype-Specific Habits (8 archetypes × ~4 each = 30)
+│   └── Each tagged with: ideal_dimension_vector, global_archetype_id, energy_state
+│
+├── ARCHETYPES (8 total — reduced from 12)
+│   ├── The Builder (achievement, creation)
+│   ├── The Nurturer (care, relationships)
+│   ├── The Warrior (fitness, discipline)
+│   ├── The Scholar (learning, growth)
+│   ├── The Artist (creativity, expression)
+│   ├── The Leader (influence, career)
+│   ├── The Healer (wellness, recovery)
+│   └── The Explorer (adventure, freedom)
+│
+├── RITUALS (6 templates)
+│   ├── Morning Activation (Sleep → Wake)
+│   ├── Evening Shutdown (Work → Recovery)
+│   ├── Transition Airlock (Focus → Social)
+│   ├── Recovery Protocol (Any → Recovery)
+│   ├── Focus Entry (Any → high_focus)
+│   └── Social Bridge (Any → social)
+│
+├── FRAMING TEMPLATES (12 total)
+│   ├── Promotion: "Grow into..." / Prevention: "Protect your..."
+│   ├── Rebel: "Your way..." / Conformist: "Join others..."
+│   ├── Executor: "Do this now..." / Overthinker: "Just try..."
+│   ├── Future: "Build toward..." / Present: "Quick win..."
+│   ├── Adaptive: "Optimize..." / Maladaptive: "Permission to..."
+│   └── Stable: "Stack on..." / Chaotic: "Flexible..."
+│
+├── STAGE MESSAGING (3 stages)
+│   ├── Spark (Day 1-7): "Identity Claimed — Consistency > Intensity"
+│   ├── Dip (Day 8-21): "Resistance is normal — This is where transformation happens"
+│   └── Groove (Day 66+): "Automaticity forming — Identity solidified"
+│
+└── REGRESSION MESSAGES (5 templates)
+    └── Data-driven, shame-free ("Day 8 is most common drop-off...")
 ```
 
-**Output Expected:**
-- Content taxonomy and categories
-- Template structures per category
-- Dimensional framing variants (per 6 dimensions)
-- Minimum viable content set for launch
+**Total Content Pieces:** 84 (reduced from 125+ via MODIFY)
 
 ---
 
@@ -290,58 +350,97 @@ TOTAL: ~125+ content pieces needed
 | Field | Value |
 |-------|-------|
 | **Question** | How do we architect the full flow from user aspirations to AI-guided habit recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ RESEARCH COMPLETE (⚠️ 2 ESCALATE items pending) |
 | **Blocking** | CD-008 (Identity Coach), CD-011 (Architecture Ramifications) |
 | **Priority** | HIGH — Supports Identity Coach |
-| **Assigned** | Any agent |
-| **Depends On** | RQ-005, RQ-006 |
-| **Previously** | Was RQ-006 before renumbering |
+| **Researcher** | DeepSeek Deep Think |
+| **Reconciled By** | Claude (Opus 4.5) |
+| **Reconciliation Date** | 06 January 2026 |
+| **Source** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**The Required Flow:**
+**Sub-Questions Answered:**
+
+| Sub-Question | Answer |
+|--------------|--------|
+| How does Sherlock extract aspirational identity? | **"Future Self" Interview (Day 3):** "Fast forward 1 year. What does that version of you do every day?" |
+| What data structure represents an "Identity Roadmap"? | **Two tables:** `identity_roadmaps` (aspiration + embedding) + `roadmap_nodes` (stages + habits) |
+| How do we map aspirations to habit recommendations? | **Vector Classification:** DeepSeek V3.2 classifies aspiration → Global Archetype → habit templates |
+| What metrics indicate progress? | **ICS (Identity Consolidation Score):** `Σ(Completions × GracefulScore) / max(DaysActive, 7)` |
+| How do we detect regression? | **4-Signal Detection:** screenOnDuration +20%, unlock time shift +30min, JITAI dismissal rate +30%, cross-facet misses ≥2 |
+| What visualization shows progress? | **⚠️ ESCALATE-1:** Tree vs Constellation (human decision required) |
+
+**Schema Specification (Reconciled):**
+
+```sql
+-- Identity Roadmaps
+CREATE TABLE identity_roadmaps (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  facet_id UUID REFERENCES identity_facets(id),
+  aspiration_label TEXT,          -- "Become a Fit Dad"
+  aspiration_embedding VECTOR(768),
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Roadmap Nodes (Progression Steps)
+CREATE TABLE roadmap_nodes (
+  id UUID PRIMARY KEY,
+  roadmap_id UUID REFERENCES identity_roadmaps(id),
+  stage_order INT,                -- 1, 2, 3...
+  node_type TEXT,                 -- 'habit', 'milestone', 'ritual'
+  target_id UUID,                 -- References habit_templates
+  unlock_criteria JSONB,          -- {"ics_score": 0.5}
+  status TEXT DEFAULT 'locked',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
-User shares dreams/fears
-    → AI constructs Identity Roadmap
-    → App recommends habits/rituals
-    → Tracks progress
-    → JITAI intervenes when at risk
-    → Identity Coach guides growth
+
+**ICS Formula (Modified from Deep Think):**
+
+```dart
+// Identity Consolidation Score
+double calculateICS(Facet facet) {
+  final gracefulSum = facet.habits.fold<double>(
+    0, (sum, h) => sum + (h.completionCount * h.gracefulScore)
+  );
+  final daysActive = max(facet.daysActive, 7); // Floor prevents early inflation
+  return gracefulSum / daysActive;
+}
 ```
 
-**Research Questions:**
-1. **Aspiration Extraction:** How should Sherlock extract aspirational identity (not just Holy Trinity blocks)?
-2. **Roadmap Construction:** What data structure represents an "Identity Roadmap"?
-3. **Habit Matching:** How do we map aspirations to habit recommendations?
-4. **Progress Tracking:** What metrics indicate "progress toward aspirational self"?
-5. **Regression Detection:** How do we detect when someone is moving AWAY from their aspiration?
-6. **Coherence Check:** How do we detect when current habits don't match stated aspirations?
+**Regression Detection (4 Signals):**
 
-**Dependencies (Must Be Researched In Order):**
-```
-1. Aspiration Extraction (Sherlock changes)
-   └── Needs: New onboarding questions, prompt updates
+| Signal | Threshold | Source |
+|--------|-----------|--------|
+| Screen time increase | >20% vs baseline | UsageStatsManager |
+| First unlock time shift | >30 min later | UsageStatsManager |
+| JITAI dismissal rate | >30% increase | Internal tracking |
+| Cross-facet misses | ≥2 facets with misses | Internal tracking |
 
-2. Identity Roadmap Data Model
-   └── Needs: Schema design, storage strategy
-   └── Depends on: #1 (what data to store)
+**Trigger:** 2 of 4 signals = regression detected.
 
-3. Habit Matching Algorithm
-   └── Needs: Recommendation logic
-   └── Depends on: #2 (what to match against)
+---
 
-4. Progress/Regression Detection
-   └── Needs: Metric definitions
-   └── Depends on: #3 (what to measure against)
+**⚠️ ESCALATE-1: Visualization Philosophy (Human Decision Required)**
 
-5. Coherence Engine
-   └── Needs: Gap analysis logic
-   └── Depends on: #4 (what signals to use)
-```
+| Option | Description | Recommendation |
+|--------|-------------|----------------|
+| **A: Identity Tree** | Roots=Trinity, Trunk=Values, Branches=Facets, Leaves=Habits | NOT RECOMMENDED |
+| **B: Constellation UX** | Solar System — Facets as planets orbiting the Self (sun) | **RECOMMENDED** — Better fits Parliament metaphor |
+| **C: Hybrid** | Tree for single-facet; Constellation for multi-facet | Possible but complex |
 
-**Output Expected:**
-- Data model for Identity Roadmap
-- Algorithm for habit-to-aspiration matching
-- Metrics for progress/regression
-- Integration points with existing JITAI
+**Why Option B:** CD-015's "Parliament of Selves" treats facets as negotiating equals, not hierarchical branches. The Constellation metaphor (planets with gravitational pull) better represents facet tensions than a tree hierarchy.
+
+---
+
+**⚠️ ESCALATE-2: Global Archetype Count (Human Decision Required)**
+
+| Option | Count | Trade-off |
+|--------|-------|-----------|
+| **A: Deep Think's 12** | 12 | Comprehensive but heavy content burden |
+| **B: Reduced to 8** | 8 | **RECOMMENDED** — Manageable for launch |
+| **C: Start with 6** | 6 | Lean but risks incomplete mapping |
 
 ---
 
