@@ -7,291 +7,319 @@
 
 ---
 
-## Context Priming
+## Your Role
 
-You are researching for "The Pact," an identity-first habit app implementing the **psyOS (Psychological Operating System)** architecture. The app treats users as a **Parliament of Selves** — a dynamic system of negotiating identity facets rather than a monolithic person.
+You are a **Senior Systems Architect** specializing in:
+- **Behavioral psychology** (habit formation, identity theory, self-determination theory)
+- **Graph theory** (relationship modeling, network analysis)
+- **Mobile systems design** (battery optimization, real-time data architecture)
+- **UX psychology** (cognitive load, friction reduction)
 
-### Already Completed Research (Mandatory Context)
+You have been retained to solve four interconnected research questions for a habit app that treats users as a "Parliament of Selves" — multiple identity facets that negotiate, conflict, and collaborate.
 
-The following research has been completed and represents **locked architecture decisions**. Your research MUST build upon and integrate with these foundations:
+**Your approach:** Think like a scientist AND an engineer. Ground recommendations in literature where possible, but always deliver implementable specifications. When uncertain, state your confidence level and suggest validation experiments.
 
-#### RQ-011: Multiple Identity Architecture — ✅ COMPLETE
-**Decision:** Identity Facets Model
-- Users have 3-5 concurrent identity facets (e.g., "The Founder," "The Father," "The Athlete")
-- Each facet has:
-  - `label`: User-defined name
-  - `status`: `active` | `maintenance` | `dormant`
-  - `archetypal_template`: Hardcoded dimension adjustments
-  - `energy_state`: Bio-energetic mode (see RQ-014)
-  - `tension_scores`: JSONB mapping to other facets
+---
 
-#### RQ-012: Fractal Trinity Architecture — ✅ COMPLETE
-**Decision:** Root + Manifestation Model
-- **Psychometric Roots:** Deep patterns (Fear of failure, Need for control)
-- **Psychological Manifestations:** How roots manifest per facet
-- **Schema (with pgvector):**
-```sql
-CREATE TABLE psychometric_roots (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES users(id),
-  root_type TEXT, -- 'anti_identity', 'failure_archetype', 'resistance_lie'
-  content TEXT,
-  root_embedding VECTOR(3072),
-  extraction_date TIMESTAMPTZ
-);
+## Critical Instruction: Processing Order
 
-CREATE TABLE psychological_manifestations (
-  id UUID PRIMARY KEY,
-  root_id UUID REFERENCES psychometric_roots(id),
-  facet_id UUID REFERENCES identity_facets(id),
-  domain TEXT, -- 'health', 'relationships', 'work', 'creativity'
-  resistance_script TEXT,
-  resistance_embedding VECTOR(3072),
-  coaching_strategy TEXT
-);
+These research questions are **interdependent**. Process them in this exact sequence:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  STEP 1: RQ-014 (State Economics)                               │
+│  ↓ Defines energy states that feed into...                      │
+├─────────────────────────────────────────────────────────────────┤
+│  STEP 2: RQ-013 (Identity Topology)                             │
+│  ↓ Uses energy states for switching costs; feeds into...        │
+├─────────────────────────────────────────────────────────────────┤
+│  STEP 3: PD-117 (ContextSnapshot)                               │
+│  ↓ Operationalizes energy + topology into refresh strategy...   │
+├─────────────────────────────────────────────────────────────────┤
+│  STEP 4: RQ-015 (Polymorphic Habits)                            │
+│  ↓ Consumes context + topology for facet attribution            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-#### RQ-019: pgvector Implementation — ✅ COMPLETE
-- **Embedding Model:** gemini-embedding-001 (3072-dim, Matryoshka-compatible)
+**Rationale:** Each step's output constrains the next. RQ-014's energy taxonomy defines the `energyState` field in PD-117. RQ-013's friction coefficients require energy states. RQ-015's facet attribution needs both topology and context.
+
+---
+
+## Mandatory Context: Locked Architecture
+
+The following research is **COMPLETE and LOCKED**. Do NOT propose alternatives to these foundations — build upon them.
+
+### RQ-011: Multiple Identity Architecture ✅
+- Users have 3-5 concurrent **identity facets** (e.g., "The Founder," "The Father," "The Athlete")
+- Each facet has: `label`, `status` (active/maintenance/dormant), `archetypal_template`, `energy_state`, `tension_scores`
+- Facets can conflict over time AND energy resources
+
+### RQ-012: Fractal Trinity Architecture ✅
+- **Psychometric Roots:** Deep patterns (Fear of failure, Need for control) — extracted Day 1-7
+- **Psychological Manifestations:** How roots appear per facet per domain
+- Uses pgvector for semantic similarity (3072-dim embeddings, HNSW index)
+
+### RQ-016 + RQ-021 + RQ-022: Council AI System ✅
+- When facets conflict (tension_score > 0.7), the **Council AI** simulates a debate
+- Single-Shot Playwright model (DeepSeek V3.2 generates complete script)
+- Output: Proposed **Treaty** — a user-signed agreement between facets
+- Treaties use `json_logic_dart` for condition evaluation
+
+### RQ-019: pgvector Implementation ✅
+- **Embedding Model:** gemini-embedding-001 (3072-dim, Matryoshka truncation to 768)
 - **Index:** HNSW (m=16, ef_construction=64)
-- **Truncation:** Store 3072, query at 768 for efficiency
-- **Similarity:** Cosine similarity for semantic matching
+- **Similarity:** Cosine for semantic matching
 
-#### RQ-020: Treaty-JITAI Integration — ✅ COMPLETE
-**Decision:** Stage 3 Treaty Check
-- Treaties are user-signed agreements between identity facets
-- Evaluated after Safety Gates, before Optimization
-- Uses `json_logic_dart` for condition evaluation
+### RQ-020: Treaty-JITAI Integration ✅
+- JITAI pipeline: V-O State → Safety Gates → **Treaty Check (Stage 3)** → Optimization → Content
 - **ContextSnapshot** class captures 30+ fields for decision context
+- `TreatyEngine` evaluates logic hooks against ContextSnapshot
 
-#### CD-015: psyOS Architecture — ✅ CONFIRMED
-The app uses full psyOS at launch (not phased MVP). All identity facet features are required.
+### CD-015: psyOS Architecture ✅
+- Full implementation at launch (not phased MVP)
+- All identity facet features required
 
-#### CD-016: AI Model Strategy — ✅ CONFIRMED
+### CD-016: AI Model Strategy ✅
 | Task | Model |
 |------|-------|
 | Embeddings | gemini-embedding-001 |
 | Council AI Scripts | DeepSeek V3.2 |
 | Real-time TTS | Gemini 2.5 Flash TTS |
-| JITAI Logic | Hardcoded (no LLM calls) |
+| JITAI Logic | **Hardcoded** (no LLM in hot path) |
 
 ---
 
-## Research Questions for This Session
+## Research Question 1: RQ-014 — State Economics & Bio-Energetic Conflicts
 
-### RQ-013: Identity Topology & Graph Modeling
+### Core Question
+How should bio-energetic state transitions and switching costs be modeled to prevent burnout and optimize performance?
 
-**Core Question:** How should relationships between identity facets be modeled and utilized for conflict detection, scheduling, and coaching?
+### Why This Matters First
+The energy state taxonomy defines a core field in ContextSnapshot (`energyState`) and the weights in identity_topology (`switching_cost_minutes`). Every downstream decision depends on this.
 
-**Context:**
-Facets don't exist in isolation — they interact through complex relationships:
-- **Synergistic:** Athlete + Morning Person (shared morning routines)
-- **Antagonistic:** Night Owl + Early Riser (mutually exclusive time needs)
-- **Competitive:** Founder + Present Father (compete for the same time blocks)
-- **Supportive:** Health Guardian + All Facets (enables energy for others)
+### The Problem
+**"The Energy Blind Spot"** — Current habit apps track only TIME conflicts while ignoring ENERGY state conflicts. Example:
 
-**Existing Schema Proposal (from RQ-011):**
-```sql
-CREATE TABLE identity_topology (
-  source_facet_id UUID,
-  target_facet_id UUID,
-  interaction_type TEXT, -- 'SYNERGISTIC', 'ANTAGONISTIC', 'COMPETITIVE', 'SUPPORTIVE'
-  friction_coefficient FLOAT, -- 0.0 (Flow) to 1.0 (Gridlock)
-  switching_cost_minutes INT, -- Bio-energetic recovery time
-  PRIMARY KEY (source_facet_id, target_facet_id)
-);
-```
+> Oliver finishes a 4-hour deep coding session at 5:00 PM. He has a family dinner at 5:30 PM. Traditional apps say: "Great, you're free!" Reality: Oliver will be irritable, distracted, and "present but absent" because switching from **high_focus** to **social** requires 45-90 minutes of neurochemical transition.
 
-**Sub-Questions Requiring Deep Analysis:**
-
-| # | Question | Context | Implications |
-|---|----------|---------|--------------|
-| 1 | **Edge Directionality:** Should topology edges be bidirectional or directed? | "Founder → Father" transition may have different cost than "Father → Founder" | Graph model complexity, algorithm requirements |
-| 2 | **Initial Population:** How do we bootstrap topology for new users? | Can't expect users to define all edges manually | AI inference from declared facets, progressive refinement |
-| 3 | **Friction Inference:** How do we calculate `friction_coefficient` from behavioral data? | Late night work sessions followed by irritable mornings = high friction | Signal detection, learning algorithm |
-| 4 | **JITAI Integration:** How does topology inform intervention timing? | If user is in "high_focus" (Founder), don't suggest "family dinner" (Father) | Decision engine hooks, treaty interaction |
-| 5 | **Conflict Detection:** What threshold triggers Council AI summon? | Two facets competing for overlapping time blocks | tension_score calculation (existing), topology input |
-| 6 | **Life Event Adaptation:** How do we detect topology changes (new baby, job change)? | User's facet relationships evolve over months/years | Change detection, recalibration prompts |
-| 7 | **Graph Visualization:** What UX pattern makes topology intuitive to non-technical users? | "Solar System" (RQ-017) may not show edges well | Alternative: relationship mapping, conflict calendars |
-
-**Constraints:**
-- Must integrate with existing `tension_score` calculation (RQ-020)
-- Must inform Council AI context (RQ-016, RQ-022)
-- Cannot require explicit user edge definition (too high friction)
-- Prefer relational (Supabase) over graph DB (infrastructure simplicity)
-
-**Output Expected:**
-1. Finalized graph model specification (nodes, edges, properties)
-2. Algorithm for topology inference from behavioral signals
-3. Edge weight update mechanism (online learning vs batch)
-4. JITAI integration points with specific code hooks
-5. Conflict detection threshold recommendations
-6. Visualization approach recommendation
-
----
-
-### RQ-014: State Economics & Bio-Energetic Conflicts
-
-**Core Question:** How should bio-energetic state transitions and switching costs be modeled to prevent burnout and optimize performance?
-
-**Context:**
-Deep Think's prior analysis identified "The Energy Blind Spot" — current systems track only TIME conflicts while ignoring ENERGY state conflicts. Switching from "Deep Work Coder" (high_focus) to "Present Father" (social) has massive switching costs even when time is available.
-
-**Current Energy State Hypothesis (from RQ-011):**
+### Current Hypothesis (Validate or Refine)
 
 | State | Neurochemistry | Typical Activities | Recovery Time |
 |-------|----------------|-------------------|---------------|
 | `high_focus` | Dopamine/Acetylcholine | Deep work, coding, writing | 45-90 min |
 | `high_physical` | Adrenaline/Endorphin | Exercise, sports, physical labor | 30-60 min |
-| `social` | Oxytocin/Serotonin | Family time, meetings, collaboration | 20-40 min |
-| `recovery` | Parasympathetic activation | Rest, meditation, light activities | 15-30 min |
+| `social` | Oxytocin/Serotonin | Family, meetings, collaboration | 20-40 min |
+| `recovery` | Parasympathetic | Rest, meditation, passive | 15-30 min |
 
-**Sub-Questions Requiring Deep Analysis:**
+### Sub-Questions (Answer Each Explicitly)
 
-| # | Question | Context | Research Direction |
-|---|----------|---------|-------------------|
-| 1 | **Scientific Validation:** Are these 4 states grounded in neuroscience literature? | Need citations and potential refinements | Literature review, expert validation |
-| 2 | **Switching Cost Matrix:** Are transitions symmetric or asymmetric? | `high_focus → social` may be harder than `social → high_focus` | Empirical studies, user research |
-| 3 | **Chronotype Interaction:** How does chronotype modify energy states? | Night owls have different `high_focus` windows | RQ-012 Chronotype-JITAI Matrix integration |
-| 4 | **Passive Detection:** Can we infer energy state from device signals? | Screen time patterns, movement, typing speed | Privacy vs utility tradeoff |
-| 5 | **HRV Integration:** Should we use Apple/Google Health data for energy? | HRV indicates parasympathetic activation | Permission requirements, accuracy |
-| 6 | **Airlock Design:** What interventions facilitate smooth transitions? | "Transition Airlock" treaty template (RQ-021) needs content | Breathwork, micro-rituals, buffer activities |
-| 7 | **Burnout Prevention:** How do we detect cumulative energy debt? | Multiple forced switches per day = burnout risk | Long-term tracking, warning thresholds |
-| 8 | **Facet-State Mapping:** Which energy states serve which facets? | "The Father" may need `social` but "The Athlete" needs `high_physical` | Facet archetype templates |
+| # | Question | Your Task |
+|---|----------|-----------|
+| 1 | **Scientific Validation:** Are these 4 states grounded in neuroscience? | Cite 2-3 papers. Propose additions/removals if warranted. |
+| 2 | **Asymmetric Costs:** Is `high_focus → social` harder than `social → high_focus`? | Provide directional switching cost matrix. |
+| 3 | **Chronotype Modifiers:** How does chronotype shift optimal state windows? | Provide modifiers for Lion/Bear/Wolf/Dolphin. |
+| 4 | **Passive Detection:** Can we infer state from device signals without explicit user input? | Propose algorithm using: screen time patterns, app usage, movement, typing cadence. |
+| 5 | **HRV Integration:** Should we use HealthKit/Google Fit HRV data? | Weigh privacy, accuracy, battery. Recommend yes/no with conditions. |
+| 6 | **Airlock Rituals:** What interventions help smooth transitions? | Provide 3-5 concrete "airlock" activities per transition type. |
+| 7 | **Burnout Detection:** How do we detect cumulative energy debt? | Propose algorithm with thresholds and warning triggers. |
+| 8 | **Facet-State Mapping:** Which states serve which facet archetypes? | Provide default mappings (can be user-overridden). |
 
-**Integration Requirements:**
-- Must feed into ContextSnapshot (PD-117)
-- Must influence JITAI timing decisions
-- Must inform Council AI conflict detection (tension_score)
-- Should integrate with Airlock Protocol (RQ-018) when researched
+### Anti-Patterns to Avoid
+- ❌ Requiring users to manually log energy state (too high friction)
+- ❌ Binary on/off states (real energy is a spectrum)
+- ❌ Ignoring individual variation (chronotype, health conditions)
+- ❌ Over-reliance on hardware sensors (not all users grant permissions)
 
-**Current ContextSnapshot Fields (from RQ-020):**
-```dart
-class ContextSnapshot {
-  // Time
-  final String dayOfWeek;
-  final int hour;
-  final int minute;
-  final bool isWeekend;
+### Output Required
+1. **Validated State Taxonomy** — final list of states with definitions
+2. **Switching Cost Matrix** — `state × state × direction` with minute ranges
+3. **Chronotype Modifier Table** — adjustments per chronotype
+4. **Passive Detection Algorithm** — pseudocode or decision tree
+5. **Burnout Score Algorithm** — formula with inputs and thresholds
+6. **Airlock Content Spec** — activities per transition type
+7. **Confidence Assessment** — rate each output HIGH/MEDIUM/LOW confidence
 
-  // Location
-  final String locationZone; // 'home', 'work', 'gym', 'transit', 'other'
+---
 
-  // Energy (THIS IS WHAT RQ-014 MUST SPECIFY)
-  final String? energyState; // 'high_focus', 'high_physical', 'social', 'recovery'
-  final String? activeFacet;
+## Research Question 2: RQ-013 — Identity Topology & Graph Modeling
 
-  // Scores
-  final double vulnerabilityScore;
-  final double opportunityScore;
-  final double tensionScore;
+### Core Question
+How should relationships between identity facets be modeled and utilized for conflict detection, scheduling, and coaching?
 
-  // 30+ more fields...
-}
+### Dependency
+Uses `energyState` taxonomy from RQ-014 for the `switching_cost_minutes` edge property.
+
+### The Problem
+Facets don't exist in isolation — they form a **relationship graph**:
+
+```
+         ┌──────────────┐
+         │  The Father  │
+         └──────┬───────┘
+                │ COMPETITIVE (time)
+                │ switching_cost: 45min
+         ┌──────▼───────┐
+         │ The Founder  │◄────── SYNERGISTIC ────► The Athlete
+         └──────────────┘        (morning energy)
 ```
 
-**Output Expected:**
-1. Validated energy state taxonomy (add/remove/rename states?)
-2. Complete switching cost matrix (state × state × direction)
-3. Chronotype modifiers per state
-4. Passive detection algorithm specification
-5. Airlock intervention content recommendations
-6. Burnout detection algorithm
-7. Facet-to-energy-state mapping guidelines
+### Existing Schema Proposal (Refine If Needed)
 
----
+```sql
+CREATE TABLE identity_topology (
+  source_facet_id UUID,
+  target_facet_id UUID,
+  interaction_type TEXT,        -- 'SYNERGISTIC', 'ANTAGONISTIC', 'COMPETITIVE', 'SUPPORTIVE'
+  friction_coefficient FLOAT,   -- 0.0 (Flow) to 1.0 (Gridlock)
+  switching_cost_minutes INT,   -- From RQ-014 state economics
+  time_overlap_risk FLOAT,      -- 0.0-1.0: likelihood of schedule conflict
+  PRIMARY KEY (source_facet_id, target_facet_id)
+);
+```
 
-### PD-117: ContextSnapshot Real-time Data Architecture
+### Sub-Questions (Answer Each Explicitly)
 
-**Core Question:** Which context fields should be gathered in real-time vs cached, and what's the optimal refresh strategy for battery life vs accuracy?
-
-**Context:**
-The ContextSnapshot class (RQ-020) captures 30+ fields to inform JITAI decisions. Some fields change constantly (time), some rarely (chronotype), and some are expensive to compute (tension_score). We need a formal refresh architecture.
-
-**Current Field Inventory (from RQ-020):**
-
-| Category | Fields | Count |
-|----------|--------|-------|
-| Temporal | dayOfWeek, hour, minute, isWeekend, isHoliday | 5 |
-| Location | locationZone, isHome, isWork, inTransit | 4 |
-| Energy | energyState, activeFacet, lastStateChange | 3 |
-| Habit | habitId, habitName, streakDays, lastCompletionHoursAgo | 4 |
-| Behavioral | vulnerabilityScore, opportunityScore, tensionScore | 3 |
-| Health | sleepHoursZScore, stressLevel, hrvZScore | 3 |
-| Calendar | calendarBusyness, nextEventMinutes, meetingLoad | 3 |
-| Digital | distractionMinutes, apexDistractor, lastUnlock | 3 |
-| Emotional | primaryEmotion, emotionIntensity | 2 |
-| **Total** | | **~30** |
-
-**Sub-Questions Requiring Deep Analysis:**
-
-| # | Question | Tradeoffs |
+| # | Question | Your Task |
 |---|----------|-----------|
-| 1 | **Temporal fields:** Compute on every decision or cache? | CPU vs accuracy (always use computed) |
-| 2 | **Location tracking:** Every 5 min, 15 min, or geofence only? | Battery vs precision (geofence preferred) |
-| 3 | **Energy state:** User-declared, inferred, or hybrid? | Friction vs accuracy |
-| 4 | **Tension score:** Per-decision or hourly batch? | CPU cost vs responsiveness |
-| 5 | **Health integration:** Real-time sync or morning batch? | API limits, user privacy |
-| 6 | **Calendar sync:** How often to poll calendar API? | Rate limits, staleness |
-| 7 | **Emotional state:** Voice session only or passive detection? | Privacy, accuracy |
-| 8 | **Lazy loading:** Which expensive fields can be null until needed? | Complexity vs performance |
+| 1 | **Edge Directionality:** Bidirectional or directed graph? | Recommend with rationale. If directed, explain asymmetry. |
+| 2 | **Initial Population:** How do we bootstrap for new users? | Provide algorithm using declared facets + archetypal templates. |
+| 3 | **Friction Inference:** How do we learn `friction_coefficient` from behavior? | Propose signals (late nights, irritable mornings, override patterns). |
+| 4 | **JITAI Integration:** How does topology inform intervention timing? | Provide specific hooks into the JITAI pipeline (Stage 3). |
+| 5 | **Conflict Detection:** What threshold triggers Council AI? | Propose formula combining tension_score + topology weights. |
+| 6 | **Life Event Adaptation:** How do we detect topology changes? | Propose recalibration triggers (new baby, job change, health event). |
+| 7 | **Visualization:** How do we show topology to users intuitively? | Recommend pattern (solar system? relationship map? conflict calendar?). |
 
-**Battery Impact Analysis Required:**
+### Concrete User Scenario (Solve This)
 
-| Tier | Target Refresh | Max Battery | Example Fields |
-|------|----------------|-------------|----------------|
-| **Static** | Once / Never | 0% | chronotype, facet definitions, user prefs |
-| **Slow** | 60 min | ~1%/day | calendar context, tension_score |
-| **Medium** | 15 min | ~3%/day | location_zone |
-| **Fast** | Per-decision | Varies | temporal, vulnerability, opportunity |
-| **Event-driven** | On trigger | Varies | emotion (post-voice), sleep (on wake) |
+> **Oliver** has declared 3 facets: The Founder, The Father, The Athlete.
+> It's Tuesday 5:00 PM. He's been in `high_focus` for 4 hours (Founder work).
+> Calendar shows: Family dinner at 5:30 PM (Father) and morning run at 6:00 AM tomorrow (Athlete).
+>
+> **Questions the system must answer:**
+> 1. Should we warn Oliver about the high_focus → social switch cost?
+> 2. Should we suggest an "airlock" activity before dinner?
+> 3. Is there a conflict between late-night work and the morning run?
+> 4. What's the current tension_score between Founder and Father?
 
-**Output Expected:**
-1. Complete field refresh strategy table
-2. Lazy loading specification (which fields can be null)
-3. Battery impact projections
-4. Event-driven refresh triggers
-5. ContextService Dart class architecture
-6. Cache invalidation rules
+### Anti-Patterns to Avoid
+- ❌ Requiring users to manually define all edges (too complex)
+- ❌ Using a separate graph database (infrastructure complexity)
+- ❌ Static topology that never updates (life changes)
+- ❌ Binary conflict detection (conflicts have intensity)
+
+### Output Required
+1. **Finalized Schema** — with all fields, types, constraints
+2. **Bootstrap Algorithm** — pseudocode for new user topology inference
+3. **Friction Learning Algorithm** — online update mechanism
+4. **JITAI Hook Specification** — exact integration points with code snippets
+5. **Council Trigger Formula** — when tension_score + topology = summon Council
+6. **Recalibration Logic** — triggers and process for topology updates
+7. **Visualization Recommendation** — with mockup description or wireframe reference
 
 ---
 
-### RQ-015: Polymorphic Habits Implementation
+## Product Decision: PD-117 — ContextSnapshot Real-time Data Architecture
 
-**Core Question:** How should habits be encoded, completed, and measured differently based on the active identity facet?
+### Core Question
+Which context fields should be gathered in real-time vs cached, and what's the optimal refresh strategy?
 
-**Context:**
-The same physical action (e.g., "Morning Run") serves different identity facets with different meanings and metrics:
+### Dependency
+Operationalizes `energyState` (RQ-014) and `topology` (RQ-013) into a practical refresh architecture.
 
-| Facet | Same Action | Meaning | Metrics | Feedback |
-|-------|-------------|---------|---------|----------|
-| **Athlete** | Morning Run | Training | Pace, HR zone, distance | "+10 Physical Points" |
-| **Founder** | Morning Run | Mental clarity | Ideas generated, silence | "+10 Clarity Points" |
-| **Father** | Morning Run | Stress regulation | Cortisol burned | "Safe to go home" |
+### The Problem
+The ContextSnapshot class has 30+ fields. Refreshing everything constantly kills battery. Never refreshing makes data stale. We need a **tiered refresh strategy**.
 
-**Key Insight:** When checking off a habit, the user should validate "Who did this serve?" — reinforcing the specific neural pathway and identity.
+### Current Field Inventory
 
-**Sub-Questions Requiring Deep Analysis:**
+| Category | Fields | Volatility |
+|----------|--------|------------|
+| **Temporal** | dayOfWeek, hour, minute, isWeekend, isHoliday | Every second |
+| **Location** | locationZone, isHome, isWork, inTransit | Every 5-15 min |
+| **Energy** | energyState, activeFacet, lastStateChange | Minutes-hours |
+| **Habit** | habitId, habitName, streakDays, lastCompletionHoursAgo | Per-completion |
+| **Behavioral** | vulnerabilityScore, opportunityScore, tensionScore | Per-decision |
+| **Health** | sleepHoursZScore, stressLevel, hrvZScore | Daily-hourly |
+| **Calendar** | calendarBusyness, nextEventMinutes, meetingLoad | Every 15 min |
+| **Digital** | distractionMinutes, apexDistractor, lastUnlock | Every 5 min |
+| **Emotional** | primaryEmotion, emotionIntensity | Event-driven |
 
-| # | Question | UX Impact | Data Model Impact |
-|---|----------|-----------|-------------------|
-| 1 | **Attribution UX:** Automatic (AI-inferred) or user-selected? | Friction vs accuracy | ML model vs explicit field |
-| 2 | **Multi-facet completion:** Can one action serve multiple facets? | Cognitive load | Many-to-many join table |
-| 3 | **Metric divergence:** How do we track different metrics per facet? | Dashboard complexity | Polymorphic metrics schema |
-| 4 | **Feedback variation:** Should completion messages vary by facet? | Content library growth | Template system |
-| 5 | **JITAI messaging:** How do intervention messages reference active facet? | Personalization depth | Message template variables |
-| 6 | **History display:** Show facet context in completion history? | Dashboard information density | UI component complexity |
-| 7 | **Identity evidence:** How does facet attribution affect identity_evidence_score? | Core metric validity | Scoring algorithm changes |
+### Sub-Questions (Answer Each Explicitly)
 
-**Current Schema (from RQ-011):**
+| # | Question | Your Task |
+|---|----------|-----------|
+| 1 | **Temporal:** Compute on-demand or cache? | Recommend strategy. |
+| 2 | **Location:** Polling vs geofencing? | Recommend with battery impact estimate. |
+| 3 | **Energy State:** How to track without user burden? | Integrate RQ-014 passive detection. |
+| 4 | **Tension Score:** Per-decision or scheduled? | Recommend with CPU cost analysis. |
+| 5 | **Health Data:** Real-time sync or batch? | Consider API limits and privacy. |
+| 6 | **Calendar:** Polling frequency? | Consider rate limits and staleness. |
+| 7 | **Lazy Loading:** Which fields can be null until needed? | List fields and trigger conditions. |
+| 8 | **Cache Invalidation:** What events invalidate which caches? | Provide invalidation rule table. |
+
+### Battery Budget Constraint
+Target: **< 5% daily battery impact** from The Pact's background operations.
+
+### Output Required (Structured Decision Format)
+
+```markdown
+## PD-117: ContextSnapshot Real-time Data Architecture
+
+### Decision
+[One-sentence summary of chosen approach]
+
+### Options Considered
+| Option | Description | Battery | Accuracy | Complexity |
+|--------|-------------|---------|----------|------------|
+
+### Chosen Approach
+[Detailed explanation]
+
+### Field Refresh Strategy Table
+| Field | Tier | Refresh Trigger | Max Staleness | Nullable? |
+|-------|------|-----------------|---------------|-----------|
+
+### ContextService Dart Architecture
+[Class structure with key methods]
+
+### Cache Invalidation Rules
+| Event | Invalidates |
+|-------|-------------|
+
+### Battery Impact Projection
+[Estimated breakdown by component]
+```
+
+---
+
+## Research Question 4: RQ-015 — Polymorphic Habits Implementation
+
+### Core Question
+How should habits be encoded, completed, and measured differently based on the active identity facet?
+
+### Dependency
+Consumes `ContextSnapshot.activeFacet` (PD-117) and `identity_topology` (RQ-013) for intelligent attribution.
+
+### The Problem
+The same action serves different facets with different meanings:
+
+| Action | As Athlete | As Founder | As Father |
+|--------|------------|------------|-----------|
+| **Morning Run** | Training (+pace, HR) | Mental clarity (+ideas) | Stress regulation (+cortisol burned) |
+| **Reading** | Recovery (+variety) | Learning (+applicable) | Modeling (+quality time) |
+| **Cooking** | Nutrition (+macros) | Creative outlet (+experimentation) | Bonding (+family participation) |
+
+**Key Insight:** The *meaning* changes the neural pathway being reinforced. "I ran as an Athlete" builds athletic identity. "I ran to be a present Father" builds paternal identity.
+
+### Current Schema (Refine If Needed)
+
 ```sql
 CREATE TABLE habit_facet_links (
   habit_id UUID,
   facet_id UUID,
-  contribution_weight FLOAT, -- 0.0 to 1.0
-  energy_state TEXT, -- Required energy state for this link
-  custom_metrics JSONB, -- Facet-specific metric definitions
-  feedback_template TEXT,
+  contribution_weight FLOAT,      -- 0.0 to 1.0
+  energy_state TEXT,              -- Required energy state for this link
+  custom_metrics JSONB,           -- Facet-specific metric definitions
+  feedback_template TEXT,         -- Personalized completion message
   PRIMARY KEY (habit_id, facet_id)
 );
 
@@ -300,113 +328,175 @@ CREATE TABLE habit_completions (
   habit_id UUID,
   user_id UUID,
   completed_at TIMESTAMPTZ,
-  facet_id UUID, -- Which facet was this completion attributed to?
-  metrics JSONB, -- Actual metrics captured
+  facet_id UUID,                  -- Which facet was this attributed to?
+  metrics JSONB,                  -- Actual metrics captured
   energy_state_before TEXT,
   energy_state_after TEXT
 );
 ```
 
-**Output Expected:**
-1. Facet attribution UX flow specification
-2. Multi-facet completion handling
-3. Polymorphic metrics schema
-4. Feedback template system
-5. Identity evidence scoring integration
-6. JITAI message personalization guidelines
+### Sub-Questions (Answer Each Explicitly)
+
+| # | Question | Your Task |
+|---|----------|-----------|
+| 1 | **Attribution UX:** AI-inferred, user-selected, or hybrid? | Design the completion flow. Consider friction vs accuracy. |
+| 2 | **Multi-Facet:** Can one completion serve multiple facets? | If yes, how to split credit? If no, why? |
+| 3 | **Metric Divergence:** Different metrics per facet for same habit? | Propose schema changes if needed. |
+| 4 | **Feedback Messages:** How should completion messages vary? | Provide template system with variables. |
+| 5 | **Identity Evidence:** How does attribution affect `identity_evidence_score`? | Propose scoring formula changes. |
+| 6 | **JITAI Messages:** How do nudges reference the relevant facet? | Provide message template examples. |
+| 7 | **History UX:** Show facet context in completion history? | Mockup or wireframe description. |
+
+### Concrete User Scenario (Solve This)
+
+> **Oliver** completes "Morning Run" at 6:30 AM.
+> His active facets: Founder (active), Father (active), Athlete (maintenance).
+> ContextSnapshot shows: `energyState: high_physical`, `activeFacet: null` (morning ambiguity).
+>
+> **The app must:**
+> 1. Determine which facet(s) to attribute this completion to
+> 2. Show appropriate feedback message
+> 3. Update identity_evidence_score correctly
+> 4. Log the completion with proper metadata
+
+### Anti-Patterns to Avoid
+- ❌ Asking "which facet?" on EVERY completion (fatigue)
+- ❌ Always defaulting to most recently active facet (loses nuance)
+- ❌ Ignoring multi-facet completions (loses evidence)
+- ❌ Same generic feedback regardless of facet (misses reinforcement opportunity)
+
+### Output Required
+1. **Attribution Flow** — decision tree or algorithm
+2. **Completion UX Spec** — screens, interactions, timing
+3. **Multi-Facet Handling** — if allowed, credit allocation formula
+4. **Feedback Template System** — with variable substitution
+5. **Scoring Integration** — changes to identity_evidence_score
+6. **JITAI Template Examples** — 3-5 example messages per facet type
 
 ---
 
-## Architectural Constraints
+## Architectural Constraints (Hard Requirements)
 
-Your research MUST adhere to these locked decisions:
-
-1. **Database:** Supabase (PostgreSQL + pgvector). No graph databases.
-2. **AI Models:** As per CD-016. JITAI logic is hardcoded (no LLM in hot path).
-3. **Client:** Flutter/Dart. All client-side services in Dart.
-4. **Embeddings:** gemini-embedding-001 for all semantic matching.
-5. **JSON Logic:** `json_logic_dart` for Treaty condition evaluation.
-6. **No User Burden:** Cannot require users to explicitly define graph edges, switching costs, or complex configurations. Must be inferred or simplified.
+| Constraint | Rule |
+|------------|------|
+| **Database** | Supabase (PostgreSQL + pgvector). No graph databases. |
+| **AI Models** | Per CD-016. JITAI logic is **hardcoded** (no LLM in hot path). |
+| **Client** | Flutter/Dart. All client-side services in Dart. |
+| **Embeddings** | gemini-embedding-001 only. |
+| **JSON Logic** | `json_logic_dart` for all condition evaluation. |
+| **User Burden** | Cannot require explicit graph edge definition or complex configuration. |
+| **Battery** | < 5% daily impact from background operations. |
 
 ---
 
-## Output Format
+## Output Quality Criteria
 
-Please provide your research in the following structure:
+For each research question, your output will be evaluated on:
 
-### For Each Research Question:
+| Criterion | Question to Ask |
+|-----------|-----------------|
+| **Implementable** | Can an engineer build this without asking clarifying questions? |
+| **Grounded** | Are recommendations supported by cited literature or clear reasoning? |
+| **Consistent** | Does this integrate with existing RQ-012, RQ-016, RQ-019, RQ-020, RQ-021, RQ-022? |
+| **Actionable** | Are there concrete next steps, not just principles? |
+| **Bounded** | Are edge cases handled? Are failure modes addressed? |
+
+---
+
+## Example of Good Output (RQ-014 Partial)
+
+This is the QUALITY BAR for your responses:
 
 ```markdown
-## RQ-0XX: [Title]
+## RQ-014: State Economics — Energy State Taxonomy
 
-### Summary
-[2-3 sentence summary of findings]
+### Validated State Taxonomy
 
-### Sub-Questions Answered
-| # | Question | Answer | Rationale |
-|---|----------|--------|-----------|
+**Confidence: HIGH** (grounded in literature)
 
-### Specification
-[Detailed technical specification with schemas, algorithms, code samples]
+After reviewing Csikszentmihalyi (1990) on flow states, Kahneman (2011) on cognitive load,
+and Sapolsky (2017) on stress neurochemistry, I recommend **5 states** (not 4):
 
-### Integration Points
-[How this integrates with existing architecture]
+| State | Definition | Neurochemical Signature | Recovery Needed |
+|-------|------------|------------------------|-----------------|
+| `deep_focus` | Single-task cognitive immersion | High dopamine, acetylcholine | 45-90 min |
+| `creative` | Divergent thinking, idea generation | Moderate dopamine, alpha waves | 30-60 min |
+| `physical` | Exercise, manual activity | Adrenaline, endorphins | 20-40 min |
+| `social` | Interpersonal engagement | Oxytocin, serotonin | 15-30 min |
+| `recovery` | Parasympathetic restoration | Low cortisol, high HRV | 10-20 min |
 
-### Implementation Checklist
-| Task | Priority | Component |
-|------|----------|-----------|
+**Change from hypothesis:** Added `creative` state because deep_focus (convergent) and
+creative (divergent) have different neurochemistry and different recovery patterns.
+Merging them loses coaching precision.
 
-### Open Questions (if any)
-[Questions that couldn't be fully resolved]
+### Switching Cost Matrix (Asymmetric)
+
+**Confidence: MEDIUM** (some empirical support, needs user validation)
+
+| From ↓ / To → | deep_focus | creative | physical | social | recovery |
+|---------------|------------|----------|----------|--------|----------|
+| **deep_focus** | 0 | 20 min | 45 min | **60 min** | 15 min |
+| **creative** | 15 min | 0 | 30 min | 25 min | 10 min |
+| **physical** | 30 min | 20 min | 0 | 15 min | 5 min |
+| **social** | **45 min** | 20 min | 20 min | 0 | 10 min |
+| **recovery** | 10 min | 5 min | 10 min | 5 min | 0 |
+
+**Key asymmetry:** `deep_focus → social` (60 min) is much harder than `social → deep_focus` (45 min)
+because deep focus requires residual working memory clearance that social engagement can corrupt.
+
+### Passive Detection Algorithm
+
+**Confidence: MEDIUM** (needs real-world validation)
+
+```dart
+EnergyState inferEnergyState(DeviceSignals signals) {
+  // Rule 1: Recent exercise detected
+  if (signals.stepCountLast30Min > 500 && signals.heartRateAvg > 100) {
+    return EnergyState.physical;
+  }
+
+  // Rule 2: Deep focus indicators
+  if (signals.singleAppFocusMinutes > 25 &&
+      signals.notificationsDismissedRatio > 0.8 &&
+      signals.typingBurstsPerMinute > 3) {
+    return EnergyState.deepFocus;
+  }
+
+  // Rule 3: Social signals
+  if (signals.messagingAppActiveMinutes > 10 ||
+      signals.callDurationMinutes > 5 ||
+      signals.locationZone == 'social_venue') {
+    return EnergyState.social;
+  }
+
+  // Rule 4: Low activity = recovery
+  if (signals.screenOffMinutes > 15 && signals.movementScore < 0.2) {
+    return EnergyState.recovery;
+  }
+
+  // Default: creative (transitional state)
+  return EnergyState.creative;
+}
+```
 ```
 
-### For Product Decision:
+---
 
-```markdown
-## PD-117: [Title]
+## Final Checklist Before Submitting
 
-### Decision
-[Clear statement of the chosen approach]
+Before finalizing your response, verify:
 
-### Options Considered
-| Option | Description | Pros | Cons |
-
-### Rationale
-[Why this option was selected]
-
-### Specification
-[Detailed implementation spec]
-```
+- [ ] RQ-014 is answered FIRST (others depend on it)
+- [ ] Each sub-question has an explicit answer
+- [ ] All schemas include field types and constraints
+- [ ] All algorithms include pseudocode or decision trees
+- [ ] Confidence levels (HIGH/MEDIUM/LOW) stated for each major recommendation
+- [ ] Anti-patterns section concerns are addressed
+- [ ] User scenarios are solved with step-by-step reasoning
+- [ ] Integration points with existing research (RQ-012, RQ-016, etc.) are explicit
+- [ ] Battery budget (< 5%) is respected in PD-117
+- [ ] Output follows the specified markdown structure
 
 ---
 
-## Success Criteria
-
-This research session is successful if:
-
-1. **RQ-013:** Complete graph model with inference algorithm and JITAI integration hooks
-2. **RQ-014:** Validated energy taxonomy with switching cost matrix and detection algorithm
-3. **PD-117:** Complete refresh strategy with battery projections and Dart architecture
-4. **RQ-015:** Polymorphic habit UX flow with schema and scoring integration
-
-All outputs must be:
-- Implementable by engineers without further clarification
-- Consistent with existing RQ-012, RQ-016, RQ-019, RQ-020, RQ-021, RQ-022 research
-- Traceable to the psyOS vision (Parliament of Selves)
-
----
-
-## Appendix: Related Files (For Reference)
-
-| File | Content |
-|------|---------|
-| `docs/CORE/PRODUCT_DECISIONS.md` | All confirmed and pending decisions |
-| `docs/CORE/RESEARCH_QUESTIONS.md` | All research questions with findings |
-| `docs/CORE/GLOSSARY.md` | psyOS terminology definitions |
-| `lib/domain/services/jitai_decision_engine.dart` | Current JITAI implementation |
-| `lib/data/models/context_snapshot.dart` | (To be created) |
-| `lib/domain/services/treaty_engine.dart` | (To be created) |
-
----
-
-*End of Prompt B*
+*End of Prompt B — Identity System Architecture*
