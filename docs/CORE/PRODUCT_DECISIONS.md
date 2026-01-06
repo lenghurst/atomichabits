@@ -1,9 +1,21 @@
 # PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
 
-> **Last Updated:** 05 January 2026 (PD-115 RESOLVED; PD-118–PD-120 NEW)
+> **Last Updated:** 06 January 2026 (Archiving strategy implemented)
 > **Purpose:** Central source of truth for product decisions and open questions
 > **Owner:** Product Team (Oliver)
-> **⚠️ FILE SIZE WARNING:** This file exceeds 25,000 tokens. Consider archiving resolved CDs.
+
+---
+
+## Quick Navigation
+
+| Resource | Purpose | Location |
+|----------|---------|----------|
+| **CD Quick Reference** | All Confirmed Decisions at a glance | `index/CD_INDEX.md` |
+| **PD Quick Reference** | All Pending Decisions at a glance | `index/PD_INDEX.md` |
+| **Archived Decisions** | Full rationale for CONFIRMED/RESOLVED items | `archive/CD_PD_ARCHIVE_Q1_2026.md` |
+| **Active Decisions** | Pending items needing resolution | This file (Pending Decisions section) |
+
+**For CONFIRMED CDs and RESOLVED PDs:** See archive for full rationale. This file contains summaries only.
 
 ---
 

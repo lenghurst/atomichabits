@@ -1,10 +1,21 @@
 # RESEARCH_QUESTIONS.md — Active Research & Open Questions
 
-> **Last Updated:** 05 January 2026 (RQ-021, RQ-022 COMPLETE; RQ-024–RQ-027 NEW; Implementation checklist added)
+> **Last Updated:** 06 January 2026 (Archiving strategy implemented)
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
-> **Status:** Treaty/Council research COMPLETE (RQ-021, RQ-022). New gaps identified (RQ-024–RQ-027).
-> **⚠️ FILE SIZE WARNING:** This file exceeds 35,000 tokens. Consider archiving resolved RQs.
+> **Status:** 12 RQs COMPLETE (archived), 15 RQs NEED RESEARCH
+
+---
+
+## Quick Navigation
+
+| Resource | Purpose | Location |
+|----------|---------|----------|
+| **Quick Reference** | All RQs at a glance | `index/RQ_INDEX.md` |
+| **Completed Research** | Full findings for COMPLETE RQs | `archive/RQ_ARCHIVE_Q1_2026.md` |
+| **Active Research** | Items needing work | This file (below) |
+
+**For COMPLETE RQs:** See archive for full findings. This file contains summaries only.
 
 ---
 

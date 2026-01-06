@@ -85,6 +85,25 @@ Code Changes
 | **[IDENTITY_COACH_SPEC.md](./docs/CORE/IDENTITY_COACH_SPEC.md)** | Specification | AI identity development coach | When spec evolves |
 | **[DEEP_THINK_PROMPT_GUIDANCE.md](./docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md)** | Quality Framework | Prompt engineering for external AI research | When preparing Deep Think prompts |
 
+### Index Folder (`/docs/CORE/index/`)
+
+Quick reference tables for rapid lookup (lightweight, always up-to-date summaries):
+
+| Document | Purpose |
+|----------|---------|
+| **RQ_INDEX.md** | All Research Questions at a glance with status |
+| **CD_INDEX.md** | All Confirmed Decisions at a glance |
+| **PD_INDEX.md** | All Pending Decisions at a glance |
+
+### Archive Folder (`/docs/CORE/archive/`)
+
+Full content for COMPLETE/RESOLVED items (reduces main file token count):
+
+| Document | Purpose |
+|----------|---------|
+| **RQ_ARCHIVE_Q1_2026.md** | Full findings for completed RQs |
+| **CD_PD_ARCHIVE_Q1_2026.md** | Full rationale for confirmed/resolved decisions |
+
 ### What Makes a Core Document
 
 A document is "Core" if it meets ALL criteria:
