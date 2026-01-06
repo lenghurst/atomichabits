@@ -544,6 +544,171 @@ E-01, E-02, ... (Polish & Advanced)
 
 ---
 
+## Protocol 9: External Research Reconciliation (MANDATORY)
+
+### Trigger
+When integrating research outputs from external AI tools (Google Deep Think, Claude Projects, ChatGPT Canvas, Gemini, or any external research session).
+
+### Why This Protocol Exists
+External AI tools produce valuable conceptual insights but lack access to:
+1. **Locked Decisions (CDs)** — They may propose changes to confirmed architecture
+2. **Codebase Reality** — They assume data/APIs that don't exist
+3. **Platform Constraints** — They don't know Android-first strategy or permission realities
+4. **Existing Implementation** — They may duplicate or conflict with existing tasks
+
+Without reconciliation, external research drifts from implementable reality.
+
+### Action: The Reconciliation Checklist
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    EXTERNAL RESEARCH RECONCILIATION CHECKLIST                 │
+│                                                                              │
+│  PHASE 1: LOCKED DECISION AUDIT                                              │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Read index/CD_INDEX.md — List all CONFIRMED decisions                     │
+│  □ For EACH proposal in research output:                                     │
+│    □ Does it CHANGE a confirmed CD? → Flag as CONFLICT                       │
+│    □ Does it EXTEND a confirmed CD? → Flag for ESCALATION                    │
+│    □ Does it BUILD ON a confirmed CD? → Mark as COMPATIBLE                   │
+│  □ Document conflicts:                                                       │
+│    │ Proposal         │ Conflicts With │ Resolution                    │     │
+│    │─────────────────────────────────────────────────────────────────────│   │
+│    │ [e.g., 5-state]  │ CD-015 (4-state)│ REJECT / ESCALATE / MODIFY   │     │
+│                                                                              │
+│  PHASE 2: DATA REALITY AUDIT                                                 │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ List ALL data points the research assumes exist                           │
+│  □ For EACH data point:                                                      │
+│    □ Is it available on Android? (Primary platform)                          │
+│    □ What permission does it require?                                        │
+│    □ What is the battery impact?                                             │
+│    □ Is it real-time or batched?                                             │
+│  □ Categorize each data point:                                               │
+│    │ Data Point       │ Android Status │ Permission    │ Action            │ │
+│    │─────────────────────────────────────────────────────────────────────│   │
+│    │ heartRate        │ Conditional    │ Health Connect│ DEFER (not MVP)   │ │
+│    │ stepsLast30Min   │ Available      │ Fitness       │ INCLUDE           │ │
+│    │ appCategory      │ Available      │ UsageStats    │ INCLUDE           │ │
+│                                                                              │
+│  PHASE 3: IMPLEMENTATION REALITY AUDIT                                       │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Does the proposal require new tables? → Check against existing schema     │
+│  □ Does the proposal require new services? → Check against existing code     │
+│  □ Does the proposal duplicate existing functionality?                       │
+│  □ Does the proposal conflict with existing architecture?                    │
+│  □ Document implementation gaps:                                             │
+│    │ Proposal         │ Requires       │ Exists?       │ Gap               │ │
+│    │─────────────────────────────────────────────────────────────────────│   │
+│                                                                              │
+│  PHASE 4: SCOPE & COMPLEXITY AUDIT                                           │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Does this ANSWER the RQ, or EXPAND scope?                                 │
+│  □ Does it introduce NEW concepts not in the original prompt?                │
+│  □ Apply the "Android-First Threshold" test (see below)                      │
+│  □ Rate complexity: ESSENTIAL / VALUABLE / NICE-TO-HAVE / OVER-ENGINEERED   │
+│  □ Document scope expansions for human review                                │
+│                                                                              │
+│  PHASE 5: EXTRACT / MODIFY / REJECT DECISION                                 │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  For EACH proposal in the research output, assign ONE category:              │
+│                                                                              │
+│  ✅ ACCEPT — No conflicts, data available, implementable as-is               │
+│  🟡 MODIFY — Good concept, needs adjustment for reality                      │
+│  🔴 REJECT — Conflicts with locked CD or requires unavailable data           │
+│  ⚠️ ESCALATE — Proposes change to confirmed decision (human required)        │
+│                                                                              │
+│  PHASE 6: INTEGRATION                                                        │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ For ACCEPT items: Integrate directly into relevant RQ/PD                  │
+│  □ For MODIFY items: Document the adjustment and integrate                   │
+│  □ For REJECT items: Document WHY rejected for future reference              │
+│  □ For ESCALATE items: Create PD-XXX for human decision                      │
+│  □ Run Protocol 8 (Task Extraction) on all ACCEPT/MODIFY items               │
+│  □ Update AI_HANDOVER.md with reconciliation summary                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### The Android-First Threshold Test
+
+When evaluating proposals, apply this decision tree:
+
+```
+Is this feature ESSENTIAL for core value proposition?
+├── YES → Include (regardless of complexity)
+└── NO → Is data available on Android without Watch/wearable?
+         ├── YES → Is battery impact < 1% for this feature?
+         │         ├── YES → Include
+         │         └── NO → Defer to optimization phase
+         └── NO → Defer or reject for MVP
+```
+
+### Complexity Rating Guide
+
+| Rating | Definition | Example | Action |
+|--------|------------|---------|--------|
+| **ESSENTIAL** | Core value prop doesn't work without it | Energy state detection | Include, simplify if needed |
+| **VALUABLE** | Significantly improves UX/accuracy | Chronotype modifiers | Include if < 1 week effort |
+| **NICE-TO-HAVE** | Marginal improvement | Creative vs Deep focus distinction | Defer to post-launch |
+| **OVER-ENGINEERED** | Adds complexity without proportional value | Real-time HRV streaming | Reject |
+
+### Reconciliation Output Template
+
+After completing the checklist, document the reconciliation:
+
+```markdown
+## Research Reconciliation: [RQ-XXX / Research Session Name]
+
+**Source:** [Deep Think / Claude / Gemini / etc.]
+**Date:** [Date]
+**Reconciled By:** [Agent name]
+
+### Summary
+- Total proposals: X
+- ACCEPT: X | MODIFY: X | REJECT: X | ESCALATE: X
+
+### ACCEPT (Integrate as-is)
+| Proposal | Rationale |
+|----------|-----------|
+| ... | ... |
+
+### MODIFY (Adjust for reality)
+| Proposal | Original | Adjusted | Rationale |
+|----------|----------|----------|-----------|
+| ... | ... | ... | ... |
+
+### REJECT (Do not implement)
+| Proposal | Reason |
+|----------|--------|
+| ... | ... |
+
+### ESCALATE (Human decision required)
+| Proposal | Conflicts With | Options |
+|----------|----------------|---------|
+| ... | ... | ... |
+
+### Tasks Extracted (via Protocol 8)
+[List of tasks with IDs]
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Accept external research without running this checklist
+❌ Implement proposals that conflict with CONFIRMED CDs
+❌ Assume data availability without platform verification
+❌ Skip the complexity rating
+❌ Integrate without documenting the reconciliation
+❌ Let scope expansion go unnoticed
+```
+
+### Reference Documents
+- `index/CD_INDEX.md` — Quick lookup of all confirmed decisions
+- `index/RQ_INDEX.md` — Quick lookup of research status
+- `DEEP_THINK_PROMPT_GUIDANCE.md` — How to write better prompts (prevention)
+
+---
+
 ## Enforcement
 
 These protocols are **MANDATORY**. AI agents that skip these protocols will:

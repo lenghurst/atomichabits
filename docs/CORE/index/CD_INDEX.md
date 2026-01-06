@@ -26,6 +26,8 @@
 | **CD-014** | Core File Creation Guardrails | 0 | **CRITICAL** | Jan 2026 |
 | **CD-015** | psyOS Architecture | 1 | **CRITICAL** | 05 Jan 2026 |
 | **CD-016** | AI Model Strategy (DeepSeek V3.2) | 1 | **CRITICAL** | 05 Jan 2026 |
+| **CD-017** | Android-First Development Strategy | 1 | **CRITICAL** | 06 Jan 2026 |
+| **CD-018** | Engineering Threshold Framework | 1 | **CRITICAL** | 06 Jan 2026 |
 
 ---
 
@@ -37,6 +39,10 @@ CD-005 (6-Dimension Model)
 CD-015 (psyOS Architecture)
     ↓
 CD-016 (AI Model Strategy)
+    ↓
+CD-017 (Android-First)
+    ↓
+CD-018 (Engineering Threshold)
     ↓
 CD-008 (Identity Coach)
     ↓
@@ -64,8 +70,8 @@ CD-011 (Architecture Ramifications)
 
 | Metric | Count |
 |--------|-------|
-| **Total CDs** | 16 |
-| **CRITICAL Impact** | 5 |
+| **Total CDs** | 18 |
+| **CRITICAL Impact** | 7 |
 | **HIGH Impact** | 3 |
 | **MEDIUM Impact** | 5 |
 | **LOW/NONE Impact** | 3 |

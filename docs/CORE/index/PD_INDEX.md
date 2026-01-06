@@ -34,13 +34,13 @@
 | **PD-108** | Constellation UX Migration | 🔴 PENDING | RQ-017 | — |
 | **PD-109** | Council AI Activation Rules | ✅ RESOLVED | RQ-016 | Q1-2026 |
 | **PD-110** | Airlock Protocol User Control | 🔴 PENDING | RQ-018 | — |
-| **PD-111** | Polymorphic Habit Attribution | 🔴 PENDING | RQ-015 | — |
+| **PD-111** | Polymorphic Habit Attribution | ✅ RESOLVED | RQ-015 | Q1-2026 |
 | **PD-112** | Identity Priming Audio Strategy | 🔴 PENDING | RQ-018 | — |
 | **PD-113** | Treaty Priority Hierarchy | ✅ RESOLVED | RQ-020 | Q1-2026 |
 | **PD-114** | Full Implementation Commitment | ✅ RESOLVED | — | Q1-2026 |
 | **PD-115** | Treaty Creation UX | ✅ RESOLVED | RQ-021 | Q1-2026 |
 | **PD-116** | Population Learning Privacy | 🔴 PENDING | RQ-023 | — |
-| **PD-117** | ContextSnapshot Real-time Data | 🔴 PENDING | RQ-014 | — |
+| **PD-117** | ContextSnapshot Real-time Data | ✅ RESOLVED | RQ-014 | Q1-2026 |
 | **PD-118** | Treaty Modification UX | 🔴 PENDING | RQ-024 | — |
 | **PD-119** | Summon Token Economy | 🔴 PENDING | RQ-025 | — |
 | **PD-120** | The Chamber Visual Design | 🔴 PENDING | Design session | — |

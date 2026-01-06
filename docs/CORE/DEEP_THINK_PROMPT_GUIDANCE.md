@@ -235,18 +235,41 @@ Before sending ANY prompt to Deep Think or external AI:
 
 ## Post-Response Processing (MANDATORY)
 
-After receiving Deep Think output, the receiving agent MUST:
+After receiving Deep Think output, the receiving agent MUST follow this exact sequence:
 
-### 1. Extract Implementation Tasks
+### Step 0: RUN PROTOCOL 9 FIRST (Non-Negotiable)
+
+**Before ANY integration, run the External Research Reconciliation Checklist:**
+
 ```
-For EACH recommendation in the response:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  STOP. Before proceeding, complete AI_AGENT_PROTOCOL.md → Protocol 9         │
+│                                                                              │
+│  □ Phase 1: Locked Decision Audit (check against CDs)                        │
+│  □ Phase 2: Data Reality Audit (Android-first verification)                  │
+│  □ Phase 3: Implementation Reality Audit (existing code check)               │
+│  □ Phase 4: Scope & Complexity Audit (ESSENTIAL → OVER-ENGINEERED)           │
+│  □ Phase 5: Categorize each proposal (ACCEPT/MODIFY/REJECT/ESCALATE)         │
+│  □ Phase 6: Document the reconciliation output                               │
+│                                                                              │
+│  Only proceed to Step 1 after Protocol 9 is complete.                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Why Step 0 exists:** External AI tools don't have access to locked CDs, platform constraints, or existing code. Their proposals often conflict with reality. Reconciliation BEFORE integration prevents drift.
+
+### Step 1: Extract Implementation Tasks (From ACCEPTED items only)
+```
+For EACH ACCEPT or MODIFY recommendation:
 1. Create implementation task with ID (A-XX, B-XX, etc.)
 2. Assign priority (CRITICAL/HIGH/MEDIUM/LOW)
 3. Identify component (Database/Service/Screen/etc.)
 4. Add to Master Implementation Tracker in RESEARCH_QUESTIONS.md
+
+DO NOT extract tasks from REJECTED proposals.
 ```
 
-### 2. Update Research Questions
+### Step 2: Update Research Questions
 ```
 1. Mark RQ as ✅ COMPLETE
 2. Copy key findings into RQ entry

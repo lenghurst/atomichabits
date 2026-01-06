@@ -38,6 +38,15 @@ If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MU
 - [ ] Understand the terminology in GLOSSARY.md
 - [ ] Identify your session scope (docs only? code? both?)
 
+### Before Processing External Research (Deep Think, Claude, Gemini, etc.)
+
+- [ ] **RUN PROTOCOL 9** (`docs/CORE/AI_AGENT_PROTOCOL.md` → Protocol 9)
+- [ ] Complete all 6 phases of the Reconciliation Checklist
+- [ ] Categorize each proposal: ACCEPT / MODIFY / REJECT / ESCALATE
+- [ ] Only extract tasks from ACCEPTED items
+
+**Critical Rule:** Do NOT integrate external research without reconciliation. External AI tools don't have access to locked CDs or platform constraints.
+
 ### Before Ending Your Session
 
 - [ ] Update AI_HANDOVER.md with what you accomplished and what remains

@@ -984,6 +984,104 @@ String getModelForTask(AITask task) {
 
 ---
 
+### CD-017: Android-First Development Strategy
+| Field | Value |
+|-------|-------|
+| **Decision** | Primary development and testing targets Android; iOS is secondary |
+| **Status** | CONFIRMED |
+| **Date** | 06 January 2026 |
+| **Rationale** | Android provides richer API access for passive context detection (UsageStats, Health Connect) |
+| **Depends On** | CD-015 (psyOS), CD-016 (AI Model Strategy) |
+| **Blocks** | All passive detection, context inference, platform-specific decisions |
+
+**Platform Priority:**
+1. **Android First:** All features designed, implemented, and tested on Android
+2. **iOS Second:** Adapted from Android implementation with platform-specific adjustments
+3. **Feature Parity:** Core value proposition must work on both, but Android may have richer context
+
+**Android Advantages for psyOS:**
+
+| Capability | Android API | iOS Equivalent | Gap |
+|------------|-------------|----------------|-----|
+| App Usage Stats | `UsageStatsManager` ✅ | Screen Time (limited) | Android richer |
+| Foreground App | Available ✅ | Not available | Android only |
+| Health Data | Health Connect ✅ | HealthKit ✅ | Parity |
+| Background Processing | More permissive | Restricted | Android easier |
+| Permissions | User-grantable | Similar | Parity |
+
+**Implications for External Research:**
+All Deep Think and external AI research must be reconciled against Android capabilities first. If a feature requires iOS-only APIs, it should be flagged for deferred implementation.
+
+---
+
+### CD-018: Engineering Threshold Framework (Not "MVP")
+| Field | Value |
+|-------|-------|
+| **Decision** | Replace "MVP" thinking with "Android-First Launch Threshold" framework |
+| **Status** | CONFIRMED |
+| **Date** | 06 January 2026 |
+| **Rationale** | AI-accelerated development enables ambitious launch; "MVP" undervalues our capacity |
+| **Depends On** | CD-015 (psyOS — full implementation), CD-017 (Android-First) |
+| **Blocks** | All scope/complexity decisions during development |
+
+**The Framework:**
+
+Traditional "MVP" thinking assumes human-speed development. With AI-accelerated development (Claude, Gemini, DeepSeek), we can build more ambitious features in the same timeframe. However, we still need guardrails against over-engineering.
+
+**The Android-First Launch Threshold:**
+
+```
+For each feature/proposal, answer in sequence:
+
+1. ESSENTIAL CHECK: Is this required for core value proposition?
+   ├── YES → Build it (simplify if needed, but build it)
+   └── NO → Continue to step 2
+
+2. PLATFORM CHECK: Is the data available on Android without wearables?
+   ├── YES → Continue to step 3
+   └── NO → DEFER (post-launch or iOS-only)
+
+3. BATTERY CHECK: Is the battery impact < 1% for this feature?
+   ├── YES → Continue to step 4
+   └── NO → DEFER to optimization phase
+
+4. EFFORT CHECK: Can AI agents implement this in < 1 week?
+   ├── YES → INCLUDE
+   └── NO → Evaluate: Does value justify effort?
+           ├── YES → INCLUDE (break into phases)
+           └── NO → DEFER
+```
+
+**Complexity Categories:**
+
+| Category | Definition | Action |
+|----------|------------|--------|
+| **ESSENTIAL** | Core value prop fails without it | Build, simplify if needed |
+| **VALUABLE** | Significantly improves UX/accuracy, data available | Include if < 1 week AI effort |
+| **NICE-TO-HAVE** | Marginal improvement | Defer to post-launch |
+| **OVER-ENGINEERED** | Complexity without proportional value | Reject |
+
+**Examples:**
+
+| Feature | Category | Rationale |
+|---------|----------|-----------|
+| Energy State Detection | ESSENTIAL | Core to psyOS value |
+| 5-State vs 4-State | OVER-ENGINEERED | 4-state sufficient; 5 adds complexity without proportional value |
+| Heart Rate Integration | NICE-TO-HAVE | Requires Watch; < 10% users have it |
+| Dangerous Transition Tracking | VALUABLE | Simple to implement, high value |
+| Full Switching Cost Matrix | OVER-ENGINEERED | 3 dangerous pairs sufficient; 20+ pairs over-engineered |
+| Burnout Early Warning | VALUABLE | Uses existing data, high impact |
+| Real-time HRV Streaming | OVER-ENGINEERED | Battery drain, requires Watch, marginal improvement |
+
+**How to Use This Framework:**
+
+1. During Protocol 9 (External Research Reconciliation), apply this framework to each proposal
+2. Use the Complexity Categories in the reconciliation output
+3. When proposing new features, justify using this framework
+4. When debating scope, reference this CD
+
+---
+
 ## Pending Decisions — Tier 1 (Foundational)
 
 These decisions BLOCK other work. They must be resolved first.
