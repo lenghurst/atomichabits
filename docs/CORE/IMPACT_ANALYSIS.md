@@ -1,6 +1,6 @@
 # IMPACT_ANALYSIS.md — Research-to-Roadmap Traceability
 
-> **Last Updated:** 05 January 2026
+> **Last Updated:** 06 January 2026
 > **Purpose:** Track how research findings impact roadmap elements
 > **Trigger:** Updated automatically when research concludes or decisions are made
 
@@ -203,9 +203,160 @@ PROACTIVE ANALYTICS ENGINE
 
 ---
 
+---
+
+## Impact Analysis: 06 January 2026 Session
+
+### Decisions Made This Session
+
+| Decision | Type | Impact Level |
+|----------|------|--------------|
+| **CD-017** | Android-First Development Strategy | **CRITICAL** |
+| **CD-018** | Engineering Threshold Framework | **CRITICAL** |
+| **Protocol 9** | External Research Reconciliation | HIGH |
+| **RQ-013** | Identity Topology (COMPLETE) | HIGH |
+| **RQ-014** | State Economics (COMPLETE) | **CRITICAL** |
+| **RQ-015** | Polymorphic Habits (COMPLETE) | HIGH |
+| **PD-117** | ContextSnapshot Real-time Data (RESOLVED) | HIGH |
+
+---
+
+### CD-017: Android-First Impact Analysis
+
+**Upstream Consequences (What this decision blocks):**
+
+| Element | Impact | Action Required |
+|---------|--------|-----------------|
+| Deep Think sessions | Must include "Android-First Data Reality Audit" | Protocol 9 enforces this |
+| RQ-014 (State Economics) | Heart rate now nullable; step count primary | Already reconciled |
+| RQ-018 (Airlock Protocol) | Must use Android sensors only | Constraint documented |
+| ContextSnapshot design | Tiered refresh based on Android APIs | PD-117 resolved |
+| Battery budget | 5% ceiling locked per CD-015 | All features must fit |
+
+**Downstream Consequences (What depends on this):**
+
+| Element | Impact | New Constraint |
+|---------|--------|----------------|
+| Passive detection algorithm | Must use: UsageStatsManager, Google Fit, CalendarContract, Geofencing | Heartrate optional |
+| All future RQs | Must pass "Android Data Reality Audit" before integration | Via Protocol 9 Phase 2 |
+| iOS development | Secondary; Android features first, iOS port second | Development priority |
+| Wearable features | Tier 4 (optional); never required for core functionality | Graceful degradation |
+
+---
+
+### CD-018: Engineering Threshold Impact Analysis
+
+**Classification Framework Applied:**
+
+| Component | Classification | Rationale |
+|-----------|----------------|-----------|
+| 4-state energy model | ESSENTIAL | Core to psyOS; enables all identity-aware features |
+| Switching cost matrix | ESSENTIAL | Enables burnout prevention, JITAI timing |
+| Passive detection (Android) | ESSENTIAL | Core context awareness |
+| Heart rate integration | NICE-TO-HAVE | Only 10% of Android users have smartwatches |
+| 5-state energy model | OVER-ENGINEERED | Requires cognitive mode detection not feasible on Android |
+| Real-time heartrate | OVER-ENGINEERED | Battery prohibitive; hourly sufficient |
+
+**Impact on Implementation Prioritization:**
+
+| Task ID | Task | Old Priority | New Classification | Action |
+|---------|------|--------------|-------------------|--------|
+| B-08 | EnergyState enum (4-state) | CRITICAL | ESSENTIAL | Proceed as planned |
+| B-09 | inferEnergyState() | CRITICAL | ESSENTIAL | Use Android-only signals |
+| B-10 | BurnoutDetector | HIGH | VALUABLE | 3-signal algorithm (middle ground) |
+| — | 5-state energy model | — | REJECT | Conflicts with CD-015 |
+| — | Real-time heartrate | — | REJECT | Battery prohibitive |
+
+---
+
+### Protocol 9: Impact on Future Research
+
+**New Workflow (Enforced):**
+
+```
+External Research (Deep Think, Claude, GPT, etc.)
+    ↓
+Protocol 9 Phase 1: Locked Decision Audit
+    ↓ (Reject conflicts with CDs)
+Protocol 9 Phase 2: Data Reality Audit (CD-017)
+    ↓ (Filter for Android availability)
+Protocol 9 Phase 3-6: ACCEPT/MODIFY/REJECT/ESCALATE
+    ↓
+Reconciliation document → docs/analysis/
+    ↓
+Only THEN integrate into Core Docs
+```
+
+**Impact on Research Pipeline:**
+
+| RQ | Status | Protocol 9 Applied |
+|----|--------|-------------------|
+| RQ-013, 14, 15 | COMPLETE | Yes (first application) |
+| RQ-005, 6, 7 | NEEDS RESEARCH | Must apply when results arrive |
+| RQ-017 | NEEDS RESEARCH | Must apply when results arrive |
+| RQ-018 | NEEDS RESEARCH | Must apply when results arrive |
+
+---
+
+### RQ-013/14/15 Completion: Downstream Effects
+
+**Database Schema (Confirmed):**
+
+| Table | Status | Fields Added |
+|-------|--------|--------------|
+| `identity_topology` | Ready for implementation | `switching_cost_minutes`, `friction_coefficient` |
+| `habit_facet_links` | Ready for implementation | `custom_metrics JSONB` |
+
+**Service Layer (Confirmed):**
+
+| Service | Status | Key Methods |
+|---------|--------|-------------|
+| EnergyState | Ready | 4-state enum |
+| inferEnergyState() | Ready | Android-first detection |
+| BurnoutDetector | Ready | 3-signal algorithm |
+| WaterfallAttribution | Ready | Multi-facet habit credit |
+
+**Blocked Research (Now Unblocked):**
+
+| RQ | Was Blocked By | Now Status |
+|----|----------------|------------|
+| RQ-017 (Constellation UX) | RQ-012 | READY for research |
+| RQ-018 (Airlock Protocol) | RQ-012 | READY for research |
+| RQ-024 (Treaty Modification) | RQ-021 | READY for research |
+
+---
+
+### Implementation Task Impact
+
+**Tasks Extracted from Deep Think Reconciliation:**
+
+| ID | Task | Priority | Component | Depends On |
+|----|------|----------|-----------|------------|
+| A-12 | Create `identity_topology` table | CRITICAL | Database | — |
+| A-13 | Add `custom_metrics JSONB` to `habit_facet_links` | HIGH | Database | — |
+| B-08 | Implement `EnergyState` enum (4-state) | CRITICAL | Service | — |
+| B-09 | Implement `inferEnergyState()` | CRITICAL | Service | B-08 |
+| B-10 | Implement `BurnoutDetector` (3 signals) | HIGH | Service | B-08, B-09 |
+| B-11 | Implement `WaterfallAttribution` | HIGH | Service | — |
+| B-12 | Update `ContextSnapshot` tiered refresh | HIGH | Service | B-09 |
+| B-13 | Implement Council trigger formula | HIGH | Service | RQ-013 |
+| C-05 | Integrate dangerous transition tracking | MEDIUM | Council AI | B-08, B-09 |
+
+---
+
+### Recommendations
+
+1. **Immediate:** Add 9 tasks from reconciliation to Master Implementation Tracker
+2. **Before Next Deep Think:** Ensure prompt includes Android-First constraints explicitly
+3. **Documentation:** Consider creating a "Data Availability Matrix" as permanent reference
+4. **Quality Gate:** All future implementation PRs must cite their task ID (A-xx, B-xx, C-xx)
+
+---
+
 ## Revision History
 
 | Date | Research/Decision | Roadmap Items Impacted | Changes Made |
 |------|-------------------|------------------------|--------------|
+| 06 Jan 2026 | CD-017, CD-018, RQ-013/14/15, PD-117 | All implementation, Protocol 9, Task extraction | Full impact analysis added |
 | 05 Jan 2026 | RQ-001 Complete | All Layers, PD-001, PD-102, PD-002, PD-003, PD-101, PD-104 | Initial impact analysis |
 

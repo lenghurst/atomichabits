@@ -567,20 +567,42 @@ class IdentityCoachService {
 ### CD-014: Core File Creation Guardrails
 | Field | Value |
 |-------|-------|
-| **Decision** | Agents must NOT create new MD files without explicit approval; use existing 11 Core files |
+| **Decision** | Agents must NOT create new MD files in `docs/CORE/`; use directory structure below |
 | **Status** | CONFIRMED |
-| **Date** | 05 January 2026 |
+| **Date** | 06 January 2026 (Updated for folder structure) |
 | **Rationale** | Prevents doc sprawl; ensures all information flows to the right place |
 
 **The Rule:**
 ```
 Before creating a new .md file, ask:
 1. Does this belong in an existing Core file? → YES → Add it there
-2. Is this truly new documentation? → ASK HUMAN
+2. Is this a prompt or analysis output? → Use designated folder (see below)
 3. Is this temporary/task-specific? → Don't create file; use TODO comments or handover notes
+4. Is this truly new documentation? → ASK HUMAN
 ```
 
-**Core File Purposes (Use These First):**
+**Directory Structure (Enforced):**
+
+```
+docs/CORE/                           ← LOCKED: 11 governance files ONLY
+├── index/                           ← Quick reference indexes (auto-maintained)
+│   ├── RQ_INDEX.md
+│   ├── PD_INDEX.md
+│   └── CD_INDEX.md
+├── archive/                         ← RESOLVED/COMPLETE items moved here
+│   ├── RQ_ARCHIVE_Q1_2026.md
+│   └── CD_PD_ARCHIVE_Q1_2026.md
+└── [11 Core Files - see below]
+
+docs/prompts/                        ← Deep Think prompts & AI prompt templates
+└── DEEP_THINK_PROMPT_*.md
+
+docs/analysis/                       ← Protocol 9 reconciliations & analysis outputs
+├── DEEP_THINK_RECONCILIATION_*.md
+└── DOCUMENTATION_GOVERNANCE_ANALYSIS.md
+```
+
+**Core File Purposes (docs/CORE/ only — do NOT add new files here):**
 
 | Information Type | Where It Belongs |
 |-----------------|------------------|
@@ -595,12 +617,24 @@ Before creating a new .md file, ask:
 | Task priorities | ROADMAP.md |
 | Version history | CHANGELOG.md |
 | Project overview | README.md |
+| Deep Think prompt guidance | DEEP_THINK_PROMPT_GUIDANCE.md |
+
+**Where New Files GO (Not in docs/CORE/):**
+
+| File Type | Location | Example |
+|-----------|----------|---------|
+| Deep Think prompts | `docs/prompts/` | `DEEP_THINK_PROMPT_XYZ.md` |
+| Protocol 9 reconciliations | `docs/analysis/` | `DEEP_THINK_RECONCILIATION_RQ014.md` |
+| ADRs | `docs/architecture/` | `ADR-001-state-management.md` |
+| Technical guides | `docs/` | `flutter-testing-guide.md` |
+| Audit reports | `docs/audits/` | `2026-01-06-security.md` |
 
 **When New Files Are OK:**
 - Explicit human request: "Create a spec for X"
+- Deep Think prompt: auto-goes to `docs/prompts/`
+- Protocol 9 reconciliation: auto-goes to `docs/analysis/`
 - ADR (Architecture Decision Record): `/docs/architecture/ADR-NNN.md`
 - Technical guide: `/docs/{topic}.md`
-- Audit report: `/docs/audits/{date}-{topic}.md`
 
 ---
 

@@ -82,11 +82,31 @@
 
 ---
 
-## Phase 6: ESCALATE (Human decision required)
+## Phase 6: ESCALATE → RESOLVED
 
-| # | Proposal | Conflicts With | Options for Human |
-|---|----------|----------------|-------------------|
-| 1 | **Heart Rate as optional Tier 4 signal** | CD-017 says Android-first, but HR adds value for Watch users | **Option A:** Include as nullable field, only use if Health Connect data available. **Option B:** Defer entirely to post-launch. **Recommendation:** Option A (low effort, high value for subset of users) |
+| # | Proposal | Resolution | Date |
+|---|----------|------------|------|
+| 1 | **Heart Rate as optional Tier 4 signal** | **Option A SELECTED:** Include as nullable field, only use if Health Connect data available. Low effort, high value for Watch users (~10% of Android users). | 06 Jan 2026 |
+
+**Implementation Note:**
+```dart
+// ContextSnapshot update
+class ContextSnapshot {
+  // ... other fields
+
+  /// Nullable - only populated if Health Connect data available
+  /// Tier 4: Background fetch, hourly refresh
+  final int? heartRate;
+
+  /// Whether heart rate data is available from Health Connect
+  final bool hasHeartRateAccess;
+}
+
+// Usage in inferEnergyState
+if (ctx.heartRate != null && ctx.heartRate! > 110) {
+  return EnergyState.high_physical; // Higher confidence with HR
+}
+```
 
 ---
 

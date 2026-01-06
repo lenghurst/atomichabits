@@ -64,6 +64,12 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ RESEARCH_QUESTIONS.md — Update status, propose new RQs if needed         │
 │  □ ROADMAP.md — Update task status, add new items if discovered             │
 │  □ IMPACT_ANALYSIS.md — Log cascade effects of any decisions made           │
+│  □ index/*.md — Update quick reference tables if RQ/PD/CD status changed    │
+│                                                                              │
+│  TIER 1.5: IF EXTERNAL RESEARCH WAS PROCESSED                                │
+│  □ Protocol 9 was completed before integration                               │
+│  □ Reconciliation document created in docs/analysis/                         │
+│  □ ACCEPT/MODIFY/REJECT/ESCALATE documented                                  │
 │                                                                              │
 │  TIER 2: UPDATE IF RELEVANT                                                  │
 │  □ GLOSSARY.md — Add any new terms introduced                               │
