@@ -15,7 +15,12 @@ You are a **Senior AI Systems Architect** specializing in:
 - Content personalization for behavior change interventions
 - Mobile-first AI system design with battery/performance constraints
 
-Your approach: Think step-by-step. For each sub-question, reason through alternatives, cite relevant literature where applicable, and recommend with explicit confidence levels.
+Your approach:
+1. Think step-by-step. Reason through each sub-question methodically.
+2. **Present 2-3 options with explicit tradeoffs** before recommending.
+3. **Cite 2-3 academic papers** where applicable (habit formation, recommendation systems, behavior change).
+4. Rate each recommendation with confidence levels (HIGH/MEDIUM/LOW).
+5. Classify each proposal per CD-018: ESSENTIAL/VALUABLE/NICE-TO-HAVE/OVER-ENGINEERED.
 
 ---
 
@@ -105,10 +110,17 @@ Bandit context includes: time_of_day, day_of_week, streak_length, miss_count_wee
 ---
 
 ### RQ-012: Fractal Trinity Architecture ✅ (Completed)
-- Identity facets stored with embeddings
+- Identity facets stored with embeddings (768-dim via pgvector)
 - Facets have energy states affecting habit suitability
 - "Active facet" tracked in ContextSnapshot
 - Polymorphic habits link to multiple facets
+- Council AI mediates inter-facet conflicts
+
+### RQ-013: Identity Topology ✅ (Completed)
+- Facet-facet relationships stored in `identity_topology` table
+- Interaction types: synergistic, antagonistic, competitive, neutral
+- `friction_coefficient` affects Council AI prompts
+- `switching_cost_minutes` predicts burnout risk
 
 ### RQ-014: State Economics ✅ (Completed)
 4-state energy model with switching costs:
@@ -120,6 +132,26 @@ Bandit context includes: time_of_day, day_of_week, streak_length, miss_count_wee
 | `recovery` | Phone locked + evening + low steps |
 
 Dangerous transitions: `high_focus → social` (60min), `social → high_focus` (50min)
+
+### RQ-015: Polymorphic Habits ✅ (Completed)
+- Habits can belong to multiple facets via `habit_facet_links`
+- Waterfall attribution: completion credits primary facet first, then partial credit to others
+- 10% "shadow bonus" for multi-facet habits
+- `custom_metrics JSONB` enables per-facet tracking variations
+
+### RQ-016: Council AI Architecture ✅ (Completed)
+- DeepSeek R1 Distilled for reasoning (higher quality)
+- Triggered when: facet switching cost > 30min OR friction > 0.7 OR antagonistic facets both activated
+- Council outputs: proceed/delay/modify/escalate recommendations
+- Uses RAG context from user's voice transcripts
+
+### Holy Trinity Context (From Sherlock Onboarding)
+Sherlock extracts three psychological anchors:
+1. **Anti-Identity:** Who the user fears becoming ("I don't want to be a couch potato")
+2. **Failure Archetype:** Their historical pattern of failure ("I always quit after 2 weeks")
+3. **Resistance Lie:** The excuse they tell themselves ("I'm too busy to exercise")
+
+These inform JITAI intervention framing and should inform proactive recommendations.
 
 ---
 
@@ -186,6 +218,14 @@ What content library structure and minimum content set is needed to support iden
 Algorithms cannot optimize without content variants. The content library is the "vocabulary" of the Identity Coach.
 
 ### The Problem
+**Scenario:** User "Maria" is high in Perfectionism (Maladaptive) and Autonomy (Rebel). She:
+- Misses Day 8 of a streak
+- Receives regression warning: "You've broken your streak. You failed again."
+- This triggers shame spiral → quits app entirely
+
+**Better Scenario:** Maria receives:
+- "Day 8 is a common stumbling point. Research shows 67% of habit builders reset here. Your progress isn't lost—it's consolidating. Here's a micro-habit to bridge back..."
+
 **Current State:** JITAI has 7 intervention arms × 4 dimensional framings = 28 messages. No proactive recommendation content exists.
 
 **Required:** Content taxonomy for:
@@ -241,6 +281,18 @@ How do we architect the full flow from user aspirations to AI-guided habit recom
 This is the "how it all fits together" question. RQ-005 defines algorithms, RQ-006 defines content, RQ-007 defines the complete data flow.
 
 ### The Problem
+**Scenario:** User "James" tells Sherlock: "I want to be the kind of father who is present, not distracted. I've always been a workaholic."
+
+**What Should Happen:**
+1. System extracts aspiration: "Present Father" → creates facet "Devoted Father"
+2. System identifies competing facet: "Ambitious Programmer" (existing)
+3. System recognizes antagonistic relationship (work vs. family time)
+4. System creates Identity Roadmap: Phone-free dinners → Weekend mornings with kids → Evening presence
+5. System recommends habits that bridge both facets where possible
+6. System tracks progress toward "Present Father" identity, not just habit streaks
+
+**Current Gap:** No system connects aspirations → facets → habits → progress tracking.
+
 **The Required Flow:**
 ```
 User shares dreams/fears (Sherlock onboarding)
@@ -356,17 +408,61 @@ CREATE TABLE habit_facet_links (
 
 ---
 
+## Required Output Format
+
+Structure your response using these exact headers:
+
+```markdown
+# RQ-005: Proactive Recommendation Algorithms
+
+## Sub-Question 1: Algorithm Selection
+### Options Considered
+| Option | Pros | Cons |
+|--------|------|------|
+| A: ... | ... | ... |
+| B: ... | ... | ... |
+
+### Recommendation
+[Your recommendation with rationale]
+
+### Pseudocode (Dart preferred)
+```dart
+// Implementation sketch
+```
+
+### Confidence: [HIGH/MEDIUM/LOW]
+### Threshold Classification: [ESSENTIAL/VALUABLE/NICE-TO-HAVE/OVER-ENGINEERED]
+### Citations
+- [Author et al., Year] - [Relevance]
+
+## Sub-Question 2: ...
+[Repeat structure]
+
+---
+
+# RQ-006: Content Library
+[Same structure]
+
+---
+
+# RQ-007: Identity Roadmap Architecture
+[Same structure]
+```
+
+---
+
 ## Output Quality Criteria
 
 | Criterion | Question to Ask |
 |-----------|-----------------|
 | **Implementable** | Can an engineer build this without clarifying questions? |
-| **Grounded** | Are recommendations supported by cited literature? |
+| **Grounded** | Are recommendations supported by cited literature (2-3 papers per major recommendation)? |
 | **Consistent** | Does this integrate with existing schema and JITAI? |
 | **Actionable** | Are there concrete next steps? |
 | **Bounded** | Are edge cases handled? |
 | **Android-First** | Does this work with Android-available signals only? |
 | **Threshold-Aware** | Is each component classified ESSENTIAL/VALUABLE/NICE-TO-HAVE? |
+| **Options-Based** | Were 2-3 options presented with tradeoffs before recommending? |
 
 ---
 
@@ -411,15 +507,24 @@ CREATE TABLE habit_facet_links (
 
 ## Final Checklist Before Submitting
 
+**Completeness:**
 - [ ] Each sub-question has explicit answer
-- [ ] All schemas include field types and constraints
-- [ ] All algorithms include pseudocode
-- [ ] Confidence levels stated for each recommendation
+- [ ] All schemas include field types and constraints (SQL)
+- [ ] All algorithms include pseudocode (Dart preferred)
+- [ ] User scenarios (Alex, Maria, James) solved step-by-step
+
+**Quality:**
+- [ ] 2-3 options presented with tradeoffs before each major recommendation
+- [ ] Confidence levels stated (HIGH/MEDIUM/LOW) for each recommendation
+- [ ] 2-3 academic citations per major recommendation
 - [ ] Anti-patterns addressed
-- [ ] User scenarios solved step-by-step
+
+**Constraints:**
 - [ ] Integration points with existing schema explicit
 - [ ] Android-First signals used (no wearable-only data)
 - [ ] Each proposal classified per CD-018 threshold
+- [ ] Battery impact considered (< 5% daily budget)
+- [ ] JITAI bandit integration specified (separate system vs. extension)
 
 ---
 
