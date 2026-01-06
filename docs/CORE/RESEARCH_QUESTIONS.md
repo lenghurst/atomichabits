@@ -3204,101 +3204,145 @@ What happens to users who already activated old templates?
 
 **Process:**
 1. When research generates actionable items → Log here
-2. **All tasks go to ROADMAP.md:**
-   - HIGH/CRITICAL priority → Add to relevant Track in current Roadmap
-   - LOW/MEDIUM priority → Add to Future Features section
+2. Tasks organized by psyOS Implementation Phase
 3. If needs decision first → Create PD in PRODUCT_DECISIONS.md
 
-**Rule:** Nothing gets lost. Every actionable item ends up in either the active Roadmap or Future Features.
+**Rule:** Nothing gets lost. Every actionable item ends up here with clear source traceability.
 
-### From RQ-002 (Intervention Effectiveness)
+---
 
-| Task | Priority | Status | Track |
-|------|----------|--------|-------|
-| Post-intervention emotion capture | MEDIUM | 🔴 NOT STARTED | Track D |
-| Retention cohort tracking | LOW | 🔴 NOT STARTED | Track D |
-| Micro-feedback prompt (👍/👎) | LOW | 🔴 NOT STARTED | Track D |
+### Master Implementation Tracker
 
-### From RQ-003 (Dimension Tracking)
+**Legend:**
+- 🔴 NOT STARTED | 🟡 IN PROGRESS | ✅ COMPLETE
+- Priority: **CRITICAL** → HIGH → MEDIUM → LOW
+- Source: RQ/PD/CD that generated this task
 
-| Task | Priority | Status | Track |
-|------|----------|--------|-------|
-| Add `decision_time_ms` tracking | HIGH | 🔴 NOT STARTED | Track A |
-| Calculate schedule entropy from time_context | MEDIUM | 🔴 NOT STARTED | Track D |
-| Track notification open source (push vs organic) | MEDIUM | 🔴 NOT STARTED | Track D |
+---
 
-### From RQ-004 (Migration Strategy)
+### Phase A: Schema Foundation
 
-| Task | Priority | Status | Track |
-|------|----------|--------|-------|
-| Add 3 onboarding questions for cold-start | HIGH | 🔴 NOT STARTED | Track B |
-| Pass 6-float vector to Thompson Sampling | HIGH | 🔴 NOT STARTED | Track D |
-| Implement Holy Trinity "Emergency Mode" | MEDIUM | 🔴 NOT STARTED | Track D |
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| A-01 | Enable pgvector extension (Supabase) | **CRITICAL** | 🔴 NOT STARTED | RQ-019 | Database | N/A |
+| A-02 | Create `psychometric_roots` table with `root_embedding VECTOR(3072)` | **CRITICAL** | 🔴 NOT STARTED | RQ-012, RQ-019 | Database | N/A |
+| A-03 | Create `psychological_manifestations` table with `resistance_embedding VECTOR(3072)` | **CRITICAL** | 🔴 NOT STARTED | RQ-012, RQ-019 | Database | N/A |
+| A-04 | Create HNSW indexes for both embedding tables (m=16, ef_construction=64) | **CRITICAL** | 🔴 NOT STARTED | RQ-019 | Database | N/A |
+| A-05 | Create `treaties` table with `logic_hooks` JSONB, `origin`, `status`, `breach_count` | **CRITICAL** | 🔴 NOT STARTED | RQ-016, RQ-020, RQ-021 | Database | N/A |
+| A-06 | Create `identity_facets` table (if not exists) | **CRITICAL** | 🔴 NOT STARTED | RQ-011, CD-015 | Database | N/A |
+| A-07 | Add `population_learning_enabled` boolean to `users` table | MEDIUM | 🔴 NOT STARTED | RQ-019, RQ-023 | Database | N/A |
+| A-08 | Create `population_resistance_clusters` table (768-dim centroids) | MEDIUM | 🔴 NOT STARTED | RQ-019 | Database | N/A |
+| A-09 | Implement RLS policies for all new tables | HIGH | 🔴 NOT STARTED | RQ-019 | Database | N/A |
+| A-10 | Add chronotype question to onboarding flow | HIGH | 🔴 NOT STARTED | RQ-012 | Database | N/A |
 
-### From RQ-012 (Fractal Trinity) — ✅ RESEARCH COMPLETE
+---
 
-| Task | Priority | Status | Track | AI Model |
-|------|----------|--------|-------|----------|
-| Create `psychometric_roots` table with pgvector | **CRITICAL** | 🔴 NOT STARTED | Phase A | N/A |
-| Create `psychological_manifestations` table | **CRITICAL** | 🔴 NOT STARTED | Phase A | N/A |
-| Add chronotype question to onboarding | HIGH | 🔴 NOT STARTED | Phase A | N/A |
-| Implement Triangulation Protocol (Day 1→4→7) | **CRITICAL** | 🔴 NOT STARTED | Phase B | Gemini 3 Flash |
-| Implement Sherlock Day 7 root synthesis | **CRITICAL** | 🔴 NOT STARTED | Phase B | DeepSeek V3.2 |
-| Integrate pgvector for embedding storage | HIGH | 🔴 NOT STARTED | Phase B | DeepSeek V3.2 |
-| Add Chronotype-JITAI Matrix to decision engine | HIGH | 🔴 NOT STARTED | Phase B | Hardcoded |
-| Implement tone-based message selection | HIGH | 🔴 NOT STARTED | Phase B | Hardcoded |
+### Phase B: Intelligence Layer
 
-### From RQ-016 (Council AI) — ✅ RESEARCH COMPLETE
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| B-01 | Create Edge Function `embed-manifestation` (gemini-embedding-001) | **CRITICAL** | 🔴 NOT STARTED | RQ-019 | Supabase Edge | gemini-embedding-001 |
+| B-02 | Implement Null-on-Update trigger for embedding invalidation | **CRITICAL** | 🔴 NOT STARTED | RQ-019 | Database Trigger | N/A |
+| B-03 | Configure Supabase Webhook for async embedding generation | HIGH | 🔴 NOT STARTED | RQ-019 | Supabase Config | N/A |
+| B-04 | Implement `EmbeddingRepository` Dart class with similarity queries | HIGH | 🔴 NOT STARTED | RQ-019 | Repository | N/A |
+| B-05 | Create SQL functions: `find_similar_manifestations`, `detect_cross_facet_patterns` | HIGH | 🔴 NOT STARTED | RQ-019 | Database Function | N/A |
+| B-06 | Implement Triangulation Protocol (Day 1→4→7 manifestation extraction) | **CRITICAL** | 🔴 NOT STARTED | RQ-012 | Service | Gemini 3 Flash |
+| B-07 | Implement Sherlock Day 7 root synthesis prompt | **CRITICAL** | 🔴 NOT STARTED | RQ-012 | Prompt | DeepSeek V3.2 |
+| B-08 | Add Chronotype-JITAI Matrix to decision engine | HIGH | 🔴 NOT STARTED | RQ-012 | Service | Hardcoded |
+| B-09 | Implement tone-based message selection (push_hard/compassion/neutral) | HIGH | 🔴 NOT STARTED | RQ-012 | Service | Hardcoded |
+| B-10 | Implement `ContextSnapshot` Dart class (30+ fields) | **CRITICAL** | 🔴 NOT STARTED | RQ-020 | Model | N/A |
+| B-11 | Implement `calculateTensionScore()` algorithm | **CRITICAL** | 🔴 NOT STARTED | RQ-020 | Service | Hardcoded |
+| B-12 | Add `decision_time_ms` tracking to JITAI | HIGH | 🔴 NOT STARTED | RQ-003 | Analytics | N/A |
+| B-13 | Pass 6-float dimension vector to Thompson Sampling | HIGH | 🔴 NOT STARTED | RQ-004 | Service | N/A |
+| B-14 | Implement Holy Trinity "Emergency Mode" | MEDIUM | 🔴 NOT STARTED | RQ-004 | Service | N/A |
+| B-15 | Create population cluster update job (nightly) | LOW | 🔴 NOT STARTED | RQ-019 | Edge Function | DeepSeek V3.2 |
 
-| Task | Priority | Status | Track | AI Model |
-|------|----------|--------|-------|----------|
-| Create `treaties` table with logic_hooks JSONB | **CRITICAL** | 🔴 NOT STARTED | Phase C | N/A |
-| Implement Single-Shot Playwright system prompt | **CRITICAL** | 🔴 NOT STARTED | Phase C | DeepSeek V3.2 |
-| Build Council UI (text bubbles, avatars) | **CRITICAL** | 🔴 NOT STARTED | Phase C | N/A |
-| Implement Treaty signing flow | HIGH | 🔴 NOT STARTED | Phase C | N/A |
-| Implement Treaty enforcement in JITAI | HIGH | 🔴 NOT STARTED | Phase C | Hardcoded |
-| Add breach tracking and renegotiation prompts | HIGH | 🔴 NOT STARTED | Phase C | N/A |
-| Implement Audiobook Pattern TTS | HIGH | 🔴 NOT STARTED | Phase C | Gemini 2.5 Flash TTS |
-| Add tension_score auto-detection | MEDIUM | 🔴 NOT STARTED | Phase C | DeepSeek V3.2 |
-| Build Facet Agent Templates (4 archetypes) | HIGH | 🔴 NOT STARTED | Phase C | N/A |
+---
 
-### From RQ-021 + RQ-022 (Treaty Lifecycle + Council Prompts) — ✅ RESEARCH COMPLETE
+### Phase C: Council AI System
 
-**Implementation Checklist from Google Deep Think (05 January 2026):**
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| C-01 | Implement `Treaty` Dart model class | **CRITICAL** | 🔴 NOT STARTED | RQ-016, RQ-021 | Model | N/A |
+| C-02 | Implement `TreatyTemplate` repository (5 hardcoded templates) | **CRITICAL** | 🔴 NOT STARTED | RQ-021 | Repository | N/A |
+| C-03 | Implement `TreatyEngine` using `json_logic_dart` | **CRITICAL** | 🔴 NOT STARTED | RQ-020 | Service | N/A |
+| C-04 | Create Edge Function `generate_council_session` | **CRITICAL** | 🔴 NOT STARTED | RQ-016, RQ-022 | Supabase Edge | DeepSeek V3.2 |
+| C-05 | Implement DeepSeek V3.2 "Council Engine" system prompt (with JSON validation) | **CRITICAL** | 🔴 NOT STARTED | RQ-022 | Prompt | DeepSeek V3.2 |
+| C-06 | Implement `SSMLBuilder` service (voice archetype → SSML prosody) | HIGH | 🔴 NOT STARTED | RQ-022 | Service | N/A |
+| C-07 | Hook `TreatyEngine` into JITAI Stage 3 (Post-Safety, Pre-Optimization) | **CRITICAL** | 🔴 NOT STARTED | RQ-020 | Integration | Hardcoded |
+| C-08 | Implement breach counter + Probation trigger (3 breaches in 7 days) | HIGH | 🔴 NOT STARTED | RQ-020, RQ-021 | Logic | N/A |
+| C-09 | Implement tension_score auto-detection (threshold > 0.7) | HIGH | 🔴 NOT STARTED | RQ-020 | Service | DeepSeek V3.2 |
+| C-10 | Build Facet Agent Templates (4 voice archetypes) | HIGH | 🔴 NOT STARTED | RQ-022 | Content | N/A |
+| C-11 | Implement Audiobook Pattern TTS (single narrator, SSML prosody) | HIGH | 🔴 NOT STARTED | RQ-016, RQ-022 | Service | Gemini 2.5 Flash TTS |
+| C-12 | Implement Council activation keyword regex detection | MEDIUM | 🔴 NOT STARTED | RQ-020 | Service | N/A |
 
-**Phase 1: Foundation (Data & Logic)**
+---
 
-| Task | Priority | Status | Track | Component |
-|------|----------|--------|-------|-----------|
-| Create `treaties` table (Supabase) with `logic_hooks`, `origin`, `status` | **CRITICAL** | 🔴 NOT STARTED | Phase C | Database |
-| Implement `Treaty` model (Dart) | **CRITICAL** | 🔴 NOT STARTED | Phase C | Model |
-| Implement `TreatyTemplate` repository (hardcoded JSONs) | **CRITICAL** | 🔴 NOT STARTED | Phase C | Repository |
-| Implement `TreatyEngine` using `json_logic_dart` | **CRITICAL** | 🔴 NOT STARTED | Phase C | Service |
+### Phase D: UX & Frontend
 
-**Phase 2: Council Engine (Backend)**
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| D-01 | Build "The Constitution" dashboard screen (Active Laws / Probation / Archives) | **CRITICAL** | 🔴 NOT STARTED | RQ-021 | Screen | N/A |
+| D-02 | Build "The Chamber" Council session overlay (dark mode, pulsing avatars) | **CRITICAL** | 🔴 NOT STARTED | RQ-021, RQ-022 | Screen | N/A |
+| D-03 | Implement Treaty Card widget component | HIGH | 🔴 NOT STARTED | RQ-021 | Widget | N/A |
+| D-04 | Implement Ratification Ritual (3-second haptic seal) | HIGH | 🔴 NOT STARTED | RQ-021, RQ-026 | Widget | N/A |
+| D-05 | Build Treaty Creation Wizard (3-step flow) | HIGH | 🔴 NOT STARTED | RQ-021 | Screen | N/A |
+| D-06 | Implement "Digital Sunset" first-time treaty onboarding | HIGH | 🔴 NOT STARTED | RQ-021 | Onboarding | N/A |
+| D-07 | Add 3 onboarding questions for cold-start dimension estimation | HIGH | 🔴 NOT STARTED | RQ-004 | Onboarding | N/A |
+| D-08 | Post-intervention emotion capture UI | MEDIUM | 🔴 NOT STARTED | RQ-002 | Widget | N/A |
+| D-09 | Micro-feedback prompt (👍/👎) on interventions | LOW | 🔴 NOT STARTED | RQ-002 | Widget | N/A |
+| D-10 | Track notification open source (push vs organic) | MEDIUM | 🔴 NOT STARTED | RQ-003 | Analytics | N/A |
 
-| Task | Priority | Status | Track | Component |
-|------|----------|--------|-------|-----------|
-| Create Edge Function `generate_council_session` | **CRITICAL** | 🔴 NOT STARTED | Phase C | Supabase Edge |
-| Implement/test DeepSeek V3.2 system prompt (JSON validation) | **CRITICAL** | 🔴 NOT STARTED | Phase C | Prompt |
-| Implement `SSMLBuilder` service (voice archetype → SSML) | HIGH | 🔴 NOT STARTED | Phase C | Service |
+---
 
-**Phase 3: UX (Frontend)**
+### Phase E: Polish & Advanced
 
-| Task | Priority | Status | Track | Component |
-|------|----------|--------|-------|-----------|
-| Build "The Constitution" dashboard (Active/Probation/Archives) | **CRITICAL** | 🔴 NOT STARTED | Phase C | Screen |
-| Build "The Chamber" Council session overlay (dark mode, pulsing avatars) | **CRITICAL** | 🔴 NOT STARTED | Phase C | Screen |
-| Implement Ratification Ritual (3-second haptic seal) | HIGH | 🔴 NOT STARTED | Phase C | Widget |
-| Implement Treaty Card component | HIGH | 🔴 NOT STARTED | Phase C | Widget |
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| E-01 | Design Summon Token UI display | MEDIUM | 🔴 NOT STARTED | RQ-025, PD-119 | Widget | N/A |
+| E-02 | Implement Summon Token earning/spending logic | MEDIUM | 🔴 NOT STARTED | RQ-025, PD-119 | Service | N/A |
+| E-03 | Specify Ratification Ritual haptic patterns (iOS + Android) | MEDIUM | 🔴 NOT STARTED | RQ-026 | Asset | N/A |
+| E-04 | Source/create Ratification audio assets (clockwork, wax seal, thud) | MEDIUM | 🔴 NOT STARTED | RQ-026 | Asset | N/A |
+| E-05 | Implement Treaty modification/amendment flow | HIGH | 🔴 NOT STARTED | RQ-024, PD-118 | Screen | N/A |
+| E-06 | Implement Probation → Renegotiation journey | HIGH | 🔴 NOT STARTED | RQ-024, PD-118 | Flow | N/A |
+| E-07 | Implement treaty template versioning schema | LOW | 🔴 NOT STARTED | RQ-027 | Database | N/A |
+| E-08 | The Chamber visual design implementation | MEDIUM | 🔴 NOT STARTED | PD-120 | Screen | N/A |
+| E-09 | Retention cohort tracking | LOW | 🔴 NOT STARTED | RQ-002 | Analytics | N/A |
+| E-10 | Calculate schedule entropy from time_context | MEDIUM | 🔴 NOT STARTED | RQ-003 | Analytics | N/A |
 
-**Phase 4: Integration**
+---
 
-| Task | Priority | Status | Track | Component |
-|------|----------|--------|-------|-----------|
-| Hook `TreatyEngine` into JITAI Stage 3 | **CRITICAL** | 🔴 NOT STARTED | Phase C | Integration |
-| Implement breach counter + Probation trigger | HIGH | 🔴 NOT STARTED | Phase C | Logic |
-| Implement "Digital Sunset" first-time treaty onboarding | HIGH | 🔴 NOT STARTED | Phase C | Onboarding |
+### Pending Research Tasks
+
+These tasks cannot be fully specified until research completes:
+
+| Source | Status | Blocks Tasks |
+|--------|--------|--------------|
+| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | Facet graph implementation, conflict resolution |
+| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | Energy state switching, PD-117 |
+| RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | Habit completion encoding |
+| RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | Dashboard solar system visualization |
+| RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | State transition UI, audio priming |
+| RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH | Privacy policy, opt-in UI, PD-116 |
+| RQ-024 (Treaty Modification) | 🔴 NEEDS RESEARCH | E-05, E-06 (modification flow) |
+| RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | E-01, E-02 (token system) |
+| RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | E-03, E-04 (audio assets) |
+| RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH | E-07 (versioning schema) |
+
+---
+
+### Implementation Summary
+
+| Phase | Total Tasks | CRITICAL | HIGH | MEDIUM | LOW |
+|-------|-------------|----------|------|--------|-----|
+| **A: Schema** | 10 | 6 | 2 | 2 | 0 |
+| **B: Intelligence** | 15 | 5 | 6 | 3 | 1 |
+| **C: Council AI** | 12 | 5 | 6 | 1 | 0 |
+| **D: UX** | 10 | 2 | 5 | 2 | 1 |
+| **E: Polish** | 10 | 0 | 2 | 5 | 3 |
+| **TOTAL** | **57** | **18** | **21** | **13** | **5** |
+
+**Critical Path:** A-01 → A-02/A-03/A-05 → B-01 → B-06/B-07 → C-01/C-03 → C-04/C-05 → D-01/D-02
 
 ---
 

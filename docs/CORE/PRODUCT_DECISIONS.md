@@ -2279,6 +2279,50 @@ The following need dedicated sprints to resolve properly:
 | JITAI Documentation & Review | PD-102 | Medium — needs best practice research |
 | Aspirational Features Reconciliation | N/A | Medium — audit + prioritize |
 | Core Docs Accuracy Audit | N/A | Low — systematic verification |
+| **Documentation Archiving Strategy** | N/A | Medium — infrastructure sprint |
+
+### Future Sprint: Documentation Archiving Strategy
+
+**Context:** PRODUCT_DECISIONS.md and RESEARCH_QUESTIONS.md both exceed Claude Code's 25,000 token read limit (currently ~35,000 tokens combined). This causes context fragmentation and requires pagination to read.
+
+**Deferred Solution: Structured Archiving (Option A)**
+
+When file sizes become unmanageable, implement the following structure:
+
+```
+docs/CORE/
+├── PRODUCT_DECISIONS.md           ← Active CDs + PDs only
+├── RESEARCH_QUESTIONS.md          ← Active RQs only
+├── archive/
+│   ├── decisions/
+│   │   └── 2026-Q1-resolved.md    ← Resolved CDs/PDs (quarterly)
+│   └── research/
+│       └── 2026-Q1-complete.md    ← Completed RQs (quarterly)
+└── index/
+    ├── CD_INDEX.md                ← Cross-reference all CDs
+    ├── PD_INDEX.md                ← Cross-reference all PDs
+    └── RQ_INDEX.md                ← Cross-reference all RQs
+```
+
+**Benefits:**
+- Main files stay under token limits
+- Full history preserved in archives
+- Index files enable quick lookup
+- Quarterly batching reduces file churn
+
+**Migration Process:**
+1. Create `archive/` and `index/` directories
+2. Move all RESOLVED/COMPLETE items to quarterly archives
+3. Generate index files with: ID, Title, Status, File Location
+4. Update cross-references to use index lookups
+5. Add "Archive Location" field to resolved items
+
+**Trigger Criteria:**
+- When PRODUCT_DECISIONS.md exceeds 30,000 tokens
+- When RESEARCH_QUESTIONS.md exceeds 40,000 tokens
+- When reading full files requires >3 paginated reads
+
+**Status:** 🔴 DEFERRED — Not blocking current work. Implement when token limits cause productivity loss.
 
 ---
 
