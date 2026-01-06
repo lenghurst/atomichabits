@@ -96,21 +96,34 @@ graph TD
 
 ## ⚠️ AI HANDOFF PROTOCOL (READ FIRST!)
 
+**Full Protocol:** See `docs/CORE/AI_AGENT_PROTOCOL.md` for complete mandatory behaviors.
+
 ### Mandatory Session Start Checklist
 ```
 □ 1. Read README.md (project overview, quick start)
-□ 2. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
-□ 3. Read ROADMAP.md (priorities, sprint history)
-□ 4. Check CHANGELOG.md for recent changes
+□ 2. Read docs/CORE/AI_HANDOVER.md (session context from last agent)
+□ 3. Read docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
+□ 4. Read docs/CORE/GLOSSARY.md (terminology definitions)
+□ 5. Read docs/CORE/RESEARCH_QUESTIONS.md (active research — check before implementing)
+□ 6. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
+□ 7. Check ROADMAP.md for current priorities
 ```
 
 ### Mandatory Session End Checklist
 ```
-□ 1. Commit all changes: git add -A && git commit -m "description"
-□ 2. Push to remote: git push origin main
-□ 3. Update AI_CONTEXT.md if architecture changed
-□ 4. Update ROADMAP.md if priorities changed
-□ 5. Update CHANGELOG.md with version entry
+□ 1. Update docs/CORE/AI_HANDOVER.md with session summary
+□ 2. Update docs/CORE/PRODUCT_DECISIONS.md if decisions made/needed
+□ 3. Update docs/CORE/RESEARCH_QUESTIONS.md if research progressed
+□ 4. Update docs/CORE/IMPACT_ANALYSIS.md if cascade effects identified
+□ 5. Commit all changes with descriptive message
+□ 6. Push to remote branch
+```
+
+### For External Research (Deep Think, etc.)
+```
+□ Read docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md BEFORE writing prompts
+□ Use mandatory template structure
+□ Process responses with Task Extraction & Deduplication protocol
 ```
 
 ---

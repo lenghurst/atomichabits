@@ -83,6 +83,7 @@ Code Changes
 | **[AI_AGENT_PROTOCOL.md](./docs/CORE/AI_AGENT_PROTOCOL.md)** | Behavioral Rules | Mandatory AI agent behaviors | When protocols change |
 | **[IMPACT_ANALYSIS.md](./docs/CORE/IMPACT_ANALYSIS.md)** | Traceability | Research → Roadmap impacts | After research/decisions |
 | **[IDENTITY_COACH_SPEC.md](./docs/CORE/IDENTITY_COACH_SPEC.md)** | Specification | AI identity development coach | When spec evolves |
+| **[DEEP_THINK_PROMPT_GUIDANCE.md](./docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md)** | Quality Framework | Prompt engineering for external AI research | When preparing Deep Think prompts |
 
 ### What Makes a Core Document
 
@@ -106,6 +107,7 @@ A document is "Core" if it meets ALL criteria:
 | **RESEARCH_QUESTIONS.md** | Research informs decisions | Decisions made without evidence |
 | **AI_AGENT_PROTOCOL.md** | Behaviors must be consistent | Agents skip critical steps |
 | **IMPACT_ANALYSIS.md** | Decisions have cascading effects | Downstream impacts missed |
+| **DEEP_THINK_PROMPT_GUIDANCE.md** | Research quality depends on prompt quality | Vague, unimplementable research output |
 
 ### Doc Maintenance Protocol (Preventing Reality Drift)
 
@@ -126,7 +128,7 @@ A document is "Core" if it meets ALL criteria:
 
 #### Cross-Doc Consistency Checks
 
-**All 11 Core Documents Categorized by Update Frequency:**
+**All 12 Core Documents Categorized by Update Frequency:**
 
 | Doc | Category | Static/Dynamic | Update Trigger |
 |-----|----------|----------------|----------------|
@@ -134,6 +136,7 @@ A document is "Core" if it meets ALL criteria:
 | **CHANGELOG.md** | History | Append-Only | Every release |
 | **GLOSSARY.md** | Terminology | Mostly Static | New term introduced |
 | **AI_AGENT_PROTOCOL.md** | Behavioral Rules | Mostly Static | Protocol changes |
+| **DEEP_THINK_PROMPT_GUIDANCE.md** | Quality Framework | Mostly Static | Prompt engineering practices change |
 | **AI_CONTEXT.md** | Technical Truth | Dynamic | Architecture changes |
 | **ROADMAP.md** | Direction | Dynamic | Priority changes |
 | **PRODUCT_DECISIONS.md** | Philosophy | Dynamic | Decisions made/needed |

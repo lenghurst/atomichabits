@@ -434,6 +434,114 @@ If only 7 generic messages exist:
 
 ---
 
+## Protocol 7: Deep Think Prompt Quality (MANDATORY)
+
+### Trigger
+When preparing prompts for external AI research tools (Google Deep Think, Claude Projects, ChatGPT Canvas, etc.).
+
+### Action
+1. **READ** `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` before writing ANY prompt
+2. **USE** the mandatory prompt template from that document
+3. **VERIFY** all checklist items before sending
+4. **PROCESS** responses using the Post-Response Processing protocol
+
+### Rationale
+External AI research output quality is directly proportional to prompt quality. A poorly structured prompt yields vague, unimplementable research. A well-structured prompt yields actionable specifications.
+
+### Key Requirements
+| Requirement | Why |
+|-------------|-----|
+| **Expert Role** | Establishes domain authority |
+| **Processing Order** | Ensures interdependent RQs solved correctly |
+| **Anti-Patterns** | Prevents known mistakes |
+| **Confidence Levels** | Enables follow-up research triage |
+| **Concrete Scenarios** | Grounds abstract requirements |
+| **Example Output** | Sets quality bar |
+
+### Post-Response Processing (CRITICAL)
+After receiving Deep Think output:
+
+```
+1. EXTRACT implementation tasks → Add to Master Implementation Tracker
+2. UPDATE RQ status → Mark COMPLETE with findings
+3. DEDUPLICATE → Check for existing similar tasks
+4. CREATE follow-up RQs → For MEDIUM/LOW confidence items
+5. UPDATE dependencies → IMPACT_ANALYSIS.md
+```
+
+### Anti-Pattern (DO NOT)
+```
+❌ Send prompts without expert role definition
+❌ Send prompts without processing order for multiple RQs
+❌ Send prompts without anti-patterns section
+❌ Receive responses without extracting implementation tasks
+❌ Add tasks without checking for duplicates
+```
+
+### Correct Pattern (DO)
+```
+✅ Read DEEP_THINK_PROMPT_GUIDANCE.md first
+✅ Use mandatory template structure
+✅ Include concrete user scenarios
+✅ Request confidence levels
+✅ Process response with full extraction protocol
+```
+
+**Reference:** `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md`
+
+---
+
+## Protocol 8: Task Extraction & Deduplication (MANDATORY)
+
+### Trigger
+When completing research (RQ) or resolving a product decision (PD).
+
+### Action
+1. **EXTRACT** all actionable tasks from the research output
+2. **SEARCH** existing Master Implementation Tracker for duplicates
+3. **MERGE** if similar task exists (don't create duplicate)
+4. **CREATE** new task only if truly novel
+5. **LINK** task to source (RQ-XXX or PD-XXX)
+
+### Deduplication Rules
+| Scenario | Action |
+|----------|--------|
+| Exact same task exists | Skip (already tracked) |
+| Similar task exists | Update existing with new details |
+| Task extends existing | Add as sub-task or update scope |
+| Truly new task | Create with proper source linkage |
+
+### Task ID Convention
+```
+Phase-Number format:
+A-01, A-02, ... (Schema Foundation)
+B-01, B-02, ... (Intelligence Layer)
+C-01, C-02, ... (Council AI System)
+D-01, D-02, ... (UX & Frontend)
+E-01, E-02, ... (Polish & Advanced)
+```
+
+### Required Task Fields
+| Field | Required | Description |
+|-------|----------|-------------|
+| ID | ✅ | Phase-Number (e.g., C-04) |
+| Task | ✅ | Clear action description |
+| Priority | ✅ | CRITICAL/HIGH/MEDIUM/LOW |
+| Status | ✅ | 🔴/🟡/✅ |
+| Source | ✅ | RQ-XXX or PD-XXX that generated it |
+| Component | ✅ | Database/Service/Screen/etc. |
+| AI Model | Optional | If task requires specific model |
+
+### Anti-Pattern (DO NOT)
+```
+❌ Complete RQ without extracting tasks
+❌ Add tasks without checking for duplicates
+❌ Create tasks without source linkage
+❌ Use free-form task IDs
+```
+
+---
+
 ## Enforcement
 
 These protocols are **MANDATORY**. AI agents that skip these protocols will:

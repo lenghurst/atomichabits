@@ -36,42 +36,103 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `session-priming-docs-r6fCh` |
+| **Session ID** | `session-priming-docs-r6fCh` (continued) |
 | **Date** | 06 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Duration** | ~45 minutes |
-| **Focus** | Documentation infrastructure: archiving strategy, implementation task consolidation, Deep Think Prompt B |
+| **Duration** | ~90 minutes (session continued from context recovery) |
+| **Focus** | Documentation governance: prompt guidance framework, protocol additions, root cause analysis |
 
 ### What Was Accomplished (This Session)
 
 **Key Changes Made:**
 
-1. **Documentation Archiving Strategy — Deferred to Roadmap:**
-   - Added "Future Sprint: Documentation Archiving Strategy" to PRODUCT_DECISIONS.md
-   - Specified Option A (Structured Archiving) with `archive/` and `index/` directories
-   - Defined trigger criteria (30K+ tokens) and migration process
-   - Status: 🔴 DEFERRED — implement when token limits cause productivity loss
+1. **DEEP_THINK_PROMPT_GUIDANCE.md Created:**
+   - Created comprehensive prompt engineering framework for external AI research
+   - Mandatory template structure with: expert role, processing order, anti-patterns, confidence levels
+   - Quality characteristics checklist (rich context, structured sub-questions, constraints, output format)
+   - Weakness prevention guide (10 anti-patterns to avoid)
+   - Post-response processing protocol (task extraction, deduplication)
 
-2. **Master Implementation Tracker Created:**
-   - Consolidated ALL implementation tasks from RQ-002 through RQ-027
-   - Removed duplicates (e.g., treaties table appeared in RQ-016 and RQ-021/RQ-022)
-   - Added missing tasks from RQ-019 and RQ-020
-   - Organized by 5 implementation phases:
-     - **Phase A:** Schema Foundation (10 tasks, 6 CRITICAL)
-     - **Phase B:** Intelligence Layer (15 tasks, 5 CRITICAL)
-     - **Phase C:** Council AI System (12 tasks, 5 CRITICAL)
-     - **Phase D:** UX & Frontend (10 tasks, 2 CRITICAL)
-     - **Phase E:** Polish & Advanced (10 tasks, 0 CRITICAL)
-   - **Total: 57 implementation tasks** with source traceability
-   - Added critical path: A-01 → A-02/A-03/A-05 → B-01 → B-06/B-07 → C-01/C-03 → C-04/C-05 → D-01/D-02
+2. **Protocol 7 & 8 Added to AI_AGENT_PROTOCOL.md:**
+   - **Protocol 7: Deep Think Prompt Quality** — mandatory guidance for external research prompts
+   - **Protocol 8: Task Extraction & Deduplication** — prevents duplicates and missing extractions
+   - Task ID convention (A-01, B-01, etc.) and required task fields
+   - Deduplication rules (merge vs create)
 
-3. **Deep Think Prompt B Created:**
-   - Created `DEEP_THINK_PROMPT_B_IDENTITY_SYSTEM.md`
-   - Covers: RQ-013 (Identity Topology), RQ-014 (State Economics), PD-117 (ContextSnapshot), RQ-015 (Polymorphic Habits)
-   - Extensive context from completed research (RQ-011, RQ-012, RQ-016, RQ-019, RQ-020, RQ-021, RQ-022)
-   - 37 sub-questions across 4 research areas
-   - Architectural constraints section
-   - Success criteria and output format specifications
+3. **Documentation Signposting:**
+   - Updated README.md: Added DEEP_THINK_PROMPT_GUIDANCE.md to Core Folder table and Why Each Doc Exists
+   - Updated AI_CONTEXT.md: Added "For External Research" checklist
+   - Updated all "12 Core Documents" count
+
+4. **Documentation Governance Analysis:**
+   - Created `DOCUMENTATION_GOVERNANCE_ANALYSIS.md` with root cause investigation
+   - Identified WHY duplicates occur (no deduplication gate, RQ isolation, scattered storage)
+   - Identified WHY task extractions missing (no extraction mandate, COMPLETE ≠ ACTIONED)
+   - Identified WHY PDs have no tasks (PD = decision not task, no protocol)
+   - Proposed structural fixes: ACTIONED status, PD implementation checklist
+   - 6-phase implementation roadmap
+
+5. **File Renamed:**
+   - `DEEP_THINK_PROMPT_B_IDENTITY_SYSTEM.md` → `DEEP_THINK_PROMPT_IDENTITY_SYSTEM_RQ013-RQ014-RQ015-PD117.md`
+   - Follows new naming convention: `DEEP_THINK_PROMPT_[TOPIC]_[RQ-IDS].md`
+
+**Governance Improvements Summary:**
+| Gap | Fix | Status |
+|-----|-----|--------|
+| No prompt quality framework | DEEP_THINK_PROMPT_GUIDANCE.md | ✅ Created |
+| No task extraction protocol | Protocol 8 in AI_AGENT_PROTOCOL.md | ✅ Added |
+| No deduplication rules | Protocol 8 deduplication rules | ✅ Added |
+| Root cause unknown | DOCUMENTATION_GOVERNANCE_ANALYSIS.md | ✅ Created |
+
+---
+
+### Previous Session Summary (Earlier Today)
+| Field | Value |
+|-------|-------|
+| **Session ID** | `session-priming-docs-r6fCh` |
+| **Date** | 06 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Focus** | Implementation tracker, archiving strategy, Deep Think Prompt B initial version |
+
+**What Was Done:**
+- Created Master Implementation Tracker (57 tasks across 5 phases)
+- Added archiving strategy to PRODUCT_DECISIONS.md (deferred)
+- Created initial Deep Think Prompt B (later enhanced)
+
+---
+
+### Prior Session Summary
+| Field | Value |
+|-------|-------|
+| **Session ID** | `deep-think-rq021-rq022-pd115` |
+| **Date** | 05 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Duration** | ~30 minutes |
+| **Focus** | Integrate Deep Think research for RQ-021 (Treaty Lifecycle & UX), RQ-022 (Council Script Prompts), and resolve PD-115 |
+
+### What Was Accomplished (That Session)
+
+**Key Changes Made:**
+
+1. **RQ-021: Treaty Lifecycle & UX — ✅ RESEARCH COMPLETE:**
+   - Integrated Google Deep Think specifications
+   - **The Constitution:** Treaty management dashboard (Active Laws, Probation, Archives)
+   - **Treaty Creation Wizard:** 3-step flow (Source → Drafting → Ratification)
+   - **Ratification Ritual:** 3-second haptic "wax seal" interaction
+   - **5 Treaty Templates:** Sunset Clause, Deep Work Decree, The Sabbath, Transition Airlock, Presence Pact
+   - Common Law Principle: Templates = Protocols (80%), Council = Arbitration (20%)
+
+2. **RQ-022: Council Script Generation Prompts — ✅ RESEARCH COMPLETE:**
+   - Complete DeepSeek V3.2 system prompt template
+   - "The Council Engine" role with Sherlock as narrator
+   - 6-turn arc structure (Thesis → Antithesis → Synthesis)
+   - **Voice Archetype system:** neutral, urgent, warm, shadow
+   - **SSMLBuilder:** Client-side prosody mapping (not LLM-generated)
+   - User context injection format (facets + resistance patterns)
+   - JSON output schema (`script[]` + `proposed_treaty`)
+   - Edge case handling (single facet, no conflict)
+
+3. **PD-115: Treaty Creation UX — ✅ RESOLVED:**
 
 ---
 
