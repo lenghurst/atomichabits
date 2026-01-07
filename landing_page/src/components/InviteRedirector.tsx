@@ -16,7 +16,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { Download } from 'lucide-react';
 // import { supabase } from '../lib/supabaseClient'; // Uncomment when analytics enabled
+
+// --- CONFIGURATION ---
+const IOS_APP_STORE_URL = ""; // e.g., "https://apps.apple.com/app/id123456789"
 
 interface InviteRedirectorProps {
   MainContent?: React.ComponentType<any>;
@@ -26,6 +30,7 @@ export function InviteRedirector({ MainContent }: InviteRedirectorProps) {
   const { inviteCode } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [iosCopySuccess, setIosCopySuccess] = useState(false);
   const [platform, setPlatform] = useState<'android' | 'ios' | 'desktop'>('desktop');
 
   useEffect(() => {
@@ -65,10 +70,10 @@ export function InviteRedirector({ MainContent }: InviteRedirectorProps) {
     } 
     else if (isIOS) {
       setIsMobile(true);
-      // TODO: Replace with actual App Store URL when available
-      // For now, show the mobile redirect screen but don't actually redirect
-      // window.location.href = "https://apps.apple.com/app/id...";
-      console.log("iOS user detected. App Store URL pending.");
+      // Logic split:
+      // If URL exists: Stay on "Mobile" screen to show button.
+      // If URL missing: Stay on "Mobile" screen to show "Coming Soon".
+      // console.log("iOS user detected.");
     } 
     else {
       // Desktop: Stay on landing page with banner
@@ -83,18 +88,51 @@ export function InviteRedirector({ MainContent }: InviteRedirectorProps) {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (err) {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = inviteCode;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
+        fallbackCopy(inviteCode);
       }
     }
   };
+
+  const handleIOSDownload = async () => {
+    if (inviteCode) {
+      try {
+        await navigator.clipboard.writeText(inviteCode);
+        setIosCopySuccess(true);
+        setTimeout(() => {
+          setIosCopySuccess(false);
+          // Only redirect if URL is set
+          if (IOS_APP_STORE_URL) {
+              window.location.href = IOS_APP_STORE_URL;
+          }
+        }, 1000);
+      } catch (err) {
+        fallbackCopy(inviteCode);
+        setIosCopySuccess(true);
+        setTimeout(() => {
+             setIosCopySuccess(false);
+             if (IOS_APP_STORE_URL) {
+                 window.location.href = IOS_APP_STORE_URL;
+             }
+        }, 1000);
+      }
+    } else {
+        // No invite code, just redirect
+        if (IOS_APP_STORE_URL) {
+            window.location.href = IOS_APP_STORE_URL;
+        }
+    }
+  };
+
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  }
 
   // Mobile View: Clean "Redirecting" Screen
   if (isMobile) {
@@ -131,28 +169,64 @@ export function InviteRedirector({ MainContent }: InviteRedirectorProps) {
             </span>
           </div>
           
-          {/* Loading indicator */}
-          <motion.div 
-            className="mt-8 h-1 w-48 mx-auto bg-zinc-800 rounded-full overflow-hidden"
-          >
-            <motion.div 
-              className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 2.5, ease: 'linear' }}
-            />
-          </motion.div>
+          {/* Loading indicator - Show only if NOT iOS or if iOS but NO URL (Coming Soon state) */}
+          {/* If iOS AND URL exists, we hide the spinner and show the button instead to be less confusing */}
+          {/* FIX: Use platform !== 'ios' instead of !isIOS to avoid ReferenceError */}
+          {(platform !== 'ios' || (platform === 'ios' && !IOS_APP_STORE_URL)) && (
+             <motion.div
+               className="mt-8 h-1 w-48 mx-auto bg-zinc-800 rounded-full overflow-hidden"
+             >
+               <motion.div
+                 className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
+                 initial={{ width: '0%' }}
+                 animate={{ width: '100%' }}
+                 transition={{ duration: 2.5, ease: 'linear' }}
+               />
+             </motion.div>
+          )}
           
-          {/* iOS Coming Soon Message */}
+          {/* iOS Handling */}
           {platform === 'ios' && (
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="mt-6 text-sm text-amber-400"
-            >
-              iOS app coming soon! Sign up below to get notified.
-            </motion.p>
+            <div className="mt-8">
+                {IOS_APP_STORE_URL ? (
+                    // URL AVAILABLE: Show Button
+                    <motion.button
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        onClick={handleIOSDownload}
+                        className={`
+                            group relative flex items-center justify-center gap-3
+                            px-8 py-4 rounded-xl font-bold text-lg
+                            transition-all duration-300 transform active:scale-95
+                            ${iosCopySuccess
+                                ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.5)]'
+                                : 'bg-white text-black hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
+                            }
+                        `}
+                    >
+                         {iosCopySuccess ? (
+                            <>
+                                <span>✓ Code Copied!</span>
+                            </>
+                         ) : (
+                            <>
+                                <Download className="w-6 h-6" />
+                                <span>Download on App Store</span>
+                            </>
+                         )}
+                    </motion.button>
+                ) : (
+                    // URL MISSING: Show "Coming Soon"
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1 }}
+                        className="mt-6 text-sm text-amber-400"
+                    >
+                        iOS app coming soon! Sign up below to get notified.
+                    </motion.p>
+                )}
+            </div>
           )}
         </motion.div>
       </div>
