@@ -1,9 +1,29 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 10 January 2026
+> **Last Updated:** 10 January 2026 (Red Team Reality Check Applied)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
+
+---
+
+## CRITICAL NOTICE: Implementation Reality Check
+
+**Status:** 🔴 **BLOCKED** — Phase H tasks cannot proceed until Phase A schema exists
+
+| Finding | Impact |
+|---------|--------|
+| `identity_facets` table **DOES NOT EXIST** | Constellation (Phase H) blocked |
+| `identity_topology` table **DOES NOT EXIST** | Tether/conflict viz blocked |
+| Audio files are **0 bytes** (placeholders) | Airlock has no audio |
+| **Skill Tree is production-ready** (549 lines) | Retain as fallback |
+
+**Correct Execution Order:**
+1. Phase A (Schema Foundation) — CREATE `identity_facets`, `identity_topology`
+2. Phase G (Identity Coach Intelligence) — ADD fields to schema
+3. Phase H (Constellation/Airlock) — NOW unblocked
+
+**Red Team Critique:** `docs/analysis/RED_TEAM_CRITIQUE_RQ017_RQ018.md`
 
 ---
 
@@ -293,18 +313,23 @@ PROJECT ROOT:                                                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Phase H: Constellation & Airlock (NEW — 10 Jan 2026)
+### Phase H: Constellation & Airlock (🔴 BLOCKED — 10 Jan 2026)
 
-**Source:** RQ-017, RQ-018 (Deep Think psyOS UX Phase)
-**Decisions:** PD-108 (Big Bang migration), PD-110 (Severity + Treaty), PD-112 (Hybrid audio)
+**Source:** RQ-017 ✅, RQ-018 ✅ (Deep Think psyOS UX Phase — COMPLETE)
+**Decisions:** PD-108 ✅, PD-110 ✅, PD-112 ✅ (All RESOLVED)
 
-| Task | Description | Priority |
-|------|-------------|----------|
-| H-01 | `ConstellationPainter` (CustomPainter) | CRITICAL |
-| H-02 | Orbit distance formula (ICS-based) | CRITICAL |
-| H-07 | Settled state (0 FPS idle) | CRITICAL |
-| H-10 | `TransitionDetector` service | CRITICAL |
-| H-11 | `AirlockOverlay` widget (5-Second Seal) | CRITICAL |
+**⚠️ BLOCKED:** Requires Phase A schema (`identity_facets`, `identity_topology` tables)
+
+| Task | Description | Priority | Status |
+|------|-------------|----------|--------|
+| H-01 | `ConstellationPainter` (CustomPainter) | CRITICAL | 🔴 BLOCKED |
+| H-02 | Orbit distance formula (ICS-based) | CRITICAL | 🔴 BLOCKED |
+| H-07 | Settled state (0 FPS idle) | CRITICAL | 🔴 BLOCKED |
+| H-10 | `TransitionDetector` service | CRITICAL | 🔴 BLOCKED |
+| H-11 | `AirlockOverlay` widget (5-Second Seal) | CRITICAL | 🔴 BLOCKED |
+| H-13 | Stock audio files (>0 bytes) | HIGH | 🔴 NOT STARTED |
+
+**Unblocking Path:** Complete A-01, A-02 → G-01, G-02 → H-* tasks become actionable
 
 ---
 
@@ -461,23 +486,32 @@ F-10 (Architect scheduler)
 | E-01, E-02 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | Not yet created |
 | E-03, E-04 | RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | Not yet created |
 | E-07 | RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH | Not yet created |
-| *Future UX* | RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | Not yet created |
-| *Future UX* | RQ-018 (Airlock Protocol) | 🔴 NEEDS RESEARCH | Not yet created |
+| Phase H (ALL) | **Phase A Schema** | 🔴 NOT STARTED | `identity_facets`, `identity_topology` tables |
+| H-13 | **Audio Assets** | 🔴 NOT STARTED | 0-byte placeholder files need replacement |
 | *Future Privacy* | RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH | Not yet created |
 
-### Next Research to Queue
+### Next Implementation to Queue
 
-1. **RQ-028** (CRITICAL) — Archetype Template Definitions
-   - Prompt ready: `docs/prompts/DEEP_THINK_PROMPT_IDENTITY_COACH_PHASE2_RQ028-RQ032.md`
-   - Blocks: F-06, F-13, F-14 (entire content pipeline)
+**CRITICAL PATH:** Phase A Schema → Phase G Fields → Phase H Widgets
 
-2. **RQ-017** — Constellation UX
-   - Prompt needed
-   - Blocks: Dashboard visualization work
+1. **A-01, A-02** (CRITICAL) — Create `identity_facets` and `identity_topology` tables
+   - **WHY FIRST:** All Phase G and Phase H tasks depend on these tables
+   - **Unblocks:** G-01, G-02, G-05, H-01 through H-16
 
-3. **RQ-018** — Airlock Protocol
-   - Prompt needed
-   - Blocks: State transition UI/audio
+2. **H-13** (HIGH) — Source actual audio files
+   - Current files are 0 bytes (placeholders)
+   - Needed for Airlock (RQ-018)
+
+**Research Complete (Ready for Implementation):**
+- RQ-017 ✅ (Constellation UX) — Reconciled in `DEEP_THINK_RECONCILIATION_RQ017_RQ018.md`
+- RQ-018 ✅ (Airlock Protocol) — Reconciled in `DEEP_THINK_RECONCILIATION_RQ017_RQ018.md`
+- RQ-028-032 ✅ (Identity Coach Phase 2) — Reconciled
+
+**Research Still Needed:**
+- RQ-023 (Population Privacy) — Blocks future privacy features
+- RQ-024 (Treaty Modification) — Blocks E-05, E-06
+- RQ-025 (Summon Token Economy) — Blocks E-01, E-02
+- RQ-026 (Sound Design) — Blocks E-03, E-04
 
 ---
 

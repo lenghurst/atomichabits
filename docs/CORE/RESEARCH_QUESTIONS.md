@@ -3630,28 +3630,40 @@ ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
 
 ---
 
-### Phase H: Constellation & Airlock (psyOS UX)
+### Phase H: Constellation & Airlock (psyOS UX) — 🔴 BLOCKED
 
-*Added: 10 January 2026 | Source: RQ-017, RQ-018 | Decisions: PD-108, PD-110, PD-112*
+*Added: 10 January 2026 | Source: RQ-017 ✅, RQ-018 ✅ | Decisions: PD-108 ✅, PD-110 ✅, PD-112 ✅*
+
+**⚠️ BLOCKED BY PHASE A:** These tasks require `identity_facets` and `identity_topology` tables which **DO NOT EXIST**.
+
+| Reality Check | Status |
+|---------------|--------|
+| `identity_facets` table | ❌ DOES NOT EXIST |
+| `identity_topology` table | ❌ DOES NOT EXIST |
+| Audio files (assets/sounds/) | ❌ 0 BYTES (placeholders) |
+| Skill Tree fallback | ✅ Production-ready (549 lines) |
+
+**Unblocking Path:** A-01 → A-02 → G-01 → G-02 → Phase H tasks become actionable
+**Red Team Critique:** `docs/analysis/RED_TEAM_CRITIQUE_RQ017_RQ018.md`
 
 | # | Task | Priority | Status | Source | Component | AI Model |
 |---|------|----------|--------|--------|-----------|----------|
-| H-01 | Implement `ConstellationPainter` (CustomPainter, Canvas) | **CRITICAL** | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-02 | Implement orbit distance formula (ICS-based: `MaxRadius - ICS*30dp`) | **CRITICAL** | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-03 | Implement planet radius formula (`16dp + clamp(log(votes)*4, 0, 24)`) | HIGH | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-04 | Implement Ghost Mode (7-day threshold, desaturation shader) | HIGH | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-05 | Implement Wobble animation (friction-based: `sin(t*20) * friction * 4px`) | MEDIUM | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-06 | Implement Tether visualization (red line for `friction > 0.6`) | MEDIUM | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-07 | Implement Settled State (0 FPS when idle 3s) | **CRITICAL** | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-08 | Add RepaintBoundary optimization for starfield | HIGH | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-09 | Implement progressive disclosure logic (Day 1→7→30) | HIGH | 🔴 NOT STARTED | RQ-017 | Service | N/A |
+| H-01 | Implement `ConstellationPainter` (CustomPainter, Canvas) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-02 | Implement orbit distance formula (ICS-based: `MaxRadius - ICS*30dp`) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-03 | Implement planet radius formula (`16dp + clamp(log(votes)*4, 0, 24)`) | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-04 | Implement Ghost Mode (7-day threshold, desaturation shader) | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-05 | Implement Wobble animation (friction-based: `sin(t*20) * friction * 4px`) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-06 | Implement Tether visualization (red line for `friction > 0.6`) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-07 | Implement Settled State (0 FPS when idle 3s) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-08 | Add RepaintBoundary optimization for starfield | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-09 | Implement progressive disclosure logic (Day 1→7→30) | HIGH | 🔴 BLOCKED | RQ-017 | Service | N/A |
 | H-10 | Implement `TransitionDetector` service (Calendar + Activity) | **CRITICAL** | 🔴 NOT STARTED | RQ-018 | Service | N/A |
-| H-11 | Implement `AirlockOverlay` widget (5-Second Seal UX) | **CRITICAL** | 🔴 NOT STARTED | RQ-018 | Widget | N/A |
+| H-11 | Implement `AirlockOverlay` widget (5-Second Seal UX) | **CRITICAL** | 🔴 BLOCKED | RQ-018 | Widget | N/A |
 | H-12 | Implement `HapticService` (Android VibrationEffect wrapper) | HIGH | 🔴 NOT STARTED | RQ-018 | Service | N/A |
-| H-13 | Bundle stock audio assets (4 loops, <500KB total) | HIGH | 🔴 NOT STARTED | RQ-018 | Asset | N/A |
-| H-14 | Integrate Airlock with Treaty system (mandatory if treaty exists) | HIGH | 🔴 NOT STARTED | RQ-018 | Service | N/A |
-| H-15 | Implement conflict modal (tether tap → Council option) | MEDIUM | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
-| H-16 | Implement tap-planet drill-down navigation | MEDIUM | 🔴 NOT STARTED | RQ-017 | Widget | N/A |
+| H-13 | Bundle stock audio assets (4 loops, <500KB) — **CURRENT: 0 bytes** | HIGH | 🔴 NOT STARTED | RQ-018 | Asset | N/A |
+| H-14 | Integrate Airlock with Treaty system (mandatory if treaty exists) | HIGH | 🔴 BLOCKED | RQ-018 | Service | N/A |
+| H-15 | Implement conflict modal (tether tap → Council option) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-16 | Implement tap-planet drill-down navigation | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
 
 ---
 

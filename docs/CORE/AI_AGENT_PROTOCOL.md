@@ -625,6 +625,20 @@ Without reconciliation, external research drifts from implementable reality.
 │    │ Proposal         │ Requires       │ Exists?       │ Gap               │ │
 │    │─────────────────────────────────────────────────────────────────────│   │
 │                                                                              │
+│  PHASE 3.5: SCHEMA REALITY CHECK (MANDATORY)                                 │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ VERIFY tables exist in supabase/migrations/ (don't assume!)               │
+│  □ Run: grep -r "table_name" supabase/migrations/                            │
+│  □ For EACH referenced table, confirm:                                       │
+│    │ Table            │ Exists?        │ Migration File │ Blocker          │ │
+│    │─────────────────────────────────────────────────────────────────────│   │
+│    │ identity_facets  │ YES/NO         │ filename.sql   │ Phase A          │ │
+│  □ If table DOES NOT EXIST:                                                  │
+│    → Mark dependent tasks as 🔴 BLOCKED (not NOT STARTED)                   │
+│    → Document the dependency chain                                           │
+│    → Identify which Phase must complete first                                │
+│  □ Check for 0-byte placeholder files (assets/sounds/, etc.)                 │
+│                                                                              │
 │  PHASE 4: SCOPE & COMPLEXITY AUDIT                                           │
 │  ─────────────────────────────────────────────────────────────────────────── │
 │  □ Does this ANSWER the RQ, or EXPAND scope?                                 │

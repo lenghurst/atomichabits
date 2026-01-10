@@ -38,7 +38,8 @@ Full list: `docs/CORE/index/CD_INDEX.md`
 ## Before Working
 1. Read `docs/CORE/AI_HANDOVER.md` — session context from last agent
 2. Check `docs/CORE/index/` — current status of decisions (CD/PD) and research (RQ)
-3. Check `docs/CORE/IMPACT_ANALYSIS.md` — actionable tasks and cascade effects
+3. Check `docs/CORE/IMPLEMENTATION_ACTIONS.md` — **includes BLOCKED tasks warning**
+4. **REALITY CHECK:** Verify schema tables exist before implementing (Phase H is BLOCKED)
 
 ## Before Processing External Research
 1. Read `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` — quality standards
@@ -49,7 +50,7 @@ Full list: `docs/CORE/index/CD_INDEX.md`
 |------|---------|
 | `docs/CORE/AI_HANDOVER.md` | Session continuity (READ FIRST) |
 | `docs/CORE/IMPLEMENTATION_ACTIONS.md` | Task quick status + audit trail |
-| `docs/CORE/RESEARCH_QUESTIONS.md` | Master Implementation Tracker (77 tasks) |
+| `docs/CORE/RESEARCH_QUESTIONS.md` | Master Implementation Tracker (107 tasks) |
 | `docs/CORE/AI_AGENT_PROTOCOL.md` | 9 mandatory protocols |
 | `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` | External research quality |
 | `docs/CORE/PRODUCT_DECISIONS.md` | Decision rationale |
