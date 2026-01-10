@@ -96,3 +96,7 @@ app.*.map.json
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
 android/java_pid*.hprof
+
+# Landing Page Web App
+landing_page/node_modules/
+landing_page/dist/
