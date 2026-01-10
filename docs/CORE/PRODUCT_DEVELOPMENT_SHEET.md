@@ -11,7 +11,7 @@
 | Category | Complete | Pending | Status |
 |----------|----------|---------|--------|
 | **CDs** (Confirmed Decisions) | 18/18 | 0 | ✅ 100% |
-| **RQs** (Research Questions) | 28/32 | 4 | 🟢 88% |
+| **RQs** (Research Questions) | 28/38 | 10 | 🟢 74% |
 | **PDs** (Product Decisions) | 15/31 | 16 | 🟡 48% |
 | **Tasks** (Implementation) | 4/124 | 120 | 🟡 3% |
 
@@ -52,39 +52,50 @@ All 18 CDs are confirmed. These CANNOT change without explicit human approval.
 
 ## Section 2: Research Questions (RQs) — Triage
 
-### 2.1 COMPLETE (25 RQs) — No Action Needed
+### 2.1 COMPLETE (28 RQs) — No Action Needed
 
 | RQ | Topic | Key Deliverable |
 |----|-------|-----------------|
 | RQ-001–004 | Archetype/Effectiveness | 6-dimension model, tracking |
 | RQ-005–007 | Recommendations | Two-stage hybrid retrieval, ICS |
+| RQ-008–009 | Engineering Process | Context-Adaptive Development, Vibe Coding |
 | RQ-011–016 | psyOS Core | Fractal Trinity, Council AI, State Economics |
 | RQ-017–018 | psyOS UX | Constellation, Airlock |
-| RQ-019–022 | Infrastructure | pgvector, Treaties, Council Scripts |
+| RQ-019–022, RQ-024 | Infrastructure | pgvector, Treaties, Council Scripts, Treaty Modification |
 | RQ-028–032 | Identity Coach Phase 2 | 12 Archetypes, Rocchio, Pace Car |
 
-### 2.2 PENDING (7 RQs) — Triage Required
+### 2.2 PENDING (10 RQs) — Triage Required
 
-| RQ | Topic | Priority | Blocked By | Critical Path? | Recommendation |
-|----|-------|----------|------------|----------------|----------------|
-| **RQ-008** | UI Logic Separation | LOW | None | ❌ NO | DEPRIORITIZE — Engineering best practice, not blocking |
-| **RQ-009** | Optimal LLM Coding | LOW | None | ❌ NO | DEPRIORITIZE — Can be figured out during implementation |
-| **RQ-010** | Permission Data Philosophy | MEDIUM | None | ❌ NO | DEFER — Nice to have, not launch-critical |
-| **RQ-023** | Population Learning Privacy | MEDIUM | RQ-019 ✅ | ⚠️ PARTIAL | DEFER — Post-launch concern (privacy/legal) |
-| **RQ-024** | Treaty Modification | HIGH | RQ-021 ✅ | ✅ COMPLETE | DONE — Constitutional Amendment Model |
-| **RQ-025** | Summon Token Economy | MEDIUM | RQ-016 ✅ | ❌ NO | DEFER — Gamification layer, not MVP |
-| **RQ-026** | Sound Design & Haptic | MEDIUM | None | ❌ NO | DEFER — Polish layer, Phase H blocked anyway |
-| **RQ-027** | Template Versioning | LOW | RQ-021 ✅ | ❌ NO | DEPRIORITIZE — Post-launch concern |
+| RQ | Topic | Priority | Blocked By | Category |
+|----|-------|----------|------------|----------|
+| **RQ-010** | Permission Data Philosophy | HIGH | None | Privacy/Economy |
+| **RQ-023** | Population Learning Privacy | MEDIUM | RQ-019 ✅ | Privacy/Economy |
+| **RQ-025** | Summon Token Economy | HIGH | RQ-016 ✅ | Privacy/Economy |
+| **RQ-026** | Sound Design & Haptic | MEDIUM | None | UX/Polish |
+| **RQ-027** | Template Versioning | LOW | RQ-021 ✅ | Privacy/Economy |
+| **RQ-033** | Streak Philosophy | HIGH | None | Engineering Process |
+| **RQ-034** | Sherlock Conversation | HIGH | RQ-037 | UX/Polish |
+| **RQ-035** | Sensitivity Detection | HIGH | None | Privacy/Economy |
+| **RQ-036** | Chamber Visual Design | MEDIUM | RQ-016 ✅ | UX/Polish |
+| **RQ-037** | Holy Trinity Validation | HIGH | None | Engineering Process |
+| **RQ-038** | JITAI Component Allocation | MEDIUM | None | Engineering Process |
 
 ### 2.3 Research Verdict
 
-| Action | RQs | Count |
-|--------|-----|-------|
-| **✅ DONE** | RQ-024 (Treaty Modification) | 1 |
-| **DEFER TO POST-MVP** | RQ-023, RQ-025, RQ-026, RQ-010 | 4 |
-| **DEPRIORITIZE** | RQ-008, RQ-009, RQ-027 | 3 |
+**Recently Completed:**
+- ✅ RQ-008 (UI Logic Separation) — Context-Adaptive Development (Protocol 2)
+- ✅ RQ-009 (Optimal LLM Coding) — Task Classification (Logic vs Visual)
+- ✅ RQ-024 (Treaty Modification) — Constitutional Amendment Model
 
-**Net Effect:** All MVP-critical RQs are COMPLETE. Remaining 6 are polish or post-launch.
+**Outstanding by Category:**
+
+| Category | RQs | Priority Focus |
+|----------|-----|----------------|
+| **Engineering Process** | RQ-033, RQ-037, RQ-038 | HIGH — Foundation for implementation |
+| **UX/Polish** | RQ-026, RQ-034, RQ-036 | MEDIUM — Pre-launch refinement |
+| **Privacy/Economy** | RQ-010, RQ-023, RQ-025, RQ-027, RQ-035 | VARIES — Infrastructure for growth |
+
+**Net Effect:** 28/38 (74%) RQs COMPLETE. 10 remain; HIGH priority focus on RQ-033, RQ-037 (Holy Trinity), RQ-025 (Token Economy).
 
 ---
 

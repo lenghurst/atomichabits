@@ -3513,6 +3513,177 @@ ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
 
 ---
 
+### RQ-033: Streak Philosophy & Gamification
+
+| Field | Value |
+|-------|-------|
+| **Question** | Should The Pact use streak counts or rolling consistency metrics? How should gamification align with habit psychology? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Philosophical tension between code and messaging |
+| **Blocking** | PD-002 (Streaks vs Rolling Consistency) |
+
+**Context:**
+- Codebase uses streaks heavily (`currentStreak`, `longestStreak` properties)
+- Messaging says "streaks are vanity metrics"
+- This tension needs resolution before gamification features
+
+**Sub-Questions:**
+1. What does habit psychology research say about streak vs consistency metrics?
+2. Do streaks help or harm long-term habit formation?
+3. How can we gamify without creating streak anxiety?
+4. Should we track both but display one?
+5. What does "Graceful Consistency" philosophy mean for gamification?
+
+**Code References:**
+- `lib/data/services/consistency_service.dart` — Implements "Graceful Consistency"
+- `lib/data/models/habit.dart` — `currentStreak`, `longestStreak` properties
+
+---
+
+### RQ-034: Sherlock Conversation Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | What is the optimal structure for the Sherlock onboarding conversation? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core onboarding experience |
+| **Blocking** | PD-101 (Sherlock Prompt Overhaul) |
+| **Depends On** | RQ-037 (Holy Trinity Validation) |
+
+**Context:**
+- Current Sherlock prompt is simplistic with no turn limit or success criteria
+- Quality of extracted Holy Trinity (Anti-Identity, Archetype, Resistance Lie) is uncertain
+- Need structured conversation design for better extraction
+
+**Sub-Questions:**
+1. How many conversation turns are optimal for personality extraction?
+2. What success criteria should trigger conversation completion?
+3. How to balance natural conversation with data extraction?
+4. What fallback strategies if extraction quality is low?
+5. How to handle users who give minimal responses?
+
+**Code References:**
+- `lib/config/ai_prompts.dart:717-745` — Main Sherlock prompt
+- `lib/data/services/ai/prompt_factory.dart:47-67` — `_sherlockPrompt` constant
+
+---
+
+### RQ-035: Sensitivity Detection Framework
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should The Pact detect and handle sensitive goals (addiction, trauma, private issues)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — User safety and privacy |
+| **Blocking** | PD-103 (Sensitivity Detection) |
+
+**Context:**
+- No sensitivity detection logic exists in current codebase
+- All habits treated equally regardless of sensitivity
+- Witness invites shown to all users (potential privacy issue)
+
+**Sub-Questions:**
+1. What categories of goals should be flagged as sensitive?
+2. How to detect sensitivity without invasive keyword lists?
+3. What privacy protections should apply to sensitive habits?
+4. Should sensitive habits have different witness rules?
+5. How to handle AI coaching for addiction/trauma goals safely?
+6. What demographic/contextual signals inform sensitivity?
+
+**Privacy Considerations:**
+- Must be privacy-preserving (no external data sharing)
+- User should be able to override sensitivity classification
+- Sensitive data should have stricter RLS policies
+
+---
+
+### RQ-036: Chamber Visual Design Patterns
+
+| Field | Value |
+|-------|-------|
+| **Question** | What visual design and interaction patterns should "The Chamber" (Council session UI) use? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Core to Council AI experience |
+| **Blocking** | PD-120 (The Chamber Visual Design) |
+| **Depends On** | RQ-016 ✅ COMPLETE (Council AI) |
+
+**Context:**
+- Deep Think specified "The Chamber" as dark mode overlay with pulsing avatars
+- No detailed visual specifications provided
+- Key UX moment — where identities negotiate treaties
+
+**Sub-Questions:**
+1. How should facet avatars appear? (Generated? User-uploaded? Archetypal icons?)
+2. How does "pulsing" indicate speaking? (Glow? Scale? Border animation?)
+3. What visual hierarchy shows which facet is speaking?
+4. How to represent AI-generated dialogue vs user-written content?
+5. What dark UI patterns work best for psychological depth?
+6. How to make negotiations feel dramatic without being stressful?
+
+**Design References:**
+- Dark UI patterns from meditation apps (Headspace, Calm)
+- Character dialogue systems in games (Persona, Disco Elysium)
+- Council/voting UIs in strategy games
+
+---
+
+### RQ-037: Holy Trinity Model Validation
+
+| Field | Value |
+|-------|-------|
+| **Question** | Is the 3-trait model (Anti-Identity, Archetype, Resistance Lie) sufficient for personality capture? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core to personalization strategy |
+| **Blocking** | PD-003 (Holy Trinity Validity) |
+
+**Context:**
+- Holy Trinity implemented but extraction quality is uncertain
+- Model guides Sherlock prompts and coaching personalization
+- Need validation before building more on this foundation
+
+**Sub-Questions:**
+1. Does research support a 3-trait model for habit psychology?
+2. Are Anti-Identity, Archetype, Resistance Lie the right 3 traits?
+3. How do we measure extraction quality?
+4. What validation metrics prove the model is working?
+5. Should traits be revised based on empirical usage data?
+6. How does this relate to Big Five, SDT, or other validated models?
+
+**Code References:**
+- `lib/domain/entities/psychometric_profile.dart:17-29` — Holy Trinity fields
+- `lib/data/services/ai/prompt_factory.dart:119-170` — Usage in prompts
+
+---
+
+### RQ-038: JITAI Component Allocation Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | Which JITAI components should be hardcoded vs AI-learned? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Affects intervention effectiveness |
+| **Blocking** | PD-102 (JITAI Hardcoded vs AI) |
+
+**Context:**
+- Current JITAI is hybrid — hardcoded weights with Thompson Sampling
+- Question is optimal balance between determinism and adaptability
+- CD-016 (DeepSeek V3.2) provides AI capability but doesn't specify usage
+
+**Sub-Questions:**
+1. What does JITAI research say about hardcoded vs learned components?
+2. Which decisions need consistency (hardcoded)?
+3. Which decisions benefit from personalization (learned)?
+4. How much training data is needed before learned components are reliable?
+5. What's the cold-start strategy for new users?
+6. How do Thompson Sampling and population learning interact?
+
+**Code References:**
+- `lib/domain/services/jitai_decision_engine.dart` — Main orchestrator
+- `lib/domain/services/hierarchical_bandit.dart` — Thompson Sampling
+- `lib/domain/services/population_learning.dart` — Cross-user learning
+
+---
+
 ## Implementation Tasks from Research
 
 **Purpose:** Track actionable items generated by completed research.

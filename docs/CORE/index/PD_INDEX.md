@@ -21,12 +21,12 @@
 | PD# | Title | Status | Requires | Archive |
 |-----|-------|--------|----------|---------|
 | **PD-001** | Archetype Philosophy | ✅ RESOLVED → CD-005 | — | Q1-2026 |
-| **PD-002** | Streaks vs Rolling Consistency | 🔴 PENDING | — | — |
-| **PD-003** | Holy Trinity Validity | 🔴 PENDING | — | — |
+| **PD-002** | Streaks vs Rolling Consistency | 🔴 PENDING | RQ-033 | — |
+| **PD-003** | Holy Trinity Validity | 🔴 PENDING | RQ-037 | — |
 | **PD-004** | Dev Mode Purpose | 🔴 PENDING | — | — |
-| **PD-101** | Sherlock Prompt Overhaul | 🔴 PENDING | — | — |
-| **PD-102** | JITAI Hardcoded vs AI | 🔴 PENDING | — | — |
-| **PD-103** | Sensitivity Detection | 🔴 PENDING | — | — |
+| **PD-101** | Sherlock Prompt Overhaul | 🔴 PENDING | RQ-034, RQ-037 | — |
+| **PD-102** | JITAI Hardcoded vs AI | 🔴 PENDING | RQ-038 | — |
+| **PD-103** | Sensitivity Detection | 🔴 PENDING | RQ-035 | — |
 | **PD-104** | LoadingInsightsScreen Personalization | 🔴 PENDING | — | — |
 | **PD-105** | Unified AI Coaching Architecture | 🟢 READY | RQ-005,6,7 ✅ | — |
 | **PD-106** | Multiple Identity Architecture | ✅ RESOLVED → CD-015 | RQ-011 | Q1-2026 |
@@ -43,7 +43,7 @@
 | **PD-117** | ContextSnapshot Real-time Data | ✅ RESOLVED | RQ-014 | Q1-2026 |
 | **PD-118** | Treaty Modification UX | ✅ RESOLVED | RQ-024 | Q1-2026 |
 | **PD-119** | Summon Token Economy | 🔴 PENDING | RQ-025 | — |
-| **PD-120** | The Chamber Visual Design | 🔴 PENDING | Design session | — |
+| **PD-120** | The Chamber Visual Design | 🔴 PENDING | RQ-036 | — |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | — | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | — | — |
 | **PD-121** | Archetype Template Count | ✅ RESOLVED | RQ-028 | Q1-2026 |
@@ -100,16 +100,20 @@ UNBLOCKED BY RQ-024 (Resolved):
 └── PD-118 ✅ RESOLVED (Constitutional Amendment Model)
 
 BLOCKED BY PRIOR RESEARCH:
-├── PD-116 ← RQ-023
-└── PD-119 ← RQ-025
+├── PD-002 ← RQ-033 (Streak Philosophy)
+├── PD-003 ← RQ-037 (Holy Trinity Validation)
+├── PD-101 ← RQ-034, RQ-037 (Sherlock Architecture)
+├── PD-102 ← RQ-038 (JITAI Component Allocation)
+├── PD-103 ← RQ-035 (Sensitivity Detection)
+├── PD-116 ← RQ-023 (Population Privacy)
+├── PD-119 ← RQ-025 (Summon Tokens)
+└── PD-120 ← RQ-036 (Chamber Visual Design)
 
 READY FOR DECISION (No blockers):
-├── PD-002, PD-003, PD-004
-├── PD-101, PD-102, PD-103, PD-104
-├── PD-105, PD-107 (NEW — RQ-005/006/007 unblocked these)
-├── PD-120 (needs design session)
-├── PD-123, PD-124 (NEW — no research required)
-└── PD-201, PD-202
+├── PD-004 (Dev Mode Purpose)
+├── PD-104 (LoadingInsightsScreen)
+├── PD-105, PD-107 (RQ-005/006/007 unblocked these)
+└── PD-201, PD-202 (Technical housekeeping)
 ```
 
 ---

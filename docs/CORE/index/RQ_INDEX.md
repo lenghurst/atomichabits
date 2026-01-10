@@ -52,6 +52,12 @@
 | **RQ-030** | Preference Embedding Update Mechanics | ✅ COMPLETE | RQ-005 | Q1-2026 |
 | **RQ-031** | Pace Car Threshold Validation | ✅ COMPLETE | RQ-005 | Q1-2026 |
 | **RQ-032** | ICS Integration with Existing Metrics | ✅ COMPLETE | RQ-007 | Q1-2026 |
+| **RQ-033** | Streak Philosophy & Gamification | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-034** | Sherlock Conversation Architecture | 🔴 NEEDS RESEARCH | PD-003 | — |
+| **RQ-035** | Sensitivity Detection Framework | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-036** | Chamber Visual Design Patterns | 🔴 NEEDS RESEARCH | RQ-016 | — |
+| **RQ-037** | Holy Trinity Model Validation | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-038** | JITAI Component Allocation Strategy | 🔴 NEEDS RESEARCH | — | — |
 
 ---
 
@@ -59,9 +65,9 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs** | 32 |
-| **✅ COMPLETE** | 28 (88%) |
-| **🔴 NEEDS RESEARCH** | 4 (12%) |
+| **Total RQs** | 38 |
+| **✅ COMPLETE** | 28 (74%) |
+| **🔴 NEEDS RESEARCH** | 10 (26%) |
 
 ---
 
@@ -86,7 +92,12 @@ FOUNDATIONAL (No dependencies):
 ├── RQ-008 (UI Logic) ✅
 ├── RQ-009 (LLM Coding) ✅
 ├── RQ-010 (Permission Data) 🔴
-└── RQ-011 (Multiple Identity) ✅
+├── RQ-011 (Multiple Identity) ✅
+├── RQ-033 (Streak Philosophy) 🔴  ← NEW (blocks PD-002)
+├── RQ-035 (Sensitivity Detection) 🔴  ← NEW (blocks PD-103)
+├── RQ-037 (Holy Trinity Validation) 🔴  ← NEW (blocks PD-003)
+│   └── RQ-034 (Sherlock Architecture) 🔴  ← NEW (blocks PD-101)
+└── RQ-038 (JITAI Component Allocation) 🔴  ← NEW (blocks PD-102)
 
 PSYOS ARCHITECTURE (CD-015):
 ├── RQ-012 (Fractal Trinity) ✅
@@ -98,7 +109,8 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   │   ├── RQ-024 (Treaty Modification) ✅
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
-│   │   └── RQ-025 (Summon Tokens) 🔴
+│   │   ├── RQ-025 (Summon Tokens) 🔴
+│   │   └── RQ-036 (Chamber Visual Design) 🔴  ← NEW (blocks PD-120)
 │   ├── RQ-017 (Constellation UX) ✅
 │   ├── RQ-018 (Airlock Protocol) ✅
 │   ├── RQ-019 (pgvector) ✅
