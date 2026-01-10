@@ -16,6 +16,21 @@ This document ensures research findings **cascade through the entire system**. W
 
 ---
 
+## Related Documentation
+
+| Document | Relationship |
+|----------|--------------|
+| **[RESEARCH_QUESTIONS.md](./RESEARCH_QUESTIONS.md)** | Source of research findings that trigger impact analysis |
+| **[PRODUCT_DECISIONS.md](./PRODUCT_DECISIONS.md)** | Decisions that cascade through this impact analysis |
+| **[AI_AGENT_PROTOCOL.md](./AI_AGENT_PROTOCOL.md)** | Protocol 9 references this for reconciliation workflow |
+| **[GLOSSARY.md](./GLOSSARY.md)** | Terminology definitions used in this document |
+| **[index/RQ_INDEX.md](./index/RQ_INDEX.md)** | Quick lookup of research question status |
+| **[index/CD_INDEX.md](./index/CD_INDEX.md)** | Quick lookup of confirmed decision status |
+
+**Workflow:** Research completes in RESEARCH_QUESTIONS.md → Impact analyzed here → Tasks extracted → Implementation begins
+
+---
+
 ## Current Research: 6-Dimension Archetype Model (RQ-001)
 
 ### Research Summary

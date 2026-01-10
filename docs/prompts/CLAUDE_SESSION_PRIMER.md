@@ -1,6 +1,6 @@
 # Claude Session Primer — The Pact (psyOS)
 
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 10 January 2026
 > **Purpose:** Prime new Claude sessions with project context
 > **Usage:** Copy this prompt into a new Claude session to continue development
 
@@ -33,16 +33,20 @@ The Pact treats users as a **"Parliament of Selves"** — multiple identity face
 ## Critical Context Files (Read These First)
 
 ```
+/CLAUDE.md                         ← START HERE (project overview, constraints)
+
 docs/CORE/
-├── README.md                      ← Start here
+├── AI_HANDOVER.md                 ← Session context from last agent
 ├── AI_AGENT_PROTOCOL.md           ← Your behavioral rules (MANDATORY)
+├── IMPACT_ANALYSIS.md             ← Actionable tasks + cascade tracking
 ├── PRODUCT_DECISIONS.md           ← Locked decisions (CDs) you MUST NOT contradict
 ├── RESEARCH_QUESTIONS.md          ← Research status and task tracker
-├── IMPACT_ANALYSIS.md             ← Decision consequences
+├── DEEP_THINK_PROMPT_GUIDANCE.md  ← Quality standards for external AI prompts
+├── GLOSSARY.md                    ← Terminology definitions
 ├── index/                         ← Quick reference indexes
-│   ├── RQ_INDEX.md               ← Research question status at a glance
 │   ├── CD_INDEX.md               ← Confirmed decisions at a glance
-│   └── PD_INDEX.md               ← Pending decisions at a glance
+│   ├── PD_INDEX.md               ← Pending decisions at a glance
+│   └── RQ_INDEX.md               ← Research question status at a glance
 └── archive/                       ← Completed/resolved items
 ```
 
@@ -179,12 +183,15 @@ Phase 6: Document → Create reconciliation file in docs/analysis/
 
 ## How to Use This Primer
 
-1. **Read AI_AGENT_PROTOCOL.md** — Contains your behavioral rules
-2. **Check index files** — Quick status of all RQs, CDs, PDs
-3. **Read PRODUCT_DECISIONS.md** — Full details of locked decisions
-4. **Check RESEARCH_QUESTIONS.md** — Master Implementation Tracker at bottom
+1. **Read CLAUDE.md** — Project overview, constraints, routing
+2. **Read AI_HANDOVER.md** — Session context from last agent
+3. **Check index files** — Quick status of all CDs, PDs, RQs
+4. **Read IMPACT_ANALYSIS.md** — Actionable tasks and cascade tracking
+5. **Read AI_AGENT_PROTOCOL.md** — Contains your behavioral rules
+6. **Read PRODUCT_DECISIONS.md** — Full details of locked decisions (PENDING only)
+7. **Check RESEARCH_QUESTIONS.md** — Active research details
 
-**IMPORTANT:** If you receive external research output, run Protocol 9 BEFORE integrating.
+**IMPORTANT:** If you receive external research output, run Protocol 9 BEFORE integrating. See DEEP_THINK_PROMPT_GUIDANCE.md for quality standards.
 
 ---
 

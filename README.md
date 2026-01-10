@@ -16,20 +16,20 @@ If you are an AI agent (Claude, Gemini, etc.) working on this codebase, you **MU
 ### Mandatory Reading Order
 
 ```
-1. README.md (this file) ← YOU ARE HERE
+1. CLAUDE.md (project overview, constraints, routing) ← START HERE
 2. docs/CORE/AI_HANDOVER.md (session context from last agent)
-3. docs/CORE/index/CD_INDEX.md + PD_INDEX.md (quick decision status — START HERE)
-4. docs/CORE/index/RQ_INDEX.md (quick research status — START HERE)
-5. docs/CORE/PRODUCT_DECISIONS.md (full details for PENDING decisions only)
-6. docs/CORE/RESEARCH_QUESTIONS.md (full details for ACTIVE research only)
-7. docs/CORE/GLOSSARY.md (terminology definitions)
-8. docs/CORE/AI_AGENT_PROTOCOL.md (mandatory AI behaviors)
-9. docs/CORE/IMPACT_ANALYSIS.md (research-to-roadmap traceability)
-10. AI_CONTEXT.md (technical architecture — note: may contain stale info)
+3. docs/CORE/index/CD_INDEX.md + PD_INDEX.md (quick decision status)
+4. docs/CORE/index/RQ_INDEX.md (quick research status)
+5. docs/CORE/IMPACT_ANALYSIS.md (actionable tasks + cascade tracking)
+6. docs/CORE/AI_AGENT_PROTOCOL.md (mandatory AI behaviors)
+7. docs/CORE/PRODUCT_DECISIONS.md (full details for PENDING decisions only)
+8. docs/CORE/RESEARCH_QUESTIONS.md (full details for ACTIVE research only)
+9. docs/CORE/GLOSSARY.md (terminology definitions)
+10. AI_CONTEXT.md (technical architecture)
 11. ROADMAP.md (current priorities)
 ```
 
-**Token Optimization:** Use index files (steps 3-4) for rapid status lookup before reading full files (steps 5-6).
+**Token Optimization:** Use index files (steps 3-4) for rapid status lookup before reading full files (steps 7-8).
 
 ### Before Making ANY Code Changes
 

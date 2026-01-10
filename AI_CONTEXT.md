@@ -100,13 +100,15 @@ graph TD
 
 ### Mandatory Session Start Checklist
 ```
-□ 1. Read README.md (project overview, quick start)
+□ 1. Read CLAUDE.md (project overview, constraints, routing)
 □ 2. Read docs/CORE/AI_HANDOVER.md (session context from last agent)
-□ 3. Read docs/CORE/PRODUCT_DECISIONS.md (pending decisions — DO NOT implement PENDING items)
-□ 4. Read docs/CORE/GLOSSARY.md (terminology definitions)
-□ 5. Read docs/CORE/RESEARCH_QUESTIONS.md (active research — check before implementing)
-□ 6. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
-□ 7. Check ROADMAP.md for current priorities
+□ 3. Read docs/CORE/index/ files (quick status lookup for CD/PD/RQ)
+□ 4. Read docs/CORE/IMPACT_ANALYSIS.md (actionable tasks + cascade tracking)
+□ 5. Read docs/CORE/PRODUCT_DECISIONS.md (PENDING decisions only — DO NOT implement without approval)
+□ 6. Read docs/CORE/RESEARCH_QUESTIONS.md (ACTIVE research only — check before implementing)
+□ 7. Read docs/CORE/GLOSSARY.md (terminology definitions — reference as needed)
+□ 8. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
+□ 9. Check ROADMAP.md for current priorities
 ```
 
 ### Mandatory Session End Checklist

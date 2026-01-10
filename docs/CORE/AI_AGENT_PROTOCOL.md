@@ -21,11 +21,13 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │                        SESSION ENTRY PROTOCOL                                 │
 │                                                                              │
 │  STEP 1: Context Acquisition (Read in order)                                 │
+│  □ CLAUDE.md — Project overview, constraints, routing                       │
 │  □ AI_HANDOVER.md — What did the last agent do?                             │
 │  □ index/CD_INDEX.md + index/PD_INDEX.md — Quick decision status lookup     │
 │  □ index/RQ_INDEX.md — Quick research status lookup                         │
-│  □ PRODUCT_DECISIONS.md — Full details for pending decisions                │
-│  □ RESEARCH_QUESTIONS.md — Full details for active research                 │
+│  □ IMPACT_ANALYSIS.md — Actionable tasks + cascade tracking                 │
+│  □ PRODUCT_DECISIONS.md — Full details for PENDING decisions only           │
+│  □ RESEARCH_QUESTIONS.md — Full details for ACTIVE research only            │
 │  □ GLOSSARY.md — What do terms mean in this codebase?                       │
 │  □ AI_CONTEXT.md — What's the current architecture?                         │
 │  □ ROADMAP.md — What are the current priorities?                            │
