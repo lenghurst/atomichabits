@@ -506,12 +506,22 @@ After receiving Deep Think output:
 ### Trigger
 When completing research (RQ) or resolving a product decision (PD).
 
+### Canonical Locations
+| Document | Purpose |
+|----------|---------|
+| **RESEARCH_QUESTIONS.md** | Master Implementation Tracker (detailed task tables) |
+| **IMPLEMENTATION_ACTIONS.md** | Quick status + audit trail (cross-reference layer) |
+| **IMPACT_ANALYSIS.md** | CASCADE analysis only — does NOT store tasks |
+
+**CRITICAL:** Tasks MUST be added to RESEARCH_QUESTIONS.md Master Tracker. IMPACT_ANALYSIS.md references tasks but does NOT define them.
+
 ### Action
 1. **EXTRACT** all actionable tasks from the research output
 2. **SEARCH** existing Master Implementation Tracker for duplicates
 3. **MERGE** if similar task exists (don't create duplicate)
 4. **CREATE** new task only if truly novel
 5. **LINK** task to source (RQ-XXX or PD-XXX)
+6. **UPDATE** IMPLEMENTATION_ACTIONS.md Quick Status section
 
 ### Deduplication Rules
 | Scenario | Action |
@@ -529,6 +539,7 @@ B-01, B-02, ... (Intelligence Layer)
 C-01, C-02, ... (Council AI System)
 D-01, D-02, ... (UX & Frontend)
 E-01, E-02, ... (Polish & Advanced)
+F-01, F-02, ... (Identity Coach System)
 ```
 
 ### Required Task Fields

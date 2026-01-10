@@ -14,7 +14,8 @@ lib/                    # Flutter app code
 docs/CORE/              # Governance documentation
   AI_HANDOVER.md        # READ FIRST — session context
   index/                # Quick status lookup (CD/PD/RQ)
-  IMPACT_ANALYSIS.md    # Current tasks + cascade tracking
+  IMPLEMENTATION_ACTIONS.md  # Task tracker (quick status + audit trail)
+  RESEARCH_QUESTIONS.md      # Master Implementation Tracker (detailed tasks)
   AI_AGENT_PROTOCOL.md  # 9 mandatory protocols
   DEEP_THINK_PROMPT_GUIDANCE.md  # External research quality standards
 ```
@@ -47,11 +48,12 @@ Full list: `docs/CORE/index/CD_INDEX.md`
 | File | Purpose |
 |------|---------|
 | `docs/CORE/AI_HANDOVER.md` | Session continuity (READ FIRST) |
-| `docs/CORE/IMPACT_ANALYSIS.md` | Actionable tasks + cascade tracking |
+| `docs/CORE/IMPLEMENTATION_ACTIONS.md` | Task quick status + audit trail |
+| `docs/CORE/RESEARCH_QUESTIONS.md` | Master Implementation Tracker (77 tasks) |
 | `docs/CORE/AI_AGENT_PROTOCOL.md` | 9 mandatory protocols |
 | `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` | External research quality |
 | `docs/CORE/PRODUCT_DECISIONS.md` | Decision rationale |
-| `docs/CORE/RESEARCH_QUESTIONS.md` | Active research |
+| `docs/CORE/IMPACT_ANALYSIS.md` | Cascade tracking (references tasks, doesn't define them) |
 | `docs/CORE/GLOSSARY.md` | Terminology |
 
 ## After Working

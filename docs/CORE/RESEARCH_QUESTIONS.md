@@ -3513,6 +3513,35 @@ DeepSeek proposes ICS = Σ(Votes × Consistency) / DaysActive. But we already ha
 
 ---
 
+### Phase F: Identity Coach System
+
+*Added: 10 January 2026 | Source: RQ-005, RQ-006, RQ-007 | Decision: PD-125 (50 habits at launch)*
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| F-01 | Create `preference_embeddings` table (768-dim vector per user) | HIGH | 🔴 NOT STARTED | RQ-005 | Database | N/A |
+| F-02 | Create `identity_roadmaps` table (user aspiration tracking) | **CRITICAL** | 🔴 NOT STARTED | RQ-007 | Database | N/A |
+| F-03 | Create `roadmap_nodes` table (progression stages) | **CRITICAL** | 🔴 NOT STARTED | RQ-007 | Database | N/A |
+| F-04 | Add `ideal_dimension_vector` (6-dim) to `habit_templates` | HIGH | 🔴 NOT STARTED | RQ-005 | Database | N/A |
+| F-05 | Add `archetype_template_id` FK to `identity_facets` | HIGH | 🔴 NOT STARTED | RQ-006 | Database | N/A |
+| F-06 | Create `archetype_templates` reference table (12 presets) | HIGH | 🔴 NOT STARTED | RQ-006 | Database | N/A |
+| F-07 | Implement `generateRecommendations()` Edge Function (The Architect) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Supabase Edge | DeepSeek V3.2 |
+| F-08 | Implement Stage 1: Semantic retrieval (768-dim, pgvector) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Backend | gemini-embedding-001 |
+| F-09 | Implement Stage 2: Psychometric re-ranking (6-dim scoring) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Backend | Hardcoded |
+| F-10 | Implement Architect scheduler (nightly/weekly batch) | HIGH | 🔴 NOT STARTED | RQ-005 | Backend | N/A |
+| F-11 | Implement feedback signal tracking (adopt/dismiss/snooze) | HIGH | 🔴 NOT STARTED | RQ-005 | Service | N/A |
+| F-12 | Extend Sherlock Day 3: "Future Self Interview" for roadmap seeding | HIGH | 🔴 NOT STARTED | RQ-007 | Onboarding | DeepSeek V3.2 |
+| F-13 | Create 50 universal habit templates (with dual embeddings) | **CRITICAL** | 🔴 NOT STARTED | RQ-006, PD-125 | Content | gemini-embedding-001 |
+| F-14 | Create 12 Archetype Template presets (dimension vectors) | HIGH | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-15 | Create 12 Framing Templates (dimension × poles) | HIGH | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-16 | Create 4 Ritual Templates (Morning/Evening/Transition/Weekend) | MEDIUM | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-17 | Implement `ProactiveRecommendation` Dart model class | HIGH | 🔴 NOT STARTED | RQ-005 | Model | N/A |
+| F-18 | Implement `IdentityRoadmapService` (CRUD + ICS calculation) | HIGH | 🔴 NOT STARTED | RQ-007 | Service | N/A |
+| F-19 | Implement Pace Car rate limiting (max 1/day, <5 active habits) | HIGH | 🔴 NOT STARTED | RQ-005 | Service | N/A |
+| F-20 | Create regression messaging templates (The Dip responses) | MEDIUM | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+
+---
+
 ### Pending Research Tasks
 
 These tasks cannot be fully specified until research completes:
@@ -3541,9 +3570,12 @@ These tasks cannot be fully specified until research completes:
 | **C: Council AI** | 12 | 5 | 6 | 1 | 0 |
 | **D: UX** | 10 | 2 | 5 | 2 | 1 |
 | **E: Polish** | 10 | 0 | 2 | 5 | 3 |
-| **TOTAL** | **57** | **18** | **21** | **13** | **5** |
+| **F: Identity Coach** | 20 | 5 | 12 | 3 | 0 |
+| **TOTAL** | **77** | **23** | **33** | **16** | **5** |
 
 **Critical Path:** A-01 → A-02/A-03/A-05 → B-01 → B-06/B-07 → C-01/C-03 → C-04/C-05 → D-01/D-02
+
+**Identity Coach Path:** F-02/F-03 → F-06 → F-07/F-08/F-09 → F-13 → F-10
 
 ---
 

@@ -50,6 +50,7 @@
 | **PD-122** | User Visibility of Preference Embedding | 🔴 PENDING | RQ-030 | — |
 | **PD-123** | Facet Typical Energy State Field | 🔴 PENDING | — | — |
 | **PD-124** | Recommendation Card Staleness | 🔴 PENDING | — | — |
+| **PD-125** | Content Library Size at Launch | ✅ RESOLVED | — | Q1-2026 |
 
 ---
 
@@ -57,10 +58,10 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total PDs** | 30 |
-| **✅ RESOLVED** | 6 (20%) |
-| **🟢 READY** | 2 (7%) |
-| **🔴 PENDING** | 22 (73%) |
+| **Total PDs** | 31 |
+| **✅ RESOLVED** | 7 (23%) |
+| **🟢 READY** | 2 (6%) |
+| **🔴 PENDING** | 22 (71%) |
 
 ---
 
@@ -73,7 +74,8 @@ RESOLVED (Archived):
 ├── PD-109 (Council AI Activation)
 ├── PD-113 (Treaty Priority)
 ├── PD-114 (Full Implementation)
-└── PD-115 (Treaty Creation UX)
+├── PD-115 (Treaty Creation UX)
+└── PD-125 (Content Library Size → 50 with caveat)
 
 UNBLOCKED BY RQ-005/006/007 (Ready for Decision):
 ├── PD-105 (Unified AI Coaching Architecture) ← Research complete
