@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 10 January 2026 (RQ-024 Treaty Modification reconciled, 9 tasks added)
+> **Last Updated:** 10 January 2026 (RQ-008/009 Engineering Process reconciled, 8 tasks added)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -407,6 +407,27 @@ F-10 (Architect scheduler)
 ---
 
 ## Recently Added Tasks
+
+### 10 January 2026 — RQ-008/009: Engineering Process (8 Tasks)
+
+**Source:** RQ-008 (UI Logic Separation), RQ-009 (LLM Coding Approach) reconciliation via Protocol 9
+**Decisions:** Protocol 2 REPLACED with Context-Adaptive Development
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| P-01 | Update AI_AGENT_PROTOCOL.md with Protocol 2 (Context-Adaptive) | **CRITICAL** | ✅ DONE | RQ-008,009 |
+| P-02 | Create Boundary Decision Tree documentation | HIGH | ✅ DONE | RQ-008 |
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | 🔴 | RQ-008 |
+| P-04 | Create ChangeNotifier Controller template | HIGH | 🔴 | RQ-008 |
+| P-05 | Document Side Effect pattern with code example | HIGH | ✅ DONE | RQ-008 |
+| P-06 | Add Riverpod to pubspec.yaml for new features | MEDIUM | 🔴 | RQ-008 |
+| P-07 | Create "Logic vs Visual" task classification guide | HIGH | ✅ DONE | RQ-009 |
+| P-08 | Define "Logic Leakage" metric tracking | MEDIUM | 🔴 | RQ-008 |
+
+**Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI.
+
+---
 
 ### 10 January 2026 — RQ-024: Treaty Modification (9 Tasks)
 

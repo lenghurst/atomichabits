@@ -202,6 +202,8 @@ PROPOSED → ACTIVE → STRAINED → BROKEN → RENEGOTIATING → ACTIVE
 ### CD-013: UI Logic Separation
 - **Decision:** Strict separation for AI-assisted development
 - **Impact:** Code quality/MEDIUM
+- **Implementation:** RQ-008/009 research complete — see `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
+- **Key Artifacts:** Protocol 2 (Context-Adaptive), Boundary Decision Tree, Side Effect Pattern
 
 ### CD-014: Core File Creation Guardrails
 - **Decision:** Strict rules for creating new Core files

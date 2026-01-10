@@ -92,7 +92,7 @@ The research assumes Riverpod, but codebase uses Provider. Options:
 | **Task Classification (Logic vs Visual)** | ✅ ESSENTIAL | Core insight: different tasks need different approaches |
 | **Contract-First for Logic** | ✅ ESSENTIAL | Anchors AI output, reduces hallucination |
 | **Vibe Coding for UI** | ✅ ESSENTIAL | Enables rapid iteration safely |
-| **Protocol 3 (Context-Adaptive)** | ✅ ESSENTIAL | Replaces one-size-fits-all Protocol 2 |
+| **Protocol 2 (Context-Adaptive)** | ✅ ESSENTIAL | Replaces one-size-fits-all Protocol 2 |
 | **Quality Metrics** | 🟡 VALUABLE | Nice to track but not blocking |
 
 ---
@@ -119,7 +119,7 @@ The research assumes Riverpod, but codebase uses Provider. Options:
 | 1 | Task Classification (Logic vs Visual) | **ACCEPT** | HIGH | Core insight |
 | 2 | Contract-First for Logic | **ACCEPT** | HIGH | Matches industry practice |
 | 3 | Vibe Coding for UI | **ACCEPT** | HIGH | Enabled by RQ-008 boundaries |
-| 4 | Protocol 3 (Context-Adaptive) | **ACCEPT** | HIGH | Replaces Protocol 2 |
+| 4 | Protocol 2 (Context-Adaptive) | **ACCEPT** | HIGH | Replaces Protocol 2 |
 | 5 | Quality Metrics (Logic Leakage, Vibe Velocity) | **ACCEPT** | MEDIUM | Worth tracking |
 | 6 | Integration Summary | **ACCEPT** | HIGH | "Constraint Enables Creativity" is key insight |
 
@@ -136,16 +136,16 @@ The research assumes Riverpod, but codebase uses Provider. Options:
 
 ## Phase 6: Integration
 
-### 6.1 Protocol 2 Revision → Protocol 3
+### 6.1 Protocol 2 Revision (Context-Adaptive)
 
-**Current Protocol 2:**
+**Original Protocol 2:**
 ```
 1. Execute functionality completely (make it work)
 2. THEN refactor for cleanliness (make it right)
 3. NEVER sacrifice functionality for principles
 ```
 
-**New Protocol 3 (Context-Adaptive):**
+**Revised Protocol 2 (Context-Adaptive):**
 ```
 1. CLASSIFY: Is this a Logic Task or Visual Task?
 
@@ -247,7 +247,7 @@ CD-013 stated "Strict separation for AI-assisted development" without implementa
 
 | Output | Confidence | Notes |
 |--------|------------|-------|
-| Protocol 3 (Context-Adaptive) | **HIGH** | Clear improvement over one-size-fits-all |
+| Protocol 2 (Context-Adaptive) | **HIGH** | Clear improvement over one-size-fits-all |
 | Boundary Decision Tree | **HIGH** | Actionable, covers edge cases |
 | Side Effect Pattern | **HIGH** | Proven pattern in production apps |
 | Provider Adaptation | **MEDIUM** | Works, but Riverpod is cleaner long-term |
@@ -258,14 +258,14 @@ CD-013 stated "Strict separation for AI-assisted development" without implementa
 
 ## Integration Checklist
 
-- [ ] Update AI_AGENT_PROTOCOL.md (Protocol 2 → Protocol 3)
-- [ ] Create BOUNDARY_DECISION_TREE.md
-- [ ] Update GLOSSARY.md (5 new terms)
-- [ ] Update RQ-008 status to ✅ COMPLETE
-- [ ] Update RQ-009 status to ✅ COMPLETE
-- [ ] Add P-01 through P-08 to task tracker
-- [ ] Update CD-013 entry with implementation reference
-- [ ] Update AI_HANDOVER.md
+- [x] Update AI_AGENT_PROTOCOL.md (Protocol 2 revised to Context-Adaptive)
+- [x] Boundary Decision Tree embedded in Protocol 2 (no separate file needed)
+- [x] Update GLOSSARY.md (5 new terms)
+- [x] Update RQ_INDEX.md — RQ-008, RQ-009 ✅ COMPLETE
+- [x] Update RESEARCH_QUESTIONS.md — RQ-008, RQ-009 status + findings
+- [x] Add P-01 through P-08 to task tracker (Phase P: Process)
+- [x] Update CD-013 entry with implementation reference
+- [x] Update AI_HANDOVER.md
 
 ---
 

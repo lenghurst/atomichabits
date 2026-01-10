@@ -350,29 +350,47 @@ CREATE TABLE roadmap_nodes (
 | Field | Value |
 |-------|-------|
 | **Question** | What are best practices for articulating UI/logic separation that enables effective "vibe coding"? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Blocking** | CD-013 refinement |
 | **Priority** | MEDIUM — Code quality |
-| **Assigned** | Any agent |
+| **Assigned** | Deep Think + Claude |
 | **Previously** | Was RQ-005 before renumbering |
 
 **Context:**
-The Pact uses Flutter with Riverpod for state management. We want UI files to contain ONLY presentation logic so that:
+The Pact uses Flutter with Provider for state management (migrating to Riverpod). UI files should contain ONLY presentation logic so that:
 1. AI agents can safely modify UI without breaking business logic
 2. Business logic can be tested without UI
 3. "Vibe coding" (rapid UI iteration) is safe
 
-**Research Questions:**
-1. What patterns do production Flutter apps use for strict UI/logic separation?
-2. How do other AI-assisted development teams articulate this principle?
-3. What linting rules or code review checks can enforce this?
-4. How does this apply to animation logic (UI or business)?
-5. Where does navigation routing logic belong?
+**Key Findings:**
 
-**Output Expected:**
-- Code pattern examples (✅ correct vs ❌ wrong)
-- Linting configuration recommendations
-- Boundary definitions (what counts as "UI" vs "logic")
+| Decision | Resolution |
+|----------|------------|
+| **Architecture** | Passive View + Controller (ChangeNotifier for Provider, Notifier for Riverpod) |
+| **Boundary Rule** | "IF" decisions → Logic Layer; Rendering → UI Layer |
+| **Animation Triggers** | Side Effect Pattern (state flags, not inline checks) |
+| **Enforcement** | Linting rules + code review verification checklist |
+| **Migration** | Lift & Shift — incremental per feature |
+
+**Boundary Decision Tree:**
+```
+Does it decide IF something happens? → LOGIC LAYER
+Does it transform data? → LOGIC LAYER (getter)
+Animation TRIGGER? → LOGIC LAYER (state flag)
+Animation EXECUTION? → UI LAYER
+```
+
+**Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI without risk of corrupting business logic.
+
+**Output Delivered:**
+- ✅ Code pattern examples (Celebration Animation scenario)
+- ✅ Linting configuration recommendations
+- ✅ Boundary Decision Tree
+- ✅ Side Effect Pattern documentation
+- ✅ Migration strategy (Lift & Shift)
+
+**Reference:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
 
 ---
 
@@ -381,40 +399,45 @@ The Pact uses Flutter with Riverpod for state management. We want UI files to co
 | Field | Value |
 |-------|-------|
 | **Question** | Is "Make it work first, then refactor" the optimal approach for LLM-assisted coding? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Priority** | MEDIUM — Affects all coding work |
 | **Blocking** | Protocol 2 in AI_AGENT_PROTOCOL.md |
-| **Assigned** | Any agent |
+| **Assigned** | Deep Think + Claude |
 | **Trigger** | User questioned if this is really optimal for LLMs |
 | **Previously** | Was RQ-007 before renumbering |
 
-**Context:**
-Current AI_AGENT_PROTOCOL.md Protocol 2 states:
-```
-1. Execute functionality completely (make it work)
-2. THEN refactor for cleanliness (make it right)
-3. NEVER sacrifice functionality for clean code principles
-```
+**Key Finding:** Different tasks require different approaches. One-size-fits-all is wrong.
 
-**Questions to Research:**
-1. Do LLMs produce better code when refactoring is separate from initial implementation?
-2. Or does explicit structure/planning BEFORE coding produce better results?
-3. What do AI-assisted development teams recommend?
-4. Are there studies comparing approaches?
-5. Does it depend on task complexity?
+**Task Classification System:**
 
-**Alternative Approaches to Compare:**
-| Approach | Description | Potential Pros | Potential Cons |
-|----------|-------------|----------------|----------------|
-| **A: Work → Right** | Implement first, refactor second | Unblocks functionality | May create more tech debt |
-| **B: Plan → Work** | Plan structure, then implement | Cleaner initial code | May over-engineer |
-| **C: TDD** | Tests first, then implementation | Verified correctness | Slower initial progress |
-| **D: Iterative** | Small chunks: plan → code → test → refine | Balanced | More context switches |
+| Task Type | Examples | Strategy |
+|-----------|----------|----------|
+| **Logic Task** | New feature, data model, algorithm | → CONTRACT-FIRST (Plan → Work) |
+| **Visual Task** | Styling, animations, layout | → VIBE CODING (Work → Right) |
 
-**Output Expected:**
-- Recommendation for which approach to use
-- Conditions when each approach is appropriate
-- Update AI_AGENT_PROTOCOL.md with findings
+**Why This Works:**
+- **Logic Tasks:** LLMs produce better code when given a "contract" (interface/state definition) first. Anchors output, reduces hallucination.
+- **Visual Tasks:** Subjective by nature. AI needs to "see" code to iterate. Business logic safety enables rapid experimentation.
+
+**Protocol 2 Update:**
+AI_AGENT_PROTOCOL.md Protocol 2 was **REPLACED** with "Context-Adaptive Development":
+1. CLASSIFY the task (Logic vs Visual)
+2. LOGIC → Contract-First (define interface → implement → test → UI)
+3. VISUAL → Vibe Coding (iterate rapidly, no business logic in UI)
+4. VERIFY separation (checklist)
+
+**Quality Metrics:**
+- **Logic Leakage:** Count of `if` statements involving domain entities in UI files. Target: 0.
+- **Vibe Velocity:** Number of UI iterations achievable without breaking the build. Target: Infinite.
+
+**Output Delivered:**
+- ✅ Task Classification System
+- ✅ Context-Adaptive Protocol (replaced Protocol 2)
+- ✅ Quality metrics defined
+- ✅ Integration with RQ-008 boundaries
+
+**Reference:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
 
 ---
 
@@ -3702,12 +3725,33 @@ ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
 
 ---
 
+### Phase P: Process & Engineering (RQ-008 + RQ-009)
+
+*Added: 10 January 2026 | Source: RQ-008 (UI Logic Separation), RQ-009 (LLM Coding Approach)*
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| P-01 | Update AI_AGENT_PROTOCOL.md with Protocol 2 (Context-Adaptive) | **CRITICAL** | ✅ DONE | RQ-008,009 | Documentation | N/A |
+| P-02 | Create Boundary Decision Tree documentation | HIGH | ✅ DONE | RQ-008 | Documentation | N/A |
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | 🔴 NOT STARTED | RQ-008 | Config | N/A |
+| P-04 | Create ChangeNotifier Controller template | HIGH | 🔴 NOT STARTED | RQ-008 | Template | N/A |
+| P-05 | Document Side Effect pattern with code example | HIGH | ✅ DONE | RQ-008 | Documentation | N/A |
+| P-06 | Add Riverpod to pubspec.yaml for new features | MEDIUM | 🔴 NOT STARTED | RQ-008 | Config | N/A |
+| P-07 | Create "Logic vs Visual" task classification guide | HIGH | ✅ DONE | RQ-009 | Documentation | N/A |
+| P-08 | Define "Logic Leakage" metric tracking | MEDIUM | 🔴 NOT STARTED | RQ-008 | Analytics | N/A |
+
+**Note:** P-01, P-02, P-05, P-07 were completed as part of Protocol 9 reconciliation. Remaining tasks (P-03, P-04, P-06, P-08) are implementation work.
+
+---
+
 ### Pending Research Tasks
 
 These tasks cannot be fully specified until research completes:
 
 | Source | Status | Blocks Tasks |
 |--------|--------|--------------|
+| RQ-008 (UI Logic Separation) | ✅ COMPLETE | P-01 to P-08 extracted |
+| RQ-009 (LLM Coding Approach) | ✅ COMPLETE | Protocol 2 updated |
 | RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH | Privacy policy, opt-in UI, PD-116 |
 | RQ-024 (Treaty Modification) | ✅ COMPLETE | A-11, A-12, B-16, B-17, C-13, D-11-D-14 extracted |
 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | E-01, E-02 (token system) |
@@ -3718,23 +3762,26 @@ These tasks cannot be fully specified until research completes:
 
 ### Implementation Summary
 
-| Phase | Total Tasks | CRITICAL | HIGH | MEDIUM | LOW |
-|-------|-------------|----------|------|--------|-----|
-| **A: Schema** | 12 | 6 | 4 | 2 | 0 |
-| **B: Intelligence** | 17 | 5 | 8 | 3 | 1 |
-| **C: Council AI** | 13 | 5 | 7 | 1 | 0 |
-| **D: UX** | 14 | 2 | 7 | 4 | 1 |
-| **E: Polish** | 10 | 0 | 2 | 5 | 3 |
-| **F: Identity Coach** | 20 | 5 | 12 | 3 | 0 |
-| **G: Identity Coach 2** | 14 | 3 | 7 | 2 | 2 |
-| **H: Constellation/Airlock** | 16 | 5 | 6 | 4 | 1 |
-| **TOTAL** | **107** | **31** | **46** | **22** | **8** |
+| Phase | Total Tasks | CRITICAL | HIGH | MEDIUM | LOW | Done |
+|-------|-------------|----------|------|--------|-----|------|
+| **A: Schema** | 12 | 6 | 4 | 2 | 0 | 0 |
+| **B: Intelligence** | 17 | 5 | 8 | 3 | 1 | 0 |
+| **C: Council AI** | 13 | 5 | 7 | 1 | 0 | 0 |
+| **D: UX** | 14 | 2 | 7 | 4 | 1 | 0 |
+| **E: Polish** | 10 | 0 | 2 | 5 | 3 | 0 |
+| **F: Identity Coach** | 20 | 5 | 12 | 3 | 0 | 0 |
+| **G: Identity Coach 2** | 14 | 3 | 7 | 2 | 2 | 0 |
+| **H: Constellation/Airlock** | 16 | 5 | 6 | 4 | 1 | 0 |
+| **P: Process & Engineering** | 8 | 1 | 5 | 2 | 0 | 4 |
+| **TOTAL** | **124** | **32** | **58** | **26** | **8** | **4** |
 
 **Critical Path:** A-01 → A-02/A-03/A-05 → B-01 → B-06/B-07 → C-01/C-03 → C-04/C-05 → D-01/D-02
 
 **Identity Coach Path:** F-02/F-03 → F-06 → F-07/F-08/F-09 → F-13 → F-10
 
 **Constellation Path:** G-01 (ICS field) → H-02 (orbit formula) → H-01 (painter) → H-07 (settled state)
+
+**Process Path (Completed):** P-01 ✅ → P-02 ✅ → P-05 ✅ → P-07 ✅ (remaining: P-03, P-04, P-06, P-08)
 
 ---
 
