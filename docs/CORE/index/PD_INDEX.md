@@ -41,7 +41,7 @@
 | **PD-115** | Treaty Creation UX | ✅ RESOLVED | RQ-021 | Q1-2026 |
 | **PD-116** | Population Learning Privacy | 🔴 PENDING | RQ-023 | — |
 | **PD-117** | ContextSnapshot Real-time Data | ✅ RESOLVED | RQ-014 | Q1-2026 |
-| **PD-118** | Treaty Modification UX | 🔴 PENDING | RQ-024 | — |
+| **PD-118** | Treaty Modification UX | ✅ RESOLVED | RQ-024 | Q1-2026 |
 | **PD-119** | Summon Token Economy | 🔴 PENDING | RQ-025 | — |
 | **PD-120** | The Chamber Visual Design | 🔴 PENDING | Design session | — |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | — | — |
@@ -59,9 +59,9 @@
 | Metric | Count |
 |--------|-------|
 | **Total PDs** | 31 |
-| **✅ RESOLVED** | 14 (45%) |
+| **✅ RESOLVED** | 15 (48%) |
 | **🟢 READY** | 2 (6%) |
-| **🔴 PENDING** | 15 (48%) |
+| **🔴 PENDING** | 14 (45%) |
 
 ---
 
@@ -96,9 +96,11 @@ UNBLOCKED BY RQ-017/018 (Resolved):
 ├── PD-110 ✅ RESOLVED (Severity + Treaty hybrid)
 └── PD-112 ✅ RESOLVED (Hybrid audio strategy)
 
+UNBLOCKED BY RQ-024 (Resolved):
+└── PD-118 ✅ RESOLVED (Constitutional Amendment Model)
+
 BLOCKED BY PRIOR RESEARCH:
 ├── PD-116 ← RQ-023
-├── PD-118 ← RQ-024
 └── PD-119 ← RQ-025
 
 READY FOR DECISION (No blockers):

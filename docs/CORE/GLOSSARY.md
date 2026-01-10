@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-017/018 terms: Ghost Mode, The Tether, The Seal; Updated Constellation UX, Airlock Protocol, Identity Priming to COMPLETE)
+> **Last Updated:** 10 January 2026 (Added RQ-024 terms: Minor Amendment, Major Amendment, Re-Ratification, Amnesty, Probation Journey)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -700,6 +700,100 @@ TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
 **Status:** ✅ CONFIRMED — PD-113
 
 **Code References:** TreatyEngine (to be implemented)
+
+---
+
+### Minor Amendment
+**Definition:** Changes to treaty parameters (time, count) that preserve breach history and require Re-Ratification.
+
+**Key Characteristics:**
+- Parameters only (not logic or signatories)
+- Breach history PRESERVED — prevents gaming
+- 3-second long-press Re-Ratification ceremony
+
+**Examples:**
+- Changing "No work after 6pm" to "No work after 7pm"
+- Adjusting notification frequency
+- Modifying reminder timing
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** `treaty_history` table, minor amendment flow
+
+---
+
+### Major Amendment
+**Definition:** Changes to treaty logic or signatories that require Council reconvene and grant Amnesty (breach count reset).
+
+**Key Characteristics:**
+- Logic changes OR adding/removing facets (signatories)
+- Breach count RESET (Amnesty) — fresh start for new agreement
+- Full Council AI session required
+- Creates new treaty lineage (parent_treaty_id link)
+
+**Examples:**
+- Changing "No work travel on Tuesdays" to "Mandatory evening calls blocked"
+- Adding a new facet to an existing treaty
+- Modifying enforcement severity (soft → hard)
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** `parent_treaty_id` field, Council reconvene flow
+
+---
+
+### Re-Ratification
+**Definition:** 3-second long-press ceremony to confirm minor treaty amendments. Maintains psychological weight without requiring full Council.
+
+**UX Flow:**
+| Time | Haptic | Visual |
+|------|--------|--------|
+| 0-1s | Ticking (clockwork) | "Confirming amendment..." |
+| 1-2s | Intensifying | Old → New comparison display |
+| 3s | Heavy "Thud" | "AMENDMENT RATIFIED." |
+
+**Note:** Same interaction pattern as original Ratification Ritual but shorter messaging and no wax seal animation.
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Amendment Editor widget (to be implemented)
+
+---
+
+### Amnesty
+**Definition:** Breach count reset granted when a treaty is fundamentally renegotiated (major amendment). Recognizes that a substantially different agreement deserves a fresh start.
+
+**Psychological Rationale:**
+- Prevents "doomed treaty" syndrome where high breach count discourages engagement
+- Acknowledges user's commitment to renegotiate rather than abandon
+- Maintains gravitas of minor amendments by NOT granting amnesty for parameter tweaks
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Major amendment logic (to be implemented)
+
+---
+
+### Probation Journey
+**Definition:** Time-bound escalation (T+0 → T+96h) prompting user to fix, pause, or repeal a failing treaty.
+
+**Timeline:**
+| Stage | Trigger | Action |
+|-------|---------|--------|
+| **T+0** | 5 breaches in 7 days OR 3 dismissed warnings | Orange border, notification |
+| **T+24h** | No action taken | "Fix Treaty" nudge notification |
+| **T+72h** | Still no action | Final warning notification |
+| **T+96h** | Still no action | Auto-suspend treaty |
+
+**User Agency Windows:**
+- At any point: Fix (minor amendment), Pause, or Repeal
+- If fixed: Breach count preserved (unless major amendment → Amnesty)
+- If paused: Probation timer pauses, max 14 days
+- If repealed: Treaty archived permanently
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Probation notification journey (to be implemented)
 
 ---
 

@@ -11,8 +11,8 @@
 | Category | Complete | Pending | Status |
 |----------|----------|---------|--------|
 | **CDs** (Confirmed Decisions) | 18/18 | 0 | ✅ 100% |
-| **RQs** (Research Questions) | 25/32 | 7 | 🟡 78% |
-| **PDs** (Product Decisions) | 14/31 | 17 | 🟡 45% |
+| **RQs** (Research Questions) | 26/32 | 6 | 🟡 81% |
+| **PDs** (Product Decisions) | 15/31 | 16 | 🟡 48% |
 | **Tasks** (Implementation) | 0/107 | 107 | 🔴 0% |
 
 **Critical Blocker:** Phase A schema (`identity_facets`, `identity_topology`) DOES NOT EXIST.
@@ -71,7 +71,7 @@ All 18 CDs are confirmed. These CANNOT change without explicit human approval.
 | **RQ-009** | Optimal LLM Coding | LOW | None | ❌ NO | DEPRIORITIZE — Can be figured out during implementation |
 | **RQ-010** | Permission Data Philosophy | MEDIUM | None | ❌ NO | DEFER — Nice to have, not launch-critical |
 | **RQ-023** | Population Learning Privacy | MEDIUM | RQ-019 ✅ | ⚠️ PARTIAL | DEFER — Post-launch concern (privacy/legal) |
-| **RQ-024** | Treaty Modification | HIGH | RQ-021 ✅ | ⚠️ PARTIAL | RESEARCH — Core treaty flow |
+| **RQ-024** | Treaty Modification | HIGH | RQ-021 ✅ | ✅ COMPLETE | DONE — Constitutional Amendment Model |
 | **RQ-025** | Summon Token Economy | MEDIUM | RQ-016 ✅ | ❌ NO | DEFER — Gamification layer, not MVP |
 | **RQ-026** | Sound Design & Haptic | MEDIUM | None | ❌ NO | DEFER — Polish layer, Phase H blocked anyway |
 | **RQ-027** | Template Versioning | LOW | RQ-021 ✅ | ❌ NO | DEPRIORITIZE — Post-launch concern |
@@ -80,11 +80,11 @@ All 18 CDs are confirmed. These CANNOT change without explicit human approval.
 
 | Action | RQs | Count |
 |--------|-----|-------|
-| **RESEARCH NOW** | RQ-024 (Treaty Modification) | 1 |
+| **✅ DONE** | RQ-024 (Treaty Modification) | 1 |
 | **DEFER TO POST-MVP** | RQ-023, RQ-025, RQ-026, RQ-010 | 4 |
 | **DEPRIORITIZE** | RQ-008, RQ-009, RQ-027 | 3 |
 
-**Net Effect:** Only 1 RQ truly needs research for MVP. The rest are polish or post-launch.
+**Net Effect:** All MVP-critical RQs are COMPLETE. Remaining 6 are polish or post-launch.
 
 ---
 
@@ -125,7 +125,7 @@ These PDs have NO research blockers. Human decision required.
 | PD | Blocked By | Status |
 |----|------------|--------|
 | PD-116 | RQ-023 (Privacy) | DEFER — Post-launch |
-| PD-118 | RQ-024 (Treaty Mod) | Research needed |
+| PD-118 | RQ-024 (Treaty Mod) | ✅ RESOLVED — Constitutional Amendment Model |
 | PD-119 | RQ-025 (Summon Token) | DEFER — Post-launch |
 
 ### 3.4 Resolution Priorities
@@ -237,7 +237,7 @@ PHASE H: CONSTELLATION & AIRLOCK (🔴 BLOCKED)
 |---|--------|-------|---------|
 | 6 | Complete Phase A (A-03 through A-10) | Developer | Schema foundation complete |
 | 7 | Resolve PD-101 (Sherlock Prompt) | Human | Single canonical prompt |
-| 8 | Research RQ-024 (Treaty Modification) | Deep Think | Treaty flow complete |
+| 8 | ✅ RQ-024 COMPLETE | — | Treaty flow spec ready |
 | 9 | Begin Phase B (Intelligence Layer) | Developer | JITAI enhanced |
 
 ### What NOT to Do
@@ -277,7 +277,7 @@ CD-015 (psyOS) ─────────────────────�
     │       ├── RQ-013–015 ✅
     │       ├── RQ-016 (Council) ✅
     │       │       ├── RQ-021–022 ✅
-    │       │       └── RQ-024 🔴 ← RESEARCH NEEDED
+    │       │       └── RQ-024 ✅ ← COMPLETE
     │       ├── RQ-017–018 ✅
     │       └── RQ-019–020 ✅
     │

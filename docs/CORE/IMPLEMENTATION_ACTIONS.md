@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 10 January 2026 (Red Team Reality Check Applied)
+> **Last Updated:** 10 January 2026 (RQ-024 Treaty Modification reconciled, 9 tasks added)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -287,19 +287,19 @@ PROJECT ROOT:                                                  │
 
 ## Quick Status Dashboard
 
-### Phase Summary (107 Total Tasks)
+### Phase Summary (116 Total Tasks)
 
 | Phase | Description | Total | CRITICAL | HIGH | MEDIUM | LOW | Progress |
 |-------|-------------|-------|----------|------|--------|-----|----------|
-| **A: Schema** | Database foundation | 10 | 6 | 2 | 2 | 0 | 0% |
-| **B: Intelligence** | Backend services | 15 | 5 | 6 | 3 | 1 | 0% |
-| **C: Council AI** | Council system | 12 | 5 | 6 | 1 | 0 | 0% |
-| **D: UX** | Frontend screens | 10 | 2 | 5 | 2 | 1 | 0% |
+| **A: Schema** | Database foundation | 12 | 6 | 4 | 2 | 0 | 0% |
+| **B: Intelligence** | Backend services | 17 | 5 | 8 | 3 | 1 | 0% |
+| **C: Council AI** | Council system | 13 | 5 | 7 | 1 | 0 | 0% |
+| **D: UX** | Frontend screens | 14 | 2 | 7 | 4 | 1 | 0% |
 | **E: Polish** | Advanced features | 10 | 0 | 2 | 5 | 3 | 0% |
 | **F: Identity Coach** | Recommendation engine (Phase 1) | 20 | 5 | 12 | 3 | 0 | 0% |
 | **G: Identity Coach** | Intelligence layer (Phase 2) | 14 | 3 | 7 | 2 | 2 | 0% |
 | **H: Constellation/Airlock** | psyOS UX layer | 16 | 5 | 6 | 4 | 1 | 0% |
-| **TOTAL** | | **107** | **31** | **46** | **22** | **8** | **0%** |
+| **TOTAL** | | **116** | **31** | **52** | **25** | **8** | **0%** |
 
 **Full Task List:** RESEARCH_QUESTIONS.md → "Master Implementation Tracker" (line ~3487)
 
@@ -307,7 +307,7 @@ PROJECT ROOT:                                                  │
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 🔴 NOT STARTED: 107 (100%)                                  │
+│ 🔴 NOT STARTED: 116 (100%)                                  │
 │ 🟡 IN PROGRESS: 0 (0%)                                      │
 │ ✅ COMPLETE:    0 (0%)                                      │
 └─────────────────────────────────────────────────────────────┘
@@ -408,6 +408,26 @@ F-10 (Architect scheduler)
 
 ## Recently Added Tasks
 
+### 10 January 2026 — RQ-024: Treaty Modification (9 Tasks)
+
+**Source:** RQ-024 (Treaty Modification & Renegotiation) reconciliation via Protocol 9
+**Decisions:** PD-118 RESOLVED (Constitutional Amendment Model)
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ024.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| A-11 | Create `treaty_history` table (audit log) | HIGH | 🔴 | RQ-024 |
+| A-12 | Add `version`, `parent_treaty_id`, `last_amended_at` to treaties | HIGH | 🔴 | RQ-024 |
+| D-11 | Implement Treaty Amendment Editor (minor amendments) | HIGH | 🔴 | RQ-024 |
+| D-12 | Implement Re-Ratification ceremony (3s hold + haptic) | HIGH | 🔴 | RQ-024 |
+| D-13 | Implement Pause Treaty flow (modal + date picker) | MEDIUM | 🔴 | RQ-024 |
+| D-14 | Implement Repeal Treaty flow (type-to-confirm) | MEDIUM | 🔴 | RQ-024 |
+| C-13 | Wire Council reconvene for major amendments (pass treaty context) | HIGH | 🔴 | RQ-024 |
+| B-16 | Implement Probation notification journey (T+0 to T+96h) | HIGH | 🔴 | RQ-024 |
+| B-17 | Implement Auto-suspend logic (5+ breaches OR 3 dismissed) | HIGH | 🔴 | RQ-024 |
+
+---
+
 ### 10 January 2026 — Phase G: Identity Coach Intelligence (14 Tasks)
 
 **Source:** RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 reconciliation via Protocol 9
@@ -482,7 +502,7 @@ F-10 (Architect scheduler)
 | F-11 | **RQ-030** (Preference Embedding) | 🔴 NEEDS RESEARCH | Same as above |
 | F-19 | **RQ-031** (Pace Car Validation) | 🔴 NEEDS RESEARCH | Same as above |
 | F-18 | **RQ-032** (ICS Integration) | 🔴 NEEDS RESEARCH | Same as above |
-| E-05, E-06 | RQ-024 (Treaty Modification) | 🔴 NEEDS RESEARCH | Not yet created |
+| E-05, E-06 | RQ-024 (Treaty Modification) | ✅ COMPLETE | `DEEP_THINK_RECONCILIATION_RQ024.md` |
 | E-01, E-02 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | Not yet created |
 | E-03, E-04 | RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | Not yet created |
 | E-07 | RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH | Not yet created |
@@ -509,9 +529,11 @@ F-10 (Architect scheduler)
 
 **Research Still Needed:**
 - RQ-023 (Population Privacy) — Blocks future privacy features
-- RQ-024 (Treaty Modification) — Blocks E-05, E-06
 - RQ-025 (Summon Token Economy) — Blocks E-01, E-02
 - RQ-026 (Sound Design) — Blocks E-03, E-04
+
+**Recently Completed Research:**
+- RQ-024 ✅ (Treaty Modification) — Reconciled 10 Jan 2026, 9 tasks extracted
 
 ---
 
@@ -519,6 +541,7 @@ F-10 (Architect scheduler)
 
 | Date | Source | Phase | Tasks Added | Added By | Reconciliation Doc |
 |------|--------|-------|-------------|----------|-------------------|
+| 10 Jan 2026 | RQ-024 | A,B,C,D | A-11,A-12,B-16,B-17,C-13,D-11-D-14 (9 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ024.md` |
 | 10 Jan 2026 | RQ-028/029/030/031/032 | G | G-01 through G-14 (14 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
 | 10 Jan 2026 | RQ-005/006/007 | F | F-01 through F-20 (20 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 | 06 Jan 2026 | RQ-012/013/014/015/016 | A-E | A-01 through E-10 (57 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ014_RQ013_PD117_RQ015.md` |

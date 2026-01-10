@@ -43,7 +43,7 @@
 | **RQ-021** | Treaty Lifecycle & UX | ✅ COMPLETE | RQ-020 | Q1-2026 |
 | **RQ-022** | Council Script Generation Prompts | ✅ COMPLETE | RQ-016, RQ-021 | Q1-2026 |
 | **RQ-023** | Population Learning Privacy Framework | 🔴 NEEDS RESEARCH | RQ-019 | — |
-| **RQ-024** | Treaty Modification & Renegotiation Flow | 🔴 NEEDS RESEARCH | RQ-021 | — |
+| **RQ-024** | Treaty Modification & Renegotiation Flow | ✅ COMPLETE | RQ-021 | Q1-2026 |
 | **RQ-025** | Summon Token Economy | 🔴 NEEDS RESEARCH | RQ-016 | — |
 | **RQ-026** | Sound Design & Haptic Specification | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-027** | Treaty Template Versioning Strategy | 🔴 NEEDS RESEARCH | RQ-021 | — |
@@ -60,8 +60,8 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs** | 32 |
-| **✅ COMPLETE** | 25 (78%) |
-| **🔴 NEEDS RESEARCH** | 7 (22%) |
+| **✅ COMPLETE** | 26 (81%) |
+| **🔴 NEEDS RESEARCH** | 6 (19%) |
 
 ---
 
@@ -95,7 +95,7 @@ PSYOS ARCHITECTURE (CD-015):
 │   ├── RQ-015 (Polymorphic Habits) ✅
 │   ├── RQ-016 (Council AI) ✅
 │   │   ├── RQ-021 (Treaty Lifecycle) ✅
-│   │   │   ├── RQ-024 (Treaty Modification) 🔴
+│   │   │   ├── RQ-024 (Treaty Modification) ✅
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
 │   │   └── RQ-025 (Summon Tokens) 🔴
