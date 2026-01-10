@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 06 January 2026 (Android-First Strategy + Deep Think Reconciliation)
+> **Last Updated:** 10 January 2026 (Documentation Unification + CLAUDE.md Entry Point)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,13 +36,43 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `claude/setup-pact-context-rApSv` |
+| **Date** | 10 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Focus** | Documentation Unification, Entry Point Creation, Governance Cleanup |
+
+### What Was Accomplished (This Latest Session)
+
+**1. Created Project Entry Point (`/CLAUDE.md`)**
+- Concise (~45 lines) overview for AI agents
+- Auto-loads in Claude Code
+- Contains: WHAT, WHY, HOW, Critical Constraints, Reading Order
+
+**2. Unified Documentation Reading Order**
+- Standardized the "Mandatory Reading Order" across all governance docs
+- Updated `README.md`, `AI_AGENT_PROTOCOL.md`, `AI_CONTEXT.md` to match new flow
+- Established `CLAUDE.md` as the single source of truth for routing
+
+**3. Fixed Documentation Orphaning**
+- **IMPACT_ANALYSIS.md**: Added "Related Documentation" cross-references to fix connectivity
+- Ensured all Core documents link bidirectionally
+
+**4. Created Agent Custom Instructions**
+- Created `docs/prompts/USER_CUSTOM_INSTRUCTIONS.md` (User-level behavioral config)
+- Created `docs/prompts/AGENT_CUSTOM_INSTRUCTIONS_DRAFT.md` (Draft agent instructions)
+
+---
+
+### Previous Session Summary (Jan 06 — Android First Strategy)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `session-priming-docs-r6fCh` (continued x3) |
 | **Date** | 06 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Duration** | ~90 minutes (session continued from third context recovery) |
 | **Focus** | Android-First Strategy + Deep Think Reconciliation Protocol + Engineering Threshold Framework |
 
-### What Was Accomplished (This Latest Session)
+### What Was Accomplished (Jan 06 Session)
 
 **Major Decisions Confirmed:**
 1. **CD-017: Android-First Development Strategy** — Primary development targets Android for richer API access
