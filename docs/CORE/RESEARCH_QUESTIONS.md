@@ -221,27 +221,36 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 | Field | Value |
 |-------|-------|
 | **Question** | What algorithms should drive identity-aligned habit/ritual recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Blocking** | CD-008 (Identity Coach), PD-105 (AI Coaching Architecture) |
 | **Priority** | **CRITICAL** — Core value proposition |
-| **Assigned** | Any agent |
+| **Assigned** | DeepSeek Deep Think |
 | **Source** | IDENTITY_COACH_SPEC.md |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**Sub-Questions:**
+**Sub-Questions Answered:**
 
-| Sub-Question | Notes |
-|--------------|-------|
-| What algorithms recommend identity-aligned goals? | Collaborative filtering? Content-based? Hybrid? |
-| How do we avoid overwhelming users? | Rate limiting, importance scoring |
-| How does this integrate with JITAI? | Same bandit? Separate system? (See PD-105) |
-| What's the feedback loop? | How do we learn if recommendations worked? |
-| How do we handle user rejection? | Snooze vs dismiss vs never show again |
+| Sub-Question | Answer | Confidence |
+|--------------|--------|------------|
+| What algorithms recommend identity-aligned goals? | **Two-Stage Hybrid Retrieval:** Stage 1 = Semantic search (pgvector, 768-dim) for topic matching; Stage 2 = Psychometric re-ranking (6-dim) for style matching | HIGH |
+| How do we avoid overwhelming users? | **Pace Car Protocol:** Max 1 recommendation/day; only if user has < 5 active habits per facet | HIGH |
+| How does this integrate with JITAI? | **Architect vs Commander separation:** "The Architect" (async Edge Function) generates recommendation cards → places in JITAI's `content_queue` → "The Commander" (JITAI) decides when to show | HIGH |
+| What's the feedback loop? | **Implicit-Dominant Signal Hierarchy:** Adoption (+5), Validation (+10, 3x completion in week), Dismissal (-5), Decay (-0.5 per ignore). Updates `preference_embedding` | MEDIUM |
+| How do we handle user rejection? | **Snooze vs Ban Taxonomy:** "Not Now" = suppress 14 days; "Not Me" = permanent block + subtract from preference embedding | HIGH |
+| How to handle cold start? | **Trinity Seed:** Use Day 1 Holy Trinity extraction — Anti-Identity → Prevention habits; Failure Archetype → Floor habits; Dimension → Framed habits | HIGH |
 
-**Output Expected:**
-- Algorithm recommendation with rationale
-- Integration pattern with existing JITAI
-- Feedback loop design
-- User rejection handling strategy
+**Key Deliverables:**
+
+| Deliverable | Status | Location |
+|-------------|--------|----------|
+| Two-Stage Hybrid Retrieval algorithm | ✅ Specified | Reconciliation doc |
+| `generateRecommendations()` pseudocode | ✅ Specified | Reconciliation doc |
+| Architect/Commander separation architecture | ✅ Specified | Reconciliation doc |
+| Feedback signal weights | ✅ Specified | Reconciliation doc |
+| Cold start strategy | ✅ Specified | Reconciliation doc |
+
+**Implementation Tasks:** F-07, F-08, F-09, F-10, F-11, F-17, F-19
 
 ---
 
@@ -250,38 +259,38 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 | Field | Value |
 |-------|-------|
 | **Question** | What content library is needed to support proactive recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Blocking** | CD-009 (Content Library), RQ-005 implementation |
 | **Priority** | HIGH — Enables RQ-005 |
-| **Assigned** | Any agent |
+| **Assigned** | DeepSeek Deep Think |
 | **Source** | IDENTITY_COACH_SPEC.md |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**Sub-Questions:**
+**Sub-Questions Answered:**
 
-| Sub-Question | Notes |
-|--------------|-------|
-| What habits are "universal starters"? | Evidence-based default recommendations |
-| How many ritual templates needed? | Morning, evening, transition, recovery |
-| What progression milestones are meaningful? | 7 days, 21 days, 66 days, 1 year? |
-| How do we phrase warnings without shame? | Regression messaging strategy |
+| Sub-Question | Answer | Confidence |
+|--------------|--------|------------|
+| What habits are "universal starters"? | **50 Universal Habits** tagged with Energy State + Dimensions. Categories: Physiology (Hydrate First), Recovery (Digital Sunset), Focus (The One Thing), Movement (Floor Press) | HIGH |
+| How many ritual templates needed? | **4 Transition-Based Templates:** Activation (Sleep→Wake), Shutdown (Work→Recovery), Airlock (Focus→Social), Recovery | HIGH |
+| What progression milestones are meaningful? | **Identity Consolidation Stages:** The Spark (Day 1-7, "Identity Claimed"), The Dip (Day 8-21, "Resistance Detected"), The Groove (Day 66+, "Automaticity") | HIGH |
+| How do we phrase warnings without shame? | **Data-Driven Normalization:** Strip emotion, cite statistics. Example: "Streak reset. Data shows Day 8 is the most common drop-off point. You are normal. Let's resume." | HIGH |
+| How to handle infinite facet names? | **Archetype Template Bridge:** Map user facets to 12 Global Archetypes (Builder, Nurturer, Warrior, etc.) via vector similarity. System writes content for archetypes, user gets mapped content | HIGH |
+| What dimensional framing is needed? | **6-Dimension Matrix:** Promotion ("Boost your energy") vs Prevention ("Secure your health"); Rebel ("Do it your way") vs Conformist ("Join the community") | HIGH |
 
-**Content Quantity Estimate:**
-```
-PROACTIVE CONTENT (Growth):
-├── 50+ habit recommendation templates
-├── 20+ ritual templates
-├── 10+ progression path templates
-├── 15+ regression warning templates
-└── 30+ goal alignment prompts
+**Launch Library Specification:**
 
-TOTAL: ~125+ content pieces needed
-```
+| Content Type | Quantity | Status |
+|--------------|----------|--------|
+| Universal Habit Templates | 50 | 🔴 TODO (F-13) |
+| Archetype Template Presets | 12 | 🔴 TODO (F-14) |
+| Framing Templates (6 dims × 2 poles) | 12 | 🔴 TODO (F-15) |
+| Ritual Templates | 4 | 🔴 TODO (F-16) |
+| Regression Messaging Templates | TBD | 🔴 TODO (F-20) |
 
-**Output Expected:**
-- Content taxonomy and categories
-- Template structures per category
-- Dimensional framing variants (per 6 dimensions)
-- Minimum viable content set for launch
+**Human Decision Required:** Content library size at launch (Option A: 50 habits / Option B: 100 habits / Option C: 200+ habits). Recommendation: Option A.
+
+**Implementation Tasks:** F-13, F-14, F-15, F-16, F-20
 
 ---
 
@@ -290,58 +299,49 @@ TOTAL: ~125+ content pieces needed
 | Field | Value |
 |-------|-------|
 | **Question** | How do we architect the full flow from user aspirations to AI-guided habit recommendations? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Blocking** | CD-008 (Identity Coach), CD-011 (Architecture Ramifications) |
 | **Priority** | HIGH — Supports Identity Coach |
-| **Assigned** | Any agent |
+| **Assigned** | DeepSeek Deep Think |
 | **Depends On** | RQ-005, RQ-006 |
 | **Previously** | Was RQ-006 before renumbering |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 
-**The Required Flow:**
-```
-User shares dreams/fears
-    → AI constructs Identity Roadmap
-    → App recommends habits/rituals
-    → Tracks progress
-    → JITAI intervenes when at risk
-    → Identity Coach guides growth
-```
+**Sub-Questions Answered:**
 
-**Research Questions:**
-1. **Aspiration Extraction:** How should Sherlock extract aspirational identity (not just Holy Trinity blocks)?
-2. **Roadmap Construction:** What data structure represents an "Identity Roadmap"?
-3. **Habit Matching:** How do we map aspirations to habit recommendations?
-4. **Progress Tracking:** What metrics indicate "progress toward aspirational self"?
-5. **Regression Detection:** How do we detect when someone is moving AWAY from their aspiration?
-6. **Coherence Check:** How do we detect when current habits don't match stated aspirations?
+| Sub-Question | Answer | Confidence |
+|--------------|--------|------------|
+| How to extract aspirations? | **Future Self Interview (Day 3):** "Fast forward 1 year. You are proud of who you've become. What is one specific thing that version of you does every day?" | HIGH |
+| What data structure for Identity Roadmap? | **Two tables:** `identity_roadmaps` (user_id, facet_id, aspiration_label, status) + `roadmap_nodes` (roadmap_id, stage_order, node_type, target_id, unlock_criteria JSONB) | HIGH |
+| How to map aspirations to facets? | **Vector Classification:** Embed aspiration → classify to Global Archetype → link to existing Facet or create new | MEDIUM |
+| How to match habits to aspirations? | **Vector Space Mapping:** Embed aspiration label → query habit_templates → filter by Global Archetype | HIGH |
+| How to track progress? | **Identity Consolidation Score (ICS):** `ICS = Σ(Votes × Consistency) / DaysActive`. Visual: Seed → Sapling → Oak | MEDIUM |
+| How to detect regression? | **Leading Indicators:** (1) Escapism: screenOnDuration > 20% vs baseline, (2) Dysregulation: first unlock shifts > 30 min, (3) Avoidance: JITAI dismissal rate increases. **Note:** Unlock time alone rejected as too noisy | MEDIUM |
+| How to visualize? | **Identity Tree:** Roots (Holy Trinity) → Trunk (Core Values) → Branches (Facets) → Leaves (Habits). ICS growth thickens branches; neglect desaturates color | MEDIUM |
 
-**Dependencies (Must Be Researched In Order):**
-```
-1. Aspiration Extraction (Sherlock changes)
-   └── Needs: New onboarding questions, prompt updates
+**Schema Delivered:**
 
-2. Identity Roadmap Data Model
-   └── Needs: Schema design, storage strategy
-   └── Depends on: #1 (what data to store)
+```sql
+CREATE TABLE identity_roadmaps (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  facet_id UUID REFERENCES identity_facets(id),
+  aspiration_label TEXT, -- "Become a Fit Dad"
+  status TEXT -- 'active', 'completed', 'paused'
+);
 
-3. Habit Matching Algorithm
-   └── Needs: Recommendation logic
-   └── Depends on: #2 (what to match against)
-
-4. Progress/Regression Detection
-   └── Needs: Metric definitions
-   └── Depends on: #3 (what to measure against)
-
-5. Coherence Engine
-   └── Needs: Gap analysis logic
-   └── Depends on: #4 (what signals to use)
+CREATE TABLE roadmap_nodes (
+  id UUID PRIMARY KEY,
+  roadmap_id UUID REFERENCES identity_roadmaps(id),
+  stage_order INT, -- 1, 2, 3
+  node_type TEXT, -- 'habit', 'milestone'
+  target_id UUID, -- Link to habit_id
+  unlock_criteria JSONB -- {"ics_score": 0.5}
+);
 ```
 
-**Output Expected:**
-- Data model for Identity Roadmap
-- Algorithm for habit-to-aspiration matching
-- Metrics for progress/regression
-- Integration points with existing JITAI
+**Implementation Tasks:** F-02, F-03, F-12, F-18
 
 ---
 
@@ -350,29 +350,47 @@ User shares dreams/fears
 | Field | Value |
 |-------|-------|
 | **Question** | What are best practices for articulating UI/logic separation that enables effective "vibe coding"? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Blocking** | CD-013 refinement |
 | **Priority** | MEDIUM — Code quality |
-| **Assigned** | Any agent |
+| **Assigned** | Deep Think + Claude |
 | **Previously** | Was RQ-005 before renumbering |
 
 **Context:**
-The Pact uses Flutter with Riverpod for state management. We want UI files to contain ONLY presentation logic so that:
+The Pact uses Flutter with Provider for state management (migrating to Riverpod). UI files should contain ONLY presentation logic so that:
 1. AI agents can safely modify UI without breaking business logic
 2. Business logic can be tested without UI
 3. "Vibe coding" (rapid UI iteration) is safe
 
-**Research Questions:**
-1. What patterns do production Flutter apps use for strict UI/logic separation?
-2. How do other AI-assisted development teams articulate this principle?
-3. What linting rules or code review checks can enforce this?
-4. How does this apply to animation logic (UI or business)?
-5. Where does navigation routing logic belong?
+**Key Findings:**
 
-**Output Expected:**
-- Code pattern examples (✅ correct vs ❌ wrong)
-- Linting configuration recommendations
-- Boundary definitions (what counts as "UI" vs "logic")
+| Decision | Resolution |
+|----------|------------|
+| **Architecture** | Passive View + Controller (ChangeNotifier for Provider, Notifier for Riverpod) |
+| **Boundary Rule** | "IF" decisions → Logic Layer; Rendering → UI Layer |
+| **Animation Triggers** | Side Effect Pattern (state flags, not inline checks) |
+| **Enforcement** | Linting rules + code review verification checklist |
+| **Migration** | Lift & Shift — incremental per feature |
+
+**Boundary Decision Tree:**
+```
+Does it decide IF something happens? → LOGIC LAYER
+Does it transform data? → LOGIC LAYER (getter)
+Animation TRIGGER? → LOGIC LAYER (state flag)
+Animation EXECUTION? → UI LAYER
+```
+
+**Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI without risk of corrupting business logic.
+
+**Output Delivered:**
+- ✅ Code pattern examples (Celebration Animation scenario)
+- ✅ Linting configuration recommendations
+- ✅ Boundary Decision Tree
+- ✅ Side Effect Pattern documentation
+- ✅ Migration strategy (Lift & Shift)
+
+**Reference:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
 
 ---
 
@@ -381,40 +399,45 @@ The Pact uses Flutter with Riverpod for state management. We want UI files to co
 | Field | Value |
 |-------|-------|
 | **Question** | Is "Make it work first, then refactor" the optimal approach for LLM-assisted coding? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Priority** | MEDIUM — Affects all coding work |
 | **Blocking** | Protocol 2 in AI_AGENT_PROTOCOL.md |
-| **Assigned** | Any agent |
+| **Assigned** | Deep Think + Claude |
 | **Trigger** | User questioned if this is really optimal for LLMs |
 | **Previously** | Was RQ-007 before renumbering |
 
-**Context:**
-Current AI_AGENT_PROTOCOL.md Protocol 2 states:
-```
-1. Execute functionality completely (make it work)
-2. THEN refactor for cleanliness (make it right)
-3. NEVER sacrifice functionality for clean code principles
-```
+**Key Finding:** Different tasks require different approaches. One-size-fits-all is wrong.
 
-**Questions to Research:**
-1. Do LLMs produce better code when refactoring is separate from initial implementation?
-2. Or does explicit structure/planning BEFORE coding produce better results?
-3. What do AI-assisted development teams recommend?
-4. Are there studies comparing approaches?
-5. Does it depend on task complexity?
+**Task Classification System:**
 
-**Alternative Approaches to Compare:**
-| Approach | Description | Potential Pros | Potential Cons |
-|----------|-------------|----------------|----------------|
-| **A: Work → Right** | Implement first, refactor second | Unblocks functionality | May create more tech debt |
-| **B: Plan → Work** | Plan structure, then implement | Cleaner initial code | May over-engineer |
-| **C: TDD** | Tests first, then implementation | Verified correctness | Slower initial progress |
-| **D: Iterative** | Small chunks: plan → code → test → refine | Balanced | More context switches |
+| Task Type | Examples | Strategy |
+|-----------|----------|----------|
+| **Logic Task** | New feature, data model, algorithm | → CONTRACT-FIRST (Plan → Work) |
+| **Visual Task** | Styling, animations, layout | → VIBE CODING (Work → Right) |
 
-**Output Expected:**
-- Recommendation for which approach to use
-- Conditions when each approach is appropriate
-- Update AI_AGENT_PROTOCOL.md with findings
+**Why This Works:**
+- **Logic Tasks:** LLMs produce better code when given a "contract" (interface/state definition) first. Anchors output, reduces hallucination.
+- **Visual Tasks:** Subjective by nature. AI needs to "see" code to iterate. Business logic safety enables rapid experimentation.
+
+**Protocol 2 Update:**
+AI_AGENT_PROTOCOL.md Protocol 2 was **REPLACED** with "Context-Adaptive Development":
+1. CLASSIFY the task (Logic vs Visual)
+2. LOGIC → Contract-First (define interface → implement → test → UI)
+3. VISUAL → Vibe Coding (iterate rapidly, no business logic in UI)
+4. VERIFY separation (checklist)
+
+**Quality Metrics:**
+- **Logic Leakage:** Count of `if` statements involving domain entities in UI files. Target: 0.
+- **Vibe Velocity:** Number of UI iterations achievable without breaking the build. Target: Infinite.
+
+**Output Delivered:**
+- ✅ Task Classification System
+- ✅ Context-Adaptive Protocol (replaced Protocol 2)
+- ✅ Quality metrics defined
+- ✅ Integration with RQ-008 boundaries
+
+**Reference:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
 
 ---
 
@@ -1569,43 +1592,36 @@ Treaties override default JITAI behavior. When a logic_hook fires:
 | Field | Value |
 |-------|-------|
 | **Question** | How should the dashboard visualize identity facets as a living solar system? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Priority** | **HIGH** — Core visual identity of psyOS |
-| **Blocking** | Dashboard redesign, animation implementation, data binding |
 | **Generated By** | CD-015 (psyOS Architecture) |
-| **Assigned** | Dedicated session required |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ017_RQ018.md` |
 
-**Context:**
-Replace the Skill Tree with a **Constellation UX**:
-- **Sun** = The Self (center of gravity)
-- **Planets** = Facets (orbiting)
-  - **Mass** = Habit volume / importance
-  - **Gravity** = Pull on time/energy
-  - **Orbit Distance** = Integration with Core Self
-- **Neglected planets** don't shrink — they **cool** (dim), orbit becomes **erratic** (wobbles)
+**Sub-Questions Answered:**
 
-**Visual Feedback:**
-- Massive "Career" planet pulling "Health" planet out of orbit
-- User sees their life's gravity distortion in real-time
+| # | Question | Answer | Confidence |
+|---|----------|--------|------------|
+| 1 | Animation framework? | **Flutter CustomPainter (Canvas)** — Rive/Lottie can't handle dynamic orbital math | HIGH |
+| 2 | Data binding? | **Bohr-Kepler Hybrid Model** — Stable orbits + physics velocity | HIGH |
+| 3 | Interactions? | Tap planet → drill-down; Tap tether → conflict modal | HIGH |
+| 4 | Scalability? | Max 7 facets; progressive disclosure Day 1→7→30 | HIGH |
+| 5 | Accessibility? | Settled state (0 FPS idle); reduced motion option | MEDIUM |
+| 6 | Migration? | **Big Bang with fallback** (PD-108) | HIGH |
+| 7 | Physics? | Pseudo-physics for visual effect, not simulation | HIGH |
 
-**Sub-Questions:**
+**Key Deliverables:**
 
-| # | Question | Implications |
-|---|----------|--------------|
-| 1 | What animation framework? Rive, Lottie, or custom Flutter? | Technical choice |
-| 2 | How do we map facet metrics to visual properties? | Data binding |
-| 3 | What interactions should the visualization support? | Tap, drag, zoom? |
-| 4 | How do we handle 1-2 facets vs 5+ facets? | Scalability |
-| 5 | What accessibility considerations for motion-sensitive users? | Accessibility |
-| 6 | How does Constellation relate to existing Binary Interface? | Migration path |
-| 7 | Should orbit mechanics have actual physics or just look like it? | Realism vs performance |
+| Visual Property | Data Source | Formula |
+|-----------------|-------------|---------|
+| **Planet Radius** | `habitVolume` | `16dp + clamp(log(votes)*4, 0, 24)` |
+| **Orbit Distance** | `ics_score` | `MaxRadius - (ICS * 30dp)` |
+| **Planet Color** | `energyState` | Blue/Green/Orange/Purple (4-state) |
+| **Brightness** | `lastEngaged` | 100% (<3d), 30% (>7d = Ghost) |
+| **Wobble** | `friction` | `offset += sin(t*20) * friction * 4px` |
+| **Tether** | `friction > 0.6` | Red dashed line if both active |
 
-**Output Expected:**
-- Technical specification for Constellation animation
-- Data model → visual property mapping
-- Interaction design specification
-- Accessibility guidelines
-- Migration plan from Skill Tree
+**Implementation Tasks:** H-01 through H-09, H-15, H-16
 
 ---
 
@@ -1614,48 +1630,48 @@ Replace the Skill Tree with a **Constellation UX**:
 | Field | Value |
 |-------|-------|
 | **Question** | How should state transitions and sensory priming be implemented? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Priority** | **HIGH** — Differentiates psyOS from competitors |
-| **Blocking** | JITAI integration, notification content, audio assets |
 | **Generated By** | CD-015 (psyOS Architecture) |
-| **Assigned** | Dedicated session required |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ017_RQ018.md` |
 
-**Context:**
-Two related concepts:
+**Sub-Questions Answered:**
 
-**Airlock Protocol:** When energy state conflict detected, insert mandatory transition ritual:
-```
-"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
-Do not enter yet. 5-minute Box Breathing."
-```
+| # | Question | Answer | Confidence |
+|---|----------|--------|------------|
+| 1 | Trigger detection? | **Predictive (Calendar) + Reactive (App change)** | HIGH |
+| 2 | Transition rituals? | **5-Second Seal (v0.5)** — press-and-hold fingerprint | HIGH |
+| 3 | Audio assets? | **Stock library (4 loops, <500KB)** + user mantras post-launch | HIGH |
+| 4 | Customization? | **Hybrid (PD-112)** — Stock default, user unlock at Sapling tier | HIGH |
+| 5 | Effectiveness? | Transition quality metrics, treaty compliance | MEDIUM |
+| 6 | User control? | **Severity + Treaty (PD-110)** — suggested default, Treaty makes mandatory | HIGH |
+| 7 | Anti-annoyance? | Severity-based intensity; max 1m ritual for v1 | HIGH |
 
-**Identity Priming:** Nudges should **prime** (sensory), not just remind (cognitive):
-```
-Trigger: 5 mins before "Deep Work"
-Action: Play Sonic Trigger specific to "Architect" facet
-Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
-         This is the signal. Enter the Cathedral."
-Result: Immediate state shift via sensory anchoring.
-```
+**Key Deliverables:**
 
-**Sub-Questions:**
+**The Seal (v0.5):**
+- Full-screen overlay: "Leaving [Facet A]. Entering [Facet B]."
+- Press-and-hold fingerprint icon for 5 seconds
+- Circle fills with light (0% → 100%)
+- Haptic ramp: `createWaveform([0,1000,1000,1000,1000,1000], [0,50,0,100,0,200], -1)`
 
-| # | Question | Implications |
-|---|----------|--------------|
-| 1 | How do we detect when Airlock is needed? | JITAI integration |
-| 2 | What are effective transition rituals per energy state pair? | Content library |
-| 3 | How do we create/source audio assets for Identity Priming? | Asset pipeline |
-| 4 | Should priming be user-customizable or AI-selected? | Personalization |
-| 5 | How do we measure effectiveness of priming? | Analytics |
-| 6 | What's the user opt-out mechanism for Airlock? | User control |
-| 7 | How do we prevent Airlock from becoming annoying? | UX quality |
+**Transition Intensity Matrix (from RQ-014):**
 
-**Output Expected:**
-- Airlock trigger conditions and rules
-- Transition ritual content library
-- Audio asset requirements and sources
-- Identity Priming notification system design
-- Effectiveness measurement framework
+| From ↓ / To → | Focus | Physical | Social | Recovery |
+|---------------|-------|----------|--------|----------|
+| **Focus** | — | Low | **CRITICAL** | Med |
+| **Physical** | Med | — | Low | Low |
+| **Social** | **HIGH** | Low | — | Low |
+| **Recovery** | Med | High | Low | — |
+
+**Audio Assets (Stock):**
+- `drone_focus.ogg` (40Hz Gamma binaural)
+- `drone_social.ogg` (Warm acoustic)
+- `drone_physical.ogg` (130bpm percussion)
+- `sfx_airlock_seal.ogg` (Pneumatic hiss)
+
+**Implementation Tasks:** H-10 through H-14
 
 ---
 
@@ -3024,40 +3040,66 @@ RQ-019 specified the population learning infrastructure (cluster embeddings, ano
 | Field | Value |
 |-------|-------|
 | **Question** | How should users modify, renegotiate, or terminate active Treaties? |
-| **Status** | 🔴 NEEDS RESEARCH |
+| **Status** | ✅ COMPLETE |
+| **Completed** | 10 January 2026 |
 | **Priority** | **HIGH** — Core to treaty lifecycle |
-| **Blocking** | Treaty modification UI, renegotiation flow |
 | **Generated By** | RQ-021 gap analysis (sub-question #5 incomplete) |
-| **Assigned** | UX + Deep Think session |
+| **Assigned** | Deep Think session |
 
-**Context:**
-RQ-021 specified treaty CREATION but not modification. Deep Think mentioned "The Archives" for repealed treaties but didn't detail the renegotiation flow when a treaty enters Probation.
+**Research Output:** Constitutional Amendment Model with Minor/Major distinction.
 
-**Sub-Questions:**
+**Sub-Questions Answered:**
 
-| # | Question | Implications |
-|---|----------|--------------|
-| 1 | Can users edit active treaties directly? | UX complexity vs flexibility |
-| 2 | Does editing require Council reconvention? | Maintains psychological weight |
-| 3 | What's the Probation → Renegotiation flow? | Council auto-summons? User initiates? |
-| 4 | Can users "pause" a treaty without deleting? | Temporary suspension UX |
-| 5 | What happens to breach history on modification? | Data continuity |
-| 6 | Can users duplicate/fork existing treaties? | Template-like behavior |
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | Can users edit active treaties directly? | YES — Minor amendments only (parameters) |
+| 2 | Does editing require Council reconvention? | NO for minor; YES for major |
+| 3 | What's the Probation → Renegotiation flow? | T+0 → T+96h escalation with Fix/Pause/Repeal options |
+| 4 | Can users "pause" a treaty without deleting? | YES — 14-day max, probation timer frozen |
+| 5 | What happens to breach history on modification? | PRESERVED on minor; RESET (Amnesty) on major |
+| 6 | Can users duplicate/fork existing treaties? | NO — Not in MVP; use templates instead |
 
-**Proposed Options:**
+**Key Decisions:**
 
-| Option | Description | Pros | Cons |
-|--------|-------------|------|------|
-| A: Edit Directly | Users modify terms in-place | Simple UX | Feels like "settings" |
-| B: Repeal + Recreate | Delete old, create new via wizard | Maintains ceremony | Friction |
-| **C: Amendment Flow** | Minor edits direct; major changes require Council | Balanced | Detection complexity |
-| D: Council Only | All modifications require Council session | Maximum weight | High friction |
+| Decision | Specification |
+|----------|---------------|
+| **Amendment Classification** | Minor (params) vs Major (logic/parties) |
+| **Minor Amendment** | 3s Re-Ratification ceremony, breach history preserved |
+| **Major Amendment** | Council reconvene, Amnesty (breach reset), new lineage |
+| **Probation Trigger** | 5 breaches in 7 days OR 3 dismissed warnings |
+| **Probation Journey** | T+0 notification → T+24h nudge → T+72h warning → T+96h auto-suspend |
+| **Pause** | User-initiated, 14-day max, probation frozen |
+| **Suspend** | System-initiated (auto at T+96h), requires renegotiation to reactivate |
+| **Repeal** | Type "REPEAL" to confirm, treaty archived permanently |
 
-**Output Expected:**
-- Modification flow specification
-- Probation → Renegotiation journey map
-- UI wireframes for treaty editing
-- Amendment vs Repeal criteria
+**Schema Additions:**
+
+```sql
+-- New table: treaty_history (audit log)
+CREATE TABLE treaty_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  treaty_id UUID NOT NULL REFERENCES treaties(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id),
+  version INT NOT NULL,
+  title TEXT NOT NULL,
+  terms_text TEXT NOT NULL,
+  logic_hooks JSONB NOT NULL,
+  change_type TEXT CHECK (change_type IN ('minor', 'major', 'pause', 'suspend', 'repeal')),
+  breach_count_at_log INT,
+  change_reason TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Additions to treaties table
+ALTER TABLE treaties
+ADD COLUMN version INT DEFAULT 1,
+ADD COLUMN parent_treaty_id UUID REFERENCES treaties(id),
+ADD COLUMN last_amended_at TIMESTAMPTZ;
+```
+
+**Reconciliation:** See `docs/analysis/DEEP_THINK_RECONCILIATION_RQ024.md`
+
+**Tasks Extracted:** A-11, A-12, B-16, B-17, C-13, D-11, D-12, D-13, D-14 (9 tasks)
 
 **Depends On:** RQ-021 ✅ COMPLETE, PD-115 ✅ RESOLVED
 
@@ -3209,6 +3251,439 @@ What happens to users who already activated old templates?
 
 ---
 
+### RQ-028: Archetype Template Definitions & Content Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | What are the precise definitions, embeddings, and content libraries for each of the 12 Archetype Templates? |
+| **Status** | ✅ COMPLETE |
+| **Priority** | **CRITICAL** — Blocks F-06, F-13, F-14, content creation pipeline |
+| **Completed** | 10 January 2026 (Deep Think Reconciliation) |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
+
+**Key Findings:**
+
+1. **12 Global Archetypes Confirmed** — Psychologically grounded in Self-Determination Theory and Big Five/Pearson models
+2. **6-Dim Vectors Defined** — Each archetype has a complete `[Reg, Auto, Action, Temp, Perf, Rhythm]` vector
+3. **Cosine Similarity Matching** — Facet names matched via nearest neighbor
+4. **Fallback Strategy** — If similarity < 0.65, default to Builder (configurable) with "flagForReview"
+5. **User Override** — Users can manually change archetype in Settings
+
+**The 12 Archetypes:**
+
+| Archetype | Core Drive | Dimension Vector |
+|-----------|------------|------------------|
+| The Builder | Achievement | `[0.9, 0.2, 0.8, 0.9, 0.4, 0.3]` |
+| The Nurturer | Connection | `[-0.6, -0.4, 0.2, 0.4, 0.3, 0.7]` |
+| The Warrior | Discipline | `[0.8, 0.5, 0.9, 0.6, 0.7, 0.5]` |
+| The Scholar | Mastery | `[0.3, 0.4, -0.5, 0.9, 0.7, 0.2]` |
+| The Healer | Balance | `[-0.5, -0.2, 0.1, 0.6, 0.2, 0.8]` |
+| The Creator | Expression | `[0.7, 0.9, 0.4, 0.3, 0.5, -0.4]` |
+| The Guardian | Stability | `[-0.9, -0.7, 0.5, 0.7, 0.4, 0.9]` |
+| The Explorer | Novelty | `[0.9, 0.8, 0.6, -0.3, -0.2, -0.5]` |
+| The Sage | Wisdom | `[0.1, 0.3, -0.8, 0.8, 0.5, 0.4]` |
+| The Leader | Influence | `[0.6, 0.1, 0.7, 0.6, 0.5, 0.8]` |
+| The Devotee | Faith | `[-0.3, -0.6, 0.2, 0.5, 0.3, 1.0]` |
+| The Rebel | Liberation | `[0.5, 1.0, 0.8, -0.6, -0.4, -0.7]` |
+
+**Schema Delivered:**
+```sql
+CREATE TABLE archetype_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  description TEXT NOT NULL,
+  dimension_vector FLOAT[] NOT NULL CHECK (array_length(dimension_vector, 1) = 6),
+  embedding VECTOR(768),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Sub-Questions Answered:**
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | Psychological definitions? | ✅ Based on SDT + Big Five |
+| 2 | 768-dim embeddings? | ✅ Auto-generated from descriptions |
+| 3 | 6-dim vectors? | ✅ Provided for all 12 |
+| 4 | Validation strategy? | ✅ Configurable threshold + flagForReview |
+| 5 | User override? | ✅ Yes, in Settings |
+| 6 | Edge cases? | ✅ Default to Builder, flag for review |
+
+**Depends On:** RQ-005 ✅ COMPLETE, RQ-006 ✅ COMPLETE
+
+---
+
+### RQ-029: Ideal Dimension Vector Curation Process
+
+| Field | Value |
+|-------|-------|
+| **Question** | How do we systematically assign ideal_dimension_vectors to the 50+ habit templates? |
+| **Status** | ✅ COMPLETE |
+| **Priority** | HIGH — Blocks psychometric re-ranking accuracy |
+| **Completed** | 10 January 2026 (Deep Think Reconciliation) |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
+
+**Key Findings:**
+
+1. **Hybrid Workflow** — DeepSeek V3.2 generates draft vectors; humans audit
+2. **Batch Process** — Generate → CSV → Expert Audit → Ingest
+3. **Multi-Polar Handling** — Neutralize (score = 0.0) if habit is both poles
+
+**DeepSeek Prompt (System):**
+```text
+Role: Psychometrician.
+Task: Map habit to 6 dimensions (-1.0 to 1.0).
+Input: "[Habit Title]" ([Description]).
+Dimensions: [Regulatory, Autonomy, Action, Temporal, Perfectionism, Rhythmicity]
+
+OUTPUT JSON: {
+  "vector": [0.2, 0.8, -0.4, -0.2, 0.0, -0.3],
+  "rationale": "High Rebel (Autonomy) due to free-form nature."
+}
+```
+
+**Sub-Questions Answered:**
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | LLM-assisted derivation? | ✅ DeepSeek V3.2 with audit |
+| 2 | Validation process? | ✅ Human expert review |
+| 3 | Population learning? | Deferred (future RQ) |
+| 4 | Multi-polar habits? | ✅ Neutralize to 0.0 |
+| 5 | Curator format? | ✅ JSON with rationale |
+
+**Depends On:** RQ-005 ✅ COMPLETE, CD-005 (6-dimension model)
+
+---
+
+### RQ-030: Preference Embedding Update Mechanics
+
+| Field | Value |
+|-------|-------|
+| **Question** | How exactly does the preference embedding get updated, and what are the behavioral implications? |
+| **Status** | ✅ COMPLETE |
+| **Priority** | MEDIUM — Affects long-term personalization quality |
+| **Completed** | 10 January 2026 (Deep Think Reconciliation) |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
+
+**Key Findings:**
+
+1. **Rocchio Algorithm with Trinity Anchor** — Industry-standard approach with drift prevention
+2. **Alpha Values:** Ban = 0.15 (strong negative), Adopt = 0.05 (weak positive)
+3. **Anchor Weight:** 30% pull towards Day 1 Trinity Seed
+4. **User Visibility:** NO — 768-dim vectors are noise to users (PD-122 RESOLVED)
+
+**Algorithm (Dart):**
+```dart
+List<double> updatePreference(List<double> current, List<double> habitVec, Action action) {
+  // 1. Learning Step (Rocchio)
+  double weight = (action == Action.ban) ? -0.15 : 0.05;
+  List<double> learnt = vectorAdd(current, vectorScale(habitVec, weight));
+
+  // 2. Anchoring Step (Drift Prevention)
+  List<double> anchored = vectorAdd(
+      vectorScale(learnt, 0.7),
+      vectorScale(trinitySeed, 0.3)
+  );
+  return vectorNormalize(anchored);
+}
+```
+
+**Schema Delivered:**
+```sql
+CREATE TABLE preference_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  embedding VECTOR(768),
+  trinity_seed VECTOR(768), -- Fixed anchor from Onboarding
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Sub-Questions Answered:**
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | α for ban? | ✅ 0.15 (configurable) |
+| 2 | Drift prevention? | ✅ 30% Trinity Seed anchor |
+| 3 | User visibility? | ✅ NO (PD-122 resolved) |
+| 4 | Recompute frequency? | ✅ Every feedback signal |
+| 5 | Trinity Seed interaction? | ✅ 30% anchor weight |
+| 6 | Reset mechanism? | Future feature (not blocking) |
+
+**Depends On:** RQ-005 ✅ COMPLETE
+
+---
+
+### RQ-031: Pace Car Threshold Validation
+
+| Field | Value |
+|-------|-------|
+| **Question** | Is 1 recommendation/day and 5-habit threshold optimal, or should these be dynamic? |
+| **Status** | ✅ COMPLETE |
+| **Priority** | MEDIUM — UX quality, cognitive load |
+| **Completed** | 10 January 2026 (Deep Think Reconciliation) |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
+
+**Key Findings:**
+
+1. **Dynamic Capacity Model** — Based on Cognitive Load, not fixed habit count
+2. **Building vs Maintenance** — `graceful_score < 0.8` = Building (effortful)
+3. **Thresholds:**
+   - Seed users (ICS < 1.2): Max **3** Building habits
+   - Sapling/Oak users: Max **5** Building habits
+   - Maintenance habits: **Unlimited**
+
+**Logic:**
+```dart
+bool shouldShowRecommendation(User user) {
+  int buildingCount = user.habits.where((h) => h.gracefulScore < 0.8).length;
+  int cap = (user.icsScore < 1.2) ? 3 : 5;
+  return buildingCount < cap;
+}
+```
+
+**Sub-Questions Answered:**
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | Adapt to engagement? | ✅ Yes, via ICS tiers |
+| 2 | 5 habits threshold? | ✅ Refined: Building vs Maintenance |
+| 3 | Multi-facet users? | Applies per-facet |
+| 4 | On-demand requests? | ✅ User can browse explicitly |
+| 5 | New user velocity? | ✅ Conservative (cap 3 Building) |
+
+**Depends On:** RQ-005 ✅ COMPLETE
+
+---
+
+### RQ-032: ICS Integration with Existing Metrics
+
+| Field | Value |
+|-------|-------|
+| **Question** | How does Identity Consolidation Score (ICS) integrate with existing hexis_score and graceful_score? |
+| **Status** | ✅ COMPLETE |
+| **Priority** | HIGH — Prevents metric fragmentation |
+| **Completed** | 10 January 2026 (Deep Think Reconciliation) |
+| **Reconciliation** | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
+
+**Key Findings:**
+
+1. **hexis_score Audit:** Not implemented in code — documentation-only term. Safe to deprecate.
+2. **graceful_score:** Keep — active in JITAI and Pace Car
+3. **ICS is the Master Metric:** Logarithmic scale rewards longevity
+
+**ICS Formula:**
+```
+ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
+```
+
+- **AvgConsistency:** Average `graceful_score` of active habits for facet
+- **TotalVotes:** Cumulative habit completions for facet
+- **log10:** Prevents runaway scores; rewards longevity over volume
+
+**Visual Tiers:**
+
+| Tier | ICS Range | Approx Votes | UI Representation |
+|------|-----------|--------------|-------------------|
+| Seed | < 1.2 | ~15 | Sprout icon |
+| Sapling | 1.2 – 3.0 | 15-100 | Small tree |
+| Oak | ≥ 3.0 | 100+ | Full tree |
+
+**Metric Consolidation:**
+
+| Metric | Status | Role |
+|--------|--------|------|
+| hexis_score | ❌ DEPRECATED | Never implemented |
+| graceful_score | ✅ KEEP | Component of ICS |
+| ICS | ✅ NEW | Master facet metric |
+
+**Sub-Questions Answered:**
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | hexis_score? | ✅ Audit: Not in code. Deprecate. |
+| 2 | Replace or coexist? | ✅ ICS replaces hexis_score |
+| 3 | Votes definition? | ✅ Cumulative habit completions |
+| 4 | Consistency calc? | ✅ Avg graceful_score |
+| 5 | ICS scope? | ✅ Per-facet |
+| 6 | Display? | ✅ Seed/Sapling/Oak tiers |
+
+**Depends On:** RQ-007 ✅ COMPLETE
+
+---
+
+### RQ-033: Streak Philosophy & Gamification
+
+| Field | Value |
+|-------|-------|
+| **Question** | Should The Pact use streak counts or rolling consistency metrics? How should gamification align with habit psychology? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Philosophical tension between code and messaging |
+| **Blocking** | PD-002 (Streaks vs Rolling Consistency) |
+
+**Context:**
+- Codebase uses streaks heavily (`currentStreak`, `longestStreak` properties)
+- Messaging says "streaks are vanity metrics"
+- This tension needs resolution before gamification features
+
+**Sub-Questions:**
+1. What does habit psychology research say about streak vs consistency metrics?
+2. Do streaks help or harm long-term habit formation?
+3. How can we gamify without creating streak anxiety?
+4. Should we track both but display one?
+5. What does "Graceful Consistency" philosophy mean for gamification?
+
+**Code References:**
+- `lib/data/services/consistency_service.dart` — Implements "Graceful Consistency"
+- `lib/data/models/habit.dart` — `currentStreak`, `longestStreak` properties
+
+---
+
+### RQ-034: Sherlock Conversation Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | What is the optimal structure for the Sherlock onboarding conversation? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core onboarding experience |
+| **Blocking** | PD-101 (Sherlock Prompt Overhaul) |
+| **Depends On** | RQ-037 (Holy Trinity Validation) |
+
+**Context:**
+- Current Sherlock prompt is simplistic with no turn limit or success criteria
+- Quality of extracted Holy Trinity (Anti-Identity, Archetype, Resistance Lie) is uncertain
+- Need structured conversation design for better extraction
+
+**Sub-Questions:**
+1. How many conversation turns are optimal for personality extraction?
+2. What success criteria should trigger conversation completion?
+3. How to balance natural conversation with data extraction?
+4. What fallback strategies if extraction quality is low?
+5. How to handle users who give minimal responses?
+
+**Code References:**
+- `lib/config/ai_prompts.dart:717-745` — Main Sherlock prompt
+- `lib/data/services/ai/prompt_factory.dart:47-67` — `_sherlockPrompt` constant
+
+---
+
+### RQ-035: Sensitivity Detection Framework
+
+| Field | Value |
+|-------|-------|
+| **Question** | How should The Pact detect and handle sensitive goals (addiction, trauma, private issues)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — User safety and privacy |
+| **Blocking** | PD-103 (Sensitivity Detection) |
+
+**Context:**
+- No sensitivity detection logic exists in current codebase
+- All habits treated equally regardless of sensitivity
+- Witness invites shown to all users (potential privacy issue)
+
+**Sub-Questions:**
+1. What categories of goals should be flagged as sensitive?
+2. How to detect sensitivity without invasive keyword lists?
+3. What privacy protections should apply to sensitive habits?
+4. Should sensitive habits have different witness rules?
+5. How to handle AI coaching for addiction/trauma goals safely?
+6. What demographic/contextual signals inform sensitivity?
+
+**Privacy Considerations:**
+- Must be privacy-preserving (no external data sharing)
+- User should be able to override sensitivity classification
+- Sensitive data should have stricter RLS policies
+
+---
+
+### RQ-036: Chamber Visual Design Patterns
+
+| Field | Value |
+|-------|-------|
+| **Question** | What visual design and interaction patterns should "The Chamber" (Council session UI) use? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Core to Council AI experience |
+| **Blocking** | PD-120 (The Chamber Visual Design) |
+| **Depends On** | RQ-016 ✅ COMPLETE (Council AI) |
+
+**Context:**
+- Deep Think specified "The Chamber" as dark mode overlay with pulsing avatars
+- No detailed visual specifications provided
+- Key UX moment — where identities negotiate treaties
+
+**Sub-Questions:**
+1. How should facet avatars appear? (Generated? User-uploaded? Archetypal icons?)
+2. How does "pulsing" indicate speaking? (Glow? Scale? Border animation?)
+3. What visual hierarchy shows which facet is speaking?
+4. How to represent AI-generated dialogue vs user-written content?
+5. What dark UI patterns work best for psychological depth?
+6. How to make negotiations feel dramatic without being stressful?
+
+**Design References:**
+- Dark UI patterns from meditation apps (Headspace, Calm)
+- Character dialogue systems in games (Persona, Disco Elysium)
+- Council/voting UIs in strategy games
+
+---
+
+### RQ-037: Holy Trinity Model Validation
+
+| Field | Value |
+|-------|-------|
+| **Question** | Is the 3-trait model (Anti-Identity, Archetype, Resistance Lie) sufficient for personality capture? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core to personalization strategy |
+| **Blocking** | PD-003 (Holy Trinity Validity) |
+
+**Context:**
+- Holy Trinity implemented but extraction quality is uncertain
+- Model guides Sherlock prompts and coaching personalization
+- Need validation before building more on this foundation
+
+**Sub-Questions:**
+1. Does research support a 3-trait model for habit psychology?
+2. Are Anti-Identity, Archetype, Resistance Lie the right 3 traits?
+3. How do we measure extraction quality?
+4. What validation metrics prove the model is working?
+5. Should traits be revised based on empirical usage data?
+6. How does this relate to Big Five, SDT, or other validated models?
+
+**Code References:**
+- `lib/domain/entities/psychometric_profile.dart:17-29` — Holy Trinity fields
+- `lib/data/services/ai/prompt_factory.dart:119-170` — Usage in prompts
+
+---
+
+### RQ-038: JITAI Component Allocation Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | Which JITAI components should be hardcoded vs AI-learned? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Affects intervention effectiveness |
+| **Blocking** | PD-102 (JITAI Hardcoded vs AI) |
+
+**Context:**
+- Current JITAI is hybrid — hardcoded weights with Thompson Sampling
+- Question is optimal balance between determinism and adaptability
+- CD-016 (DeepSeek V3.2) provides AI capability but doesn't specify usage
+
+**Sub-Questions:**
+1. What does JITAI research say about hardcoded vs learned components?
+2. Which decisions need consistency (hardcoded)?
+3. Which decisions benefit from personalization (learned)?
+4. How much training data is needed before learned components are reliable?
+5. What's the cold-start strategy for new users?
+6. How do Thompson Sampling and population learning interact?
+
+**Code References:**
+- `lib/domain/services/jitai_decision_engine.dart` — Main orchestrator
+- `lib/domain/services/hierarchical_bandit.dart` — Thompson Sampling
+- `lib/domain/services/population_learning.dart` — Cross-user learning
+
+---
+
 ## Implementation Tasks from Research
 
 **Purpose:** Track actionable items generated by completed research.
@@ -3245,6 +3720,8 @@ What happens to users who already activated old templates?
 | A-08 | Create `population_resistance_clusters` table (768-dim centroids) | MEDIUM | 🔴 NOT STARTED | RQ-019 | Database | N/A |
 | A-09 | Implement RLS policies for all new tables | HIGH | 🔴 NOT STARTED | RQ-019 | Database | N/A |
 | A-10 | Add chronotype question to onboarding flow | HIGH | 🔴 NOT STARTED | RQ-012 | Database | N/A |
+| A-11 | Create `treaty_history` table (amendment audit log) | HIGH | 🔴 NOT STARTED | RQ-024 | Database | N/A |
+| A-12 | Add `version`, `parent_treaty_id`, `last_amended_at` to treaties | HIGH | 🔴 NOT STARTED | RQ-024 | Database | N/A |
 
 ---
 
@@ -3267,6 +3744,8 @@ What happens to users who already activated old templates?
 | B-13 | Pass 6-float dimension vector to Thompson Sampling | HIGH | 🔴 NOT STARTED | RQ-004 | Service | N/A |
 | B-14 | Implement Holy Trinity "Emergency Mode" | MEDIUM | 🔴 NOT STARTED | RQ-004 | Service | N/A |
 | B-15 | Create population cluster update job (nightly) | LOW | 🔴 NOT STARTED | RQ-019 | Edge Function | DeepSeek V3.2 |
+| B-16 | Implement Probation notification journey (T+0 to T+96h) | HIGH | 🔴 NOT STARTED | RQ-024 | Service | N/A |
+| B-17 | Implement Auto-suspend logic (5+ breaches OR 3 dismissed) | HIGH | 🔴 NOT STARTED | RQ-024 | Service | N/A |
 
 ---
 
@@ -3286,6 +3765,7 @@ What happens to users who already activated old templates?
 | C-10 | Build Facet Agent Templates (4 voice archetypes) | HIGH | 🔴 NOT STARTED | RQ-022 | Content | N/A |
 | C-11 | Implement Audiobook Pattern TTS (single narrator, SSML prosody) | HIGH | 🔴 NOT STARTED | RQ-016, RQ-022 | Service | Gemini 2.5 Flash TTS |
 | C-12 | Implement Council activation keyword regex detection | MEDIUM | 🔴 NOT STARTED | RQ-020 | Service | N/A |
+| C-13 | Wire Council reconvene for major amendments (pass treaty context) | HIGH | 🔴 NOT STARTED | RQ-024 | Service | N/A |
 
 ---
 
@@ -3303,6 +3783,10 @@ What happens to users who already activated old templates?
 | D-08 | Post-intervention emotion capture UI | MEDIUM | 🔴 NOT STARTED | RQ-002 | Widget | N/A |
 | D-09 | Micro-feedback prompt (👍/👎) on interventions | LOW | 🔴 NOT STARTED | RQ-002 | Widget | N/A |
 | D-10 | Track notification open source (push vs organic) | MEDIUM | 🔴 NOT STARTED | RQ-003 | Analytics | N/A |
+| D-11 | Implement Treaty Amendment Editor (minor amendments) | HIGH | 🔴 NOT STARTED | RQ-024 | Widget | N/A |
+| D-12 | Implement Re-Ratification ceremony (3s hold + haptic) | HIGH | 🔴 NOT STARTED | RQ-024 | Widget | N/A |
+| D-13 | Implement Pause Treaty flow (modal + date picker) | MEDIUM | 🔴 NOT STARTED | RQ-024 | Widget | N/A |
+| D-14 | Implement Repeal Treaty flow (type-to-confirm) | MEDIUM | 🔴 NOT STARTED | RQ-024 | Widget | N/A |
 
 ---
 
@@ -3323,37 +3807,152 @@ What happens to users who already activated old templates?
 
 ---
 
+### Phase F: Identity Coach System
+
+*Added: 10 January 2026 | Source: RQ-005, RQ-006, RQ-007 | Decision: PD-125 (50 habits at launch)*
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| F-01 | Create `preference_embeddings` table (768-dim vector per user) | HIGH | 🔴 NOT STARTED | RQ-005 | Database | N/A |
+| F-02 | Create `identity_roadmaps` table (user aspiration tracking) | **CRITICAL** | 🔴 NOT STARTED | RQ-007 | Database | N/A |
+| F-03 | Create `roadmap_nodes` table (progression stages) | **CRITICAL** | 🔴 NOT STARTED | RQ-007 | Database | N/A |
+| F-04 | Add `ideal_dimension_vector` (6-dim) to `habit_templates` | HIGH | 🔴 NOT STARTED | RQ-005 | Database | N/A |
+| F-05 | Add `archetype_template_id` FK to `identity_facets` | HIGH | 🔴 NOT STARTED | RQ-006 | Database | N/A |
+| F-06 | Create `archetype_templates` reference table (12 presets) | HIGH | 🔴 NOT STARTED | RQ-006 | Database | N/A |
+| F-07 | Implement `generateRecommendations()` Edge Function (The Architect) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Supabase Edge | DeepSeek V3.2 |
+| F-08 | Implement Stage 1: Semantic retrieval (768-dim, pgvector) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Backend | gemini-embedding-001 |
+| F-09 | Implement Stage 2: Psychometric re-ranking (6-dim scoring) | **CRITICAL** | 🔴 NOT STARTED | RQ-005 | Backend | Hardcoded |
+| F-10 | Implement Architect scheduler (nightly/weekly batch) | HIGH | 🔴 NOT STARTED | RQ-005 | Backend | N/A |
+| F-11 | Implement feedback signal tracking (adopt/dismiss/snooze) | HIGH | 🔴 NOT STARTED | RQ-005 | Service | N/A |
+| F-12 | Extend Sherlock Day 3: "Future Self Interview" for roadmap seeding | HIGH | 🔴 NOT STARTED | RQ-007 | Onboarding | DeepSeek V3.2 |
+| F-13 | Create 50 universal habit templates (with dual embeddings) | **CRITICAL** | 🔴 NOT STARTED | RQ-006, PD-125 | Content | gemini-embedding-001 |
+| F-14 | Create 12 Archetype Template presets (dimension vectors) | HIGH | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-15 | Create 12 Framing Templates (dimension × poles) | HIGH | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-16 | Create 4 Ritual Templates (Morning/Evening/Transition/Weekend) | MEDIUM | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+| F-17 | Implement `ProactiveRecommendation` Dart model class | HIGH | 🔴 NOT STARTED | RQ-005 | Model | N/A |
+| F-18 | Implement `IdentityRoadmapService` (CRUD + ICS calculation) | HIGH | 🔴 NOT STARTED | RQ-007 | Service | N/A |
+| F-19 | Implement Pace Car rate limiting (max 1/day, <5 active habits) | HIGH | 🔴 NOT STARTED | RQ-005 | Service | N/A |
+| F-20 | Create regression messaging templates (The Dip responses) | MEDIUM | 🔴 NOT STARTED | RQ-006 | Content | N/A |
+
+---
+
+### Phase G: Identity Coach Intelligence (Phase 2)
+
+*Added: 10 January 2026 | Source: RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 | Decisions: PD-121, PD-122, PD-123, PD-124*
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| G-01 | Add `ics_score` FLOAT field to `identity_facets` table | HIGH | 🔴 NOT STARTED | RQ-032 | Database | N/A |
+| G-02 | Add `typical_energy_state` TEXT field to `identity_facets` (CD-015 4-state enum) | HIGH | 🔴 NOT STARTED | RQ-031, PD-123 | Database | N/A |
+| G-03 | Add `trinity_seed` VECTOR(768) field to `preference_embeddings` | HIGH | 🔴 NOT STARTED | RQ-030 | Database | N/A |
+| G-04 | Implement `RocchioUpdater` service (α=0.15 ban, α=0.05 adopt, 30% anchor) | **CRITICAL** | 🔴 NOT STARTED | RQ-030 | Service | N/A |
+| G-05 | Implement `ICSCalculator` service (AvgConsistency × log10(Votes+1)) | HIGH | 🔴 NOT STARTED | RQ-032 | Service | N/A |
+| G-06 | Implement `ArchetypeMatcher` service (cosine similarity, threshold 0.65) | **CRITICAL** | 🔴 NOT STARTED | RQ-028 | Service | gemini-embedding-001 |
+| G-07 | Update F-19 `PaceCar` to use Building vs Maintenance model (graceful_score < 0.8) | HIGH | 🔴 NOT STARTED | RQ-031 | Service | N/A |
+| G-08 | Populate `archetype_templates` with 12 validated archetype definitions | **CRITICAL** | 🔴 NOT STARTED | RQ-028, PD-121 | Content | N/A |
+| G-09 | Run DeepSeek dimension curation prompt on 50 habit templates | HIGH | 🔴 NOT STARTED | RQ-029 | Content | DeepSeek V3.2 |
+| G-10 | Audit and validate dimension vectors for all habits | HIGH | 🔴 NOT STARTED | RQ-029 | Content | N/A |
+| G-11 | Add `created_at` timestamp + 7-day TTL logic to recommendation cards | MEDIUM | 🔴 NOT STARTED | RQ-031, PD-124 | Service | N/A |
+| G-12 | Implement ICS visual tier mapping (Seed/Sapling/Oak) | MEDIUM | 🔴 NOT STARTED | RQ-032 | UI | N/A |
+| G-13 | Deprecate `hexis_score` in GLOSSARY.md (mark as replaced by ICS) | LOW | 🔴 NOT STARTED | RQ-032 | Documentation | N/A |
+| G-14 | Create archetype override UI in Settings (user can change assignment) | LOW | 🔴 NOT STARTED | RQ-028 | UI | N/A |
+
+---
+
+### Phase H: Constellation & Airlock (psyOS UX) — 🔴 BLOCKED
+
+*Added: 10 January 2026 | Source: RQ-017 ✅, RQ-018 ✅ | Decisions: PD-108 ✅, PD-110 ✅, PD-112 ✅*
+
+**⚠️ BLOCKED BY PHASE A:** These tasks require `identity_facets` and `identity_topology` tables which **DO NOT EXIST**.
+
+| Reality Check | Status |
+|---------------|--------|
+| `identity_facets` table | ❌ DOES NOT EXIST |
+| `identity_topology` table | ❌ DOES NOT EXIST |
+| Audio files (assets/sounds/) | ❌ 0 BYTES (placeholders) |
+| Skill Tree fallback | ✅ Production-ready (549 lines) |
+
+**Unblocking Path:** A-01 → A-02 → G-01 → G-02 → Phase H tasks become actionable
+**Red Team Critique:** `docs/analysis/RED_TEAM_CRITIQUE_RQ017_RQ018.md`
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| H-01 | Implement `ConstellationPainter` (CustomPainter, Canvas) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-02 | Implement orbit distance formula (ICS-based: `MaxRadius - ICS*30dp`) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-03 | Implement planet radius formula (`16dp + clamp(log(votes)*4, 0, 24)`) | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-04 | Implement Ghost Mode (7-day threshold, desaturation shader) | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-05 | Implement Wobble animation (friction-based: `sin(t*20) * friction * 4px`) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-06 | Implement Tether visualization (red line for `friction > 0.6`) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-07 | Implement Settled State (0 FPS when idle 3s) | **CRITICAL** | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-08 | Add RepaintBoundary optimization for starfield | HIGH | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-09 | Implement progressive disclosure logic (Day 1→7→30) | HIGH | 🔴 BLOCKED | RQ-017 | Service | N/A |
+| H-10 | Implement `TransitionDetector` service (Calendar + Activity) | **CRITICAL** | 🔴 NOT STARTED | RQ-018 | Service | N/A |
+| H-11 | Implement `AirlockOverlay` widget (5-Second Seal UX) | **CRITICAL** | 🔴 BLOCKED | RQ-018 | Widget | N/A |
+| H-12 | Implement `HapticService` (Android VibrationEffect wrapper) | HIGH | 🔴 NOT STARTED | RQ-018 | Service | N/A |
+| H-13 | Bundle stock audio assets (4 loops, <500KB) — **CURRENT: 0 bytes** | HIGH | 🔴 NOT STARTED | RQ-018 | Asset | N/A |
+| H-14 | Integrate Airlock with Treaty system (mandatory if treaty exists) | HIGH | 🔴 BLOCKED | RQ-018 | Service | N/A |
+| H-15 | Implement conflict modal (tether tap → Council option) | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+| H-16 | Implement tap-planet drill-down navigation | MEDIUM | 🔴 BLOCKED | RQ-017 | Widget | N/A |
+
+---
+
+### Phase P: Process & Engineering (RQ-008 + RQ-009)
+
+*Added: 10 January 2026 | Source: RQ-008 (UI Logic Separation), RQ-009 (LLM Coding Approach)*
+
+| # | Task | Priority | Status | Source | Component | AI Model |
+|---|------|----------|--------|--------|-----------|----------|
+| P-01 | Update AI_AGENT_PROTOCOL.md with Protocol 2 (Context-Adaptive) | **CRITICAL** | ✅ DONE | RQ-008,009 | Documentation | N/A |
+| P-02 | Create Boundary Decision Tree documentation | HIGH | ✅ DONE | RQ-008 | Documentation | N/A |
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | 🔴 NOT STARTED | RQ-008 | Config | N/A |
+| P-04 | Create ChangeNotifier Controller template | HIGH | 🔴 NOT STARTED | RQ-008 | Template | N/A |
+| P-05 | Document Side Effect pattern with code example | HIGH | ✅ DONE | RQ-008 | Documentation | N/A |
+| P-06 | Add Riverpod to pubspec.yaml for new features | MEDIUM | 🔴 NOT STARTED | RQ-008 | Config | N/A |
+| P-07 | Create "Logic vs Visual" task classification guide | HIGH | ✅ DONE | RQ-009 | Documentation | N/A |
+| P-08 | Define "Logic Leakage" metric tracking | MEDIUM | 🔴 NOT STARTED | RQ-008 | Analytics | N/A |
+
+**Note:** P-01, P-02, P-05, P-07 were completed as part of Protocol 9 reconciliation. Remaining tasks (P-03, P-04, P-06, P-08) are implementation work.
+
+---
+
 ### Pending Research Tasks
 
 These tasks cannot be fully specified until research completes:
 
 | Source | Status | Blocks Tasks |
 |--------|--------|--------------|
-| RQ-013 (Identity Topology) | 🔴 NEEDS RESEARCH | Facet graph implementation, conflict resolution |
-| RQ-014 (State Economics) | 🔴 NEEDS RESEARCH | Energy state switching, PD-117 |
-| RQ-015 (Polymorphic Habits) | 🔴 NEEDS RESEARCH | Habit completion encoding |
-| RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | Dashboard solar system visualization |
-| RQ-018 (Airlock & Priming) | 🔴 NEEDS RESEARCH | State transition UI, audio priming |
+| RQ-008 (UI Logic Separation) | ✅ COMPLETE | P-01 to P-08 extracted |
+| RQ-009 (LLM Coding Approach) | ✅ COMPLETE | Protocol 2 updated |
 | RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH | Privacy policy, opt-in UI, PD-116 |
-| RQ-024 (Treaty Modification) | 🔴 NEEDS RESEARCH | E-05, E-06 (modification flow) |
+| RQ-024 (Treaty Modification) | ✅ COMPLETE | A-11, A-12, B-16, B-17, C-13, D-11-D-14 extracted |
 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | E-01, E-02 (token system) |
-| RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | E-03, E-04 (audio assets) |
+| RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | E-03, E-04 (audio assets), H-13 enhancement |
 | RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH | E-07 (versioning schema) |
 
 ---
 
 ### Implementation Summary
 
-| Phase | Total Tasks | CRITICAL | HIGH | MEDIUM | LOW |
-|-------|-------------|----------|------|--------|-----|
-| **A: Schema** | 10 | 6 | 2 | 2 | 0 |
-| **B: Intelligence** | 15 | 5 | 6 | 3 | 1 |
-| **C: Council AI** | 12 | 5 | 6 | 1 | 0 |
-| **D: UX** | 10 | 2 | 5 | 2 | 1 |
-| **E: Polish** | 10 | 0 | 2 | 5 | 3 |
-| **TOTAL** | **57** | **18** | **21** | **13** | **5** |
+| Phase | Total Tasks | CRITICAL | HIGH | MEDIUM | LOW | Done |
+|-------|-------------|----------|------|--------|-----|------|
+| **A: Schema** | 12 | 6 | 4 | 2 | 0 | 0 |
+| **B: Intelligence** | 17 | 5 | 8 | 3 | 1 | 0 |
+| **C: Council AI** | 13 | 5 | 7 | 1 | 0 | 0 |
+| **D: UX** | 14 | 2 | 7 | 4 | 1 | 0 |
+| **E: Polish** | 10 | 0 | 2 | 5 | 3 | 0 |
+| **F: Identity Coach** | 20 | 5 | 12 | 3 | 0 | 0 |
+| **G: Identity Coach 2** | 14 | 3 | 7 | 2 | 2 | 0 |
+| **H: Constellation/Airlock** | 16 | 5 | 6 | 4 | 1 | 0 |
+| **P: Process & Engineering** | 8 | 1 | 5 | 2 | 0 | 4 |
+| **TOTAL** | **124** | **32** | **58** | **26** | **8** | **4** |
 
 **Critical Path:** A-01 → A-02/A-03/A-05 → B-01 → B-06/B-07 → C-01/C-03 → C-04/C-05 → D-01/D-02
+
+**Identity Coach Path:** F-02/F-03 → F-06 → F-07/F-08/F-09 → F-13 → F-10
+
+**Constellation Path:** G-01 (ICS field) → H-02 (orbit formula) → H-01 (painter) → H-07 (settled state)
+
+**Process Path (Completed):** P-01 ✅ → P-02 ✅ → P-05 ✅ → P-07 ✅ (remaining: P-03, P-04, P-06, P-08)
 
 ---
 

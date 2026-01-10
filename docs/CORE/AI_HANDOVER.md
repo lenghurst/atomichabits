@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 10 January 2026 (Documentation Unification + CLAUDE.md Entry Point)
+> **Last Updated:** 10 January 2026 (6 NEW RQs created: RQ-033 through RQ-038 for pending PDs)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,12 +36,464 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
+| **Session ID** | `claude/setup-pact-context-1i4ze` |
+| **Date** | 10 January 2026 (continued) |
+| **Agent** | Claude (Opus 4.5) |
+| **Focus** | Outstanding RQ Audit + New RQ Creation for Pending PDs |
+
+### What Was Accomplished (This Latest Session)
+
+**17. Created 6 New Research Questions (RQ-033 through RQ-038)**
+
+| New RQ | Title | Blocking PD | Priority |
+|--------|-------|-------------|----------|
+| **RQ-033** | Streak Philosophy & Gamification | PD-002 | HIGH |
+| **RQ-034** | Sherlock Conversation Architecture | PD-101 | HIGH |
+| **RQ-035** | Sensitivity Detection Framework | PD-103 | HIGH |
+| **RQ-036** | Chamber Visual Design Patterns | PD-120 | MEDIUM |
+| **RQ-037** | Holy Trinity Model Validation | PD-003 | HIGH |
+| **RQ-038** | JITAI Component Allocation Strategy | PD-102 | MEDIUM |
+
+**Rationale:** User requested new RQs for pending PDs that lacked research blockers. These 6 RQs address fundamental gaps that were blocking product decisions.
+
+**Documents Updated:**
+- `index/RQ_INDEX.md` — Added 6 new RQs, updated stats (38 total, 28 complete = 74%)
+- `index/PD_INDEX.md` — Linked PDs to new blocking RQs, updated Resolution Chain
+- `RESEARCH_QUESTIONS.md` — Full RQ entries with sub-questions, context, code refs
+
+**Status Summary:**
+
+| Category | Complete | Pending | Change |
+|----------|----------|---------|--------|
+| CDs | 18/18 (100%) | 0 | — |
+| RQs | 28/38 (74%) | 10 | +6 NEW (RQ-033-038) |
+| PDs | 15/31 (48%) | 16 | 8 now blocked by new RQs |
+| Tasks | 4/124 (3%) | 120 | — |
+
+**Outstanding RQs (10 total):**
+
+| RQ | Title | Priority | Blocking |
+|----|-------|----------|----------|
+| RQ-010 | Permission Data Philosophy | HIGH | — |
+| RQ-023 | Population Learning Privacy | MEDIUM | RQ-019 |
+| RQ-025 | Summon Token Economy | HIGH | RQ-016 |
+| RQ-026 | Sound Design & Haptic | MEDIUM | — |
+| RQ-027 | Treaty Template Versioning | LOW | RQ-021 |
+| **RQ-033** | Streak Philosophy | HIGH | — |
+| **RQ-034** | Sherlock Conversation | HIGH | RQ-037 |
+| **RQ-035** | Sensitivity Detection | HIGH | — |
+| **RQ-036** | Chamber Visual Design | MEDIUM | RQ-016 |
+| **RQ-037** | Holy Trinity Validation | HIGH | — |
+| **RQ-038** | JITAI Component Allocation | MEDIUM | — |
+
+**Key Insight:** The outstanding RQs fall into three categories:
+1. **Engineering Process** (RQ-033, RQ-037, RQ-038) — Core to implementation quality
+2. **UX/Polish** (RQ-026, RQ-034, RQ-036) — Pre-launch refinement
+3. **Privacy/Economy** (RQ-010, RQ-023, RQ-025, RQ-027) — Infrastructure for growth
+
+---
+
+**Previous Session:**
+
+**16. RQ-008/009 Engineering Process Reconciliation**
+- **Research Input:** Deep Think Research Report on AI-Assisted Engineering Architecture
+- **Protocol 9:** All 6 phases completed
+- **Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
+
+**Key Decisions:**
+
+| Decision | Resolution |
+|----------|------------|
+| **Architecture Pattern** | Riverpod Controller (Passive View) — adapted to Provider for existing code |
+| **Task Classification** | Logic Tasks → Contract-First; Visual Tasks → Vibe Coding |
+| **Protocol 2** | REPLACED with Context-Adaptive Development approach |
+| **Boundary Rule** | "IF" decisions → Logic Layer; Rendering → UI Layer |
+| **Animation Triggers** | Side Effect Pattern (state flags, not inline checks) |
+
+**Protocol 9 Results:**
+| Metric | Count |
+|--------|-------|
+| **ACCEPT** | 12 |
+| **MODIFY** | 1 (Riverpod → Provider adaptation) |
+| **REJECT** | 0 |
+| **ESCALATE** | 0 |
+
+**Tasks Extracted (8 Process Tasks):**
+- P-01: Update AI_AGENT_PROTOCOL.md with Protocol 2 ✅ DONE
+- P-02: Create BOUNDARY_DECISION_TREE.md
+- P-03: Add linting rules to analysis_options.yaml
+- P-04: Create ChangeNotifier Controller template
+- P-05: Document Side Effect pattern with example
+- P-06: Add Riverpod to pubspec.yaml for new features
+- P-07: Create "Logic vs Visual" task classification guide
+- P-08: Define "Logic Leakage" metric tracking
+
+**Documents Updated:**
+- `AI_AGENT_PROTOCOL.md` — Protocol 2 REPLACED with Context-Adaptive Development
+- `index/RQ_INDEX.md` — RQ-008, RQ-009 ✅ COMPLETE (28/32 = 88%)
+- `PRODUCT_DEVELOPMENT_SHEET.md` — RQ count updated
+- `GLOSSARY.md` — 5 new terms (Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage, Side Effect Pattern)
+
+**Status Summary:**
+
+| Category | Complete | Pending | Change |
+|----------|----------|---------|--------|
+| CDs | 18/18 (100%) | 0 | — |
+| RQs | 28/32 (88%) | 4 | +2 (RQ-008, RQ-009) |
+| PDs | 15/31 (48%) | 16 | — |
+| Tasks | 0/116 (0%) | 116 | +8 process tasks (P-XX) |
+
+**Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI without risk of corrupting business logic.
+
+---
+
+**Previous Session:**
+
+**15. RQ-024 Treaty Modification Reconciliation**
+- **Research Input:** Deep Think Research Report on Treaty Modification & Renegotiation
+- **Protocol 9:** All 6 phases completed
+- **Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ024.md`
+
+**Key Decisions:**
+
+| Decision | Resolution |
+|----------|------------|
+| **Amendment Model** | Constitutional Amendment (Minor vs Major distinction) |
+| **Minor Amendment** | 3s Re-Ratification, breach history PRESERVED |
+| **Major Amendment** | Council reconvene, Amnesty (breach reset), new lineage |
+| **Probation Trigger** | 5 breaches in 7 days OR 3 dismissed warnings |
+| **Probation Journey** | T+0 → T+24h → T+72h → T+96h escalation |
+| **Pause** | User-initiated, 14-day max |
+| **Suspend** | System-initiated (auto at T+96h) |
+| **Repeal** | Type "REPEAL" to confirm |
+
+**Protocol 9 Results:**
+| Metric | Count |
+|--------|-------|
+| **ACCEPT** | 10 |
+| **MODIFY** | 3 |
+| **REJECT** | 1 (Tension score +0.2 at T+72h — conflates systems) |
+| **ESCALATE** | 0 |
+
+**Tasks Extracted (9):**
+- A-11: Create `treaty_history` table
+- A-12: Add `version`, `parent_treaty_id`, `last_amended_at` to treaties
+- B-16: Probation notification journey
+- B-17: Auto-suspend logic
+- C-13: Council reconvene for major amendments
+- D-11: Treaty Amendment Editor
+- D-12: Re-Ratification ceremony
+- D-13: Pause Treaty flow
+- D-14: Repeal Treaty flow
+
+**Documents Updated:**
+- `index/RQ_INDEX.md` — RQ-024 ✅ COMPLETE
+- `index/PD_INDEX.md` — PD-118 ✅ RESOLVED
+- `PRODUCT_DEVELOPMENT_SHEET.md` — Counts updated
+- `RESEARCH_QUESTIONS.md` — RQ-024 marked complete, 9 tasks added
+- `PRODUCT_DECISIONS.md` — PD-118 resolved
+- `GLOSSARY.md` — 5 new terms (Minor/Major Amendment, Re-Ratification, Amnesty, Probation Journey)
+- `IMPLEMENTATION_ACTIONS.md` — 9 tasks added, totals updated (116 tasks)
+
+**Status Summary:**
+
+| Category | Complete | Pending | Change |
+|----------|----------|---------|--------|
+| CDs | 18/18 (100%) | 0 | — |
+| RQs | 26/32 (81%) | 6 | +1 (RQ-024) |
+| PDs | 15/31 (48%) | 16 | +1 (PD-118) |
+| Tasks | 0/116 (0%) | 116 | +9 new tasks |
+
+**All MVP-Critical Research is NOW COMPLETE.**
+
+---
+
+**Previous Session:**
+
+**14. Product Development Sheet Created**
+- **Document:** `docs/CORE/PRODUCT_DEVELOPMENT_SHEET.md`
+- **Purpose:** Single consolidated view of all CDs, RQs, PDs, and Tasks
+
+**Key Findings:**
+
+| Category | Complete | Pending | Action |
+|----------|----------|---------|--------|
+| CDs | 18/18 (100%) | 0 | All locked |
+| RQs | 25/32 (78%) | 7 | Only RQ-024 needs research for MVP |
+| PDs | 14/31 (45%) | 17 | 4 ready to resolve NOW |
+| Tasks | 0/107 (0%) | 107 | Phase A is critical blocker |
+
+**RQ Triage:**
+- **RESEARCH NOW:** RQ-024 (Treaty Modification) — Only 1 RQ truly needed for MVP
+- **DEFER:** RQ-023, RQ-025, RQ-026, RQ-010 — Post-MVP concerns
+- **DEPRIORITIZE:** RQ-008, RQ-009, RQ-027 — Low priority, not blocking
+
+**PDs Ready to Resolve (No Blockers):**
+1. PD-105 (Unified AI Coaching) — Architecture decision
+2. PD-107 (Proactive Guidance) — Architecture decision
+3. PD-002 (Streaks vs Consistency) — Core UX
+4. PD-101 (Sherlock Prompt) — Which is canonical
+
+**Critical Path Identified:**
+```
+PHASE 0: Resolve PD-105, PD-107, PD-002, PD-101
+    ↓
+PHASE A: Create identity_facets, identity_topology tables
+    ↓
+PHASE B-G: Implementation can proceed
+    ↓
+PHASE H: Now unblocked
+```
+
+**Previous Session:**
+
+**13. Red Team Adversarial Critique**
+- **Critique Document:** `docs/analysis/RED_TEAM_CRITIQUE_RQ017_RQ018.md`
+- **Verdict:** HIGH RISK — Critical schema dependencies don't exist
+
+**Critical Findings:**
+
+| Finding | Severity | Impact |
+|---------|----------|--------|
+| `identity_facets` table doesn't exist | **CRITICAL** | Constellation cannot be built |
+| `identity_topology` table doesn't exist | **CRITICAL** | Tether/conflict viz blocked |
+| Audio files are 0 bytes (placeholders) | **HIGH** | Airlock has no audio |
+| 107+ tasks at 0% completion | **HIGH** | Feasibility concern |
+| Dependency chain violation | **HIGH** | Phase H assigned before Phase A |
+
+**Corrective Actions Required:**
+
+| Action | Priority |
+|--------|----------|
+| **BLOCK** all Phase H tasks | IMMEDIATE |
+| **PRIORITIZE** Phase A schema creation | CRITICAL |
+| **RETAIN** Skill Tree as fallback | HIGH |
+| **SOURCE** actual audio files (>0 bytes) | HIGH |
+
+**Key Insight:** The Deep Think reconciliation is internally consistent but fails the reality check. Documentation assumes infrastructure that doesn't exist. The `skill_tree.dart` (549 lines, production-ready) is the ONLY working visualization.
+
+**Schema Reality:**
+- `identity_seeds` EXISTS — Sherlock Protocol (Holy Trinity)
+- `identity_facets` DOES NOT EXIST — Required for Constellation
+- `identity_topology` DOES NOT EXIST — Required for Tethers
+- `facet_relationships` DOES NOT EXIST — Required for friction
+
+**Previous Session:**
+
+### What Was Accomplished (Previous Session)
+
+**12. Protocol 9 Reconciliation: RQ-017 + RQ-018 (psyOS UX Phase)**
+- **Research Source:** Deep Think UX Architecture Report (Constellation & Airlock)
+- **Reconciliation Results:**
+  - 20 ACCEPT, 6 MODIFY, 2 REJECT, 0 ESCALATE
+- **RQs Completed:** RQ-017 (Constellation UX), RQ-018 (Airlock Protocol)
+- **PDs Resolved:**
+  - PD-108: Big Bang migration with fallback
+  - PD-110: Severity + Treaty hybrid for user control
+  - PD-112: Hybrid audio strategy (stock + user unlock)
+- **Tasks Added:** Phase H (16 tasks) — Constellation/Airlock implementation
+- **Total Tasks:** 107 (was 91)
+- **RQ Progress:** 25/32 = 78% (was 23/32 = 72%)
+- **PD Progress:** 14/31 = 45% (was 11/31 = 35%)
+- **GLOSSARY Updated:** Added Ghost Mode, The Tether, The Seal; Updated Constellation UX, Airlock Protocol
+- **Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ017_RQ018.md`
+
+**Key Modifications Applied:**
+1. `hexis_score → aggregate ICS` for Sun visualization (hexis_score deprecated)
+2. `3-min → 1-min max` Breathwork for CRITICAL transitions
+3. `Auto-summon → Modal with option` for tether tap
+4. `Level 10 → Sapling tier` for mantra unlock
+
+---
+
+### Previous Session (10 January — Identity Coach Phase 2)
+
+**1. PD-125 Resolved: Content Library Size**
+- **Decision:** 50 habits at launch, with caveat to expand to 100 post-launch
+- Updated PRODUCT_DECISIONS.md with full rationale
+- Updated PD_INDEX.md (now 7 resolved, 31 total)
+
+**2. Implementation Task Tracking Audit**
+- **Issue Found:** F-01 through F-20 were in IMPACT_ANALYSIS.md but NOT in Master Implementation Tracker
+- **Root Cause:** Ambiguity between IMPACT_ANALYSIS.md (cascade tracking) and RESEARCH_QUESTIONS.md (task storage)
+- **Fix Applied:** Added Phase F (20 tasks) to Master Implementation Tracker in RESEARCH_QUESTIONS.md
+- Updated Implementation Summary: Now 77 tasks (was 57)
+
+**3. Created IMPLEMENTATION_ACTIONS.md**
+- New canonical document for task tracking
+- Quick status + audit trail
+- Cross-reference layer between reconciliation and Master Tracker
+- Updated Protocol 8 in AI_AGENT_PROTOCOL.md with canonical locations
+- Added Phase F task ID convention
+
+**4. Updated Core Documentation**
+- CLAUDE.md: Updated project structure and key documentation table
+- AI_AGENT_PROTOCOL.md: Protocol 8 now specifies canonical locations
+- RESEARCH_QUESTIONS.md: Added Phase F (Identity Coach) with 20 tasks
+
+**5. Created Deep Think Prompt for Phase 2 Research**
+- File: `docs/prompts/DEEP_THINK_PROMPT_IDENTITY_COACH_PHASE2_RQ028-RQ032.md`
+- Covers: RQ-028, RQ-029, RQ-030, RQ-031, RQ-032
+- Related decisions: PD-121, PD-122, PD-123, PD-124
+
+**6. Ran Critique Framework Against Deep Think Prompt**
+- Applied DEEP_THINK_PROMPT_GUIDANCE.md quality checklist
+- Original score: 6.6/10 — Good foundation, missing critical elements
+- Identified gaps: No example output, no user scenarios, sub-questions not tabular
+- Created `docs/analysis/DEEP_THINK_PROMPT_CRITIQUE_RQ028-RQ032.md`
+
+**7. Applied P0/P1 Fixes to Deep Think Prompt**
+Enhanced prompt from 6.6/10 to 8.5/10:
+- Added "Example of Good Output" — Full Builder archetype definition
+- Added "Concrete Scenario: Solve This" — 5 user scenarios covering all RQs
+- Converted all sub-questions to tabular format with "Your Task" column
+- Added anti-patterns per RQ (20+ specific anti-patterns)
+- Added "Current Schema Reference" — SQL for existing + proposed tables
+- Added "Code Expectations" — SQL, Dart pseudocode, JSON examples expected
+- Added "Output Quality Criteria" — 6-criterion validation table
+- Added "Architectural Constraints" — UX friction, AI cost, onboarding limits
+
+**8. Exhaustively Enhanced IMPLEMENTATION_ACTIONS.md**
+- Added Agent Entry Point Routing (Claude, DeepSeek, Gemini, Human paths)
+- Added Complete Documentation Hierarchy visual map
+- Added Task Management Governance with decision tree
+- Added Canonical Locations table (what goes where)
+- Added External Agent Instructions (for DeepSeek/Gemini)
+- Added Cross-Reference Quick Links table
+- Document now serves as navigation hub for all agents
+
+**9. IMPLEMENTATION_ACTIONS Signposting Audit — ALL CORE DOCS**
+- **Audit Document:** `docs/analysis/IMPLEMENTATION_ACTIONS_SIGNPOSTING_AUDIT.md`
+- **Issue Found:** IMPLEMENTATION_ACTIONS.md was well-designed but invisible to agents during standard session workflows
+- **Root Cause:** Core documents didn't reference IA in entry/exit protocols
+
+**P0 Fixes Applied:**
+| Document | Fix |
+|----------|-----|
+| AI_AGENT_PROTOCOL.md (Entry) | Added IA to Session Entry Protocol read list |
+| AI_AGENT_PROTOCOL.md (Exit) | Added Tier 1.5 for task status updates |
+| IMPACT_ANALYSIS.md | Added CASCADE ONLY warning (not task storage) |
+
+**P1 Fixes Applied:**
+| Document | Fix |
+|----------|-----|
+| DEEP_THINK_PROMPT_GUIDANCE.md | Added Step 1.5: Update Implementation Actions Quick Status |
+
+**Architecture Now Consistent:**
+```
+CLAUDE.md → AI_HANDOVER.md → index/*.md → IMPLEMENTATION_ACTIONS.md → RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md
+                                            (Task Quick Status)         (Master Tracker)       (Cascade ONLY)
+```
+
+**10. Protocol 9 Reconciliation: Deep Think Phase 2 (RQ-028 through RQ-032)**
+- **Research Report:** Identity Coach Phase 2 (Archetypes, Preference Learning, Pace Car, ICS)
+- **Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md`
+- **Results:** 25 ACCEPT, 5 MODIFY, 0 REJECT, 0 ESCALATE (1 ESCALATE resolved via audit)
+
+**RQs Completed (5):**
+| RQ | Title | Key Deliverable |
+|----|-------|-----------------|
+| RQ-028 | Archetype Definitions | 12 archetypes with 6-dim vectors |
+| RQ-029 | Dimension Curation | DeepSeek prompt + audit workflow |
+| RQ-030 | Preference Update | Rocchio algorithm + Trinity Anchor |
+| RQ-031 | Pace Car Threshold | Building vs Maintenance model |
+| RQ-032 | ICS Integration | Logarithmic formula, hexis_score deprecated |
+
+**PDs Resolved (4):**
+| PD | Decision |
+|----|----------|
+| PD-121 | 12 Archetypes (psychologically grounded) |
+| PD-122 | Preference embedding HIDDEN (768-dim is noise) |
+| PD-123 | typical_energy_state field (4-state enum) |
+| PD-124 | 7-day TTL for recommendation cards |
+
+**Tasks Added (14):**
+- Phase G: G-01 through G-14 (Identity Coach Intelligence Phase 2)
+- Total tasks now: 91 (was 77)
+
+**Audit Resolved:**
+- hexis_score: NOT in codebase (documentation-only term) — safe to deprecate
+
+**11. Congruency Verification Complete**
+- Verified all post-processing steps from DEEP_THINK_PROMPT_GUIDANCE.md (Step 0-5)
+- Added comprehensive cascade analysis to IMPACT_ANALYSIS.md
+- Added CD Congruency Verification table confirming alignment with:
+  - CD-005 (6-Dimension Model)
+  - CD-015 (4-State Energy Model)
+  - CD-016 (DeepSeek V3.2)
+  - CD-017 (Android-First)
+  - CD-018 (ESSENTIAL Threshold)
+- Updated GLOSSARY.md with 4 new terms + ICS formula + hexis_score deprecation
+- Commit: `a2d4b3b`
+
+---
+
+### Previous Session Summary (10 January — Identity Coach Reconciliation)
+| Field | Value |
+|-------|-------|
+| **Session ID** | `claude/setup-pact-context-1i4ze` |
+| **Date** | 10 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Focus** | Identity Coach Deep Think Reconciliation (RQ-005, RQ-006, RQ-007) |
+
+### What Was Accomplished (Previous Session)
+
+**1. Protocol 9 Reconciliation — Identity Coach Architecture**
+- Analyzed DeepSeek Deep Think research report for RQ-005/006/007
+- Ran full 6-phase reconciliation per Protocol 9
+- Created `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`
+- Results: 14 ACCEPT, 5 MODIFY, 1 REJECT, 1 ESCALATE
+
+**2. Research Questions Completed (3)**
+- **RQ-005:** Proactive Recommendation Algorithms → Two-Stage Hybrid Retrieval
+- **RQ-006:** Content Library for Recommendations → Launch spec (50+12+12+4)
+- **RQ-007:** Identity Roadmap Architecture → Schema + ICS formula
+
+**3. Key Architectural Decisions Documented**
+- **The Architect vs The Commander:** Async recommendation engine (Supabase Edge) separated from real-time JITAI
+- **Two-Stage Hybrid Retrieval:** Semantic (768-dim) + Psychometric (6-dim) matching
+- **Archetype Templates:** 12 presets solve infinite facet name scaling
+- **Trinity Seed:** Cold-start using Day 1 Holy Trinity extraction
+
+**4. Documentation Updates**
+- RESEARCH_QUESTIONS.md: RQ-005/006/007 marked COMPLETE with findings
+- RQ_INDEX.md: Updated status (18/27 = 67% complete)
+- GLOSSARY.md: Added 12 new Identity Coach terms
+- IMPACT_ANALYSIS.md: Added cascade effects, 20 new implementation tasks (F-01 through F-20)
+
+**5. Tasks Extracted (20 new)**
+- Database: F-01 through F-06 (tables + field additions)
+- Backend: F-07 through F-11 (Edge Functions, scheduler)
+- Content: F-13 through F-16, F-20 (habit templates, framing, rituals)
+- Service: F-17, F-18, F-19 (Dart models, services)
+- Onboarding: F-12 (Future Self Interview)
+
+**6. Exhaustive Deep Analysis (Second Pass)**
+- Created `docs/analysis/IDENTITY_COACH_DEEP_ANALYSIS.md` (~750 lines)
+- Documented all 12 DeepSeek concepts with gaps identified
+- Identified 5 new RQs: RQ-028 through RQ-032
+- Identified 4 new PDs: PD-121 through PD-124
+- Updated PD-105, PD-107 status to READY (unblocked by RQ-005/006/007)
+- Total RQs: 32 (18 complete = 56%)
+- Total PDs: 30 (6 resolved, 2 ready, 22 pending)
+
+**7. Critical Gaps Identified**
+- RQ-028 (Archetype Definitions) is CRITICAL — blocks F-06, F-13, F-14
+- Two-Stage Retrieval requires DUAL embeddings per habit (content burden)
+- Trinity Seed depends on PD-101 (Sherlock Prompt) being resolved
+- Preference embedding drift vs stated aspirations is a design concern
+
+---
+
+### Previous Session Summary (10 January — Documentation Unification)
+| Field | Value |
+|-------|-------|
 | **Session ID** | `claude/setup-pact-context-rApSv` |
 | **Date** | 10 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Focus** | Documentation Unification, Entry Point Creation, Governance Cleanup |
 
-### What Was Accomplished (This Latest Session)
+### What Was Accomplished (Previous Session)
 
 **1. Created Project Entry Point (`/CLAUDE.md`)**
 - Concise (~45 lines) overview for AI agents
@@ -841,6 +1293,9 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-1i4ze` | Identity Coach Deep Analysis + New RQs/PDs | ✅ Exhaustive analysis; 5 new RQs (028-032); 4 new PDs (121-124); PD-105/107 unblocked; Critical gaps identified |
+| 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-1i4ze` | Identity Coach Deep Think Reconciliation | ✅ RQ-005/006/007 COMPLETE; Protocol 9 applied; 20 tasks extracted (F-01 to F-20); 12 GLOSSARY terms added |
+| 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-rApSv` | Documentation Unification | ✅ CLAUDE.md created; Reading order unified; IMPACT_ANALYSIS.md orphaning fixed; Agent custom instructions drafted |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Analysis: Gaps + New RQs/PDs | ✅ RQ-021-023 NEW; PD-115-117 NEW; Treaties schema; ContextSnapshot class; Tension Score algorithm; Impact analysis |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Think RQ-019 + RQ-020 Integration | ✅ RQ-019+020 COMPLETE; PD-109+113 RESOLVED; CD-016 corrected (gemini-embedding-001); 7 GLOSSARY terms added |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Full Implementation + DeepSeek V3.2 | ✅ PD-114, CD-016, RQ-019-020, PD-113; GLOSSARY + ROADMAP updated |

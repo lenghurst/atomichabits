@@ -25,9 +25,10 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ AI_HANDOVER.md — What did the last agent do?                             │
 │  □ index/CD_INDEX.md + index/PD_INDEX.md — Quick decision status lookup     │
 │  □ index/RQ_INDEX.md — Quick research status lookup                         │
-│  □ IMPACT_ANALYSIS.md — Actionable tasks + cascade tracking                 │
+│  □ IMPLEMENTATION_ACTIONS.md — Task quick status + navigation hub           │
+│  □ IMPACT_ANALYSIS.md — Cascade tracking ONLY (not task storage)            │
 │  □ PRODUCT_DECISIONS.md — Full details for PENDING decisions only           │
-│  □ RESEARCH_QUESTIONS.md — Full details for ACTIVE research only            │
+│  □ RESEARCH_QUESTIONS.md — Master Task Tracker + ACTIVE research            │
 │  □ GLOSSARY.md — What do terms mean in this codebase?                       │
 │  □ AI_CONTEXT.md — What's the current architecture?                         │
 │  □ ROADMAP.md — What are the current priorities?                            │
@@ -65,10 +66,14 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ PRODUCT_DECISIONS.md — Log any new decisions/questions                   │
 │  □ RESEARCH_QUESTIONS.md — Update status, propose new RQs if needed         │
 │  □ ROADMAP.md — Update task status, add new items if discovered             │
-│  □ IMPACT_ANALYSIS.md — Log cascade effects of any decisions made           │
+│  □ IMPACT_ANALYSIS.md — Log cascade effects ONLY (not task storage)         │
 │  □ index/*.md — Update quick reference tables if RQ/PD/CD status changed    │
 │                                                                              │
-│  TIER 1.5: IF EXTERNAL RESEARCH WAS PROCESSED                                │
+│  TIER 1.5: IF TASKS WERE EXTRACTED OR STATUS CHANGED                         │
+│  □ IMPLEMENTATION_ACTIONS.md — Update Quick Status + Recently Added         │
+│  □ RESEARCH_QUESTIONS.md → Master Tracker — Update task details             │
+│                                                                              │
+│  TIER 1.5b: IF EXTERNAL RESEARCH WAS PROCESSED                               │
 │  □ Protocol 9 was completed before integration                               │
 │  □ Reconciliation document created in docs/analysis/                         │
 │  □ ACCEPT/MODIFY/REJECT/ESCALATE documented                                  │
@@ -261,39 +266,130 @@ Impact Analysis:
 
 ---
 
-## Protocol 2: Clean Code Reconciliation (MANDATORY)
+## Protocol 2: Context-Adaptive Development (MANDATORY)
+
+> **Updated:** 10 January 2026 — Replaced "Make it Work → Right" with task-specific approach per RQ-008/RQ-009 research
 
 ### Trigger
-After implementing any functionality.
+Before starting any coding task.
 
 ### Action
-1. **Execute** the functionality fully (all features working)
-2. **THEN** refactor using principles:
-   - **YAGNI** (You Aren't Gonna Need It): Remove speculative code
-   - **SOLID**: Single responsibility, Open/Closed, Liskov, Interface Seg, Dependency Inv
-   - **DRY** (Don't Repeat Yourself): Extract duplicates
-   - **KISS** (Keep It Simple, Stupid): Simplify without losing function
-3. **NEVER** sacrifice functionality for principles
-4. **DOCUMENT** any technical debt created
+
+**Step 1: CLASSIFY the task**
+
+| Task Type | Examples | Strategy |
+|-----------|----------|----------|
+| **Logic Task** | New feature, data model, algorithm, state management | → CONTRACT-FIRST |
+| **Visual Task** | Styling, animations, layout, UI polish | → VIBE CODING |
+
+**Step 2: Execute appropriate strategy**
+
+#### For LOGIC TASKS → Contract-First
+```
+1. Define State class and Controller interface FIRST
+2. Implement logic methods
+3. Write unit tests
+4. THEN build UI that consumes the Controller
+5. Apply clean code principles (YAGNI, SOLID, DRY, KISS)
+```
+
+#### For VISUAL TASKS → Vibe Coding
+```
+1. Iterate rapidly on the UI
+2. NEVER introduce business logic into Widget tree
+3. Only consume existing Controllers/State
+4. Safe to regenerate UI multiple times until it "feels right"
+5. Refactor for cleanliness after visual approval
+```
+
+**Step 3: VERIFY separation**
+```
+□ No repository/service imports in UI files
+□ No domain entity conditionals in Widget build()
+□ All "IF" business decisions are in Logic Layer
+□ Animation TRIGGERS are state flags, not inline checks
+```
+
+### Boundary Decision Tree
+
+```
+WHERE DOES THIS CODE BELONG?
+            │
+            ▼
+┌───────────────────────────────────────────┐
+│ Does it decide IF something happens?      │
+│ (e.g., "User must be premium")            │
+└───────────────────────────────────────────┘
+     YES │                    │ NO
+         ▼                    ▼
+   ┌──────────┐    ┌──────────────────────┐
+   │  LOGIC   │    │ Does it transform    │
+   │  LAYER   │    │ data? (date→string)  │
+   └──────────┘    └──────────────────────┘
+                        YES │         │ NO
+                            ▼         ▼
+                      ┌──────────┐  Animation?
+                      │  LOGIC   │  TRIGGER→Logic
+                      │ (getter) │  EXECUTION→UI
+                      └──────────┘
+```
 
 ### Rationale
-Product vision and functionality come first. Clean code enables maintainability but must not block features. The sequence is: **Make it work → Make it right → Make it fast**.
+Different tasks require different approaches. Logic tasks benefit from upfront planning ("Contract-First") to anchor AI output. Visual tasks benefit from rapid iteration ("Vibe Coding") enabled by strict separation.
+
+**Key Insight:** Constraint Enables Creativity. By locking business logic in a "Safety Sandbox" that AI cannot modify during UI tasks, we enable fearless UI iteration.
 
 ### Anti-Pattern (DO NOT)
 ```
-❌ "I'll skip this feature because it violates SOLID"
-❌ "Let me refactor before implementing the requirement"
-❌ "This abstraction isn't clean, so I won't build it"
+❌ Putting business conditionals in Widget build methods
+❌ Importing repositories/services into UI files
+❌ Using "if (streak == 7)" directly in onTap handlers
+❌ Treating all tasks the same way
 ```
 
 ### Correct Pattern (DO)
 ```
-✅ Implement full feature as specified
-✅ Verify all functionality works
-✅ THEN refactor for cleanliness
-✅ Verify functionality still works after refactor
-✅ Document any remaining tech debt
+✅ Logic emits state flag: state.copyWith(sideEffect: .celebrate)
+✅ UI listens and triggers: ref.listen(...) { _confettiController.play() }
+✅ Logic Task: Define interface → Implement → Test → Build UI
+✅ Visual Task: Iterate UI rapidly, consuming existing state
 ```
+
+### Example: Celebration Animation
+
+**❌ WRONG (Logic in UI):**
+```dart
+onTap: () {
+  if (habit.streak + 1 == 7) {  // Business logic in UI!
+    _confettiController.play();
+  }
+  provider.complete(habit);
+}
+```
+
+**✅ CORRECT (Separated):**
+```dart
+// Logic Layer (Controller)
+void completeHabit(Habit habit) {
+  final newStreak = habit.streak + 1;
+  state = state.copyWith(
+    sideEffect: newStreak % 7 == 0 ? HabitSideEffect.celebrate : null,
+  );
+  _repo.save(habit.copyWith(streak: newStreak));
+}
+
+// UI Layer (Widget)
+ref.listen(controller, (prev, next) {
+  if (next.sideEffect == HabitSideEffect.celebrate) {
+    _confettiController.play();  // AI can change to fireworks safely
+    controller.consumeSideEffect();
+  }
+});
+```
+
+### Reference
+- Full specification: `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
+- Glossary terms: Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage
 
 ---
 
@@ -506,12 +602,22 @@ After receiving Deep Think output:
 ### Trigger
 When completing research (RQ) or resolving a product decision (PD).
 
+### Canonical Locations
+| Document | Purpose |
+|----------|---------|
+| **RESEARCH_QUESTIONS.md** | Master Implementation Tracker (detailed task tables) |
+| **IMPLEMENTATION_ACTIONS.md** | Quick status + audit trail (cross-reference layer) |
+| **IMPACT_ANALYSIS.md** | CASCADE analysis only — does NOT store tasks |
+
+**CRITICAL:** Tasks MUST be added to RESEARCH_QUESTIONS.md Master Tracker. IMPACT_ANALYSIS.md references tasks but does NOT define them.
+
 ### Action
 1. **EXTRACT** all actionable tasks from the research output
 2. **SEARCH** existing Master Implementation Tracker for duplicates
 3. **MERGE** if similar task exists (don't create duplicate)
 4. **CREATE** new task only if truly novel
 5. **LINK** task to source (RQ-XXX or PD-XXX)
+6. **UPDATE** IMPLEMENTATION_ACTIONS.md Quick Status section
 
 ### Deduplication Rules
 | Scenario | Action |
@@ -529,6 +635,7 @@ B-01, B-02, ... (Intelligence Layer)
 C-01, C-02, ... (Council AI System)
 D-01, D-02, ... (UX & Frontend)
 E-01, E-02, ... (Polish & Advanced)
+F-01, F-02, ... (Identity Coach System)
 ```
 
 ### Required Task Fields
@@ -608,6 +715,20 @@ Without reconciliation, external research drifts from implementable reality.
 │  □ Document implementation gaps:                                             │
 │    │ Proposal         │ Requires       │ Exists?       │ Gap               │ │
 │    │─────────────────────────────────────────────────────────────────────│   │
+│                                                                              │
+│  PHASE 3.5: SCHEMA REALITY CHECK (MANDATORY)                                 │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ VERIFY tables exist in supabase/migrations/ (don't assume!)               │
+│  □ Run: grep -r "table_name" supabase/migrations/                            │
+│  □ For EACH referenced table, confirm:                                       │
+│    │ Table            │ Exists?        │ Migration File │ Blocker          │ │
+│    │─────────────────────────────────────────────────────────────────────│   │
+│    │ identity_facets  │ YES/NO         │ filename.sql   │ Phase A          │ │
+│  □ If table DOES NOT EXIST:                                                  │
+│    → Mark dependent tasks as 🔴 BLOCKED (not NOT STARTED)                   │
+│    → Document the dependency chain                                           │
+│    → Identify which Phase must complete first                                │
+│  □ Check for 0-byte placeholder files (assets/sounds/, etc.)                 │
 │                                                                              │
 │  PHASE 4: SCOPE & COMPLEXITY AUDIT                                           │
 │  ─────────────────────────────────────────────────────────────────────────── │

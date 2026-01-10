@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added RQ-021/022 terms: The Constitution, Ratification Ritual, Voice Archetype, SSMLBuilder, Treaty Templates)
+> **Last Updated:** 10 January 2026 (Added RQ-008/009 terms: Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage, Side Effect Pattern)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -209,58 +209,99 @@ Executive gets growth; Father gets consistency. Treaty?"
 ### Constellation UX
 **Definition:** The dashboard visualization replacing Skill Tree — a living solar system where facets are planets orbiting the Self (sun).
 
+**Visual Model:** Bohr-Kepler Hybrid — stable concentric orbits with physics-based velocity.
+
 **Visual Elements:**
-| Element | Represents |
-|---------|------------|
-| **Sun** | The Self (center of gravity) |
-| **Planets** | Identity Facets |
-| **Planet Mass** | Habit volume / importance |
-| **Orbit Distance** | Integration with Core Self |
-| **Planet Brightness** | Activity level (dim = neglected) |
-| **Orbit Stability** | Consistency (wobble = instability) |
+| Element | Data Source | Formula/Logic |
+|---------|-------------|---------------|
+| **Sun** | The Self | Pulse at aggregate ICS |
+| **Planets** | Identity Facets | One per facet |
+| **Planet Radius** | `habitVolume` | `16dp + clamp(log(votes)*4, 0, 24)` |
+| **Orbit Distance** | `ics_score` | `MaxRadius - (ICS * 30dp)` — closer = more integrated |
+| **Planet Color** | `energyState` | Blue (Focus), Green (Physical), Orange (Social), Purple (Recovery) |
+| **Brightness** | `lastEngaged` | 100% (<3d), 30% (>7d = Ghost Mode) |
+| **Wobble** | `friction` | `sin(t*20) * friction * 4px` |
+| **Tether** | `friction > 0.6` | Red pulsing line between conflicting facets |
 
-**Key Visual Insight:** A massive "Career" planet pulling "Health" planet out of orbit shows life's gravity distortion in real-time.
+**Implementation:** Flutter CustomPainter (Canvas) — Rive/Lottie can't handle dynamic orbital math.
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-017
+**Status:** ✅ COMPLETE — RQ-017
 
-**Code References:** Will replace `skill_tree.dart`
+**Code References:** Phase H tasks (H-01 through H-09), will replace `skill_tree.dart`
+
+---
+
+### Ghost Mode
+**Definition:** Visual state for neglected identity facets (>7 days since engagement). Planet appears desaturated with dashed stroke and 30% opacity.
+
+**Purpose:** Provides visual entropy feedback — cooling planets signal facets needing attention.
+
+**Threshold:** 7 days since last habit completion attributed to that facet.
+
+**Status:** ✅ COMPLETE — RQ-017
+
+---
+
+### The Tether
+**Definition:** Red pulsing line connecting two planets in Constellation when friction_coefficient > 0.6 and both facets are active.
+
+**Interaction:** Tapping the tether opens a modal: "Conflict detected between [A] and [B]. Summon Council?"
+
+**Status:** ✅ COMPLETE — RQ-017
 
 ---
 
 ### Airlock Protocol
-**Definition:** Mandatory transition rituals inserted when switching between conflicting energy states.
+**Definition:** Transition rituals inserted when switching between conflicting energy states. Severity-based (suggested for low friction, mandatory for treaty-bound).
 
-**Example:**
-```
-"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
-Do not enter yet. 5-minute Box Breathing."
-```
+**The Seal (v0.5):**
+- Full-screen overlay: "Leaving [Facet A]. Entering [Facet B]."
+- Press-and-hold fingerprint icon for 5 seconds
+- Circle fills with light (0% → 100%)
+- Haptic ramp completes the ritual
 
-**Purpose:** Reduce state switching costs, prevent emotional spillover between facets.
+**User Control (PD-110):**
+- **Default:** Suggested (dismissable)
+- **Treaty Override:** Mandatory if user signed a transition treaty
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-018
+**Purpose:** Reduce state switching costs, prevent cognitive residue spillover.
 
-**Code References:** Not yet implemented
+**Status:** ✅ COMPLETE — RQ-018
+
+**Code References:** Phase H tasks (H-10 through H-14), `TransitionDetector`, `AirlockOverlay`
+
+---
+
+### The Seal
+**Definition:** The minimum viable Airlock ritual — a 5-second press-and-hold interaction that completes a state transition.
+
+**UX:**
+1. Full-screen overlay appears
+2. User presses and holds fingerprint icon
+3. Circle fills with light over 5 seconds
+4. Haptic pattern ramps: `[0,50,0,100,0,200]`
+5. Transition completes
+
+**Status:** ✅ COMPLETE — RQ-018
 
 ---
 
 ### Identity Priming
-**Definition:** Sensory triggers (audio + voice) that prime the user for a state shift before a habit begins.
+**Definition:** Sensory triggers (audio + haptic) that prime the user for a state shift during Airlock.
 
-**Example:**
-```
-Trigger: 5 mins before "Deep Work"
-Action: Play Sonic Trigger specific to "Architect" facet
-Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
-         This is the signal. Enter the Cathedral."
-Result: Immediate state shift via sensory anchoring.
-```
+**Audio Assets (PD-112):**
+- `drone_focus.ogg` (40Hz Gamma binaural)
+- `drone_social.ogg` (Warm acoustic)
+- `drone_physical.ogg` (130bpm percussion)
+- `sfx_airlock_seal.ogg` (Pneumatic hiss)
+
+**Unlock:** User mantras available at Sapling tier (ICS ≥ 1.2).
 
 **Distinction from Notifications:**
 - **Notification:** Cognitive reminder ("Time to work")
-- **Identity Priming:** Sensory state shift (audio + voice + ritual)
+- **Identity Priming:** Sensory state shift (audio + haptic + ritual)
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-018
+**Status:** ✅ COMPLETE — RQ-018
 
 **Code References:** Not yet implemented
 
@@ -662,6 +703,100 @@ TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
 
 ---
 
+### Minor Amendment
+**Definition:** Changes to treaty parameters (time, count) that preserve breach history and require Re-Ratification.
+
+**Key Characteristics:**
+- Parameters only (not logic or signatories)
+- Breach history PRESERVED — prevents gaming
+- 3-second long-press Re-Ratification ceremony
+
+**Examples:**
+- Changing "No work after 6pm" to "No work after 7pm"
+- Adjusting notification frequency
+- Modifying reminder timing
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** `treaty_history` table, minor amendment flow
+
+---
+
+### Major Amendment
+**Definition:** Changes to treaty logic or signatories that require Council reconvene and grant Amnesty (breach count reset).
+
+**Key Characteristics:**
+- Logic changes OR adding/removing facets (signatories)
+- Breach count RESET (Amnesty) — fresh start for new agreement
+- Full Council AI session required
+- Creates new treaty lineage (parent_treaty_id link)
+
+**Examples:**
+- Changing "No work travel on Tuesdays" to "Mandatory evening calls blocked"
+- Adding a new facet to an existing treaty
+- Modifying enforcement severity (soft → hard)
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** `parent_treaty_id` field, Council reconvene flow
+
+---
+
+### Re-Ratification
+**Definition:** 3-second long-press ceremony to confirm minor treaty amendments. Maintains psychological weight without requiring full Council.
+
+**UX Flow:**
+| Time | Haptic | Visual |
+|------|--------|--------|
+| 0-1s | Ticking (clockwork) | "Confirming amendment..." |
+| 1-2s | Intensifying | Old → New comparison display |
+| 3s | Heavy "Thud" | "AMENDMENT RATIFIED." |
+
+**Note:** Same interaction pattern as original Ratification Ritual but shorter messaging and no wax seal animation.
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Amendment Editor widget (to be implemented)
+
+---
+
+### Amnesty
+**Definition:** Breach count reset granted when a treaty is fundamentally renegotiated (major amendment). Recognizes that a substantially different agreement deserves a fresh start.
+
+**Psychological Rationale:**
+- Prevents "doomed treaty" syndrome where high breach count discourages engagement
+- Acknowledges user's commitment to renegotiate rather than abandon
+- Maintains gravitas of minor amendments by NOT granting amnesty for parameter tweaks
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Major amendment logic (to be implemented)
+
+---
+
+### Probation Journey
+**Definition:** Time-bound escalation (T+0 → T+96h) prompting user to fix, pause, or repeal a failing treaty.
+
+**Timeline:**
+| Stage | Trigger | Action |
+|-------|---------|--------|
+| **T+0** | 5 breaches in 7 days OR 3 dismissed warnings | Orange border, notification |
+| **T+24h** | No action taken | "Fix Treaty" nudge notification |
+| **T+72h** | Still no action | Final warning notification |
+| **T+96h** | Still no action | Auto-suspend treaty |
+
+**User Agency Windows:**
+- At any point: Fix (minor amendment), Pause, or Repeal
+- If fixed: Breach count preserved (unless major amendment → Amnesty)
+- If paused: Probation timer pauses, max 14 days
+- If repealed: Treaty archived permanently
+
+**Status:** ✅ COMPLETE — RQ-024
+
+**Code References:** Probation notification journey (to be implemented)
+
+---
+
 ### Breach Escalation
 **Definition:** The process by which repeated Treaty violations lead to renegotiation or suspension.
 
@@ -679,6 +814,120 @@ TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
 **Status:** ✅ CONFIRMED — PD-113, RQ-020
 
 **Code References:** TreatyEngine (to be implemented)
+
+---
+
+## AI-Assisted Engineering Terms (RQ-008 + RQ-009)
+
+> **Reference:** These terms were defined by Deep Think research on 10 January 2026 for RQ-008 (UI Logic Separation) and RQ-009 (LLM Coding Approach).
+
+### Vibe Coding
+**Definition:** Rapid AI-assisted UI iteration where the AI can freely modify layouts, colors, and animations without risk of corrupting business logic. Enabled by strict UI/Logic separation.
+
+**Key Characteristics:**
+- AI can regenerate UI code multiple times until it "feels right"
+- Business logic is locked in a "Safety Sandbox" that AI cannot modify
+- No business conditionals allowed in Widget build methods
+- Only consumes existing Controllers/State
+
+**Trigger:** Used for Visual Tasks (styling, animations, layout, UI polish)
+
+**Status:** ✅ COMPLETE — RQ-008, Protocol 2
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Contract-First
+**Definition:** Development approach where State classes and Controller interfaces are defined BEFORE implementation, anchoring AI output and reducing hallucination.
+
+**Process:**
+1. Define State class (immutable)
+2. Define Controller interface (method signatures)
+3. Implement logic methods
+4. Write unit tests
+5. Build UI that consumes the Controller
+
+**Trigger:** Used for Logic Tasks (new features, data models, algorithms, state management)
+
+**Why It Works:** LLMs produce more consistent code when given a "contract" to fulfill. The interface acts as an anchor, preventing drift and over-engineering.
+
+**Status:** ✅ COMPLETE — RQ-009, Protocol 2
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Safety Sandbox
+**Definition:** The UI Layer under strict separation rules, where AI can iterate freely because business logic is unreachable.
+
+**Key Insight:** "Constraint Enables Creativity" — By stripping the UI of all responsibility except rendering, we unlock fearless iteration.
+
+**Boundaries:**
+- No repository/service imports in UI files
+- No domain entity conditionals in Widget build()
+- All "IF" business decisions are in Logic Layer
+- Animation TRIGGERS are state flags, not inline checks
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2 (Boundary Decision Tree)
+
+---
+
+### Logic Leakage
+**Definition:** Anti-pattern where business conditionals appear in Widget build methods, making it unsafe for AI to modify UI.
+
+**Examples:**
+```dart
+// ❌ Logic Leakage
+if (user.isPremium && !subscription.expired) { ... }  // In Widget
+
+// ✅ Correct
+if (state.canAccessFeature) { ... }  // State encapsulates logic
+```
+
+**Measurement:** Count of `if` statements involving domain entities in `lib/ui/` or `lib/features/*/widgets/`. Target: 0.
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Side Effect Pattern
+**Definition:** State management pattern where business logic emits "side effect" flags that UI listeners consume to trigger animations/navigation.
+
+**How It Works:**
+1. Controller determines business condition (e.g., `streak % 7 == 0`)
+2. Controller emits side effect: `state.copyWith(sideEffect: .celebrate)`
+3. UI listens for side effect and triggers action (animation, navigation)
+4. UI calls `consumeSideEffect()` to clear the flag
+
+**Example:**
+```dart
+// Logic Layer
+void completeHabit(Habit habit) {
+  final newStreak = habit.streak + 1;
+  state = state.copyWith(
+    sideEffect: newStreak % 7 == 0 ? HabitSideEffect.celebrate : null,
+  );
+}
+
+// UI Layer
+ref.listen(controller, (prev, next) {
+  if (next.sideEffect == HabitSideEffect.celebrate) {
+    _confettiController.play();
+    controller.consumeSideEffect();
+  }
+});
+```
+
+**Key Benefit:** AI can change the animation (confetti → fireworks) without touching business logic.
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
 
 ---
 
@@ -893,6 +1142,269 @@ final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
 **Status:** ✅ DESIGN COMPLETE — RQ-021, PD-115
 
 **Code References:** `lib/data/repositories/treaty_template_repository.dart` (to be implemented)
+
+---
+
+## Identity Coach Terms (RQ-005 + RQ-006 + RQ-007)
+
+> **Reference:** These terms were defined by DeepSeek Deep Think research on 10 January 2026 for RQ-005 (Proactive Recommendation Algorithms), RQ-006 (Content Library), and RQ-007 (Identity Roadmap Architecture). See `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`.
+
+### The Architect
+**Definition:** The async recommendation engine (Supabase Edge Function) that generates "New Habit Suggestion" cards for the Identity Coach. Runs nightly/weekly, placing suggestions into JITAI's content queue.
+
+**Contrast with The Commander:**
+| Aspect | The Architect | The Commander (JITAI) |
+|--------|---------------|----------------------|
+| **Role** | Strategic planning | Tactical execution |
+| **Timing** | Async (nightly/weekly) | Real-time |
+| **Output** | Recommendation cards | Intervention timing |
+| **Location** | Supabase Edge Function | On-device |
+| **Battery** | 0% (server-side) | < 5% ceiling |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `supabase/functions/generate-recommendations/` (to be implemented)
+
+---
+
+### The Commander
+**Definition:** The real-time JITAI decision engine. Decides *when* to show interventions based on V-O state, safety gates, and optimal timing. Locked per CD-016.
+
+**Note:** This is NOT a new term — it's a clarifying alias for the existing JITAI bandit system, introduced in RQ-005 to contrast with "The Architect."
+
+**Status:** ✅ CONFIRMED — CD-016, RQ-005
+
+**Code References:** `lib/domain/services/jitai_decision_engine.dart`
+
+---
+
+### Pace Car Protocol
+**Definition:** Rate limiting rule for proactive recommendations. Maximum 1 recommendation per day per user. Only triggered if user has < 5 active habits per facet.
+
+**Rationale:** Based on Cognitive Load Theory — introducing multiple new behaviors simultaneously triggers "Choice Overload."
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** Implemented within The Architect (to be built)
+
+---
+
+### Trinity Seed
+**Definition:** Cold-start recommendation strategy that leverages the Holy Trinity extracted on Day 1 to generate immediate, personalized habit suggestions without historical data.
+
+**Mapping:**
+| Holy Trinity Component | Recommendation Type |
+|------------------------|---------------------|
+| Anti-Identity ("Lazy") | Prevention-framed ("Micro-Movement") |
+| Failure Archetype ("Perfectionist") | Floor Habit ("Low bar") |
+| Dimension Vector | Personality-framed habit |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** Part of The Architect cold-start logic (to be implemented)
+
+---
+
+### Preference Embedding
+**Definition:** A 768-dim vector representing user's learned taste in habits, updated via implicit feedback signals. Used to fine-tune Stage 1 semantic retrieval in The Architect.
+
+**Update Signals:**
+| Signal | Weight | Trigger |
+|--------|--------|---------|
+| Adoption | +5.0 | User adds habit to schedule |
+| Validation | +10.0 | User completes habit 3x in first week |
+| Explicit Dismissal | -5.0 | "Not for me" action |
+| Implicit Decay | -0.5 | Card ignored 3x |
+
+**Note:** Originally called "Shadow Vector" in Deep Think — renamed to avoid conflict with "Shadow Presence" term.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `preference_embeddings` table (to be implemented)
+
+---
+
+### Archetype Template
+**Definition:** One of 12 preset dimension-vector combinations (e.g., "The Builder", "The Nurturer", "The Warrior") used to map infinite user-created facet names to curated content.
+
+**How It Works:**
+1. User creates facet with custom name ("Super-Dad")
+2. System embeds facet name → 768-dim vector
+3. Vector similarity matches to nearest Archetype Template
+4. User receives content written for that archetype
+
+**The 12 Templates:**
+| Archetype | Focus | Dimension Emphasis |
+|-----------|-------|-------------------|
+| The Builder | Creation, achievement | Promotion, Future |
+| The Nurturer | Care, relationships | Prevention, Social |
+| The Warrior | Challenge, discipline | Promotion, Executor |
+| The Scholar | Learning, depth | Future, Overthinker |
+| The Healer | Recovery, wellness | Prevention, Recovery |
+| The Creator | Expression, art | Promotion, Rebel |
+| The Guardian | Protection, stability | Prevention, Conformist |
+| The Explorer | Adventure, novelty | Promotion, Present |
+| The Sage | Wisdom, reflection | Future, Overthinker |
+| The Leader | Influence, teams | Social, Executor |
+| The Devotee | Faith, practice | Conformist, Recovery |
+| The Rebel | Independence, change | Rebel, Present |
+
+**Note:** Originally called "Global Archetype" in Deep Think — renamed to clarify these are preset templates, not a classification system parallel to CD-005's 6-dimension model.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+**Code References:** `archetype_templates` table (to be implemented)
+
+---
+
+### Identity Consolidation Score (ICS)
+**Definition:** Master metric tracking the strength of identity evidence for a user's aspiration. Uses logarithmic scale to reward longevity over volume.
+
+**Formula (Updated RQ-032):**
+```
+ICS_facet = AvgConsistency × log10(TotalVotes + 1)
+```
+
+- **AvgConsistency:** Average `graceful_score` of active habits for facet
+- **TotalVotes:** Cumulative habit completions for facet
+- **log10:** Prevents runaway scores; rewards longevity
+
+**Visual Tiers (ICS Visual Tiers):**
+| Stage | ICS Range | Approx Votes | Visual |
+|-------|-----------|--------------|--------|
+| Seed | < 1.2 | ~15 | Sprout icon |
+| Sapling | 1.2 – 3.0 | 15-100 | Small tree |
+| Oak | ≥ 3.0 | 100+ | Full tree |
+
+**Metrics Consolidation:**
+- `hexis_score` → ❌ **DEPRECATED** (never implemented in code)
+- `graceful_score` → ✅ Component of ICS
+- `ics_score` → ✅ Master facet metric
+
+**Status:** ✅ DESIGN COMPLETE — RQ-032
+
+**Code References:** `identity_facets.ics_score` (to be implemented)
+
+---
+
+### The Spark
+**Definition:** First progression stage in Identity Consolidation. Days 1-7, characterized by "Identity Claimed."
+
+**User State:** High motivation, low friction, establishing baseline.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### The Dip
+**Definition:** Second progression stage in Identity Consolidation. Days 8-21, characterized by "Resistance Detected."
+
+**User State:** Initial motivation fading, habits not yet automatic, highest dropout risk.
+
+**Statistical Note:** Day 8 is the most common drop-off point across habit formation literature.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### The Groove
+**Definition:** Third progression stage in Identity Consolidation. Day 66+, characterized by "Automaticity Achieved."
+
+**User State:** Habits are largely automatic; user is maintaining rather than building.
+
+**Threshold:** 66 days based on Phillippa Lally's habit formation research.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### Rocchio Algorithm
+**Definition:** Information retrieval relevance feedback method used to update the user's preference embedding based on explicit feedback (adopt/ban habits).
+
+**Mechanics:**
+- **Ban (👎):** α = 0.15 (strong negative signal)
+- **Adopt (👍):** α = 0.05 (weak positive signal)
+- Updates preference vector by adding/subtracting scaled habit vectors
+
+**Status:** ✅ DESIGN COMPLETE — RQ-030
+
+---
+
+### Trinity Anchor
+**Definition:** Drift prevention mechanism that pulls the preference embedding 30% towards the Day 1 Trinity Seed (user's stated aspiration).
+
+**Formula:**
+```
+anchored = (0.7 × learned_preference) + (0.3 × trinity_seed)
+```
+
+**Purpose:** Prevents short-term feedback from drifting user away from their core Aspiration.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-030
+
+---
+
+### Building Habit
+**Definition:** A habit that still requires conscious willpower to complete. Identified by `graceful_score < 0.8`.
+
+**Cognitive Load:** HIGH — counts against Pace Car capacity limits.
+
+**Pace Car Limits:**
+- Seed users: Max 3 Building habits
+- Sapling/Oak users: Max 5 Building habits
+
+**Status:** ✅ DESIGN COMPLETE — RQ-031
+
+---
+
+### Maintenance Habit
+**Definition:** A habit that has become largely automatic. Identified by `graceful_score ≥ 0.8`.
+
+**Cognitive Load:** LOW — does NOT count against Pace Car capacity limits.
+
+**User State:** Habits in "The Groove" stage are typically Maintenance habits.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-031
+
+---
+
+### Two-Stage Hybrid Retrieval
+**Definition:** The recommendation algorithm architecture for The Architect, combining semantic and psychometric matching.
+
+**Stage 1 (Semantic — "The What"):**
+- Uses 768-dim embeddings from gemini-embedding-001
+- Finds habits conceptually related to active facet
+- Example: "Father" facet → "Read to kids" habit
+
+**Stage 2 (Psychometric — "The How"):**
+- Uses 6-dim user dimension vector
+- Re-ranks candidates by personality fit
+- Example: Prevention user gets safety-framed habits higher
+
+**Why Two Stages:**
+| Approach | Problem |
+|----------|---------|
+| Single-stage blend | Cannot meaningfully blend 6-dim psychometrics with 768-dim semantics |
+| Collaborative filtering | Fatal cold start — zero utility at launch |
+| Two-stage hybrid | **Optimal** — solves cold start, accurate semantics, mathematically sound personalization |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `generateRecommendations()` Edge Function (to be implemented)
+
+---
+
+### Future Self Interview
+**Definition:** Sherlock extension for Day 3 that extracts aspirational identity with attached behavior.
+
+**Prompt:**
+> "Fast forward 1 year. You are proud of who you've become. What is one specific thing that version of you does every day?"
+
+**Output:** Extracts both identity aspiration ("I am someone who...") and concrete behavior ("...exercises daily").
+
+**Status:** ✅ DESIGN COMPLETE — RQ-007
+
+**Code References:** Extension to Sherlock onboarding flow (to be implemented)
 
 ---
 
@@ -1465,23 +1977,26 @@ These terms appear in documentation but are either not implemented or require pr
 ### Hexis Score
 **Definition:** Proposed composite score for identity visualization.
 
-**Status:** 🔴 DEPRECATED — Never concretely defined or implemented
+**Status:** ❌ **DEPRECATED** — Replaced by Identity Consolidation Score (ICS)
 
-**Original Intent (from ARCHITECTURE_RECONCILIATION.md):**
-```
-Base score from habit completions
-- Doom scrolling penalty (−0.05 per session)
-+ Positive emotion boost (+0.1 for confidence)
-= Hexis Score (0.0 - 1.0)
+**Deprecation Audit (RQ-032, 10 Jan 2026):**
+```bash
+grep -rn "hexis_score" lib/       # No files found
+grep -rn "hexis_score" supabase/  # No files found
 ```
 
-**Why Deprecated:**
-- `hexis_calculator.dart` was never built
-- No concrete specification existed beyond the above formula
-- Dependencies (Living Garden, Digital Truth Sensor) also not implemented
-- Term created confusion without adding value
+**Finding:** Never implemented in code. Documentation-only term. Safe to remove.
 
-**Replacement:** Consider using existing `gracefulScore` or `difficultyLevel` fields if a composite identity metric is needed in future.
+**Replacement:** **Identity Consolidation Score (ICS)** — see `ICS` entry above.
+- ICS uses logarithmic formula: `AvgConsistency × log10(TotalVotes + 1)`
+- Stored in `identity_facets.ics_score`
+- Uses `graceful_score` as consistency component
+
+**Why ICS is Better:**
+- Concrete formula with clear components
+- Rewards longevity (log scale)
+- Integrates with existing graceful_score
+- Visual tiers defined (Seed/Sapling/Oak)
 
 ---
 

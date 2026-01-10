@@ -1,8 +1,42 @@
 # IMPACT_ANALYSIS.md — Research-to-Roadmap Traceability
 
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 10 January 2026
 > **Purpose:** Track how research findings impact roadmap elements
 > **Trigger:** Updated automatically when research concludes or decisions are made
+
+---
+
+## CRITICAL: Document Scope
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  ⚠️  CASCADE ANALYSIS ONLY — This document does NOT store tasks              │
+│                                                                              │
+│  DO:                                     │  DON'T:                           │
+│  ✅ Log cascade effects                  │  ❌ Store task definitions         │
+│  ✅ Reference tasks by ID (F-01, B-03)   │  ❌ Create task tables             │
+│  ✅ Track dependency chains              │  ❌ Track task status              │
+│  ✅ Analyze upstream/downstream impact   │  ❌ Duplicate Master Tracker       │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Task Storage Locations:**
+| What | Where | NOT Here |
+|------|-------|----------|
+| Task Definitions | RESEARCH_QUESTIONS.md → Master Implementation Tracker | ❌ |
+| Task Quick Status | IMPLEMENTATION_ACTIONS.md | ❌ |
+| Cascade Effects | **THIS DOCUMENT** ✅ | — |
+
+**Workflow:**
+```
+Research completes
+  ↓
+Impact analyzed HERE (cascade effects)
+  ↓
+Tasks extracted to RESEARCH_QUESTIONS.md → Master Tracker
+  ↓
+Quick status updated in IMPLEMENTATION_ACTIONS.md
+```
 
 ---
 
@@ -368,10 +402,296 @@ Only THEN integrate into Core Docs
 
 ---
 
+## Impact Analysis: 10 January 2026 Session
+
+### Research Completed This Session
+
+| Research | Status | Impact Level |
+|----------|--------|--------------|
+| **RQ-005** | ✅ COMPLETE | **CRITICAL** — Core Identity Coach algorithm |
+| **RQ-006** | ✅ COMPLETE | **HIGH** — Content library specification |
+| **RQ-007** | ✅ COMPLETE | **HIGH** — Identity roadmap architecture |
+
+### Reconciliation Summary
+
+**Source:** DeepSeek Deep Think
+**Document:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`
+**Results:** 14 ACCEPT, 5 MODIFY, 1 REJECT, 1 ESCALATE
+
+---
+
+### RQ-005/006/007: Cascade Effects
+
+**Schema Impact (New Tables Required):**
+
+| Table | Purpose | Priority | Source |
+|-------|---------|----------|--------|
+| `preference_embeddings` | User taste vector (768-dim) | HIGH | RQ-005 |
+| `identity_roadmaps` | User aspiration tracking | CRITICAL | RQ-007 |
+| `roadmap_nodes` | Roadmap stage progression | CRITICAL | RQ-007 |
+| `archetype_templates` | 12 preset dimension combinations | HIGH | RQ-006 |
+
+**Schema Impact (Field Additions):**
+
+| Table | Field | Purpose | Source |
+|-------|-------|---------|--------|
+| `habit_templates` | `ideal_dimension_vector` | Psychometric matching | RQ-005 |
+| `identity_facets` | `archetype_template_id` | Content mapping | RQ-006 |
+
+**Service Layer Impact:**
+
+| Service | Status | Key Methods |
+|---------|--------|-------------|
+| `ProactiveRecommendation` | NEW | Dart model for recommendation output |
+| `IdentityRoadmapService` | NEW | Roadmap CRUD + ICS calculation |
+| `generateRecommendations()` | NEW | Edge Function for async recommendations |
+
+**Content Requirements:**
+
+| Content Type | Quantity | Status | Blocking |
+|--------------|----------|--------|----------|
+| Universal Habit Templates | 50 | 🔴 TODO | Identity Coach launch |
+| Archetype Template Presets | 12 | 🔴 TODO | Content mapping |
+| Framing Templates | 12 | 🔴 TODO | Personalization |
+| Ritual Templates | 4 | 🔴 TODO | Ritual recommendations |
+
+---
+
+### Human Decision Required
+
+**Content Library Size at Launch:**
+
+| Option | Habits | Templates | Effort | Ship Speed |
+|--------|--------|-----------|--------|------------|
+| **A** (Recommended) | 50 | 12 | Low | Fast |
+| **B** | 100 | 24 | Medium | Moderate |
+| **C** | 200+ | 48 | High | Slow |
+
+**Recommendation:** Option A — ship fast, iterate based on feedback.
+
+---
+
+### Implementation Tasks Extracted
+
+| ID | Task | Priority | Component | Source |
+|----|------|----------|-----------|--------|
+| F-01 | Create `preference_embeddings` table | HIGH | Database | RQ-005 |
+| F-02 | Create `identity_roadmaps` table | CRITICAL | Database | RQ-007 |
+| F-03 | Create `roadmap_nodes` table | CRITICAL | Database | RQ-007 |
+| F-04 | Add `ideal_dimension_vector` to `habit_templates` | HIGH | Database | RQ-005 |
+| F-05 | Add `archetype_template_id` to `identity_facets` | HIGH | Database | RQ-006 |
+| F-06 | Create `archetype_templates` reference table | HIGH | Database | RQ-006 |
+| F-07 | Implement `generateRecommendations()` Edge Function | CRITICAL | Backend | RQ-005 |
+| F-08 | Implement Stage 1: Semantic retrieval | CRITICAL | Backend | RQ-005 |
+| F-09 | Implement Stage 2: Psychometric re-ranking | CRITICAL | Backend | RQ-005 |
+| F-10 | Implement "Architect" scheduler (nightly/weekly) | HIGH | Backend | RQ-005 |
+| F-11 | Implement feedback signal tracking | HIGH | Service | RQ-005 |
+| F-12 | Extend Sherlock Day 3: "Future Self Interview" | HIGH | Onboarding | RQ-007 |
+| F-13 | Create 50 universal habit templates | CRITICAL | Content | RQ-006 |
+| F-14 | Create 12 Archetype Template presets | HIGH | Content | RQ-006 |
+| F-15 | Create 12 Framing Templates | HIGH | Content | RQ-006 |
+| F-16 | Create 4 Ritual Templates | MEDIUM | Content | RQ-006 |
+| F-17 | Implement `ProactiveRecommendation` Dart model | HIGH | Service | RQ-005 |
+| F-18 | Implement `IdentityRoadmapService` | HIGH | Service | RQ-007 |
+| F-19 | Implement Pace Car rate limiting | HIGH | Service | RQ-005 |
+| F-20 | Create regression messaging templates | MEDIUM | Content | RQ-006 |
+
+---
+
+### Dependency Chain Update
+
+```
+RQ-005 (Proactive Algorithms) ✅
+├── Depends on: RQ-001 (Dimensions) ✅
+├── Depends on: RQ-012 (Fractal Trinity) ✅
+├── Enables: F-07 through F-11 (Backend tasks)
+├── Enables: F-17 (ProactiveRecommendation model)
+└── Enables: F-19 (Pace Car rate limiting)
+
+RQ-006 (Content Library) ✅
+├── Depends on: RQ-005 (algorithms need content)
+├── Enables: F-13 through F-16 (Content tasks)
+├── Enables: F-06 (Archetype Templates table)
+└── BLOCKS: Full Identity Coach launch (content is a blocker)
+
+RQ-007 (Identity Roadmap) ✅
+├── Depends on: RQ-005 (recommendations feed roadmap)
+├── Enables: F-02, F-03, F-12, F-18
+└── Enables: Progression UI in Constellation
+```
+
+---
+
+### GLOSSARY Terms Added
+
+10 new terms added from RQ-005/006/007:
+- The Architect, The Commander, Pace Car Protocol, Trinity Seed
+- Preference Embedding, Archetype Template, Identity Consolidation Score (ICS)
+- The Spark, The Dip, The Groove
+- Two-Stage Hybrid Retrieval, Future Self Interview
+
+---
+
+### Recommendations
+
+1. **Immediate:** Human approval on content library size (Option A recommended)
+2. **Implementation Order:** F-02 → F-03 → F-07 → F-08 → F-09 (critical path)
+3. **Content Parallel Track:** F-13 → F-14 → F-15 can proceed in parallel with DB work
+4. **Integration:** Sherlock extension (F-12) should be added to Day 3 flow
+
+---
+
+## Impact Analysis: 10 January 2026 — Identity Coach Phase 2 (RQ-028 through RQ-032)
+
+### Research Summary
+
+| RQ | Title | Status | Priority |
+|----|-------|--------|----------|
+| **RQ-028** | Archetype Template Definitions | ✅ COMPLETE | **CRITICAL** |
+| **RQ-029** | Ideal Dimension Vector Curation | ✅ COMPLETE | **HIGH** |
+| **RQ-030** | Preference Embedding Update Mechanics | ✅ COMPLETE | **MEDIUM** |
+| **RQ-031** | Pace Car Threshold Validation | ✅ COMPLETE | **MEDIUM** |
+| **RQ-032** | ICS Integration with Existing Metrics | ✅ COMPLETE | **HIGH** |
+
+### Reconciliation Summary
+
+**Source:** Deep Think Research Report (Identity Coach Phase 2)
+**Document:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md`
+**Results:** 25 ACCEPT, 5 MODIFY, 0 REJECT, 0 ESCALATE (1 resolved via audit)
+
+---
+
+### RQ-028/029/030/031/032: Cascade Effects
+
+**Schema Impact (Field Additions):**
+
+| Table | Field | Purpose | Source |
+|-------|-------|---------|--------|
+| `identity_facets` | `ics_score` | Identity Consolidation Score | RQ-032 |
+| `identity_facets` | `typical_energy_state` | Energy gating (CD-015 4-state) | RQ-031, PD-123 |
+| `preference_embeddings` | `trinity_seed` | Aspiration anchor (768-dim) | RQ-030 |
+
+**Service Layer Impact:**
+
+| Service | Status | Key Methods | Source |
+|---------|--------|-------------|--------|
+| `RocchioUpdater` | NEW | updatePreference(current, habitVec, action) | RQ-030 |
+| `ICSCalculator` | NEW | calculate(avgConsistency, totalVotes) | RQ-032 |
+| `ArchetypeMatcher` | NEW | match(facetName, threshold) | RQ-028 |
+| `PaceCar` | UPDATE | Building vs Maintenance model (graceful_score < 0.8) | RQ-031 |
+
+**Content Impact:**
+
+| Content Type | Quantity | Status | Source |
+|--------------|----------|--------|--------|
+| Archetype Definitions | 12 | 🔴 TODO | RQ-028, PD-121 |
+| Dimension Vectors for Habits | 50 | 🔴 TODO | RQ-029 |
+
+**Metrics Consolidation:**
+
+| Metric | Status | Role |
+|--------|--------|------|
+| `hexis_score` | ❌ DEPRECATED | Never implemented — documentation-only term |
+| `graceful_score` | ✅ KEEP | Component of ICS, used in Pace Car |
+| `ics_score` | ✅ NEW | Master facet metric (log scale) |
+
+---
+
+### Dependency Chain Update
+
+```
+RQ-028 (Archetype Definitions) ✅
+├── Depends on: RQ-005 (Two-Stage Retrieval) ✅, RQ-006 (Content Library) ✅
+├── Enables: G-06 (ArchetypeMatcher), G-08 (archetype content)
+└── Unblocks: F-06, F-13, F-14 (content creation pipeline)
+
+RQ-029 (Dimension Curation) ✅
+├── Depends on: RQ-005 (dimension model)
+├── Enables: G-09, G-10 (content curation)
+└── Unblocks: F-04 (ideal_dimension_vector field)
+
+RQ-030 (Preference Embedding) ✅
+├── Depends on: RQ-005 (embedding strategy)
+├── Enables: G-03 (trinity_seed field), G-04 (RocchioUpdater)
+└── Unblocks: F-11 (feedback signal tracking)
+
+RQ-031 (Pace Car) ✅
+├── Depends on: RQ-005 (recommendation throttling)
+├── Enables: G-02 (typical_energy_state), G-07 (PaceCar update)
+└── Modifies: F-19 (Pace Car now uses Building vs Maintenance model)
+
+RQ-032 (ICS Integration) ✅
+├── Depends on: RQ-007 (identity roadmap)
+├── Enables: G-01 (ics_score field), G-05 (ICSCalculator), G-12 (UI tiers)
+└── Deprecates: hexis_score (never implemented)
+```
+
+---
+
+### PDs Resolved
+
+| PD | Decision | Impact |
+|----|----------|--------|
+| PD-121 | 12 Archetypes (psychologically grounded) | Unblocks content creation |
+| PD-122 | Preference embedding HIDDEN (768-dim is noise) | Simplifies UX |
+| PD-123 | `typical_energy_state` field (CD-015 4-state enum) | Enables energy gating |
+| PD-124 | 7-day TTL for recommendation cards | Prevents stale suggestions |
+
+---
+
+### CD Congruency Verification
+
+| CD | Requirement | Research Alignment |
+|----|-------------|-------------------|
+| CD-005 | 6-Dimension Model | ✅ All archetypes use 6-dim vectors |
+| CD-015 | 4-State Energy Model | ✅ typical_energy_state uses 4-state enum |
+| CD-016 | DeepSeek V3.2 | ✅ Used for dimension curation prompt |
+| CD-017 | Android-First | ✅ All data points Android-available |
+| CD-018 | ESSENTIAL Threshold | ✅ Classifications applied per proposal |
+
+---
+
+### Implementation Tasks Extracted (Phase G: 14 Tasks)
+
+*Task definitions are in RESEARCH_QUESTIONS.md → Master Implementation Tracker*
+*Quick status is in IMPLEMENTATION_ACTIONS.md*
+
+| Task ID | Description | Priority | Source |
+|---------|-------------|----------|--------|
+| G-01 | Add `ics_score` field | HIGH | RQ-032 |
+| G-02 | Add `typical_energy_state` field | HIGH | RQ-031, PD-123 |
+| G-03 | Add `trinity_seed` field | HIGH | RQ-030 |
+| G-04 | `RocchioUpdater` service | **CRITICAL** | RQ-030 |
+| G-05 | `ICSCalculator` service | HIGH | RQ-032 |
+| G-06 | `ArchetypeMatcher` service | **CRITICAL** | RQ-028 |
+| G-07 | Update `PaceCar` model | HIGH | RQ-031 |
+| G-08 | Populate archetype_templates | **CRITICAL** | RQ-028, PD-121 |
+| G-09 | DeepSeek dimension curation | HIGH | RQ-029 |
+| G-10 | Audit dimension vectors | HIGH | RQ-029 |
+| G-11 | 7-day TTL logic | MEDIUM | PD-124 |
+| G-12 | ICS visual tiers | MEDIUM | RQ-032 |
+| G-13 | Deprecate hexis_score | LOW | RQ-032 |
+| G-14 | Archetype override UI | LOW | RQ-028 |
+
+---
+
+### GLOSSARY Terms to Add
+
+From RQ-028/029/030/031/032:
+- **Rocchio Algorithm** — Information retrieval relevance feedback method
+- **Trinity Anchor** — 30% weight towards Day 1 aspiration seed
+- **Building Habit** — graceful_score < 0.8 (requires willpower)
+- **Maintenance Habit** — graceful_score ≥ 0.8 (automatic)
+- **ICS Visual Tiers** — Seed/Sapling/Oak progression display
+
+---
+
 ## Revision History
 
 | Date | Research/Decision | Roadmap Items Impacted | Changes Made |
 |------|-------------------|------------------------|--------------|
+| 10 Jan 2026 | RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 (Identity Coach Phase 2) | Phase G tasks G-01 through G-14 | Protocol 9 reconciliation, 14 new implementation tasks, PD-121/122/123/124 resolved |
+| 10 Jan 2026 | RQ-005, RQ-006, RQ-007 (Identity Coach) | Identity Coach tasks F-01 through F-20, Content Library | Protocol 9 reconciliation, 20 new implementation tasks |
 | 06 Jan 2026 | CD-017, CD-018, RQ-013/14/15, PD-117 | All implementation, Protocol 9, Task extraction | Full impact analysis added |
 | 05 Jan 2026 | RQ-001 Complete | All Layers, PD-001, PD-102, PD-002, PD-003, PD-101, PD-104 | Initial impact analysis |
 
