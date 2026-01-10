@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-028/029/030/031/032 terms: Rocchio Algorithm, Trinity Anchor, Building Habit, Maintenance Habit; Updated ICS formula; Deprecated hexis_score)
+> **Last Updated:** 10 January 2026 (Added RQ-017/018 terms: Ghost Mode, The Tether, The Seal; Updated Constellation UX, Airlock Protocol, Identity Priming to COMPLETE)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -209,58 +209,99 @@ Executive gets growth; Father gets consistency. Treaty?"
 ### Constellation UX
 **Definition:** The dashboard visualization replacing Skill Tree — a living solar system where facets are planets orbiting the Self (sun).
 
+**Visual Model:** Bohr-Kepler Hybrid — stable concentric orbits with physics-based velocity.
+
 **Visual Elements:**
-| Element | Represents |
-|---------|------------|
-| **Sun** | The Self (center of gravity) |
-| **Planets** | Identity Facets |
-| **Planet Mass** | Habit volume / importance |
-| **Orbit Distance** | Integration with Core Self |
-| **Planet Brightness** | Activity level (dim = neglected) |
-| **Orbit Stability** | Consistency (wobble = instability) |
+| Element | Data Source | Formula/Logic |
+|---------|-------------|---------------|
+| **Sun** | The Self | Pulse at aggregate ICS |
+| **Planets** | Identity Facets | One per facet |
+| **Planet Radius** | `habitVolume` | `16dp + clamp(log(votes)*4, 0, 24)` |
+| **Orbit Distance** | `ics_score` | `MaxRadius - (ICS * 30dp)` — closer = more integrated |
+| **Planet Color** | `energyState` | Blue (Focus), Green (Physical), Orange (Social), Purple (Recovery) |
+| **Brightness** | `lastEngaged` | 100% (<3d), 30% (>7d = Ghost Mode) |
+| **Wobble** | `friction` | `sin(t*20) * friction * 4px` |
+| **Tether** | `friction > 0.6` | Red pulsing line between conflicting facets |
 
-**Key Visual Insight:** A massive "Career" planet pulling "Health" planet out of orbit shows life's gravity distortion in real-time.
+**Implementation:** Flutter CustomPainter (Canvas) — Rive/Lottie can't handle dynamic orbital math.
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-017
+**Status:** ✅ COMPLETE — RQ-017
 
-**Code References:** Will replace `skill_tree.dart`
+**Code References:** Phase H tasks (H-01 through H-09), will replace `skill_tree.dart`
+
+---
+
+### Ghost Mode
+**Definition:** Visual state for neglected identity facets (>7 days since engagement). Planet appears desaturated with dashed stroke and 30% opacity.
+
+**Purpose:** Provides visual entropy feedback — cooling planets signal facets needing attention.
+
+**Threshold:** 7 days since last habit completion attributed to that facet.
+
+**Status:** ✅ COMPLETE — RQ-017
+
+---
+
+### The Tether
+**Definition:** Red pulsing line connecting two planets in Constellation when friction_coefficient > 0.6 and both facets are active.
+
+**Interaction:** Tapping the tether opens a modal: "Conflict detected between [A] and [B]. Summon Council?"
+
+**Status:** ✅ COMPLETE — RQ-017
 
 ---
 
 ### Airlock Protocol
-**Definition:** Mandatory transition rituals inserted when switching between conflicting energy states.
+**Definition:** Transition rituals inserted when switching between conflicting energy states. Severity-based (suggested for low friction, mandatory for treaty-bound).
 
-**Example:**
-```
-"You are switching from Hunter Mode (Work) to Gatherer Mode (Home).
-Do not enter yet. 5-minute Box Breathing."
-```
+**The Seal (v0.5):**
+- Full-screen overlay: "Leaving [Facet A]. Entering [Facet B]."
+- Press-and-hold fingerprint icon for 5 seconds
+- Circle fills with light (0% → 100%)
+- Haptic ramp completes the ritual
 
-**Purpose:** Reduce state switching costs, prevent emotional spillover between facets.
+**User Control (PD-110):**
+- **Default:** Suggested (dismissable)
+- **Treaty Override:** Mandatory if user signed a transition treaty
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-018
+**Purpose:** Reduce state switching costs, prevent cognitive residue spillover.
 
-**Code References:** Not yet implemented
+**Status:** ✅ COMPLETE — RQ-018
+
+**Code References:** Phase H tasks (H-10 through H-14), `TransitionDetector`, `AirlockOverlay`
+
+---
+
+### The Seal
+**Definition:** The minimum viable Airlock ritual — a 5-second press-and-hold interaction that completes a state transition.
+
+**UX:**
+1. Full-screen overlay appears
+2. User presses and holds fingerprint icon
+3. Circle fills with light over 5 seconds
+4. Haptic pattern ramps: `[0,50,0,100,0,200]`
+5. Transition completes
+
+**Status:** ✅ COMPLETE — RQ-018
 
 ---
 
 ### Identity Priming
-**Definition:** Sensory triggers (audio + voice) that prime the user for a state shift before a habit begins.
+**Definition:** Sensory triggers (audio + haptic) that prime the user for a state shift during Airlock.
 
-**Example:**
-```
-Trigger: 5 mins before "Deep Work"
-Action: Play Sonic Trigger specific to "Architect" facet
-Content: Hans Zimmer drone + Voice: "You are a builder. The world is noise.
-         This is the signal. Enter the Cathedral."
-Result: Immediate state shift via sensory anchoring.
-```
+**Audio Assets (PD-112):**
+- `drone_focus.ogg` (40Hz Gamma binaural)
+- `drone_social.ogg` (Warm acoustic)
+- `drone_physical.ogg` (130bpm percussion)
+- `sfx_airlock_seal.ogg` (Pneumatic hiss)
+
+**Unlock:** User mantras available at Sapling tier (ICS ≥ 1.2).
 
 **Distinction from Notifications:**
 - **Notification:** Cognitive reminder ("Time to work")
-- **Identity Priming:** Sensory state shift (audio + voice + ritual)
+- **Identity Priming:** Sensory state shift (audio + haptic + ritual)
 
-**Status:** 🔴 NEEDS RESEARCH — RQ-018
+**Status:** ✅ COMPLETE — RQ-018
 
 **Code References:** Not yet implemented
 

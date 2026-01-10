@@ -31,11 +31,11 @@
 | **PD-105** | Unified AI Coaching Architecture | 🟢 READY | RQ-005,6,7 ✅ | — |
 | **PD-106** | Multiple Identity Architecture | ✅ RESOLVED → CD-015 | RQ-011 | Q1-2026 |
 | **PD-107** | Proactive Guidance System | 🟢 READY | RQ-005,6,7 ✅ | — |
-| **PD-108** | Constellation UX Migration | 🔴 PENDING | RQ-017 | — |
+| **PD-108** | Constellation UX Migration | ✅ RESOLVED | RQ-017 | Q1-2026 |
 | **PD-109** | Council AI Activation Rules | ✅ RESOLVED | RQ-016 | Q1-2026 |
-| **PD-110** | Airlock Protocol User Control | 🔴 PENDING | RQ-018 | — |
+| **PD-110** | Airlock Protocol User Control | ✅ RESOLVED | RQ-018 | Q1-2026 |
 | **PD-111** | Polymorphic Habit Attribution | ✅ RESOLVED | RQ-015 | Q1-2026 |
-| **PD-112** | Identity Priming Audio Strategy | 🔴 PENDING | RQ-018 | — |
+| **PD-112** | Identity Priming Audio Strategy | ✅ RESOLVED | RQ-018 | Q1-2026 |
 | **PD-113** | Treaty Priority Hierarchy | ✅ RESOLVED | RQ-020 | Q1-2026 |
 | **PD-114** | Full Implementation Commitment | ✅ RESOLVED | — | Q1-2026 |
 | **PD-115** | Treaty Creation UX | ✅ RESOLVED | RQ-021 | Q1-2026 |
@@ -59,9 +59,9 @@
 | Metric | Count |
 |--------|-------|
 | **Total PDs** | 31 |
-| **✅ RESOLVED** | 11 (35%) |
+| **✅ RESOLVED** | 14 (45%) |
 | **🟢 READY** | 2 (6%) |
-| **🔴 PENDING** | 18 (58%) |
+| **🔴 PENDING** | 15 (48%) |
 
 ---
 
@@ -91,9 +91,12 @@ UNBLOCKED BY RQ-028/029/030/031/032 (Resolved):
 ├── PD-123 ✅ RESOLVED (typical_energy_state)
 └── PD-124 ✅ RESOLVED (7-day TTL)
 
+UNBLOCKED BY RQ-017/018 (Resolved):
+├── PD-108 ✅ RESOLVED (Big Bang with fallback)
+├── PD-110 ✅ RESOLVED (Severity + Treaty hybrid)
+└── PD-112 ✅ RESOLVED (Hybrid audio strategy)
+
 BLOCKED BY PRIOR RESEARCH:
-├── PD-108 ← RQ-017
-├── PD-110, PD-112 ← RQ-018
 ├── PD-116 ← RQ-023
 ├── PD-118 ← RQ-024
 └── PD-119 ← RQ-025

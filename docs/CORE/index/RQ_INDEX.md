@@ -36,8 +36,8 @@
 | **RQ-014** | State Economics & Bio-Energetic Conflicts | ✅ COMPLETE | RQ-012 | Q1-2026 |
 | **RQ-015** | Polymorphic Habits Implementation | ✅ COMPLETE | RQ-012 | Q1-2026 |
 | **RQ-016** | Council AI (Roundtable Simulation) | ✅ COMPLETE | CD-015, RQ-012 | Q1-2026 |
-| **RQ-017** | Constellation UX (Solar System Visualization) | 🔴 NEEDS RESEARCH | RQ-012 | — |
-| **RQ-018** | Airlock Protocol & Identity Priming | 🔴 NEEDS RESEARCH | RQ-012 | — |
+| **RQ-017** | Constellation UX (Solar System Visualization) | ✅ COMPLETE | RQ-012 | Q1-2026 |
+| **RQ-018** | Airlock Protocol & Identity Priming | ✅ COMPLETE | RQ-012 | Q1-2026 |
 | **RQ-019** | pgvector Implementation Strategy | ✅ COMPLETE | RQ-012 | Q1-2026 |
 | **RQ-020** | Treaty-JITAI Integration Architecture | ✅ COMPLETE | RQ-012, RQ-016 | Q1-2026 |
 | **RQ-021** | Treaty Lifecycle & UX | ✅ COMPLETE | RQ-020 | Q1-2026 |
@@ -60,8 +60,8 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs** | 32 |
-| **✅ COMPLETE** | 23 (72%) |
-| **🔴 NEEDS RESEARCH** | 9 (28%) |
+| **✅ COMPLETE** | 25 (78%) |
+| **🔴 NEEDS RESEARCH** | 7 (22%) |
 
 ---
 
@@ -99,8 +99,8 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
 │   │   └── RQ-025 (Summon Tokens) 🔴
-│   ├── RQ-017 (Constellation UX) 🔴
-│   ├── RQ-018 (Airlock Protocol) 🔴
+│   ├── RQ-017 (Constellation UX) ✅
+│   ├── RQ-018 (Airlock Protocol) ✅
 │   ├── RQ-019 (pgvector) ✅
 │   │   └── RQ-023 (Privacy Framework) 🔴
 │   └── RQ-020 (Treaty-JITAI) ✅

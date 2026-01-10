@@ -267,7 +267,7 @@ PROJECT ROOT:                                                  │
 
 ## Quick Status Dashboard
 
-### Phase Summary (91 Total Tasks)
+### Phase Summary (107 Total Tasks)
 
 | Phase | Description | Total | CRITICAL | HIGH | MEDIUM | LOW | Progress |
 |-------|-------------|-------|----------|------|--------|-----|----------|
@@ -277,8 +277,9 @@ PROJECT ROOT:                                                  │
 | **D: UX** | Frontend screens | 10 | 2 | 5 | 2 | 1 | 0% |
 | **E: Polish** | Advanced features | 10 | 0 | 2 | 5 | 3 | 0% |
 | **F: Identity Coach** | Recommendation engine (Phase 1) | 20 | 5 | 12 | 3 | 0 | 0% |
-| **G: Identity Coach** | Intelligence layer (Phase 2) | 14 | 3 | 8 | 2 | 1 | 0% |
-| **TOTAL** | | **91** | **26** | **41** | **18** | **6** | **0%** |
+| **G: Identity Coach** | Intelligence layer (Phase 2) | 14 | 3 | 7 | 2 | 2 | 0% |
+| **H: Constellation/Airlock** | psyOS UX layer | 16 | 5 | 6 | 4 | 1 | 0% |
+| **TOTAL** | | **107** | **31** | **46** | **22** | **8** | **0%** |
 
 **Full Task List:** RESEARCH_QUESTIONS.md → "Master Implementation Tracker" (line ~3487)
 
@@ -286,13 +287,28 @@ PROJECT ROOT:                                                  │
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 🔴 NOT STARTED: 91 (100%)                                   │
+│ 🔴 NOT STARTED: 107 (100%)                                  │
 │ 🟡 IN PROGRESS: 0 (0%)                                      │
 │ ✅ COMPLETE:    0 (0%)                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Phase G: Identity Coach Intelligence (NEW — 10 Jan 2026)
+### Phase H: Constellation & Airlock (NEW — 10 Jan 2026)
+
+**Source:** RQ-017, RQ-018 (Deep Think psyOS UX Phase)
+**Decisions:** PD-108 (Big Bang migration), PD-110 (Severity + Treaty), PD-112 (Hybrid audio)
+
+| Task | Description | Priority |
+|------|-------------|----------|
+| H-01 | `ConstellationPainter` (CustomPainter) | CRITICAL |
+| H-02 | Orbit distance formula (ICS-based) | CRITICAL |
+| H-07 | Settled state (0 FPS idle) | CRITICAL |
+| H-10 | `TransitionDetector` service | CRITICAL |
+| H-11 | `AirlockOverlay` widget (5-Second Seal) | CRITICAL |
+
+---
+
+### Phase G: Identity Coach Intelligence (10 Jan 2026)
 
 **Source:** RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 (Deep Think Phase 2)
 **Decisions:** PD-121 (12 Archetypes), PD-122 (Hidden embedding), PD-123 (Energy state), PD-124 (7-day TTL)
