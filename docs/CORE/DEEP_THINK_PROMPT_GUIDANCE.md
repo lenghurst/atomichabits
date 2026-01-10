@@ -269,6 +269,29 @@ For EACH ACCEPT or MODIFY recommendation:
 DO NOT extract tasks from REJECTED proposals.
 ```
 
+### Step 1.5: Update Implementation Actions Quick Status
+```
+After adding tasks to Master Tracker (Step 1), update the navigation hub:
+
+1. IMPLEMENTATION_ACTIONS.md → Quick Status Dashboard
+   - Update phase totals (e.g., Phase A: 12 tasks)
+   - Update overall totals
+
+2. Add entry to "Recently Added Tasks" section
+   - Task ID, Title, Phase, Status, Source RQ
+
+3. Add row to "Task Addition Log"
+   - Date, Source (RQ-XXX reconciliation), Phase, Count, Added By
+
+4. Check "Blocked Tasks" section
+   - If new research creates blockers, document them
+   - If blockers resolved, remove them
+
+WHY: IMPLEMENTATION_ACTIONS.md is the navigation hub. If it's not updated,
+agents will miss new tasks. Master Tracker is the source of truth for details;
+IA is the quick status dashboard.
+```
+
 ### Step 2: Update Research Questions
 ```
 1. Mark RQ as ✅ COMPLETE

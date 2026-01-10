@@ -6,6 +6,40 @@
 
 ---
 
+## CRITICAL: Document Scope
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  ⚠️  CASCADE ANALYSIS ONLY — This document does NOT store tasks              │
+│                                                                              │
+│  DO:                                     │  DON'T:                           │
+│  ✅ Log cascade effects                  │  ❌ Store task definitions         │
+│  ✅ Reference tasks by ID (F-01, B-03)   │  ❌ Create task tables             │
+│  ✅ Track dependency chains              │  ❌ Track task status              │
+│  ✅ Analyze upstream/downstream impact   │  ❌ Duplicate Master Tracker       │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Task Storage Locations:**
+| What | Where | NOT Here |
+|------|-------|----------|
+| Task Definitions | RESEARCH_QUESTIONS.md → Master Implementation Tracker | ❌ |
+| Task Quick Status | IMPLEMENTATION_ACTIONS.md | ❌ |
+| Cascade Effects | **THIS DOCUMENT** ✅ | — |
+
+**Workflow:**
+```
+Research completes
+  ↓
+Impact analyzed HERE (cascade effects)
+  ↓
+Tasks extracted to RESEARCH_QUESTIONS.md → Master Tracker
+  ↓
+Quick status updated in IMPLEMENTATION_ACTIONS.md
+```
+
+---
+
 ## What This Document Is
 
 This document ensures research findings **cascade through the entire system**. When research concludes:

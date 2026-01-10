@@ -25,9 +25,10 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ AI_HANDOVER.md — What did the last agent do?                             │
 │  □ index/CD_INDEX.md + index/PD_INDEX.md — Quick decision status lookup     │
 │  □ index/RQ_INDEX.md — Quick research status lookup                         │
-│  □ IMPACT_ANALYSIS.md — Actionable tasks + cascade tracking                 │
+│  □ IMPLEMENTATION_ACTIONS.md — Task quick status + navigation hub           │
+│  □ IMPACT_ANALYSIS.md — Cascade tracking ONLY (not task storage)            │
 │  □ PRODUCT_DECISIONS.md — Full details for PENDING decisions only           │
-│  □ RESEARCH_QUESTIONS.md — Full details for ACTIVE research only            │
+│  □ RESEARCH_QUESTIONS.md — Master Task Tracker + ACTIVE research            │
 │  □ GLOSSARY.md — What do terms mean in this codebase?                       │
 │  □ AI_CONTEXT.md — What's the current architecture?                         │
 │  □ ROADMAP.md — What are the current priorities?                            │
@@ -65,10 +66,14 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ PRODUCT_DECISIONS.md — Log any new decisions/questions                   │
 │  □ RESEARCH_QUESTIONS.md — Update status, propose new RQs if needed         │
 │  □ ROADMAP.md — Update task status, add new items if discovered             │
-│  □ IMPACT_ANALYSIS.md — Log cascade effects of any decisions made           │
+│  □ IMPACT_ANALYSIS.md — Log cascade effects ONLY (not task storage)         │
 │  □ index/*.md — Update quick reference tables if RQ/PD/CD status changed    │
 │                                                                              │
-│  TIER 1.5: IF EXTERNAL RESEARCH WAS PROCESSED                                │
+│  TIER 1.5: IF TASKS WERE EXTRACTED OR STATUS CHANGED                         │
+│  □ IMPLEMENTATION_ACTIONS.md — Update Quick Status + Recently Added         │
+│  □ RESEARCH_QUESTIONS.md → Master Tracker — Update task details             │
+│                                                                              │
+│  TIER 1.5b: IF EXTERNAL RESEARCH WAS PROCESSED                               │
 │  □ Protocol 9 was completed before integration                               │
 │  □ Reconciliation document created in docs/analysis/                         │
 │  □ ACCEPT/MODIFY/REJECT/ESCALATE documented                                  │

@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 10 January 2026 (Deep Think Prompt Enhanced + IMPLEMENTATION_ACTIONS.md Exhaustively Detailed)
+> **Last Updated:** 10 January 2026 (Signposting Audit Complete — All Core Docs Reference IMPLEMENTATION_ACTIONS.md)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -39,7 +39,7 @@ This prevents:
 | **Session ID** | `claude/setup-pact-context-1i4ze` |
 | **Date** | 10 January 2026 (continued) |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Task Tracker Audit, IMPLEMENTATION_ACTIONS.md Creation, Deep Think Prompt |
+| **Focus** | Signposting Audit, Core Doc Updates, Deep Think Prompt Enhancement |
 
 ### What Was Accomplished (This Latest Session)
 
@@ -96,6 +96,29 @@ Enhanced prompt from 6.6/10 to 8.5/10:
 - Added External Agent Instructions (for DeepSeek/Gemini)
 - Added Cross-Reference Quick Links table
 - Document now serves as navigation hub for all agents
+
+**9. IMPLEMENTATION_ACTIONS Signposting Audit — ALL CORE DOCS**
+- **Audit Document:** `docs/analysis/IMPLEMENTATION_ACTIONS_SIGNPOSTING_AUDIT.md`
+- **Issue Found:** IMPLEMENTATION_ACTIONS.md was well-designed but invisible to agents during standard session workflows
+- **Root Cause:** Core documents didn't reference IA in entry/exit protocols
+
+**P0 Fixes Applied:**
+| Document | Fix |
+|----------|-----|
+| AI_AGENT_PROTOCOL.md (Entry) | Added IA to Session Entry Protocol read list |
+| AI_AGENT_PROTOCOL.md (Exit) | Added Tier 1.5 for task status updates |
+| IMPACT_ANALYSIS.md | Added CASCADE ONLY warning (not task storage) |
+
+**P1 Fixes Applied:**
+| Document | Fix |
+|----------|-----|
+| DEEP_THINK_PROMPT_GUIDANCE.md | Added Step 1.5: Update Implementation Actions Quick Status |
+
+**Architecture Now Consistent:**
+```
+CLAUDE.md → AI_HANDOVER.md → index/*.md → IMPLEMENTATION_ACTIONS.md → RESEARCH_QUESTIONS.md → IMPACT_ANALYSIS.md
+                                            (Task Quick Status)         (Master Tracker)       (Cascade ONLY)
+```
 
 ---
 
