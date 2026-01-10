@@ -73,6 +73,21 @@ This prevents:
 - Service: F-17, F-18, F-19 (Dart models, services)
 - Onboarding: F-12 (Future Self Interview)
 
+**6. Exhaustive Deep Analysis (Second Pass)**
+- Created `docs/analysis/IDENTITY_COACH_DEEP_ANALYSIS.md` (~750 lines)
+- Documented all 12 DeepSeek concepts with gaps identified
+- Identified 5 new RQs: RQ-028 through RQ-032
+- Identified 4 new PDs: PD-121 through PD-124
+- Updated PD-105, PD-107 status to READY (unblocked by RQ-005/006/007)
+- Total RQs: 32 (18 complete = 56%)
+- Total PDs: 30 (6 resolved, 2 ready, 22 pending)
+
+**7. Critical Gaps Identified**
+- RQ-028 (Archetype Definitions) is CRITICAL — blocks F-06, F-13, F-14
+- Two-Stage Retrieval requires DUAL embeddings per habit (content burden)
+- Trinity Seed depends on PD-101 (Sherlock Prompt) being resolved
+- Preference embedding drift vs stated aspirations is a design concern
+
 ---
 
 ### Previous Session Summary (10 January — Documentation Unification)
@@ -883,6 +898,7 @@ lib/features/dashboard/
 
 | Date | Agent | Branch | Focus | Outcome |
 |------|-------|--------|-------|---------|
+| 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-1i4ze` | Identity Coach Deep Analysis + New RQs/PDs | ✅ Exhaustive analysis; 5 new RQs (028-032); 4 new PDs (121-124); PD-105/107 unblocked; Critical gaps identified |
 | 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-1i4ze` | Identity Coach Deep Think Reconciliation | ✅ RQ-005/006/007 COMPLETE; Protocol 9 applied; 20 tasks extracted (F-01 to F-20); 12 GLOSSARY terms added |
 | 10 Jan 2026 | Claude (Opus 4.5) | `claude/setup-pact-context-rApSv` | Documentation Unification | ✅ CLAUDE.md created; Reading order unified; IMPACT_ANALYSIS.md orphaning fixed; Agent custom instructions drafted |
 | 05 Jan 2026 | Claude (Opus 4.5) | `claude/pact-session-setup-QVINO` | Deep Analysis: Gaps + New RQs/PDs | ✅ RQ-021-023 NEW; PD-115-117 NEW; Treaties schema; ContextSnapshot class; Tension Score algorithm; Impact analysis |
