@@ -1,6 +1,6 @@
 # IMPACT_ANALYSIS.md — Research-to-Roadmap Traceability
 
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 10 January 2026
 > **Purpose:** Track how research findings impact roadmap elements
 > **Trigger:** Updated automatically when research concludes or decisions are made
 
@@ -368,10 +368,150 @@ Only THEN integrate into Core Docs
 
 ---
 
+## Impact Analysis: 10 January 2026 Session
+
+### Research Completed This Session
+
+| Research | Status | Impact Level |
+|----------|--------|--------------|
+| **RQ-005** | ✅ COMPLETE | **CRITICAL** — Core Identity Coach algorithm |
+| **RQ-006** | ✅ COMPLETE | **HIGH** — Content library specification |
+| **RQ-007** | ✅ COMPLETE | **HIGH** — Identity roadmap architecture |
+
+### Reconciliation Summary
+
+**Source:** DeepSeek Deep Think
+**Document:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`
+**Results:** 14 ACCEPT, 5 MODIFY, 1 REJECT, 1 ESCALATE
+
+---
+
+### RQ-005/006/007: Cascade Effects
+
+**Schema Impact (New Tables Required):**
+
+| Table | Purpose | Priority | Source |
+|-------|---------|----------|--------|
+| `preference_embeddings` | User taste vector (768-dim) | HIGH | RQ-005 |
+| `identity_roadmaps` | User aspiration tracking | CRITICAL | RQ-007 |
+| `roadmap_nodes` | Roadmap stage progression | CRITICAL | RQ-007 |
+| `archetype_templates` | 12 preset dimension combinations | HIGH | RQ-006 |
+
+**Schema Impact (Field Additions):**
+
+| Table | Field | Purpose | Source |
+|-------|-------|---------|--------|
+| `habit_templates` | `ideal_dimension_vector` | Psychometric matching | RQ-005 |
+| `identity_facets` | `archetype_template_id` | Content mapping | RQ-006 |
+
+**Service Layer Impact:**
+
+| Service | Status | Key Methods |
+|---------|--------|-------------|
+| `ProactiveRecommendation` | NEW | Dart model for recommendation output |
+| `IdentityRoadmapService` | NEW | Roadmap CRUD + ICS calculation |
+| `generateRecommendations()` | NEW | Edge Function for async recommendations |
+
+**Content Requirements:**
+
+| Content Type | Quantity | Status | Blocking |
+|--------------|----------|--------|----------|
+| Universal Habit Templates | 50 | 🔴 TODO | Identity Coach launch |
+| Archetype Template Presets | 12 | 🔴 TODO | Content mapping |
+| Framing Templates | 12 | 🔴 TODO | Personalization |
+| Ritual Templates | 4 | 🔴 TODO | Ritual recommendations |
+
+---
+
+### Human Decision Required
+
+**Content Library Size at Launch:**
+
+| Option | Habits | Templates | Effort | Ship Speed |
+|--------|--------|-----------|--------|------------|
+| **A** (Recommended) | 50 | 12 | Low | Fast |
+| **B** | 100 | 24 | Medium | Moderate |
+| **C** | 200+ | 48 | High | Slow |
+
+**Recommendation:** Option A — ship fast, iterate based on feedback.
+
+---
+
+### Implementation Tasks Extracted
+
+| ID | Task | Priority | Component | Source |
+|----|------|----------|-----------|--------|
+| F-01 | Create `preference_embeddings` table | HIGH | Database | RQ-005 |
+| F-02 | Create `identity_roadmaps` table | CRITICAL | Database | RQ-007 |
+| F-03 | Create `roadmap_nodes` table | CRITICAL | Database | RQ-007 |
+| F-04 | Add `ideal_dimension_vector` to `habit_templates` | HIGH | Database | RQ-005 |
+| F-05 | Add `archetype_template_id` to `identity_facets` | HIGH | Database | RQ-006 |
+| F-06 | Create `archetype_templates` reference table | HIGH | Database | RQ-006 |
+| F-07 | Implement `generateRecommendations()` Edge Function | CRITICAL | Backend | RQ-005 |
+| F-08 | Implement Stage 1: Semantic retrieval | CRITICAL | Backend | RQ-005 |
+| F-09 | Implement Stage 2: Psychometric re-ranking | CRITICAL | Backend | RQ-005 |
+| F-10 | Implement "Architect" scheduler (nightly/weekly) | HIGH | Backend | RQ-005 |
+| F-11 | Implement feedback signal tracking | HIGH | Service | RQ-005 |
+| F-12 | Extend Sherlock Day 3: "Future Self Interview" | HIGH | Onboarding | RQ-007 |
+| F-13 | Create 50 universal habit templates | CRITICAL | Content | RQ-006 |
+| F-14 | Create 12 Archetype Template presets | HIGH | Content | RQ-006 |
+| F-15 | Create 12 Framing Templates | HIGH | Content | RQ-006 |
+| F-16 | Create 4 Ritual Templates | MEDIUM | Content | RQ-006 |
+| F-17 | Implement `ProactiveRecommendation` Dart model | HIGH | Service | RQ-005 |
+| F-18 | Implement `IdentityRoadmapService` | HIGH | Service | RQ-007 |
+| F-19 | Implement Pace Car rate limiting | HIGH | Service | RQ-005 |
+| F-20 | Create regression messaging templates | MEDIUM | Content | RQ-006 |
+
+---
+
+### Dependency Chain Update
+
+```
+RQ-005 (Proactive Algorithms) ✅
+├── Depends on: RQ-001 (Dimensions) ✅
+├── Depends on: RQ-012 (Fractal Trinity) ✅
+├── Enables: F-07 through F-11 (Backend tasks)
+├── Enables: F-17 (ProactiveRecommendation model)
+└── Enables: F-19 (Pace Car rate limiting)
+
+RQ-006 (Content Library) ✅
+├── Depends on: RQ-005 (algorithms need content)
+├── Enables: F-13 through F-16 (Content tasks)
+├── Enables: F-06 (Archetype Templates table)
+└── BLOCKS: Full Identity Coach launch (content is a blocker)
+
+RQ-007 (Identity Roadmap) ✅
+├── Depends on: RQ-005 (recommendations feed roadmap)
+├── Enables: F-02, F-03, F-12, F-18
+└── Enables: Progression UI in Constellation
+```
+
+---
+
+### GLOSSARY Terms Added
+
+10 new terms added from RQ-005/006/007:
+- The Architect, The Commander, Pace Car Protocol, Trinity Seed
+- Preference Embedding, Archetype Template, Identity Consolidation Score (ICS)
+- The Spark, The Dip, The Groove
+- Two-Stage Hybrid Retrieval, Future Self Interview
+
+---
+
+### Recommendations
+
+1. **Immediate:** Human approval on content library size (Option A recommended)
+2. **Implementation Order:** F-02 → F-03 → F-07 → F-08 → F-09 (critical path)
+3. **Content Parallel Track:** F-13 → F-14 → F-15 can proceed in parallel with DB work
+4. **Integration:** Sherlock extension (F-12) should be added to Day 3 flow
+
+---
+
 ## Revision History
 
 | Date | Research/Decision | Roadmap Items Impacted | Changes Made |
 |------|-------------------|------------------------|--------------|
+| 10 Jan 2026 | RQ-005, RQ-006, RQ-007 (Identity Coach) | Identity Coach tasks F-01 through F-20, Content Library | Protocol 9 reconciliation, 20 new implementation tasks |
 | 06 Jan 2026 | CD-017, CD-018, RQ-013/14/15, PD-117 | All implementation, Protocol 9, Task extraction | Full impact analysis added |
 | 05 Jan 2026 | RQ-001 Complete | All Layers, PD-001, PD-102, PD-002, PD-003, PD-101, PD-104 | Initial impact analysis |
 

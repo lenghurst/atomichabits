@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 05 January 2026 (Added RQ-021/022 terms: The Constitution, Ratification Ritual, Voice Archetype, SSMLBuilder, Treaty Templates)
+> **Last Updated:** 10 January 2026 (Added RQ-005/006/007 terms: Identity Coach architecture — The Architect, Pace Car Protocol, Trinity Seed, Identity Consolidation Score, Archetype Template, Preference Embedding, The Spark/Dip/Groove)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -893,6 +893,212 @@ final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
 **Status:** ✅ DESIGN COMPLETE — RQ-021, PD-115
 
 **Code References:** `lib/data/repositories/treaty_template_repository.dart` (to be implemented)
+
+---
+
+## Identity Coach Terms (RQ-005 + RQ-006 + RQ-007)
+
+> **Reference:** These terms were defined by DeepSeek Deep Think research on 10 January 2026 for RQ-005 (Proactive Recommendation Algorithms), RQ-006 (Content Library), and RQ-007 (Identity Roadmap Architecture). See `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`.
+
+### The Architect
+**Definition:** The async recommendation engine (Supabase Edge Function) that generates "New Habit Suggestion" cards for the Identity Coach. Runs nightly/weekly, placing suggestions into JITAI's content queue.
+
+**Contrast with The Commander:**
+| Aspect | The Architect | The Commander (JITAI) |
+|--------|---------------|----------------------|
+| **Role** | Strategic planning | Tactical execution |
+| **Timing** | Async (nightly/weekly) | Real-time |
+| **Output** | Recommendation cards | Intervention timing |
+| **Location** | Supabase Edge Function | On-device |
+| **Battery** | 0% (server-side) | < 5% ceiling |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `supabase/functions/generate-recommendations/` (to be implemented)
+
+---
+
+### The Commander
+**Definition:** The real-time JITAI decision engine. Decides *when* to show interventions based on V-O state, safety gates, and optimal timing. Locked per CD-016.
+
+**Note:** This is NOT a new term — it's a clarifying alias for the existing JITAI bandit system, introduced in RQ-005 to contrast with "The Architect."
+
+**Status:** ✅ CONFIRMED — CD-016, RQ-005
+
+**Code References:** `lib/domain/services/jitai_decision_engine.dart`
+
+---
+
+### Pace Car Protocol
+**Definition:** Rate limiting rule for proactive recommendations. Maximum 1 recommendation per day per user. Only triggered if user has < 5 active habits per facet.
+
+**Rationale:** Based on Cognitive Load Theory — introducing multiple new behaviors simultaneously triggers "Choice Overload."
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** Implemented within The Architect (to be built)
+
+---
+
+### Trinity Seed
+**Definition:** Cold-start recommendation strategy that leverages the Holy Trinity extracted on Day 1 to generate immediate, personalized habit suggestions without historical data.
+
+**Mapping:**
+| Holy Trinity Component | Recommendation Type |
+|------------------------|---------------------|
+| Anti-Identity ("Lazy") | Prevention-framed ("Micro-Movement") |
+| Failure Archetype ("Perfectionist") | Floor Habit ("Low bar") |
+| Dimension Vector | Personality-framed habit |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** Part of The Architect cold-start logic (to be implemented)
+
+---
+
+### Preference Embedding
+**Definition:** A 768-dim vector representing user's learned taste in habits, updated via implicit feedback signals. Used to fine-tune Stage 1 semantic retrieval in The Architect.
+
+**Update Signals:**
+| Signal | Weight | Trigger |
+|--------|--------|---------|
+| Adoption | +5.0 | User adds habit to schedule |
+| Validation | +10.0 | User completes habit 3x in first week |
+| Explicit Dismissal | -5.0 | "Not for me" action |
+| Implicit Decay | -0.5 | Card ignored 3x |
+
+**Note:** Originally called "Shadow Vector" in Deep Think — renamed to avoid conflict with "Shadow Presence" term.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `preference_embeddings` table (to be implemented)
+
+---
+
+### Archetype Template
+**Definition:** One of 12 preset dimension-vector combinations (e.g., "The Builder", "The Nurturer", "The Warrior") used to map infinite user-created facet names to curated content.
+
+**How It Works:**
+1. User creates facet with custom name ("Super-Dad")
+2. System embeds facet name → 768-dim vector
+3. Vector similarity matches to nearest Archetype Template
+4. User receives content written for that archetype
+
+**The 12 Templates:**
+| Archetype | Focus | Dimension Emphasis |
+|-----------|-------|-------------------|
+| The Builder | Creation, achievement | Promotion, Future |
+| The Nurturer | Care, relationships | Prevention, Social |
+| The Warrior | Challenge, discipline | Promotion, Executor |
+| The Scholar | Learning, depth | Future, Overthinker |
+| The Healer | Recovery, wellness | Prevention, Recovery |
+| The Creator | Expression, art | Promotion, Rebel |
+| The Guardian | Protection, stability | Prevention, Conformist |
+| The Explorer | Adventure, novelty | Promotion, Present |
+| The Sage | Wisdom, reflection | Future, Overthinker |
+| The Leader | Influence, teams | Social, Executor |
+| The Devotee | Faith, practice | Conformist, Recovery |
+| The Rebel | Independence, change | Rebel, Present |
+
+**Note:** Originally called "Global Archetype" in Deep Think — renamed to clarify these are preset templates, not a classification system parallel to CD-005's 6-dimension model.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+**Code References:** `archetype_templates` table (to be implemented)
+
+---
+
+### Identity Consolidation Score (ICS)
+**Definition:** A metric tracking the strength of identity evidence for a user's aspiration.
+
+**Formula:**
+```
+ICS = Σ(Votes × Consistency) / DaysActive
+```
+
+**Visual Representation:**
+| Stage | ICS Range | Visual |
+|-------|-----------|--------|
+| Seed | 0.0 - 0.3 | Small seed icon |
+| Sapling | 0.3 - 0.6 | Growing tree |
+| Oak | 0.6 - 1.0 | Full tree |
+
+**Design Note:** Should integrate with existing `hexis_score` rather than creating parallel scoring system.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-007 (integration TBD)
+
+**Code References:** `identity_roadmaps.ics_score` (to be implemented)
+
+---
+
+### The Spark
+**Definition:** First progression stage in Identity Consolidation. Days 1-7, characterized by "Identity Claimed."
+
+**User State:** High motivation, low friction, establishing baseline.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### The Dip
+**Definition:** Second progression stage in Identity Consolidation. Days 8-21, characterized by "Resistance Detected."
+
+**User State:** Initial motivation fading, habits not yet automatic, highest dropout risk.
+
+**Statistical Note:** Day 8 is the most common drop-off point across habit formation literature.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### The Groove
+**Definition:** Third progression stage in Identity Consolidation. Day 66+, characterized by "Automaticity Achieved."
+
+**User State:** Habits are largely automatic; user is maintaining rather than building.
+
+**Threshold:** 66 days based on Phillippa Lally's habit formation research.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### Two-Stage Hybrid Retrieval
+**Definition:** The recommendation algorithm architecture for The Architect, combining semantic and psychometric matching.
+
+**Stage 1 (Semantic — "The What"):**
+- Uses 768-dim embeddings from gemini-embedding-001
+- Finds habits conceptually related to active facet
+- Example: "Father" facet → "Read to kids" habit
+
+**Stage 2 (Psychometric — "The How"):**
+- Uses 6-dim user dimension vector
+- Re-ranks candidates by personality fit
+- Example: Prevention user gets safety-framed habits higher
+
+**Why Two Stages:**
+| Approach | Problem |
+|----------|---------|
+| Single-stage blend | Cannot meaningfully blend 6-dim psychometrics with 768-dim semantics |
+| Collaborative filtering | Fatal cold start — zero utility at launch |
+| Two-stage hybrid | **Optimal** — solves cold start, accurate semantics, mathematically sound personalization |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-005
+
+**Code References:** `generateRecommendations()` Edge Function (to be implemented)
+
+---
+
+### Future Self Interview
+**Definition:** Sherlock extension for Day 3 that extracts aspirational identity with attached behavior.
+
+**Prompt:**
+> "Fast forward 1 year. You are proud of who you've become. What is one specific thing that version of you does every day?"
+
+**Output:** Extracts both identity aspiration ("I am someone who...") and concrete behavior ("...exercises daily").
+
+**Status:** ✅ DESIGN COMPLETE — RQ-007
+
+**Code References:** Extension to Sherlock onboarding flow (to be implemented)
 
 ---
 
