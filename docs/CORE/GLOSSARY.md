@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-005/006/007 terms: Identity Coach architecture — The Architect, Pace Car Protocol, Trinity Seed, Identity Consolidation Score, Archetype Template, Preference Embedding, The Spark/Dip/Groove)
+> **Last Updated:** 10 January 2026 (Added RQ-028/029/030/031/032 terms: Rocchio Algorithm, Trinity Anchor, Building Habit, Maintenance Habit; Updated ICS formula; Deprecated hexis_score)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -1009,25 +1009,32 @@ final matchingTreaty = treatyEngine.checkTreaties(context, activeTreaties);
 ---
 
 ### Identity Consolidation Score (ICS)
-**Definition:** A metric tracking the strength of identity evidence for a user's aspiration.
+**Definition:** Master metric tracking the strength of identity evidence for a user's aspiration. Uses logarithmic scale to reward longevity over volume.
 
-**Formula:**
+**Formula (Updated RQ-032):**
 ```
-ICS = Σ(Votes × Consistency) / DaysActive
+ICS_facet = AvgConsistency × log10(TotalVotes + 1)
 ```
 
-**Visual Representation:**
-| Stage | ICS Range | Visual |
-|-------|-----------|--------|
-| Seed | 0.0 - 0.3 | Small seed icon |
-| Sapling | 0.3 - 0.6 | Growing tree |
-| Oak | 0.6 - 1.0 | Full tree |
+- **AvgConsistency:** Average `graceful_score` of active habits for facet
+- **TotalVotes:** Cumulative habit completions for facet
+- **log10:** Prevents runaway scores; rewards longevity
 
-**Design Note:** Should integrate with existing `hexis_score` rather than creating parallel scoring system.
+**Visual Tiers (ICS Visual Tiers):**
+| Stage | ICS Range | Approx Votes | Visual |
+|-------|-----------|--------------|--------|
+| Seed | < 1.2 | ~15 | Sprout icon |
+| Sapling | 1.2 – 3.0 | 15-100 | Small tree |
+| Oak | ≥ 3.0 | 100+ | Full tree |
 
-**Status:** ✅ DESIGN COMPLETE — RQ-007 (integration TBD)
+**Metrics Consolidation:**
+- `hexis_score` → ❌ **DEPRECATED** (never implemented in code)
+- `graceful_score` → ✅ Component of ICS
+- `ics_score` → ✅ Master facet metric
 
-**Code References:** `identity_roadmaps.ics_score` (to be implemented)
+**Status:** ✅ DESIGN COMPLETE — RQ-032
+
+**Code References:** `identity_facets.ics_score` (to be implemented)
 
 ---
 
@@ -1059,6 +1066,56 @@ ICS = Σ(Votes × Consistency) / DaysActive
 **Threshold:** 66 days based on Phillippa Lally's habit formation research.
 
 **Status:** ✅ DESIGN COMPLETE — RQ-006
+
+---
+
+### Rocchio Algorithm
+**Definition:** Information retrieval relevance feedback method used to update the user's preference embedding based on explicit feedback (adopt/ban habits).
+
+**Mechanics:**
+- **Ban (👎):** α = 0.15 (strong negative signal)
+- **Adopt (👍):** α = 0.05 (weak positive signal)
+- Updates preference vector by adding/subtracting scaled habit vectors
+
+**Status:** ✅ DESIGN COMPLETE — RQ-030
+
+---
+
+### Trinity Anchor
+**Definition:** Drift prevention mechanism that pulls the preference embedding 30% towards the Day 1 Trinity Seed (user's stated aspiration).
+
+**Formula:**
+```
+anchored = (0.7 × learned_preference) + (0.3 × trinity_seed)
+```
+
+**Purpose:** Prevents short-term feedback from drifting user away from their core Aspiration.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-030
+
+---
+
+### Building Habit
+**Definition:** A habit that still requires conscious willpower to complete. Identified by `graceful_score < 0.8`.
+
+**Cognitive Load:** HIGH — counts against Pace Car capacity limits.
+
+**Pace Car Limits:**
+- Seed users: Max 3 Building habits
+- Sapling/Oak users: Max 5 Building habits
+
+**Status:** ✅ DESIGN COMPLETE — RQ-031
+
+---
+
+### Maintenance Habit
+**Definition:** A habit that has become largely automatic. Identified by `graceful_score ≥ 0.8`.
+
+**Cognitive Load:** LOW — does NOT count against Pace Car capacity limits.
+
+**User State:** Habits in "The Groove" stage are typically Maintenance habits.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-031
 
 ---
 
@@ -1671,23 +1728,26 @@ These terms appear in documentation but are either not implemented or require pr
 ### Hexis Score
 **Definition:** Proposed composite score for identity visualization.
 
-**Status:** 🔴 DEPRECATED — Never concretely defined or implemented
+**Status:** ❌ **DEPRECATED** — Replaced by Identity Consolidation Score (ICS)
 
-**Original Intent (from ARCHITECTURE_RECONCILIATION.md):**
-```
-Base score from habit completions
-- Doom scrolling penalty (−0.05 per session)
-+ Positive emotion boost (+0.1 for confidence)
-= Hexis Score (0.0 - 1.0)
+**Deprecation Audit (RQ-032, 10 Jan 2026):**
+```bash
+grep -rn "hexis_score" lib/       # No files found
+grep -rn "hexis_score" supabase/  # No files found
 ```
 
-**Why Deprecated:**
-- `hexis_calculator.dart` was never built
-- No concrete specification existed beyond the above formula
-- Dependencies (Living Garden, Digital Truth Sensor) also not implemented
-- Term created confusion without adding value
+**Finding:** Never implemented in code. Documentation-only term. Safe to remove.
 
-**Replacement:** Consider using existing `gracefulScore` or `difficultyLevel` fields if a composite identity metric is needed in future.
+**Replacement:** **Identity Consolidation Score (ICS)** — see `ICS` entry above.
+- ICS uses logarithmic formula: `AvgConsistency × log10(TotalVotes + 1)`
+- Stored in `identity_facets.ics_score`
+- Uses `graceful_score` as consistency component
+
+**Why ICS is Better:**
+- Concrete formula with clear components
+- Rewards longevity (log scale)
+- Integrates with existing graceful_score
+- Visual tiers defined (Seed/Sapling/Oak)
 
 ---
 
