@@ -104,11 +104,12 @@ graph TD
 □ 2. Read docs/CORE/AI_HANDOVER.md (session context from last agent)
 □ 3. Read docs/CORE/index/ files (quick status lookup for CD/PD/RQ)
 □ 4. Read docs/CORE/IMPACT_ANALYSIS.md (actionable tasks + cascade tracking)
-□ 5. Read docs/CORE/PRODUCT_DECISIONS.md (PENDING decisions only — DO NOT implement without approval)
-□ 6. Read docs/CORE/RESEARCH_QUESTIONS.md (ACTIVE research only — check before implementing)
-□ 7. Read docs/CORE/GLOSSARY.md (terminology definitions — reference as needed)
-□ 8. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
-□ 9. Check ROADMAP.md for current priorities
+□ 5. Read docs/CORE/AI_AGENT_PROTOCOL.md (mandatory behaviors + Protocol 9)
+□ 6. Read docs/CORE/PRODUCT_DECISIONS.md (PENDING decisions only — DO NOT implement without approval)
+□ 7. Read docs/CORE/RESEARCH_QUESTIONS.md (ACTIVE research only — check before implementing)
+□ 8. Read docs/CORE/GLOSSARY.md (terminology definitions — reference as needed)
+□ 9. Read AI_CONTEXT.md (current state, architecture) ← YOU ARE HERE
+□ 10. Check ROADMAP.md for current priorities
 ```
 
 ### Mandatory Session End Checklist
