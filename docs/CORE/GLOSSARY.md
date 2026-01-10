@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-024 terms: Minor Amendment, Major Amendment, Re-Ratification, Amnesty, Probation Journey)
+> **Last Updated:** 10 January 2026 (Added RQ-008/009 terms: Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage, Side Effect Pattern)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -814,6 +814,120 @@ TreatyAction executeAction(Treaty treaty, ContextSnapshot context)
 **Status:** ✅ CONFIRMED — PD-113, RQ-020
 
 **Code References:** TreatyEngine (to be implemented)
+
+---
+
+## AI-Assisted Engineering Terms (RQ-008 + RQ-009)
+
+> **Reference:** These terms were defined by Deep Think research on 10 January 2026 for RQ-008 (UI Logic Separation) and RQ-009 (LLM Coding Approach).
+
+### Vibe Coding
+**Definition:** Rapid AI-assisted UI iteration where the AI can freely modify layouts, colors, and animations without risk of corrupting business logic. Enabled by strict UI/Logic separation.
+
+**Key Characteristics:**
+- AI can regenerate UI code multiple times until it "feels right"
+- Business logic is locked in a "Safety Sandbox" that AI cannot modify
+- No business conditionals allowed in Widget build methods
+- Only consumes existing Controllers/State
+
+**Trigger:** Used for Visual Tasks (styling, animations, layout, UI polish)
+
+**Status:** ✅ COMPLETE — RQ-008, Protocol 2
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Contract-First
+**Definition:** Development approach where State classes and Controller interfaces are defined BEFORE implementation, anchoring AI output and reducing hallucination.
+
+**Process:**
+1. Define State class (immutable)
+2. Define Controller interface (method signatures)
+3. Implement logic methods
+4. Write unit tests
+5. Build UI that consumes the Controller
+
+**Trigger:** Used for Logic Tasks (new features, data models, algorithms, state management)
+
+**Why It Works:** LLMs produce more consistent code when given a "contract" to fulfill. The interface acts as an anchor, preventing drift and over-engineering.
+
+**Status:** ✅ COMPLETE — RQ-009, Protocol 2
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Safety Sandbox
+**Definition:** The UI Layer under strict separation rules, where AI can iterate freely because business logic is unreachable.
+
+**Key Insight:** "Constraint Enables Creativity" — By stripping the UI of all responsibility except rendering, we unlock fearless iteration.
+
+**Boundaries:**
+- No repository/service imports in UI files
+- No domain entity conditionals in Widget build()
+- All "IF" business decisions are in Logic Layer
+- Animation TRIGGERS are state flags, not inline checks
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2 (Boundary Decision Tree)
+
+---
+
+### Logic Leakage
+**Definition:** Anti-pattern where business conditionals appear in Widget build methods, making it unsafe for AI to modify UI.
+
+**Examples:**
+```dart
+// ❌ Logic Leakage
+if (user.isPremium && !subscription.expired) { ... }  // In Widget
+
+// ✅ Correct
+if (state.canAccessFeature) { ... }  // State encapsulates logic
+```
+
+**Measurement:** Count of `if` statements involving domain entities in `lib/ui/` or `lib/features/*/widgets/`. Target: 0.
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+### Side Effect Pattern
+**Definition:** State management pattern where business logic emits "side effect" flags that UI listeners consume to trigger animations/navigation.
+
+**How It Works:**
+1. Controller determines business condition (e.g., `streak % 7 == 0`)
+2. Controller emits side effect: `state.copyWith(sideEffect: .celebrate)`
+3. UI listens for side effect and triggers action (animation, navigation)
+4. UI calls `consumeSideEffect()` to clear the flag
+
+**Example:**
+```dart
+// Logic Layer
+void completeHabit(Habit habit) {
+  final newStreak = habit.streak + 1;
+  state = state.copyWith(
+    sideEffect: newStreak % 7 == 0 ? HabitSideEffect.celebrate : null,
+  );
+}
+
+// UI Layer
+ref.listen(controller, (prev, next) {
+  if (next.sideEffect == HabitSideEffect.celebrate) {
+    _confettiController.play();
+    controller.consumeSideEffect();
+  }
+});
+```
+
+**Key Benefit:** AI can change the animation (confetti → fireworks) without touching business logic.
+
+**Status:** ✅ COMPLETE — RQ-008
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 2
 
 ---
 

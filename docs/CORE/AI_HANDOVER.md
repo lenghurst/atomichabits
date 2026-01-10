@@ -39,9 +39,63 @@ This prevents:
 | **Session ID** | `claude/setup-pact-context-1i4ze` |
 | **Date** | 10 January 2026 (continued) |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | RQ-024 Treaty Modification — Protocol 9 Reconciliation Complete |
+| **Focus** | RQ-008/009 Engineering Process — Protocol 9 Complete + Protocol 2 Updated |
 
 ### What Was Accomplished (This Latest Session)
+
+**16. RQ-008/009 Engineering Process Reconciliation**
+- **Research Input:** Deep Think Research Report on AI-Assisted Engineering Architecture
+- **Protocol 9:** All 6 phases completed
+- **Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ008_RQ009.md`
+
+**Key Decisions:**
+
+| Decision | Resolution |
+|----------|------------|
+| **Architecture Pattern** | Riverpod Controller (Passive View) — adapted to Provider for existing code |
+| **Task Classification** | Logic Tasks → Contract-First; Visual Tasks → Vibe Coding |
+| **Protocol 2** | REPLACED with Context-Adaptive Development approach |
+| **Boundary Rule** | "IF" decisions → Logic Layer; Rendering → UI Layer |
+| **Animation Triggers** | Side Effect Pattern (state flags, not inline checks) |
+
+**Protocol 9 Results:**
+| Metric | Count |
+|--------|-------|
+| **ACCEPT** | 12 |
+| **MODIFY** | 1 (Riverpod → Provider adaptation) |
+| **REJECT** | 0 |
+| **ESCALATE** | 0 |
+
+**Tasks Extracted (8 Process Tasks):**
+- P-01: Update AI_AGENT_PROTOCOL.md with Protocol 2 ✅ DONE
+- P-02: Create BOUNDARY_DECISION_TREE.md
+- P-03: Add linting rules to analysis_options.yaml
+- P-04: Create ChangeNotifier Controller template
+- P-05: Document Side Effect pattern with example
+- P-06: Add Riverpod to pubspec.yaml for new features
+- P-07: Create "Logic vs Visual" task classification guide
+- P-08: Define "Logic Leakage" metric tracking
+
+**Documents Updated:**
+- `AI_AGENT_PROTOCOL.md` — Protocol 2 REPLACED with Context-Adaptive Development
+- `index/RQ_INDEX.md` — RQ-008, RQ-009 ✅ COMPLETE (28/32 = 88%)
+- `PRODUCT_DEVELOPMENT_SHEET.md` — RQ count updated
+- `GLOSSARY.md` — 5 new terms (Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage, Side Effect Pattern)
+
+**Status Summary:**
+
+| Category | Complete | Pending | Change |
+|----------|----------|---------|--------|
+| CDs | 18/18 (100%) | 0 | — |
+| RQs | 28/32 (88%) | 4 | +2 (RQ-008, RQ-009) |
+| PDs | 15/31 (48%) | 16 | — |
+| Tasks | 0/116 (0%) | 116 | +8 process tasks (P-XX) |
+
+**Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI without risk of corrupting business logic.
+
+---
+
+**Previous Session:**
 
 **15. RQ-024 Treaty Modification Reconciliation**
 - **Research Input:** Deep Think Research Report on Treaty Modification & Renegotiation
