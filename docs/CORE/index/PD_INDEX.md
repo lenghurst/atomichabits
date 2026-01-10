@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 10 January 2026
 > **Full Details:** See `archive/` for RESOLVED items, `../PRODUCT_DECISIONS.md` for pending items
 
 ---
@@ -28,9 +28,9 @@
 | **PD-102** | JITAI Hardcoded vs AI | 🔴 PENDING | — | — |
 | **PD-103** | Sensitivity Detection | 🔴 PENDING | — | — |
 | **PD-104** | LoadingInsightsScreen Personalization | 🔴 PENDING | — | — |
-| **PD-105** | Unified AI Coaching Architecture | 🔴 PENDING | RQ-005,6,7 | — |
+| **PD-105** | Unified AI Coaching Architecture | 🟢 READY | RQ-005,6,7 ✅ | — |
 | **PD-106** | Multiple Identity Architecture | ✅ RESOLVED → CD-015 | RQ-011 | Q1-2026 |
-| **PD-107** | Proactive Guidance System | 🟡 RESHAPED | RQ-005,6,7 | — |
+| **PD-107** | Proactive Guidance System | 🟢 READY | RQ-005,6,7 ✅ | — |
 | **PD-108** | Constellation UX Migration | 🔴 PENDING | RQ-017 | — |
 | **PD-109** | Council AI Activation Rules | ✅ RESOLVED | RQ-016 | Q1-2026 |
 | **PD-110** | Airlock Protocol User Control | 🔴 PENDING | RQ-018 | — |
@@ -46,6 +46,10 @@
 | **PD-120** | The Chamber Visual Design | 🔴 PENDING | Design session | — |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | — | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | — | — |
+| **PD-121** | Archetype Template Count | 🔴 PENDING | RQ-028 | — |
+| **PD-122** | User Visibility of Preference Embedding | 🔴 PENDING | RQ-030 | — |
+| **PD-123** | Facet Typical Energy State Field | 🔴 PENDING | — | — |
+| **PD-124** | Recommendation Card Staleness | 🔴 PENDING | — | — |
 
 ---
 
@@ -53,10 +57,10 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total PDs** | 26 |
-| **✅ RESOLVED** | 6 (23%) |
-| **🟡 RESHAPED** | 1 (4%) |
-| **🔴 PENDING** | 19 (73%) |
+| **Total PDs** | 30 |
+| **✅ RESOLVED** | 6 (20%) |
+| **🟢 READY** | 2 (7%) |
+| **🔴 PENDING** | 22 (73%) |
 
 ---
 
@@ -71,20 +75,28 @@ RESOLVED (Archived):
 ├── PD-114 (Full Implementation)
 └── PD-115 (Treaty Creation UX)
 
-BLOCKED BY RESEARCH:
-├── PD-105, PD-107 ← RQ-005, RQ-006, RQ-007
+UNBLOCKED BY RQ-005/006/007 (Ready for Decision):
+├── PD-105 (Unified AI Coaching Architecture) ← Research complete
+└── PD-107 (Proactive Guidance System) ← Research complete
+
+BLOCKED BY NEW RESEARCH (from RQ-005/006/007):
+├── PD-121 ← RQ-028 (Archetype Definitions)
+├── PD-122 ← RQ-030 (Preference Embedding)
+└── PD-123, PD-124 ← Architectural (no research needed)
+
+BLOCKED BY PRIOR RESEARCH:
 ├── PD-108 ← RQ-017
 ├── PD-110, PD-112 ← RQ-018
-├── PD-111 ← RQ-015
 ├── PD-116 ← RQ-023
-├── PD-117 ← RQ-014
 ├── PD-118 ← RQ-024
 └── PD-119 ← RQ-025
 
 READY FOR DECISION (No blockers):
 ├── PD-002, PD-003, PD-004
 ├── PD-101, PD-102, PD-103, PD-104
+├── PD-105, PD-107 (NEW — RQ-005/006/007 unblocked these)
 ├── PD-120 (needs design session)
+├── PD-123, PD-124 (NEW — no research required)
 └── PD-201, PD-202
 ```
 
