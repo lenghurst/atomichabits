@@ -127,6 +127,55 @@ User profiles include a 6-float vector:
 5. Perfectionistic Reactivity (Adaptive ↔ Maladaptive)
 6. Social Rhythmicity (Stable ↔ Chaotic)
 
+### RQ-013: Identity Topology & Graph Modeling ✅ COMPLETE
+- **Schema:** `identity_topology` table with facet-to-facet edges
+- **Interaction Types:** synergistic, antagonistic, competitive, neutral
+- **Friction Coefficient:** 0.0 to 1.0 (higher = more conflict)
+- **Council Trigger:** `(tensionScore × 0.6) + (frictionCoefficient × 0.4) > 0.75`
+
+```sql
+CREATE TABLE identity_topology (
+  source_facet_id UUID REFERENCES identity_facets(id),
+  target_facet_id UUID REFERENCES identity_facets(id),
+  interaction_type TEXT CHECK (interaction_type IN ('synergistic', 'antagonistic', 'competitive', 'neutral')),
+  friction_coefficient FLOAT DEFAULT 0.5,
+  switching_cost_minutes INT,
+  PRIMARY KEY (source_facet_id, target_facet_id)
+);
+```
+
+### RQ-014: State Economics & Bio-Energetic Conflicts ✅ COMPLETE
+- **Switching Cost Matrix (4×4):** Minutes required for clean transition
+
+| From ↓ / To → | high_focus | high_physical | social | recovery |
+|---------------|------------|---------------|--------|----------|
+| **high_focus** | 0 | 45 | **60** ⚠️ | 20 |
+| **high_physical** | 0 (Boost) | 0 | 15 | 5 |
+| **social** | **50** ⚠️ | 15 | 0 | 10 |
+| **recovery** | 15 | 10 | 10 | 0 |
+
+- **3 Dangerous Transitions:**
+  1. `high_focus → social` (60 min) — "Pirate to Parent"
+  2. `social → high_focus` (50 min) — "Parent to Pirate"
+  3. `high_focus → high_physical` (45 min) — Cognitive to Physical
+
+### RQ-015: Polymorphic Habits ✅ COMPLETE
+- **Waterfall Attribution:** Same habit counts differently per facet
+- **Attribution Logic:** System assigns based on active facet at completion time
+- **10% Shadow Bonus:** Multi-facet habits get slight boost
+- **Constellation Impact:** Planet size includes only habits attributed to that facet
+
+### RQ-020: Treaty-JITAI Integration ✅ COMPLETE
+- **Pipeline Position:** Stage 3 (Post-Safety, Pre-Optimization)
+- **Parser:** json_logic_dart for condition evaluation
+- **Breach Tracking:** 3 breaches in 7 days → Probation → Auto-Suspend
+
+### RQ-032: Identity Consolidation Score (ICS) ✅ COMPLETE
+- **Formula:** `ICS = AvgConsistency × log10(TotalVotes + 1)`
+- **Range:** 0.0 to ~5.0 (logarithmic prevents runaway)
+- **Visual Tiers:** Seed (< 1.2), Sapling (< 3.0), Oak (≥ 3.0)
+- **Usage:** Drives "integrationScore" for Constellation orbit distance
+
 ---
 
 ## Current Implementation Reference
@@ -366,11 +415,13 @@ Haptic: Slow pulse building to steady
 | Option | Description |
 |--------|-------------|
 | **A: Stock Library** | Curated royalty-free sounds |
-| **B: Generated** | AI-generated per user (DeepSeek) |
+| **B: Generated** | AI-generated per user (DeepSeek V3.2 — see CD-016) |
 | **C: User-Recorded** | User records their own mantras |
 | **D: Hybrid** | Stock default + user override |
 
 **Your Task:** Recommend with rationale.
+
+**Note:** This resolution will inform RQ-026 (Sound Design & Haptic Specification) requirements.
 
 ---
 
