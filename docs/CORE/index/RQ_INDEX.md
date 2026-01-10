@@ -47,11 +47,11 @@
 | **RQ-025** | Summon Token Economy | 🔴 NEEDS RESEARCH | RQ-016 | — |
 | **RQ-026** | Sound Design & Haptic Specification | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-027** | Treaty Template Versioning Strategy | 🔴 NEEDS RESEARCH | RQ-021 | — |
-| **RQ-028** | Archetype Template Definitions | 🔴 NEEDS RESEARCH | RQ-005,6 | — |
-| **RQ-029** | Ideal Dimension Vector Curation | 🔴 NEEDS RESEARCH | RQ-005 | — |
-| **RQ-030** | Preference Embedding Update Mechanics | 🔴 NEEDS RESEARCH | RQ-005 | — |
-| **RQ-031** | Pace Car Threshold Validation | 🔴 NEEDS RESEARCH | RQ-005 | — |
-| **RQ-032** | ICS Integration with Existing Metrics | 🔴 NEEDS RESEARCH | RQ-007 | — |
+| **RQ-028** | Archetype Template Definitions | ✅ COMPLETE | RQ-005,6 | Q1-2026 |
+| **RQ-029** | Ideal Dimension Vector Curation | ✅ COMPLETE | RQ-005 | Q1-2026 |
+| **RQ-030** | Preference Embedding Update Mechanics | ✅ COMPLETE | RQ-005 | Q1-2026 |
+| **RQ-031** | Pace Car Threshold Validation | ✅ COMPLETE | RQ-005 | Q1-2026 |
+| **RQ-032** | ICS Integration with Existing Metrics | ✅ COMPLETE | RQ-007 | Q1-2026 |
 
 ---
 
@@ -60,8 +60,8 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs** | 32 |
-| **✅ COMPLETE** | 18 (56%) |
-| **🔴 NEEDS RESEARCH** | 14 (44%) |
+| **✅ COMPLETE** | 23 (72%) |
+| **🔴 NEEDS RESEARCH** | 9 (28%) |
 
 ---
 
@@ -77,11 +77,11 @@ FOUNDATIONAL (No dependencies):
 ├── RQ-005 (Recommendations) ✅
 │   ├── RQ-006 (Content) ✅
 │   │   └── RQ-007 (Roadmap) ✅
-│   │       └── RQ-032 (ICS Integration) 🔴
-│   ├── RQ-028 (Archetype Definitions) 🔴
-│   ├── RQ-029 (Dimension Curation) 🔴
-│   ├── RQ-030 (Preference Update) 🔴
-│   └── RQ-031 (Pace Car Validation) 🔴
+│   │       └── RQ-032 (ICS Integration) ✅
+│   ├── RQ-028 (Archetype Definitions) ✅
+│   ├── RQ-029 (Dimension Curation) ✅
+│   ├── RQ-030 (Preference Update) ✅
+│   └── RQ-031 (Pace Car Validation) ✅
 │
 ├── RQ-008 (UI Logic) 🔴
 ├── RQ-009 (LLM Coding) 🔴

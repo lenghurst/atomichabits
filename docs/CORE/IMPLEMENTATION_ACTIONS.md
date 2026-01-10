@@ -267,7 +267,7 @@ PROJECT ROOT:                                                  │
 
 ## Quick Status Dashboard
 
-### Phase Summary (77 Total Tasks)
+### Phase Summary (91 Total Tasks)
 
 | Phase | Description | Total | CRITICAL | HIGH | MEDIUM | LOW | Progress |
 |-------|-------------|-------|----------|------|--------|-----|----------|
@@ -276,20 +276,43 @@ PROJECT ROOT:                                                  │
 | **C: Council AI** | Council system | 12 | 5 | 6 | 1 | 0 | 0% |
 | **D: UX** | Frontend screens | 10 | 2 | 5 | 2 | 1 | 0% |
 | **E: Polish** | Advanced features | 10 | 0 | 2 | 5 | 3 | 0% |
-| **F: Identity Coach** | Recommendation engine | 20 | 5 | 12 | 3 | 0 | 0% |
-| **TOTAL** | | **77** | **23** | **33** | **16** | **5** | **0%** |
+| **F: Identity Coach** | Recommendation engine (Phase 1) | 20 | 5 | 12 | 3 | 0 | 0% |
+| **G: Identity Coach** | Intelligence layer (Phase 2) | 14 | 3 | 8 | 2 | 1 | 0% |
+| **TOTAL** | | **91** | **26** | **41** | **18** | **6** | **0%** |
 
-**Full Task List:** RESEARCH_QUESTIONS.md → "Master Implementation Tracker" (line ~3415)
+**Full Task List:** RESEARCH_QUESTIONS.md → "Master Implementation Tracker" (line ~3487)
 
 ### Status Distribution
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 🔴 NOT STARTED: 77 (100%)                                   │
+│ 🔴 NOT STARTED: 91 (100%)                                   │
 │ 🟡 IN PROGRESS: 0 (0%)                                      │
 │ ✅ COMPLETE:    0 (0%)                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Phase G: Identity Coach Intelligence (NEW — 10 Jan 2026)
+
+**Source:** RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 (Deep Think Phase 2)
+**Decisions:** PD-121 (12 Archetypes), PD-122 (Hidden embedding), PD-123 (Energy state), PD-124 (7-day TTL)
+
+| # | Task | Priority | Status |
+|---|------|----------|--------|
+| G-01 | Add `ics_score` field to identity_facets | HIGH | 🔴 |
+| G-02 | Add `typical_energy_state` field to identity_facets | HIGH | 🔴 |
+| G-03 | Add `trinity_seed` field to preference_embeddings | HIGH | 🔴 |
+| G-04 | Implement `RocchioUpdater` service | **CRITICAL** | 🔴 |
+| G-05 | Implement `ICSCalculator` service | HIGH | 🔴 |
+| G-06 | Implement `ArchetypeMatcher` service | **CRITICAL** | 🔴 |
+| G-07 | Update `PaceCar` to Building vs Maintenance model | HIGH | 🔴 |
+| G-08 | Populate archetype_templates (12 definitions) | **CRITICAL** | 🔴 |
+| G-09 | Run DeepSeek dimension curation on 50 habits | HIGH | 🔴 |
+| G-10 | Audit and validate dimension vectors | HIGH | 🔴 |
+| G-11 | Add 7-day TTL logic to recommendation cards | MEDIUM | 🔴 |
+| G-12 | Implement ICS visual tier mapping (Seed/Sapling/Oak) | MEDIUM | 🔴 |
+| G-13 | Deprecate hexis_score in GLOSSARY.md | LOW | 🔴 |
+| G-14 | Create archetype override UI in Settings | LOW | 🔴 |
 
 ---
 
@@ -343,6 +366,31 @@ F-10 (Architect scheduler)
 ---
 
 ## Recently Added Tasks
+
+### 10 January 2026 — Phase G: Identity Coach Intelligence (14 Tasks)
+
+**Source:** RQ-028, RQ-029, RQ-030, RQ-031, RQ-032 reconciliation via Protocol 9
+**Decisions:** PD-121, PD-122, PD-123, PD-124 RESOLVED
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| G-01 | Add `ics_score` field to identity_facets | HIGH | 🔴 | RQ-032 |
+| G-02 | Add `typical_energy_state` field to identity_facets | HIGH | 🔴 | RQ-031, PD-123 |
+| G-03 | Add `trinity_seed` field to preference_embeddings | HIGH | 🔴 | RQ-030 |
+| G-04 | `RocchioUpdater` service | **CRITICAL** | 🔴 | RQ-030 |
+| G-05 | `ICSCalculator` service | HIGH | 🔴 | RQ-032 |
+| G-06 | `ArchetypeMatcher` service | **CRITICAL** | 🔴 | RQ-028 |
+| G-07 | Update `PaceCar` Building vs Maintenance model | HIGH | 🔴 | RQ-031 |
+| G-08 | Populate archetype_templates (12 definitions) | **CRITICAL** | 🔴 | RQ-028, PD-121 |
+| G-09 | DeepSeek dimension curation on 50 habits | HIGH | 🔴 | RQ-029 |
+| G-10 | Audit and validate dimension vectors | HIGH | 🔴 | RQ-029 |
+| G-11 | 7-day TTL logic for recommendation cards | MEDIUM | 🔴 | RQ-031, PD-124 |
+| G-12 | ICS visual tier mapping (Seed/Sapling/Oak) | MEDIUM | 🔴 | RQ-032 |
+| G-13 | Deprecate hexis_score in GLOSSARY | LOW | 🔴 | RQ-032 |
+| G-14 | Archetype override UI in Settings | LOW | 🔴 | RQ-028 |
+
+---
 
 ### 10 January 2026 — Phase F: Identity Coach (20 Tasks)
 
@@ -421,6 +469,7 @@ F-10 (Architect scheduler)
 
 | Date | Source | Phase | Tasks Added | Added By | Reconciliation Doc |
 |------|--------|-------|-------------|----------|-------------------|
+| 10 Jan 2026 | RQ-028/029/030/031/032 | G | G-01 through G-14 (14 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
 | 10 Jan 2026 | RQ-005/006/007 | F | F-01 through F-20 (20 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
 | 06 Jan 2026 | RQ-012/013/014/015/016 | A-E | A-01 through E-10 (57 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ014_RQ013_PD117_RQ015.md` |
 
