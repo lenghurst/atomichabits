@@ -1,173 +1,495 @@
-# IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker
+# IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
 > **Last Updated:** 10 January 2026
-> **Purpose:** Single source of truth for all implementation tasks
-> **Status:** Active — This document MUST be updated when tasks are extracted
+> **Purpose:** Single source of truth for implementation tasks + agent navigation hub
+> **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
+> **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
+
+---
+
+## Table of Contents
+
+1. [What This Document Is](#what-this-document-is)
+2. [Agent Entry Point Routing](#agent-entry-point-routing)
+3. [Complete Documentation Hierarchy](#complete-documentation-hierarchy)
+4. [Task Management Governance](#task-management-governance)
+5. [Quick Status Dashboard](#quick-status-dashboard)
+6. [Critical Paths](#critical-paths)
+7. [Recently Added Tasks](#recently-added-tasks)
+8. [Blocked Tasks (Awaiting Research)](#blocked-tasks-awaiting-research)
+9. [Task Addition Log](#task-addition-log)
+10. [Audit Trail](#audit-trail)
 
 ---
 
 ## What This Document Is
 
-This document ensures **no implementation task is lost**. When research concludes or reconciliation happens:
+This document serves **three critical functions**:
 
-1. Tasks are extracted and added HERE
-2. This document links to the Master Implementation Tracker in RESEARCH_QUESTIONS.md
-3. Status updates happen here (or in the Master Tracker)
+| Function | Description | Who Uses It |
+|----------|-------------|-------------|
+| **Task Registry** | Canonical list of all implementation tasks across 6 phases (A-F) | Implementation agents |
+| **Navigation Hub** | Cross-reference layer connecting all governance docs | All agents |
+| **Audit Trail** | Historical record of task additions and workflow issues | Human oversight |
 
-**Rule:** If a task exists, it MUST be in this document OR the Master Implementation Tracker. Never both in separate locations without cross-reference.
+**Cardinal Rule:** Implementation tasks are defined in **ONE place only**:
+- **Master Implementation Tracker** → `RESEARCH_QUESTIONS.md` (detailed tables)
+- **This document** → Quick status + cross-references + audit trail
 
----
-
-## Related Documentation
-
-| Document | Relationship |
-|----------|--------------|
-| **[RESEARCH_QUESTIONS.md](./RESEARCH_QUESTIONS.md)** | Contains Master Implementation Tracker (canonical task list) |
-| **[IMPACT_ANALYSIS.md](./IMPACT_ANALYSIS.md)** | Contains cascade analysis (references tasks, does NOT define them) |
-| **[AI_AGENT_PROTOCOL.md](./AI_AGENT_PROTOCOL.md)** | Protocol 8 (Task Extraction) — specifies when to add tasks |
-| **[AI_HANDOVER.md](./AI_HANDOVER.md)** | Session context — references active tasks |
+**Anti-Pattern:** Never store task definitions in IMPACT_ANALYSIS.md — that document is for CASCADE ANALYSIS only.
 
 ---
 
-## Workflow: Task Extraction
+## Agent Entry Point Routing
 
-When extracting tasks from research or reconciliation:
+### For Claude Code (Implementation Agent)
 
 ```
-1. EXTRACT tasks from ACCEPT/MODIFY items
+SESSION START:
+1. Read CLAUDE.md (project root) ← PRIMARY ENTRY POINT
    ↓
-2. CHECK if task already exists in Master Tracker (RESEARCH_QUESTIONS.md)
+2. Read AI_HANDOVER.md ← Previous session context
    ↓
-3. If NEW → Add to Master Tracker under appropriate Phase (A-F)
+3. Read index/CD_INDEX.md + index/PD_INDEX.md + index/RQ_INDEX.md ← Quick status
    ↓
-4. If DUPLICATE → Update existing task, don't create new
+4. Read THIS DOCUMENT (IMPLEMENTATION_ACTIONS.md) ← Task overview
    ↓
-5. UPDATE this document's Quick Status section
-   ↓
-6. CROSS-REFERENCE in IMPACT_ANALYSIS.md (for cascade tracking)
+5. Read RESEARCH_QUESTIONS.md → Master Implementation Tracker ← Detailed tasks
 ```
 
-**CRITICAL:** IMPACT_ANALYSIS.md is for CASCADE ANALYSIS, not task storage. Tasks go in the Master Tracker.
+**When to update this document:**
+- After extracting tasks via Protocol 8
+- After reconciling external research via Protocol 9
+- When task status changes (NOT STARTED → IN PROGRESS → COMPLETE)
+
+### For External Research Agents (DeepSeek, Gemini, ChatGPT)
+
+```
+PROMPT PREPARATION (by orchestrating agent):
+1. Read DEEP_THINK_PROMPT_GUIDANCE.md ← Quality standards
+   ↓
+2. Read index/CD_INDEX.md ← Locked decisions to include
+   ↓
+3. Read index/RQ_INDEX.md ← Completed research to summarize
+   ↓
+4. Generate prompt from docs/prompts/ templates
+   ↓
+5. Send to external AI
+
+RESPONSE PROCESSING (by receiving agent):
+1. MANDATORY: Run Protocol 9 (External Research Reconciliation)
+   ↓
+2. Create reconciliation doc in docs/analysis/
+   ↓
+3. Run Protocol 8 (Task Extraction) on ACCEPT/MODIFY items
+   ↓
+4. Update Master Implementation Tracker (RESEARCH_QUESTIONS.md)
+   ↓
+5. Update THIS DOCUMENT (Quick Status section)
+```
+
+### For Human (Product Owner)
+
+```
+QUICK CHECK:
+→ index/PD_INDEX.md: What decisions are pending MY input?
+→ index/RQ_INDEX.md: What research is blocked/complete?
+→ THIS DOCUMENT: What's the implementation status?
+
+DEEP DIVE:
+→ PRODUCT_DECISIONS.md: Full decision rationale
+→ RESEARCH_QUESTIONS.md: Master Implementation Tracker (77 tasks)
+→ IMPACT_ANALYSIS.md: Cascade effects of recent decisions
+```
 
 ---
 
-## Quick Status
+## Complete Documentation Hierarchy
 
-### Current Phase Summary
+### Visual Map
 
-| Phase | Description | Total | CRITICAL | NOT STARTED | IN PROGRESS | COMPLETE |
-|-------|-------------|-------|----------|-------------|-------------|----------|
-| **A: Schema** | Database foundation | 10 | 6 | 10 | 0 | 0 |
-| **B: Intelligence** | Backend services | 15 | 5 | 15 | 0 | 0 |
-| **C: Council AI** | Council system | 12 | 5 | 12 | 0 | 0 |
-| **D: UX** | Frontend screens | 10 | 2 | 10 | 0 | 0 |
-| **E: Polish** | Advanced features | 10 | 0 | 10 | 0 | 0 |
-| **F: Identity Coach** | Recommendation engine | 20 | 5 | 20 | 0 | 0 |
-| **TOTAL** | | **77** | **23** | **77** | **0** | **0** |
+```
+docs/
+├── CORE/                              ← GOVERNANCE LAYER
+│   │
+│   ├── [ENTRY POINT] CLAUDE.md ───────────────────────────────┐
+│   │   (For Claude Code - project overview)                   │
+│   │                                                          │
+│   ├── AI_HANDOVER.md ← Session continuity                    │
+│   │   Updates: EVERY session                                 │
+│   │                                                          │
+│   ├── index/                    ← QUICK LOOKUP               │
+│   │   ├── CD_INDEX.md (17 decisions)                         │
+│   │   ├── PD_INDEX.md (31 decisions, 7 resolved)             │
+│   │   └── RQ_INDEX.md (32 questions, 18 complete)            │
+│   │                                                          │
+│   ├── IMPLEMENTATION_ACTIONS.md ← YOU ARE HERE ◀─────────────┤
+│   │   (Task quick status + cross-references)                 │
+│   │                                                          │
+│   ├── RESEARCH_QUESTIONS.md ← MASTER TASK TRACKER            │
+│   │   (77 tasks across 6 phases)                             │
+│   │   Updates: Protocol 8, Protocol 9                        │
+│   │                                                          │
+│   ├── PRODUCT_DECISIONS.md ← Decision rationale              │
+│   │   Updates: When decisions made/pending                   │
+│   │                                                          │
+│   ├── IMPACT_ANALYSIS.md ← Cascade tracking ONLY             │
+│   │   (Does NOT store tasks - references them)               │
+│   │                                                          │
+│   ├── AI_AGENT_PROTOCOL.md ← 9 mandatory protocols           │
+│   │   Protocol 8: Task Extraction                            │
+│   │   Protocol 9: External Research Reconciliation           │
+│   │                                                          │
+│   ├── DEEP_THINK_PROMPT_GUIDANCE.md ← Prompt quality         │
+│   │   (For external research agent prompts)                  │
+│   │                                                          │
+│   ├── GLOSSARY.md ← Terminology (50+ terms)                  │
+│   │                                                          │
+│   ├── IDENTITY_COACH_SPEC.md ← Feature specification         │
+│   │                                                          │
+│   └── archive/                  ← RESOLVED ITEMS             │
+│       ├── CD_PD_ARCHIVE_Q1_2026.md                           │
+│       └── RQ_ARCHIVE_Q1_2026.md                              │
+│                                                              │
+├── analysis/                     ← RECONCILIATION OUTPUTS     │
+│   ├── DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md         │
+│   ├── DEEP_THINK_RECONCILIATION_RQ014_RQ013_PD117_RQ015.md   │
+│   ├── IDENTITY_COACH_DEEP_ANALYSIS.md                        │
+│   └── DOCUMENTATION_GOVERNANCE_ANALYSIS.md                   │
+│                                                              │
+└── prompts/                      ← EXTERNAL RESEARCH PROMPTS  │
+    ├── DEEP_THINK_PROMPT_IDENTITY_COACH_RQ005-RQ006-RQ007.md  │
+    ├── DEEP_THINK_PROMPT_IDENTITY_COACH_PHASE2_RQ028-RQ032.md │
+    ├── DEEP_THINK_PROMPT_IDENTITY_SYSTEM_RQ013-RQ014-RQ015-PD117.md
+    └── CLAUDE_SESSION_PRIMER.md                               │
+                                                               │
+PROJECT ROOT:                                                  │
+├── CLAUDE.md ─────────────────────────────────────────────────┘
+│   (Symlink/copy for Claude Code entry)
+│
+├── lib/                          ← FLUTTER APP CODE
+│   └── [Dart implementation]
+│
+└── supabase/                     ← DATABASE LAYER
+    └── migrations/
+```
 
-*For detailed task list, see: RESEARCH_QUESTIONS.md → "Master Implementation Tracker"*
+### Document Purpose Matrix
+
+| Document | Purpose | Updates When | Who Updates |
+|----------|---------|--------------|-------------|
+| **CLAUDE.md** | Project entry point for Claude Code | Project structure changes | Human/Claude |
+| **AI_HANDOVER.md** | Session continuity | Every session end | Current agent |
+| **index/CD_INDEX.md** | Quick CD lookup | CD status changes | Any agent |
+| **index/PD_INDEX.md** | Quick PD lookup | PD status changes | Any agent |
+| **index/RQ_INDEX.md** | Quick RQ lookup | RQ status changes | Any agent |
+| **IMPLEMENTATION_ACTIONS.md** | Task quick status + routing | Protocol 8/9 execution | Any agent |
+| **RESEARCH_QUESTIONS.md** | Master Implementation Tracker | Task extraction | Any agent |
+| **PRODUCT_DECISIONS.md** | Decision rationale | New decisions | Human/agent |
+| **IMPACT_ANALYSIS.md** | Cascade effects | Research completes | Any agent |
+| **AI_AGENT_PROTOCOL.md** | Behavioral rules | Rare (process changes) | Human |
+| **DEEP_THINK_PROMPT_GUIDANCE.md** | Prompt quality | Rare (standards change) | Human/agent |
+| **GLOSSARY.md** | Terminology | New terms introduced | Any agent |
+| **docs/analysis/*.md** | Reconciliation outputs | Protocol 9 execution | Any agent |
+| **docs/prompts/*.md** | External research prompts | New research queued | Any agent |
 
 ---
 
-## Critical Path
+## Task Management Governance
 
-### Primary Path (Council AI Foundation)
+### Governing Protocols
+
+| Protocol | Location | When to Execute | Output |
+|----------|----------|-----------------|--------|
+| **Protocol 8** | AI_AGENT_PROTOCOL.md:504 | After RQ completes OR PD resolves | Tasks added to Master Tracker |
+| **Protocol 9** | AI_AGENT_PROTOCOL.md:555 | After receiving external research | ACCEPT/MODIFY/REJECT/ESCALATE + Reconciliation doc |
+
+### Task Extraction Decision Tree
+
 ```
-A-01 (pgvector) → A-02/A-03/A-05 (tables) → B-01 (embedding) → B-06/B-07 (Sherlock) → C-01/C-03 (Treaty) → C-04/C-05 (Council) → D-01/D-02 (screens)
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     TASK EXTRACTION DECISION TREE                             │
+│                                                                              │
+│  INPUT: Research output OR Decision resolution                               │
+│                                                                              │
+│  1. Is this from EXTERNAL research (DeepSeek, Gemini, etc.)?                 │
+│     ├── YES → Run Protocol 9 FIRST                                           │
+│     │         ├── Create docs/analysis/DEEP_THINK_RECONCILIATION_*.md        │
+│     │         ├── Categorize: ACCEPT / MODIFY / REJECT / ESCALATE            │
+│     │         └── ONLY extract tasks from ACCEPT and MODIFY items            │
+│     │                                                                        │
+│     └── NO → Proceed directly to Step 2                                      │
+│                                                                              │
+│  2. For each actionable item:                                                │
+│     ├── Search Master Tracker (RESEARCH_QUESTIONS.md) for duplicates        │
+│     │   ├── EXACT MATCH → Skip (already tracked)                             │
+│     │   ├── SIMILAR → MERGE (update existing task)                           │
+│     │   └── NOVEL → CREATE new task                                          │
+│                                                                              │
+│  3. Assign Task ID:                                                          │
+│     ├── Phase A (A-01, A-02...) → Schema/Database                            │
+│     ├── Phase B (B-01, B-02...) → Intelligence/Backend                       │
+│     ├── Phase C (C-01, C-02...) → Council AI                                 │
+│     ├── Phase D (D-01, D-02...) → UX/Frontend                                │
+│     ├── Phase E (E-01, E-02...) → Polish/Advanced                            │
+│     └── Phase F (F-01, F-02...) → Identity Coach                             │
+│                                                                              │
+│  4. Required Fields:                                                         │
+│     ├── ID: [Phase]-[Number]                                                 │
+│     ├── Task: Clear action description                                       │
+│     ├── Priority: CRITICAL / HIGH / MEDIUM / LOW                             │
+│     ├── Status: 🔴 NOT STARTED / 🟡 IN PROGRESS / ✅ COMPLETE                │
+│     ├── Source: RQ-XXX or PD-XXX                                             │
+│     ├── Component: Database / Service / Screen / Content / etc.             │
+│     └── AI Model: (optional) If task requires specific model                 │
+│                                                                              │
+│  5. Update Documents:                                                        │
+│     ├── RESEARCH_QUESTIONS.md → Add to Master Implementation Tracker        │
+│     ├── IMPLEMENTATION_ACTIONS.md → Update Quick Status + Recently Added    │
+│     └── IMPACT_ANALYSIS.md → Add cascade effects (NOT task definitions)     │
+│                                                                              │
+│  OUTPUT: Task tracked in Master Tracker with full traceability               │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Identity Coach Path (Parallel Track)
+### Canonical Locations (Memorize This)
+
+| What | Where | NOT Here |
+|------|-------|----------|
+| **Task Definitions** | RESEARCH_QUESTIONS.md → Master Implementation Tracker | ~~IMPACT_ANALYSIS.md~~ |
+| **Task Quick Status** | IMPLEMENTATION_ACTIONS.md (this document) | — |
+| **Cascade Effects** | IMPACT_ANALYSIS.md | ~~RESEARCH_QUESTIONS.md~~ |
+| **Decision Rationale** | PRODUCT_DECISIONS.md | ~~IMPACT_ANALYSIS.md~~ |
+| **Reconciliation Output** | docs/analysis/DEEP_THINK_RECONCILIATION_*.md | ~~Inline in RQs~~ |
+| **External Prompts** | docs/prompts/DEEP_THINK_PROMPT_*.md | ~~Ad-hoc generation~~ |
+
+---
+
+## Quick Status Dashboard
+
+### Phase Summary (77 Total Tasks)
+
+| Phase | Description | Total | CRITICAL | HIGH | MEDIUM | LOW | Progress |
+|-------|-------------|-------|----------|------|--------|-----|----------|
+| **A: Schema** | Database foundation | 10 | 6 | 2 | 2 | 0 | 0% |
+| **B: Intelligence** | Backend services | 15 | 5 | 6 | 3 | 1 | 0% |
+| **C: Council AI** | Council system | 12 | 5 | 6 | 1 | 0 | 0% |
+| **D: UX** | Frontend screens | 10 | 2 | 5 | 2 | 1 | 0% |
+| **E: Polish** | Advanced features | 10 | 0 | 2 | 5 | 3 | 0% |
+| **F: Identity Coach** | Recommendation engine | 20 | 5 | 12 | 3 | 0 | 0% |
+| **TOTAL** | | **77** | **23** | **33** | **16** | **5** | **0%** |
+
+**Full Task List:** RESEARCH_QUESTIONS.md → "Master Implementation Tracker" (line ~3415)
+
+### Status Distribution
+
 ```
-F-02/F-03 (roadmap tables) → F-06 (archetypes) → F-07/F-08/F-09 (retrieval) → F-13 (content) → F-10 (scheduler)
+┌─────────────────────────────────────────────────────────────┐
+│ 🔴 NOT STARTED: 77 (100%)                                   │
+│ 🟡 IN PROGRESS: 0 (0%)                                      │
+│ ✅ COMPLETE:    0 (0%)                                      │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Critical Paths
+
+### Path 1: Council AI Foundation (Primary)
+
+```
+A-01 (pgvector extension)
+  ↓
+A-02 (psychometric_roots table) ─┬─→ A-03 (psychological_manifestations)
+                                 └─→ A-05 (treaties table)
+  ↓
+B-01 (embed-manifestation Edge Function)
+  ↓
+B-06 (Triangulation Protocol) ─→ B-07 (Sherlock Day 7 synthesis)
+  ↓
+C-01 (Treaty Dart model) ─→ C-03 (TreatyEngine)
+  ↓
+C-04 (generate_council_session Edge Function) ─→ C-05 (Council Engine prompt)
+  ↓
+D-01 (Constitution dashboard) ─→ D-02 (The Chamber overlay)
+```
+
+### Path 2: Identity Coach (Parallel Track)
+
+```
+F-02 (identity_roadmaps table) ─→ F-03 (roadmap_nodes table)
+  ↓
+F-06 (archetype_templates table) ← BLOCKED BY RQ-028 (Archetype Definitions)
+  ↓
+F-07 (generateRecommendations Edge Function)
+  ↓
+F-08 (Stage 1: Semantic retrieval) ─→ F-09 (Stage 2: Psychometric re-ranking)
+  ↓
+F-13 (50 universal habit templates) ← BLOCKED BY RQ-028, RQ-029
+  ↓
+F-10 (Architect scheduler)
+```
+
+### Blocking Research (Must Complete Before Implementation)
+
+| Research | Blocks | Priority | Status |
+|----------|--------|----------|--------|
+| **RQ-028** (Archetype Definitions) | F-06, F-13, F-14, content pipeline | **CRITICAL** | 🔴 NEEDS RESEARCH |
+| RQ-029 (Dimension Curation) | F-13 content accuracy | HIGH | 🔴 NEEDS RESEARCH |
+| RQ-030 (Preference Embedding) | F-11 feedback implementation | MEDIUM | 🔴 NEEDS RESEARCH |
+| RQ-017 (Constellation UX) | Future dashboard work | HIGH | 🔴 NEEDS RESEARCH |
+| RQ-018 (Airlock Protocol) | State transition UI | HIGH | 🔴 NEEDS RESEARCH |
 
 ---
 
 ## Recently Added Tasks
 
-### 10 January 2026 — Identity Coach (Phase F)
+### 10 January 2026 — Phase F: Identity Coach (20 Tasks)
 
-**Source:** RQ-005, RQ-006, RQ-007 reconciliation
-**Decision:** PD-125 (50 habits at launch with caveat)
+**Source:** RQ-005, RQ-006, RQ-007 reconciliation via Protocol 9
+**Decision:** PD-125 RESOLVED (50 habits at launch with caveat)
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md`
 
-| Task ID | Description | Priority | Status |
-|---------|-------------|----------|--------|
-| F-01 | `preference_embeddings` table | HIGH | 🔴 NOT STARTED |
-| F-02 | `identity_roadmaps` table | **CRITICAL** | 🔴 NOT STARTED |
-| F-03 | `roadmap_nodes` table | **CRITICAL** | 🔴 NOT STARTED |
-| F-04 | `ideal_dimension_vector` field | HIGH | 🔴 NOT STARTED |
-| F-05 | `archetype_template_id` FK | HIGH | 🔴 NOT STARTED |
-| F-06 | `archetype_templates` reference table | HIGH | 🔴 NOT STARTED |
-| F-07 | `generateRecommendations()` Edge Function | **CRITICAL** | 🔴 NOT STARTED |
-| F-08 | Stage 1: Semantic retrieval | **CRITICAL** | 🔴 NOT STARTED |
-| F-09 | Stage 2: Psychometric re-ranking | **CRITICAL** | 🔴 NOT STARTED |
-| F-10 | Architect scheduler | HIGH | 🔴 NOT STARTED |
-| F-11 | Feedback signal tracking | HIGH | 🔴 NOT STARTED |
-| F-12 | Sherlock Day 3: Future Self Interview | HIGH | 🔴 NOT STARTED |
-| F-13 | 50 universal habit templates | **CRITICAL** | 🔴 NOT STARTED |
-| F-14 | 12 Archetype Template presets | HIGH | 🔴 NOT STARTED |
-| F-15 | 12 Framing Templates | HIGH | 🔴 NOT STARTED |
-| F-16 | 4 Ritual Templates | MEDIUM | 🔴 NOT STARTED |
-| F-17 | `ProactiveRecommendation` Dart model | HIGH | 🔴 NOT STARTED |
-| F-18 | `IdentityRoadmapService` | HIGH | 🔴 NOT STARTED |
-| F-19 | Pace Car rate limiting | HIGH | 🔴 NOT STARTED |
-| F-20 | Regression messaging templates | MEDIUM | 🔴 NOT STARTED |
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| F-01 | `preference_embeddings` table (768-dim vector) | HIGH | 🔴 | RQ-005 |
+| F-02 | `identity_roadmaps` table | **CRITICAL** | 🔴 | RQ-007 |
+| F-03 | `roadmap_nodes` table | **CRITICAL** | 🔴 | RQ-007 |
+| F-04 | `ideal_dimension_vector` field on habit_templates | HIGH | 🔴 | RQ-005 |
+| F-05 | `archetype_template_id` FK on identity_facets | HIGH | 🔴 | RQ-006 |
+| F-06 | `archetype_templates` reference table (12 presets) | HIGH | 🔴 | RQ-006 |
+| F-07 | `generateRecommendations()` Edge Function | **CRITICAL** | 🔴 | RQ-005 |
+| F-08 | Stage 1: Semantic retrieval (pgvector) | **CRITICAL** | 🔴 | RQ-005 |
+| F-09 | Stage 2: Psychometric re-ranking (6-dim) | **CRITICAL** | 🔴 | RQ-005 |
+| F-10 | Architect scheduler (nightly/weekly) | HIGH | 🔴 | RQ-005 |
+| F-11 | Feedback signal tracking (adopt/dismiss/snooze) | HIGH | 🔴 | RQ-005 |
+| F-12 | Sherlock Day 3: Future Self Interview | HIGH | 🔴 | RQ-007 |
+| F-13 | 50 universal habit templates (dual embeddings) | **CRITICAL** | 🔴 | RQ-006, PD-125 |
+| F-14 | 12 Archetype Template presets | HIGH | 🔴 | RQ-006 |
+| F-15 | 12 Framing Templates (dimension × poles) | HIGH | 🔴 | RQ-006 |
+| F-16 | 4 Ritual Templates | MEDIUM | 🔴 | RQ-006 |
+| F-17 | `ProactiveRecommendation` Dart model | HIGH | 🔴 | RQ-005 |
+| F-18 | `IdentityRoadmapService` (CRUD + ICS) | HIGH | 🔴 | RQ-007 |
+| F-19 | Pace Car rate limiting | HIGH | 🔴 | RQ-005 |
+| F-20 | Regression messaging templates | MEDIUM | 🔴 | RQ-006 |
 
----
-
-### 06 January 2026 — Identity System (Phases A-E)
+### 06 January 2026 — Phases A-E: Identity System (57 Tasks)
 
 **Source:** RQ-012, RQ-013, RQ-014, RQ-015, RQ-016 reconciliation
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ014_RQ013_PD117_RQ015.md`
 
-57 tasks added across Phases A-E. See RESEARCH_QUESTIONS.md → Master Implementation Tracker for full list.
+**Full Task List:** See RESEARCH_QUESTIONS.md → Master Implementation Tracker → Phases A through E
 
 ---
 
 ## Blocked Tasks (Awaiting Research)
 
-These tasks cannot be fully specified until research completes:
+### Research Dependency Matrix
 
-| Task Range | Blocking Research | Status |
-|------------|-------------------|--------|
-| E-05, E-06 | RQ-024 (Treaty Modification) | 🔴 NEEDS RESEARCH |
-| E-01, E-02 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH |
-| E-03, E-04 | RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH |
-| E-07 | RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-018 (Airlock Protocol) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-028 (Archetype Definitions) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-029 (Dimension Curation) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-030 (Preference Embedding) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-031 (Pace Car Validation) | 🔴 NEEDS RESEARCH |
-| *Future* | RQ-032 (ICS Integration) | 🔴 NEEDS RESEARCH |
+| Task Range | Blocking Research | Research Status | Deep Think Prompt |
+|------------|-------------------|-----------------|-------------------|
+| F-06, F-13, F-14 | **RQ-028** (Archetype Definitions) | 🔴 NEEDS RESEARCH | `DEEP_THINK_PROMPT_IDENTITY_COACH_PHASE2_RQ028-RQ032.md` |
+| F-13 | **RQ-029** (Dimension Curation) | 🔴 NEEDS RESEARCH | Same as above |
+| F-11 | **RQ-030** (Preference Embedding) | 🔴 NEEDS RESEARCH | Same as above |
+| F-19 | **RQ-031** (Pace Car Validation) | 🔴 NEEDS RESEARCH | Same as above |
+| F-18 | **RQ-032** (ICS Integration) | 🔴 NEEDS RESEARCH | Same as above |
+| E-05, E-06 | RQ-024 (Treaty Modification) | 🔴 NEEDS RESEARCH | Not yet created |
+| E-01, E-02 | RQ-025 (Summon Token Economy) | 🔴 NEEDS RESEARCH | Not yet created |
+| E-03, E-04 | RQ-026 (Sound Design) | 🔴 NEEDS RESEARCH | Not yet created |
+| E-07 | RQ-027 (Template Versioning) | 🔴 NEEDS RESEARCH | Not yet created |
+| *Future UX* | RQ-017 (Constellation UX) | 🔴 NEEDS RESEARCH | Not yet created |
+| *Future UX* | RQ-018 (Airlock Protocol) | 🔴 NEEDS RESEARCH | Not yet created |
+| *Future Privacy* | RQ-023 (Population Privacy) | 🔴 NEEDS RESEARCH | Not yet created |
+
+### Next Research to Queue
+
+1. **RQ-028** (CRITICAL) — Archetype Template Definitions
+   - Prompt ready: `docs/prompts/DEEP_THINK_PROMPT_IDENTITY_COACH_PHASE2_RQ028-RQ032.md`
+   - Blocks: F-06, F-13, F-14 (entire content pipeline)
+
+2. **RQ-017** — Constellation UX
+   - Prompt needed
+   - Blocks: Dashboard visualization work
+
+3. **RQ-018** — Airlock Protocol
+   - Prompt needed
+   - Blocks: State transition UI/audio
 
 ---
 
 ## Task Addition Log
 
-| Date | Source | Phase | Tasks Added | Added By |
-|------|--------|-------|-------------|----------|
-| 10 Jan 2026 | RQ-005/006/007 | F | F-01 through F-20 (20 tasks) | Claude (Opus 4.5) |
-| 06 Jan 2026 | RQ-012/013/014/015/016 | A-E | A-01 through E-10 (57 tasks) | Claude (Opus 4.5) |
+| Date | Source | Phase | Tasks Added | Added By | Reconciliation Doc |
+|------|--------|-------|-------------|----------|-------------------|
+| 10 Jan 2026 | RQ-005/006/007 | F | F-01 through F-20 (20 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |
+| 06 Jan 2026 | RQ-012/013/014/015/016 | A-E | A-01 through E-10 (57 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ014_RQ013_PD117_RQ015.md` |
 
 ---
 
 ## Audit Trail
 
-### Issue Identified: 10 January 2026
+### Issue Identified: 10 January 2026 — Task Loss
 
 **Problem:** F-01 through F-20 tasks from RQ-005/006/007 were added to IMPACT_ANALYSIS.md but NOT to the Master Implementation Tracker in RESEARCH_QUESTIONS.md.
 
-**Root Cause:** Ambiguity between "Implementation Tasks Extracted" in IMPACT_ANALYSIS.md vs "Master Implementation Tracker" in RESEARCH_QUESTIONS.md.
+**Root Cause:** Ambiguity between:
+- "Implementation Tasks Extracted" section in IMPACT_ANALYSIS.md
+- "Master Implementation Tracker" in RESEARCH_QUESTIONS.md
 
-**Resolution:**
-1. Added Phase F to Master Implementation Tracker (RESEARCH_QUESTIONS.md)
-2. Created this document (IMPLEMENTATION_ACTIONS.md) as single source of truth
-3. Clarified workflow: IMPACT_ANALYSIS.md is for CASCADE analysis, not task storage
+**Resolution Applied:**
+1. Added Phase F (20 tasks) to Master Implementation Tracker
+2. Created this document (IMPLEMENTATION_ACTIONS.md) as navigation hub
+3. Updated Protocol 8 in AI_AGENT_PROTOCOL.md with explicit canonical locations
+4. Added Phase F to task ID convention (A-F, not just A-E)
 
-**Prevention:** This document now serves as the cross-reference layer between reconciliation output and the Master Tracker.
+**Prevention Measures:**
+- Protocol 8 now explicitly states: "Tasks MUST be added to RESEARCH_QUESTIONS.md Master Tracker"
+- This document serves as cross-reference layer between reconciliation and Master Tracker
+- IMPACT_ANALYSIS.md header now states "CASCADE ANALYSIS ONLY — does NOT store tasks"
 
 ---
 
-*This document is maintained automatically during Protocol 8 (Task Extraction) and Protocol 9 (External Research Reconciliation).*
+## External Agent Instructions
+
+### For DeepSeek / Gemini / ChatGPT (When Processing Prompts)
+
+If you are an external AI agent receiving a Deep Think prompt from The Pact project:
+
+1. **Respect Locked Decisions:** The prompt includes CDs (Confirmed Decisions). Do NOT propose changes that conflict with them.
+
+2. **Android-First Reality:** CD-017 mandates Android-first development. Do NOT propose features requiring:
+   - Apple HealthKit
+   - Wearable-only sensors
+   - iOS-specific APIs
+
+3. **4-State Energy Model:** CD-015 locks the energy model at 4 states (high_focus, high_physical, social, recovery). Do NOT propose 5-state models.
+
+4. **Output Format:** Follow the structure specified in the prompt. Include:
+   - Confidence levels (HIGH/MEDIUM/LOW) for each recommendation
+   - CD-018 classification (ESSENTIAL/VALUABLE/NICE-TO-HAVE/OVER-ENGINEERED)
+   - Tradeoffs for each option before recommending
+
+5. **Your output will be reconciled** via Protocol 9 by a receiving agent. Proposals that conflict with locked decisions will be REJECTED.
+
+---
+
+## Cross-Reference Quick Links
+
+| Need | Go To |
+|------|-------|
+| What did the last agent do? | `AI_HANDOVER.md` |
+| What decisions are locked? | `index/CD_INDEX.md` |
+| What decisions are pending? | `index/PD_INDEX.md` |
+| What research is complete? | `index/RQ_INDEX.md` |
+| Full task details? | `RESEARCH_QUESTIONS.md` → Master Implementation Tracker |
+| Cascade effects? | `IMPACT_ANALYSIS.md` |
+| Term definitions? | `GLOSSARY.md` |
+| Agent behavioral rules? | `AI_AGENT_PROTOCOL.md` |
+| Prompt quality standards? | `DEEP_THINK_PROMPT_GUIDANCE.md` |
+| Identity Coach spec? | `IDENTITY_COACH_SPEC.md` |
+| Reconciliation outputs? | `docs/analysis/DEEP_THINK_RECONCILIATION_*.md` |
+| External research prompts? | `docs/prompts/DEEP_THINK_PROMPT_*.md` |
+
+---
+
+*This document is maintained during Protocol 8 (Task Extraction) and Protocol 9 (External Research Reconciliation). Last updated: 10 January 2026.*
