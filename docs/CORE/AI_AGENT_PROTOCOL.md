@@ -980,6 +980,23 @@ Before finalizing any recommendation that affects product direction, monetizatio
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+**Reversibility Cost Classification:**
+
+| Change Type | Reversibility | Classification |
+|-------------|---------------|----------------|
+| Schema changes (new tables, columns) | LOW — requires migration | **HIGH cost** |
+| API contract changes | LOW — breaks clients | **HIGH cost** |
+| User-facing terminology | MEDIUM — confuses users | **HIGH cost** |
+| Internal service refactoring | HIGH — internal only | LOW cost |
+| UI layout/styling | HIGH — easy to change | LOW cost |
+| Feature flags | VERY HIGH — toggle off | LOW cost |
+
+**Contested Alternatives Indicators:**
+- Analysis document compares 3+ options
+- Multiple SME domains have opinions
+- Escalated to human for decision
+- Previous research had conflicting recommendations
+
 ### Why This Protocol Exists
 AI agents naturally form biases based on training data, context, and the framing of questions. These biases can lead to overconfident recommendations that haven't been validated. Protocol 10 requires explicit bias identification BEFORE finalizing recommendations.
 

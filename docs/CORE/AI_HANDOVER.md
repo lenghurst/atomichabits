@@ -39,9 +39,13 @@ This prevents:
 | **Session ID** | `claude/setup-pact-deep-think-TqSKg` (continued) |
 | **Date** | 11 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Protocol Refinement — Holistic Analysis of 5 Challenges |
+| **Focus** | Protocol Refinement — HIGH Confidence Validation |
 | **Tier 3 Verification** | ✅ Complete |
 | **Mismatches Found** | None (all statistics consistent) |
+
+> **Note on Tier 3 Verification:** This is **detection-based** (audit trail), not **prevention-based** (blocking).
+> If you skip verification, the next agent will see "❌ Skipped" and can investigate.
+> Future automation (pre-commit hook) is tracked in PD-126.
 
 ### What Was Accomplished (This Latest Session)
 
