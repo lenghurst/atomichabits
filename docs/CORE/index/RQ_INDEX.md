@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 10 January 2026 (RQ-037, RQ-033, RQ-025 COMPLETE via Deep Think)
+> **Last Updated:** 11 January 2026 (RQ-039 + 7 sub-RQs added for token economy research)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -58,6 +58,14 @@
 | **RQ-036** | Chamber Visual Design Patterns | 🔴 NEEDS RESEARCH | RQ-016 | — |
 | **RQ-037** | Holy Trinity Model Validation | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-038** | JITAI Component Allocation Strategy | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-039** | Token Economy Architecture | 🔴 NEEDS RESEARCH | PD-119 | — |
+| **RQ-039a** | ↳ Earning Mechanism & Intrinsic Motivation | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039b** | ↳ Optimal Reflection Cadence | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039c** | ↳ Single vs Multiple Earning Paths | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039d** | ↳ Token Cap vs Decay Alternatives | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039e** | ↳ Crisis Bypass Threshold Validation | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039f** | ↳ Premium Token Allocation | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039g** | ↳ Reflection Quality Thresholds | 🔴 NEEDS RESEARCH | RQ-039 | — |
 
 ---
 
@@ -65,9 +73,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs** | 38 |
-| **✅ COMPLETE** | 31 (82%) |
-| **🔴 NEEDS RESEARCH** | 7 (18%) |
+| **Total RQs (Main)** | 39 |
+| **Total Sub-RQs** | 7 (RQ-039a→g) |
+| **✅ COMPLETE** | 31 (79%) |
+| **🔴 NEEDS RESEARCH** | 8 main + 7 sub (15 items) |
+
+> **Note:** RQ-039 added 11 Jan 2026 with 7 sub-questions for token economy research
 
 ---
 
@@ -110,6 +121,14 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
 │   │   ├── RQ-025 (Summon Tokens) ✅  ← COMPLETE (unblocks PD-119)
+│   │   │   └── RQ-039 (Token Economy Architecture) 🔴  ← NEW (7 sub-RQs)
+│   │   │       ├── RQ-039a (Earning Mechanism) 🔴
+│   │   │       ├── RQ-039b (Reflection Cadence) 🔴
+│   │   │       ├── RQ-039c (Single vs Multiple Paths) 🔴
+│   │   │       ├── RQ-039d (Cap vs Decay) 🔴
+│   │   │       ├── RQ-039e (Crisis Threshold) 🔴
+│   │   │       ├── RQ-039f (Premium Allocation) 🔴
+│   │   │       └── RQ-039g (Quality Thresholds) 🔴
 │   │   └── RQ-036 (Chamber Visual Design) 🔴  ← NEW (blocks PD-120)
 │   ├── RQ-017 (Constellation UX) ✅
 │   ├── RQ-018 (Airlock Protocol) ✅
