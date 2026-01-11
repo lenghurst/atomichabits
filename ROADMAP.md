@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 11 January 2026 (Research 82% complete; RQ-037/033/025 gamification strategy integrated)
+> **Last Updated:** 11 January 2026 (Codebase reality audit — Phase 1 status corrected to PARTIAL)
 > **Current Strategy:** psyOS Full Implementation at Launch (NOT phased per PD-114)
 > **Target Launch:** TBD (Full psyOS scope requires significant build)
 > **Identity:** Psychological Operating System (psyOS)
@@ -89,11 +89,14 @@ On 05 January 2026, the decision was made to pursue **psyOS (Psychological Opera
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Database schemas (Supabase) | ✅ Done | `identity_seeds`, `habit_contracts` |
+| Database schemas (Supabase) | 🟡 **Partial** | `identity_seeds`, `habit_contracts` exist; **`identity_facets`, `identity_topology`, `treaties` NOT CREATED** — Blocks Phase B-H |
 | Auth flow | ✅ Done | Supabase Auth |
 | Core repositories | ✅ Done | `PsychometricRepository` |
 | Permission capture | 🟡 Partial | Captured but underutilized |
 | Evidence logging (E6) | 🔴 Not done | Log observable signals |
+| **Missing `habits` table** | 🔴 Not done | FK reference in `conversations` but table never created |
+
+> ⚠️ **AUDIT NOTE (11 Jan 2026):** Phase A schema is 0% complete. 104 of 116 tasks are BLOCKED until `identity_facets`, `identity_topology`, and `treaties` tables are created. See `docs/analysis/SESSION_22_CODEBASE_REALITY_AUDIT.md`.
 
 ---
 
