@@ -14,6 +14,153 @@ External AI research tools (Deep Think, Claude Projects, ChatGPT Canvas) produce
 
 ---
 
+## ⚠️ CRITICAL: Self-Containment Requirement (READ FIRST)
+
+### The Reality of External AI Tools
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    DEEP THINK HAS NO CONTEXT                                  │
+│                                                                              │
+│  External AI tools (Gemini Deep Think, DeepSeek, etc.) have:                │
+│                                                                              │
+│  ❌ NO access to our codebase                                                │
+│  ❌ NO memory of previous conversations                                      │
+│  ❌ NO knowledge of our terminology (CD, RQ, PD, psyOS, etc.)               │
+│  ❌ NO context about what "The Pact" is                                      │
+│  ❌ NO understanding of our internal reference systems                       │
+│                                                                              │
+│  ════════════════════════════════════════════════════════════════════════   │
+│                                                                              │
+│  EVERY PROMPT MUST BE 100% SELF-CONTAINED                                   │
+│                                                                              │
+│  Treat every Deep Think conversation as if you are explaining the project   │
+│  to a brilliant developer who has NEVER heard of The Pact before.           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### What "Self-Contained" Means
+
+| ❌ NOT Self-Contained | ✅ Self-Contained |
+|----------------------|-------------------|
+| "CD-015 mandates 4-state energy model" | Full explanation of what psyOS is, why we have 4 energy states, what they are, and why this matters |
+| "Per RQ-012 findings on Fractal Trinity..." | Full explanation of what Fractal Trinity is, what RQ-012 discovered, and how it applies |
+| "See identity_topology table" | Full CREATE TABLE statement with comments explaining every field |
+| "As established in previous research..." | Inline explanation — Deep Think has no memory |
+| "The Holy Trinity extraction" | Full explanation: Anti-Identity, Failure Archetype, Resistance Lie — what each is and why we extract them |
+
+### Self-Containment Checklist (MANDATORY — Check Before Sending)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│              SELF-CONTAINMENT VERIFICATION CHECKLIST                         │
+│                                                                              │
+│  Before sending ANY prompt to Deep Think:                                   │
+│                                                                              │
+│  □ APP EXPLANATION: Does the prompt explain what "The Pact" is?            │
+│    - What type of app (habit/identity)                                      │
+│    - Who it's for (target users)                                            │
+│    - What problem it solves                                                 │
+│    - How it's different from competitors                                    │
+│                                                                              │
+│  □ PHILOSOPHY EXPLANATION: Is core philosophy fully explained?              │
+│    - What is "psyOS" (Psychological Operating System)?                      │
+│    - What is "Parliament of Selves"?                                        │
+│    - What are "identity facets"?                                            │
+│    - Why do we treat users this way?                                        │
+│                                                                              │
+│  □ TERMINOLOGY DEFINED: Are ALL internal terms defined INLINE?             │
+│    - Every CD referenced must be EXPLAINED, not just numbered              │
+│    - Every RQ referenced must have findings SUMMARIZED                      │
+│    - Every internal concept (Holy Trinity, JITAI, etc.) must be defined    │
+│                                                                              │
+│  □ SCHEMAS INLINE: Are all database tables included?                        │
+│    - Full CREATE TABLE statements                                           │
+│    - Comments explaining what each field is for                             │
+│    - Why this table exists                                                  │
+│                                                                              │
+│  □ CODE INLINE: Is all relevant code included?                              │
+│    - Don't reference file names — include the actual code                   │
+│    - Add comments explaining what the code does                             │
+│                                                                              │
+│  □ STANDALONE TEST: Could someone with NO prior knowledge understand?       │
+│    - Read the prompt as if you've never seen this project                   │
+│    - Every question should make sense without external references           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Required Foundation Section (Every Prompt Must Start With This)
+
+Every Deep Think prompt MUST begin with a foundation section that explains the project:
+
+```markdown
+## PART 1: WHAT IS "THE PACT"? (Essential Context)
+
+**You have no prior knowledge of this project. This section provides essential context.**
+
+### The App in One Paragraph
+
+The Pact is a mobile app (Flutter, Android-first) that helps users build identity-based
+habits through psychological insight and social accountability. Unlike traditional habit
+trackers that count streaks, The Pact treats users as having multiple "identity facets"
+(e.g., "The Writer," "The Parent") that negotiate for attention. Users create "pacts" —
+commitments to become a certain type of person.
+
+### Core Philosophy: "Parliament of Selves"
+
+[Full explanation of psyOS philosophy — NOT just a mention]
+
+### Key Terminology
+
+| Term | Definition |
+|------|------------|
+| **psyOS** | Psychological Operating System — the app's core framework |
+| **Identity Facet** | A "version" of the user they want to develop |
+| **Holy Trinity** | Three core psychological traits extracted during onboarding |
+| [etc.] | [Full definitions for every term used in the prompt] |
+
+### Tech Stack
+
+- Frontend: Flutter 3.38.4 (Android-first)
+- Backend: Supabase (PostgreSQL + pgvector)
+- AI: DeepSeek V3.2 for reasoning, Gemini for embeddings/TTS
+
+### Why This Research Matters
+
+[Connect the specific research question to the app's goals]
+```
+
+### Anti-Patterns (NEVER Do These)
+
+```
+❌ "CD-015 mandates..."
+   → Deep Think doesn't know what a "CD" is or what CD-015 says
+
+❌ "Per RQ-012 findings..."
+   → Deep Think doesn't know what RQ-012 found or what it's about
+
+❌ "See the identity_facets table"
+   → Deep Think cannot see our database
+
+❌ "As established in previous sessions..."
+   → Deep Think has no memory of previous sessions
+
+❌ "The Sherlock Protocol extracts..."
+   → Deep Think doesn't know what Sherlock Protocol is
+
+❌ "Using the 6-dimension model..."
+   → Deep Think doesn't know what the 6 dimensions are
+
+✅ CORRECT APPROACH:
+   Explain everything inline as if the reader knows NOTHING about this project.
+   If you would need to click a link or open a file to understand a reference,
+   that reference is NOT self-contained.
+```
+
+---
+
 ## Prompt Quality Characteristics (Required)
 
 Every Deep Think prompt MUST exhibit these characteristics:
@@ -480,6 +627,7 @@ Examples:
 | Date | Author | Changes |
 |------|--------|---------|
 | 06 Jan 2026 | Claude (Opus 4.5) | Initial creation from Prompt B learnings |
+| 11 Jan 2026 | Claude (Opus 4.5) | **CRITICAL UPDATE:** Added Self-Containment Requirement section. Deep Think has no codebase access or memory — all prompts must be 100% self-contained. Added checklist, anti-patterns, and required foundation section template. |
 
 ---
 
