@@ -132,14 +132,18 @@ Protocol 9 (External Research Reconciliation) is documented in THREE places:
 
 ---
 
-### 2.3 Missing Documents (Referenced But Not Found)
+### 2.3 ~~Missing Documents~~ → Stale Root Documents
 
-| Document | Referenced In | Line | Status |
-|----------|---------------|------|--------|
-| AI_CONTEXT.md | AI_AGENT_PROTOCOL.md | 34 | **NOT FOUND** |
-| ROADMAP.md | AI_AGENT_PROTOCOL.md | 35 | **NOT FOUND** |
-| BOUNDARY_DECISION_TREE.md | IMPLEMENTATION_ACTIONS.md | P-02 task | **NOT CREATED** |
-| Task Classification Guide | IMPLEMENTATION_ACTIONS.md | P-07 task | **NOT CREATED** |
+**CORRECTION (11 Jan 2026):** AI_CONTEXT.md and ROADMAP.md exist at **project root**, not `/docs/CORE/`. README.md lines 28-29, 84-86 correctly document their locations.
+
+| Document | Location | Last Updated | Status |
+|----------|----------|--------------|--------|
+| AI_CONTEXT.md | `/AI_CONTEXT.md` | Jan 5, 2026 | **STALE** — references "RQ-001 IN RESEARCH" |
+| ROADMAP.md | `/ROADMAP.md` | Jan 5, 2026 | **STALE** — says "RQ-005/006 Blocks" (now complete) |
+| BOUNDARY_DECISION_TREE.md | — | — | **NOT CREATED** (P-02 task) |
+| Task Classification Guide | — | — | **NOT CREATED** (P-07 task) |
+
+**Action Required:** Update AI_CONTEXT.md and ROADMAP.md to current status (31/38 RQs complete).
 
 ---
 
@@ -166,46 +170,22 @@ Protocol 9 (External Research Reconciliation) is documented in THREE places:
 
 ## Part 3: Creative Recommendations
 
-### 3.1 🔧 RECOMMENDATION: Single Entry Point Document
+### 3.1 🔧 RECOMMENDATION: Update Stale Root Documents (NOT Create New Docs)
 
-**Create:** `docs/CORE/AGENT_BOOTSTRAP.md`
+**Action:** Update existing AI_CONTEXT.md and ROADMAP.md at project root.
 
-```markdown
-# Agent Bootstrap (THE ONLY ENTRY POINT)
+**AI_CONTEXT.md updates needed:**
+- Line 20-21: Change "RQ-001 IN RESEARCH" to show current status
+- Add section for completed research (31/38 RQs)
+- Update "Current Research Blockers" to reflect reality
 
-## Step 1: Orient (2 minutes)
-Read ONLY these 3 files in order:
-1. CLAUDE.md (30 sec) — What is this project?
-2. AI_HANDOVER.md (60 sec) — What happened last session?
-3. AGENT_BOOTSTRAP.md (30 sec) — You are here
+**ROADMAP.md updates needed:**
+- Line 3: Update "Last Updated" timestamp
+- Lines 74-77: Update blocking RQs (RQ-005/006 are now COMPLETE)
+- Add new phases G, H, P to phase diagram
+- Update task counts
 
-## Step 2: Scope Your Task (1 minute)
-| Task Type | Read These | Skip These |
-|-----------|------------|------------|
-| **Implementation** | IMPLEMENTATION_ACTIONS.md, RESEARCH_QUESTIONS.md | PRODUCT_DECISIONS.md |
-| **Research** | RESEARCH_QUESTIONS.md, DEEP_THINK_PROMPT_GUIDANCE.md | IMPLEMENTATION_ACTIONS.md |
-| **Decision** | PRODUCT_DECISIONS.md, GLOSSARY.md | IMPLEMENTATION_ACTIONS.md |
-| **Audit** | All index files, IMPACT_ANALYSIS.md | — |
-
-## Step 3: Check Status (30 seconds)
-Quick numbers:
-- CDs: [auto-updated from CD_INDEX]
-- RQs: [auto-updated from RQ_INDEX]
-- PDs: [auto-updated from PD_INDEX]
-- Tasks: [auto-updated from IMPLEMENTATION_ACTIONS]
-
-## Step 4: Begin Work
-You're ready. Follow protocol for your task type.
-
-## Before Leaving
-Update AI_HANDOVER.md with what you did.
-```
-
-**Benefits:**
-- Single, canonical entry point
-- Task-type-specific routing
-- Reduces reading from 11 files to 3-5 files
-- Eliminates routing conflicts
+**Note:** User prefers NOT adding new documents to `/docs/CORE/`. Use existing structure.
 
 ---
 
@@ -405,30 +385,31 @@ To add a new phase:
 | Priority | Action | Time | Impact |
 |----------|--------|------|--------|
 | 1 | Update RESEARCH_QUESTIONS.md header to current status | 5 min | CRITICAL |
-| 2 | Add task count clarification to IMPLEMENTATION_ACTIONS.md | 5 min | CRITICAL |
-| 3 | Remove or note AI_CONTEXT.md, ROADMAP.md references | 5 min | CRITICAL |
-| 4 | Add Phase G, H, P to AI_AGENT_PROTOCOL.md Phase Registry | 10 min | HIGH |
-| 5 | Consolidate entry routing in IMPLEMENTATION_ACTIONS.md | 10 min | HIGH |
+| 2 | **Update AI_CONTEXT.md** (stale since Jan 5) | 15 min | CRITICAL |
+| 3 | **Update ROADMAP.md** (stale since Jan 5) | 15 min | CRITICAL |
+| 4 | Add task count clarification to IMPLEMENTATION_ACTIONS.md | 5 min | HIGH |
+| 5 | Add Phase G, H, P to AI_AGENT_PROTOCOL.md Phase Registry | 10 min | HIGH |
 
 ### 4.2 Medium-Term Improvements (Next Session)
 
 | Priority | Action | Time | Impact |
 |----------|--------|------|--------|
-| 1 | Create TASK_REGISTRY.md as canonical task source | 30 min | HIGH |
-| 2 | Create RESEARCH_COMPLETION_CHECKLIST.md | 15 min | MEDIUM |
-| 3 | Add reconciliation doc links to all index files | 20 min | MEDIUM |
-| 4 | Create DEPRECATION_REGISTRY.md | 15 min | MEDIUM |
-| 5 | Update all "Last Updated" timestamps to match reality | 15 min | MEDIUM |
+| 1 | Add reconciliation doc links to all index files | 20 min | HIGH |
+| 2 | Consolidate task tracking in RESEARCH_QUESTIONS.md | 30 min | HIGH |
+| 3 | Update all "Last Updated" timestamps to match reality | 15 min | MEDIUM |
+| 4 | Add deprecation notes to GLOSSARY.md (not new file) | 10 min | MEDIUM |
+| 5 | Sync IMPLEMENTATION_ACTIONS task counts with master | 15 min | MEDIUM |
 
-### 4.3 Long-Term Structural Changes (Future Sprint)
+### 4.3 Long-Term Structural Changes (Future Sprint — Avoid Adding New Docs)
 
 | Priority | Action | Time | Impact |
 |----------|--------|------|--------|
-| 1 | Create AGENT_BOOTSTRAP.md single entry point | 30 min | HIGH |
-| 2 | Refactor RESEARCH_QUESTIONS.md into active/archive split | 60 min | HIGH |
-| 3 | Create Documentation Health Dashboard | 45 min | MEDIUM |
-| 4 | Automate cross-reference validation | 60 min | HIGH |
-| 5 | Create visual documentation map (Mermaid diagram) | 30 min | LOW |
+| 1 | Refactor RESEARCH_QUESTIONS.md (reduce size via archive) | 60 min | HIGH |
+| 2 | Automate cross-reference validation (script, not doc) | 60 min | HIGH |
+| 3 | Add Mermaid diagram to README.md (not new file) | 30 min | MEDIUM |
+| 4 | Consider session snapshots for AI_HANDOVER.md growth | 30 min | LOW |
+
+**Note:** User preference is to avoid adding new documents to `/docs/CORE/` unless absolutely necessary. Prefer updating existing files.
 
 ---
 
@@ -457,9 +438,9 @@ Create a MANIFEST.json at project root that machines and AI can read:
     "rqs": { "total": 38, "complete": 31 },
     "tasks": { "total": 139, "complete": 4 }
   },
-  "deprecated_references": [
-    "AI_CONTEXT.md",
-    "ROADMAP.md"
+  "stale_files": [
+    "AI_CONTEXT.md (needs update)",
+    "ROADMAP.md (needs update)"
   ]
 }
 ```
