@@ -66,7 +66,7 @@
 | **RQ-039e** | ↳ Crisis Bypass Threshold Validation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039f** | ↳ Premium Token Allocation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039g** | ↳ Reflection Quality Thresholds | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-040** | Implementation Prompt Engineering for AI Agents | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-040** | Implementation Prompt Engineering for AI Agents | 🟡 DEFERRED | — | — |
 
 ---
 
@@ -77,9 +77,10 @@
 | **Total RQs (Main)** | 40 |
 | **Total Sub-RQs** | 7 (RQ-039a→g) |
 | **✅ COMPLETE** | 31 (78%) |
-| **🔴 NEEDS RESEARCH** | 9 main + 7 sub (16 items) |
+| **🔴 NEEDS RESEARCH** | 8 main + 7 sub (15 items) |
+| **🟡 DEFERRED** | 1 (RQ-040) |
 
-> **Note:** RQ-040 added 11 Jan 2026 for Implementation Prompt Engineering
+> **Note:** RQ-040 added 11 Jan 2026 for Implementation Prompt Engineering. **DEFERRED** per Red Team analysis — research after 3+ IPs created.
 
 ---
 

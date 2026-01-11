@@ -7,6 +7,21 @@
 
 ---
 
+## ⚠️ Red Team Caveat (Added Post-Analysis)
+
+**This analysis was subjected to red team critique.** Some recommendations were modified:
+
+| Original Recommendation | Red Team Verdict | Final Action |
+|-------------------------|------------------|--------------|
+| RQ-040 research ASAP | ⚠️ PREMATURE | **DEFERRED** — research after 3+ IPs created |
+| Option C+D Hybrid | ⚠️ OVER-COMPLICATED | **Option D only** for now (Gate Check in IPs) |
+| Task Type Taxonomy | ⚠️ NOT YET NEEDED | **DEFER** to >30% task completion |
+| Protocol 13 (Gate Check) | ✅ SOUND | **ACCEPT** — real problem, proportionate solution |
+
+**See:** `docs/analysis/RED_TEAM_SESSION_22_GOVERNANCE_RECOMMENDATIONS.md` for full critique.
+
+---
+
 ## Executive Summary
 
 Three governance gaps were identified:
