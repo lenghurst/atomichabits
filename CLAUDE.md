@@ -16,7 +16,7 @@ docs/CORE/              # Governance documentation
   index/                # Quick status lookup (CD/PD/RQ)
   IMPLEMENTATION_ACTIONS.md  # Task tracker (quick status + audit trail)
   RESEARCH_QUESTIONS.md      # Master Implementation Tracker (detailed tasks)
-  AI_AGENT_PROTOCOL.md  # 9 mandatory protocols
+  AI_AGENT_PROTOCOL.md  # 12 mandatory protocols (1-9 operational, 10-12 meta-cognitive)
   DEEP_THINK_PROMPT_GUIDANCE.md  # External research quality standards
 ```
 
@@ -52,7 +52,7 @@ Full list: `docs/CORE/index/CD_INDEX.md`
 | `docs/CORE/AI_HANDOVER.md` | Session continuity |
 | `docs/CORE/IMPLEMENTATION_ACTIONS.md` | Task quick status + audit trail |
 | `docs/CORE/RESEARCH_QUESTIONS.md` | Master Implementation Tracker (107 tasks) |
-| `docs/CORE/AI_AGENT_PROTOCOL.md` | 9 mandatory protocols |
+| `docs/CORE/AI_AGENT_PROTOCOL.md` | 12 mandatory protocols |
 | `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` | External research quality |
 | `docs/CORE/PRODUCT_DECISIONS.md` | Decision rationale |
 | `docs/CORE/GLOSSARY.md` | Terminology |

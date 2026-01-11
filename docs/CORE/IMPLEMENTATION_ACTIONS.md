@@ -156,9 +156,9 @@ docs/
 │   ├── IMPACT_ANALYSIS.md ← Cascade tracking ONLY             │
 │   │   (Does NOT store tasks - references them)               │
 │   │                                                          │
-│   ├── AI_AGENT_PROTOCOL.md ← 9 mandatory protocols           │
-│   │   Protocol 8: Task Extraction                            │
-│   │   Protocol 9: External Research Reconciliation           │
+│   ├── AI_AGENT_PROTOCOL.md ← 12 mandatory protocols          │
+│   │   Protocols 1-9: Operational                             │
+│   │   Protocols 10-12: Meta-cognitive (Bias, Sub-RQ, Defer)  │
 │   │                                                          │
 │   ├── DEEP_THINK_PROMPT_GUIDANCE.md ← Prompt quality         │
 │   │   (For external research agent prompts)                  │

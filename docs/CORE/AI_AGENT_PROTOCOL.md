@@ -1,8 +1,9 @@
 # AI_AGENT_PROTOCOL.md — Mandatory Behaviors for AI Agents
 
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 11 January 2026
 > **Purpose:** Codify reflexive behaviors that ALL AI agents must exhibit
 > **Scope:** Claude, Gemini, ChatGPT, any future AI agents working on The Pact
+> **Protocols:** 12 mandatory (1-9 operational, 10-12 meta-cognitive)
 
 ---
 
@@ -59,9 +60,11 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                        SESSION EXIT PROTOCOL                                  │
+│                    SESSION EXIT PROTOCOL v2 (ENHANCED)                        │
 │                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  TIER 1: ALWAYS UPDATE (Non-negotiable)                                      │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  □ AI_HANDOVER.md — Summarize what you did, what remains                    │
 │  □ PRODUCT_DECISIONS.md — Log any new decisions/questions                   │
 │  □ RESEARCH_QUESTIONS.md — Update status, propose new RQs if needed         │
@@ -69,29 +72,135 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 │  □ IMPACT_ANALYSIS.md — Log cascade effects ONLY (not task storage)         │
 │  □ index/*.md — Update quick reference tables if RQ/PD/CD status changed    │
 │                                                                              │
-│  TIER 1.5: IF TASKS WERE EXTRACTED OR STATUS CHANGED                         │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 1.5a: IF TASKS WERE EXTRACTED OR STATUS CHANGED                        │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  □ IMPLEMENTATION_ACTIONS.md — Update Quick Status + Recently Added         │
 │  □ RESEARCH_QUESTIONS.md → Master Tracker — Update task details             │
+│  □ PRODUCT_DEVELOPMENT_SHEET.md — Update statistics                         │
 │                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  TIER 1.5b: IF EXTERNAL RESEARCH WAS PROCESSED                               │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  □ Protocol 9 was completed before integration                               │
 │  □ Reconciliation document created in docs/analysis/                         │
 │  □ ACCEPT/MODIFY/REJECT/ESCALATE documented                                  │
+│  □ → IF recommendations made: Run Protocol 10 (Bias Analysis)               │
 │                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 1.5c: IF NEW RQs WERE CREATED                                          │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  □ → IF complex/multi-domain RQ: Run Protocol 11 (Sub-RQ Creation)          │
+│  □ All parent files updated (RQ_INDEX, PRODUCT_DEV_SHEET, ROADMAP)          │
+│  □ Blocking relationships documented in IMPACT_ANALYSIS.md                   │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 1.5d: IF DECISIONS WERE DEFERRED                                       │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  □ → Run Protocol 12 (Decision Deferral)                                    │
+│  □ PD_INDEX updated with DEFERRED status                                     │
+│  □ New RQ created to unblock the deferred decision                           │
+│  □ MVP fallback documented                                                   │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  TIER 2: UPDATE IF RELEVANT                                                  │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  □ GLOSSARY.md — Add any new terms introduced                               │
-│  □ AI_CONTEXT.md — Update if architecture changed                           │
+│  □ AI_CONTEXT.md — Update if architecture changed OR research completed     │
 │  □ IDENTITY_COACH_SPEC.md — Update if Identity Coach evolved                │
 │                                                                              │
-│  TIER 3: RARELY (Only when explicitly needed)                                │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 3: VERIFICATION CHECKPOINT (MANDATORY BEFORE GIT)                      │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  □ Run Cross-File Consistency Check (see checklist below)                    │
+│  □ Fix ANY discrepancies found BEFORE committing                             │
+│  □ Verify all timestamps updated to current date                             │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 4: GIT OPERATIONS                                                      │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  □ Commit with clear message                                                 │
+│  □ Push to branch (per CD-012)                                               │
+│  □ Verify push succeeded                                                     │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIER 5: RARELY (Only when explicitly needed)                                │
+│  ═══════════════════════════════════════════════════════════════════════════ │
 │  □ AI_AGENT_PROTOCOL.md — Only if behavioral rules change                   │
 │  □ README.md — Only if fundamental project info changes                     │
 │  □ CHANGELOG.md — Add entry summarizing session changes                     │
 │                                                                              │
-│  STEP 4: Git Operations                                                      │
-│  □ Commit with clear message                                                 │
-│  □ Push to main (per CD-012)                                                │
-│  □ Verify push succeeded                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Cross-File Consistency Checklist (Tier 3 — Mandatory)
+
+Run this checklist BEFORE committing. **Any mismatch = MUST FIX.**
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│              CROSS-FILE CONSISTENCY VERIFICATION CHECKLIST                    │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  STATISTICS VERIFICATION                                                     │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│                                                                              │
+│  RQ Counts (must match across all files):                                    │
+│  □ RQ_INDEX.md         → Total: ___ | Complete: ___ | Pending: ___          │
+│  □ PRODUCT_DEV_SHEET   → Total: ___ | Complete: ___ | Pending: ___          │
+│  □ AI_CONTEXT.md       → Total: ___ | Complete: ___ | Pending: ___          │
+│  □ ROADMAP.md          → Total: ___ | Complete: ___ | Pending: ___          │
+│  ⚠️ ALL MUST MATCH → If not, fix before commit                              │
+│                                                                              │
+│  PD Counts (must match across all files):                                    │
+│  □ PD_INDEX.md         → Total: ___ | Resolved: ___ | Pending: ___          │
+│  □ PRODUCT_DEV_SHEET   → Total: ___ | Resolved: ___ | Pending: ___          │
+│  ⚠️ ALL MUST MATCH → If not, fix before commit                              │
+│                                                                              │
+│  Task Counts:                                                                │
+│  □ IMPLEMENTATION_ACTIONS → Total tasks: ___                                 │
+│  □ PRODUCT_DEV_SHEET      → Total tasks: ___                                 │
+│  ⚠️ MUST MATCH → If not, fix before commit                                  │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  CROSS-REFERENCE VERIFICATION                                                │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│                                                                              │
+│  For each NEW or CHANGED RQ this session:                                    │
+│  □ Listed in RQ_INDEX.md?                                                    │
+│  □ Listed in RESEARCH_QUESTIONS.md (if active)?                              │
+│  □ Listed in PRODUCT_DEV_SHEET Section 2?                                    │
+│  □ Listed in AI_HANDOVER.md session summary?                                 │
+│  □ If blocking a PD: PD_INDEX updated?                                       │
+│  □ If blocking tasks: IMPLEMENTATION_ACTIONS updated?                        │
+│                                                                              │
+│  For each NEW or CHANGED PD this session:                                    │
+│  □ Listed in PD_INDEX.md?                                                    │
+│  □ Listed in PRODUCT_DECISIONS.md?                                           │
+│  □ Listed in PRODUCT_DEV_SHEET Section 3?                                    │
+│  □ If status changed: All references updated?                                │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  TIMESTAMP VERIFICATION                                                      │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│                                                                              │
+│  Files that MUST show today's date if modified:                              │
+│  □ AI_HANDOVER.md      → Date: ___                                          │
+│  □ RQ_INDEX.md         → Date: ___                                          │
+│  □ PD_INDEX.md         → Date: ___                                          │
+│  □ CD_INDEX.md         → Date: ___ (if CDs changed)                         │
+│  □ IMPLEMENTATION_ACTIONS → Date: ___                                        │
+│  □ PRODUCT_DEV_SHEET   → Date: ___                                          │
+│                                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│  FINAL VERIFICATION                                                          │
+│  ═══════════════════════════════════════════════════════════════════════════ │
+│                                                                              │
+│  □ All mismatches fixed?                                                     │
+│  □ All timestamps current?                                                   │
+│  □ All cross-references valid?                                               │
+│  □ Ready to commit?                                                          │
+│                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -532,7 +641,14 @@ If only 7 generic messages exist:
   □ Identify new roadmap items
   □ Check content-capability parity
 
+□ Before Finalizing Recommendations:
+  □ Run Protocol 10 (Bias Analysis) for product-affecting recommendations
+  □ If 4+ LOW assumptions → Defer via Protocol 12
+  □ If complex RQ needed → Decompose via Protocol 11
+
 □ Session End:
+  □ Run Tier 3 Cross-File Consistency Check
+  □ Fix any mismatches before committing
   □ Update AI_HANDOVER.md
   □ Commit and push all changes
   □ Surface any blockers for human decision
@@ -835,6 +951,319 @@ After completing the checklist, document the reconciliation:
 - `index/CD_INDEX.md` — Quick lookup of all confirmed decisions
 - `index/RQ_INDEX.md` — Quick lookup of research status
 - `DEEP_THINK_PROMPT_GUIDANCE.md` — How to write better prompts (prevention)
+
+---
+
+## Protocol 10: Bias Analysis (MANDATORY)
+
+### Trigger
+Before finalizing any recommendation that affects:
+- Product direction
+- Monetization strategy
+- Core user experience
+- Architecture decisions with multiple stakeholders
+
+### Why This Protocol Exists
+AI agents naturally form biases based on training data, context, and the framing of questions. These biases can lead to overconfident recommendations that haven't been validated. Protocol 10 requires explicit bias identification BEFORE finalizing recommendations.
+
+**Origin:** This protocol was created after RQ-039 Token Economy analysis revealed 8 unvalidated biases that changed recommendation confidence from HIGH to LOW.
+
+### Action
+
+**Step 1: List All Assumptions**
+```
+For EACH recommendation, document:
+"I assumed X because Y"
+
+Example:
+- I assumed users want weekly reflection because journaling apps use this pattern
+- I assumed 50 chars is minimum quality because it seems "substantial"
+- I assumed token cap at 3 prevents anxiety because hoarding is undesirable
+```
+
+**Step 2: Rate Each Assumption's Validity**
+
+| Validity | Definition | Example |
+|----------|------------|---------|
+| **HIGH** | Backed by research, data, or confirmed decision | "CD-010 says track without punishing" |
+| **MEDIUM** | Reasonable but unvalidated | "Weekly cadence is common in apps" |
+| **LOW** | Gut feeling, arbitrary threshold, untested hypothesis | "50 chars feels substantial" |
+
+**Step 3: Identify SME Domains**
+```
+List which expert domains this recommendation spans:
+- Behavioral Economics
+- Self-Determination Theory
+- Mental Health Ethics
+- Subscription Economics
+- Game Design Psychology
+- Habit Formation Science
+- Mobile Product Design
+```
+
+**Step 4: Apply Confidence Decision Rule**
+
+| LOW-Validity Count | Action |
+|--------------------|--------|
+| **0-1** | Proceed with HIGH confidence |
+| **2-3** | Proceed with MEDIUM confidence, flag for validation |
+| **4+** | DEFER decision, create RQ to validate assumptions (→ Protocol 12) |
+
+**Step 5: Document Bias Analysis**
+
+```markdown
+### Bias Analysis for [Recommendation]
+
+| # | Assumption | Validity | Basis |
+|---|------------|----------|-------|
+| 1 | [Assumption] | HIGH/MEDIUM/LOW | [Evidence or lack thereof] |
+| 2 | [Assumption] | HIGH/MEDIUM/LOW | [Evidence or lack thereof] |
+
+**LOW-Validity Count:** X
+**Decision:** PROCEED / DEFER (pending RQ-XXX)
+**Revised Confidence:** HIGH / MEDIUM / LOW
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Proceeding with HIGH confidence despite 4+ LOW-validity assumptions
+❌ Not documenting assumptions at all ("it's obvious")
+❌ Assuming "obvious" things without stating them
+❌ Ignoring SME domains outside agent's training
+❌ Treating all assumptions as equal validity
+```
+
+### Example
+
+**Before Protocol 10:**
+> "Recommendation: Weekly Review earns 1 token. HIGH confidence."
+
+**After Protocol 10:**
+> "Bias Analysis identified 6 LOW-validity assumptions (Pro-Reflection, Weekly Cadence, Token Cap, etc.). Decision: DEFER pending RQ-039 research. Revised Confidence: LOW."
+
+---
+
+## Protocol 11: Sub-RQ Creation (MANDATORY)
+
+### Trigger
+When a Research Question is too complex to answer with a single research effort, specifically when:
+- RQ spans 3+ SME domains
+- RQ has 5+ distinct sub-questions
+- RQ would require 10+ page research output
+- RQ has sub-components that can be researched independently
+
+### Why This Protocol Exists
+Complex research questions benefit from decomposition. Sub-RQs allow:
+1. Parallel research by different agents
+2. Clearer scope per research effort
+3. Incremental progress tracking
+4. Domain-specific expertise matching
+
+**Origin:** This protocol was created during RQ-039 Token Economy work, which required 7 sub-RQs spanning Behavioral Economics, SDT, Mental Health Ethics, and more.
+
+### Action
+
+**Step 1: Verify Decomposition Criteria**
+```
+Does this RQ meet ANY of these criteria?
+□ Spans 3+ SME domains
+□ Has 5+ distinct sub-questions
+□ Would require 10+ page research output
+□ Has sub-components that can be researched independently
+
+If YES to any → Proceed with decomposition
+If NO to all → Research as single RQ
+```
+
+**Step 2: Identify 3-7 Sub-Questions**
+```
+Each sub-RQ MUST have:
+□ Single SME domain focus (not multi-domain)
+□ Clear, specific deliverable
+□ Independence from sibling sub-RQs (can be researched in any order)
+□ Parent RQ listed as dependency
+```
+
+**Step 3: Assign Sub-RQ IDs**
+```
+Naming Convention: RQ-XXX[a-z]
+
+Example:
+RQ-039: Token Economy Architecture (PARENT)
+├── RQ-039a: Earning Mechanism & Intrinsic Motivation
+├── RQ-039b: Optimal Reflection Cadence
+├── RQ-039c: Single vs Multiple Earning Paths
+├── RQ-039d: Token Cap vs Decay Alternatives
+├── RQ-039e: Crisis Bypass Threshold Validation
+├── RQ-039f: Premium Token Allocation
+└── RQ-039g: Reflection Quality Thresholds
+```
+
+**Step 4: Update All Tracking Files**
+
+| File | Required Update |
+|------|-----------------|
+| **RQ_INDEX.md** | Add sub-RQs with hierarchy notation (↳) |
+| **PRODUCT_DEV_SHEET** | Add to pending research with sub-RQ table |
+| **RESEARCH_QUESTIONS.md** | Add to Master Tracker (if active) |
+| **IMPLEMENTATION_ACTIONS** | Add to Blocking Research if applicable |
+
+**Step 5: Update Statistics**
+```
+Main RQ count stays same (e.g., 39)
+Add separate "Sub-RQ" count (e.g., +7)
+Pending research shows both (e.g., "8 main + 7 sub")
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Creating sub-RQs without updating ALL tracking files
+❌ Sub-RQs that depend on each other (should be independent)
+❌ More than 7 sub-RQs (consider further decomposition)
+❌ Sub-RQs that span multiple SME domains
+❌ Forgetting to update statistics with sub-RQ count
+```
+
+### Example Output
+
+```markdown
+## RQ-039: Token Economy Architecture
+
+**Status:** 🔴 NEEDS RESEARCH (decomposed)
+**Sub-RQs:** 7
+
+| Sub-RQ | Title | SME Domain | Deliverable |
+|--------|-------|------------|-------------|
+| 039a | Earning Mechanism | Behavioral Economics | Mechanism comparison |
+| 039b | Reflection Cadence | Habit Formation | Optimal frequency |
+| 039c | Earning Paths | SDT | Autonomy preservation |
+| 039d | Cap vs Decay | Game Design | Alternative analysis |
+| 039e | Crisis Bypass | Mental Health | Threshold validation |
+| 039f | Premium Allocation | Subscription Econ | Premium strategy |
+| 039g | Quality Thresholds | Mobile Product | Validation criteria |
+```
+
+---
+
+## Protocol 12: Decision Deferral (MANDATORY)
+
+### Trigger
+When analysis reveals that a decision CANNOT be made confidently due to:
+- 4+ LOW-validity assumptions identified (via Protocol 10)
+- SME domains not represented in current research
+- Recommendation would be costly to reverse
+- Human explicitly requests deferral
+
+### Why This Protocol Exists
+It is better to DEFER a decision and research properly than to proceed with false confidence. Protocol 12 formalizes when and how to defer, ensuring:
+1. Deferral is documented (not forgotten)
+2. New RQ is created to unblock
+3. MVP fallback is provided for timeline pressure
+4. Status is tracked correctly (DEFERRED, not PENDING)
+
+**Origin:** This protocol was created when PD-119 Token Economy was initially marked READY but bias analysis revealed 6 LOW-validity assumptions requiring RQ-039 research.
+
+### Action
+
+**Step 1: Verify Deferral Criteria**
+```
+Does this decision meet ANY of these criteria?
+□ 4+ LOW-validity assumptions identified (Protocol 10)
+□ SME domains not represented in current research
+□ Recommendation would be expensive to reverse
+□ Human explicitly requests deferral
+
+If YES to any → Proceed with deferral
+If NO to all → Make decision (with documented confidence level)
+```
+
+**Step 2: Document Deferral Rationale**
+```markdown
+### Deferral Rationale for [PD-XXX]
+
+**Original Status:** [READY / PENDING]
+**New Status:** DEFERRED
+
+**Unvalidated Assumptions:**
+1. [Assumption] — Validity: LOW
+2. [Assumption] — Validity: LOW
+...
+
+**Missing Research:**
+- [What SME domain needs investigation]
+- [What specific questions need answering]
+
+**Cost of Proceeding:** [Why this is risky]
+```
+
+**Step 3: Create Unblocking RQ**
+```
+Create new RQ (or sub-RQs via Protocol 11) to address the gap:
+- Link RQ to the deferred PD
+- Identify specific deliverables needed
+- Assign SME domain focus
+```
+
+**Step 4: Update PD Status**
+
+| File | Required Update |
+|------|-----------------|
+| **PD_INDEX.md** | Status → 🟡 DEFERRED |
+| **PRODUCT_DECISIONS.md** | Add deferral section with rationale |
+| **PRODUCT_DEV_SHEET** | Move to "Deferred Decisions" or update status |
+| **IMPACT_ANALYSIS.md** | Note downstream effects of deferral |
+
+**Step 5: Provide MVP Fallback**
+```markdown
+### MVP Fallback (If Timeline Pressure)
+
+**Option:** [Simplest CD-compliant option]
+**Rationale:** [Why this is acceptable as fallback]
+**Risks:** [What we're accepting by not researching]
+**Replacement Plan:** [When research completes, replace with validated solution]
+```
+
+### Status Legend
+
+| Status | Meaning | Use When |
+|--------|---------|----------|
+| 🔴 PENDING | Awaiting research or decision | Research not yet done |
+| 🟢 READY | Research complete, awaiting human decision | All inputs available |
+| 🟡 DEFERRED | Deliberately delayed pending new research | Bias analysis revealed gaps |
+| ✅ RESOLVED | Decision made, may become CD | Human decided |
+
+**CRITICAL:** DEFERRED is NOT the same as PENDING. DEFERRED means we COULD decide but CHOSE not to due to insufficient confidence.
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Proceeding with decision despite low confidence
+❌ Marking decision as PENDING when actively choosing to defer
+❌ Deferring without creating research to unblock
+❌ Deferring without providing MVP fallback
+❌ Forgetting to update all tracking files
+```
+
+### Example
+
+**Before Protocol 12:**
+```
+PD-119: Token Economy
+Status: 🟢 READY
+Recommendation: Option A (Weekly Review)
+Confidence: HIGH
+```
+
+**After Protocol 12:**
+```
+PD-119: Token Economy
+Status: 🟡 DEFERRED
+Blocked By: RQ-039 (7 sub-RQs)
+Rationale: 6 LOW-validity assumptions identified
+MVP Fallback: Option B (Consistency-based) — simplest CD-010 compliant option
+```
 
 ---
 

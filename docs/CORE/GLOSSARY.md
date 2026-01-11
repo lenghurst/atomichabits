@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-037/033/025 terms: Shadow Cabinet, Resilient Streak, Council Seal, Narrative Triangulation)
+> **Last Updated:** 11 January 2026 (Added Protocols 10-12 terms: Bias Analysis, Sub-RQ, Decision Deferral, Cross-File Consistency)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -928,6 +928,101 @@ ref.listen(controller, (prev, next) {
 **Status:** ✅ COMPLETE — RQ-008
 
 **Code References:** AI_AGENT_PROTOCOL.md Protocol 2
+
+---
+
+## AI Agent Meta-Cognitive Protocols (Protocols 10-12)
+
+> **Reference:** These protocols were added on 11 January 2026 based on RQ-039 Token Economy analysis, which exposed biases in recommendations and the need for systematic assumption validation.
+
+### Protocol 10: Bias Analysis
+**Definition:** A mandatory protocol requiring AI agents to identify and rate assumptions before finalizing recommendations that affect product direction.
+
+**Trigger:** Before finalizing any recommendation affecting product direction, monetization, core UX, or multi-stakeholder architecture.
+
+**Process:**
+1. List all assumptions ("I assumed X because Y")
+2. Rate each assumption's validity (HIGH/MEDIUM/LOW)
+3. Identify SME domains spanned
+4. Apply confidence decision rule (4+ LOW → DEFER)
+5. Document analysis in decision rationale
+
+**Validity Scale:**
+| Level | Definition |
+|-------|------------|
+| **HIGH** | Backed by research, data, or confirmed decision |
+| **MEDIUM** | Reasonable but unvalidated |
+| **LOW** | Gut feeling, arbitrary threshold, untested hypothesis |
+
+**Status:** ✅ COMPLETE — Protocol 10 in AI_AGENT_PROTOCOL.md
+
+**Origin:** RQ-039 Token Economy analysis identified 8 unvalidated biases that changed recommendation confidence from HIGH to LOW.
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 10
+
+---
+
+### Protocol 11: Sub-RQ Creation
+**Definition:** A mandatory protocol for decomposing complex Research Questions into 3-7 independent sub-questions when a single research effort would be insufficient.
+
+**Trigger:** When RQ spans 3+ SME domains, has 5+ sub-questions, would require 10+ page output, or has independently researchable components.
+
+**Naming Convention:** `RQ-XXX[a-z]` (e.g., RQ-039a, RQ-039b)
+
+**Requirements Per Sub-RQ:**
+- Single SME domain focus
+- Clear, specific deliverable
+- Independence from sibling sub-RQs
+- Parent RQ listed as dependency
+
+**Status:** ✅ COMPLETE — Protocol 11 in AI_AGENT_PROTOCOL.md
+
+**Origin:** RQ-039 required 7 sub-RQs spanning Behavioral Economics, SDT, Mental Health Ethics, and more.
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 11
+
+---
+
+### Protocol 12: Decision Deferral
+**Definition:** A mandatory protocol for formally deferring decisions when analysis reveals insufficient confidence, ensuring deferral is documented, research is created to unblock, and MVP fallback is provided.
+
+**Trigger:** When 4+ LOW-validity assumptions identified, SME domains not represented, costly to reverse, or human explicitly requests deferral.
+
+**Status Distinction:**
+| Status | Meaning |
+|--------|---------|
+| 🔴 PENDING | Awaiting research or decision (research not yet done) |
+| 🟡 DEFERRED | Deliberately delayed pending new research (chose not to decide) |
+
+**Required Outputs:**
+1. Deferral rationale document
+2. New RQ to address gap
+3. Updated PD status (DEFERRED)
+4. MVP fallback option
+
+**Status:** ✅ COMPLETE — Protocol 12 in AI_AGENT_PROTOCOL.md
+
+**Origin:** PD-119 Token Economy was initially READY but bias analysis revealed 6 LOW assumptions requiring RQ-039.
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 12
+
+---
+
+### Cross-File Consistency Checklist
+**Definition:** A verification checklist run before git commit to ensure statistics, cross-references, and timestamps are consistent across all documentation files.
+
+**Verification Categories:**
+| Category | Files Checked |
+|----------|---------------|
+| **Statistics** | RQ_INDEX, PD_INDEX, PRODUCT_DEV_SHEET, AI_CONTEXT, ROADMAP |
+| **Cross-References** | RQ→PD dependencies, PD→RQ blockers |
+| **Timestamps** | All modified files show current date |
+
+**Status:** ✅ COMPLETE — Session Exit Protocol Tier 3
+
+**Origin:** AI Agent Process Audit (11 Jan 2026) identified 17 cross-file inconsistencies caused by missing verification step.
+
+**Code References:** AI_AGENT_PROTOCOL.md Session Exit Protocol v2, Tier 3
 
 ---
 

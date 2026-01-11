@@ -554,7 +554,7 @@ rules:
 | Strength | Evidence |
 |----------|----------|
 | **Strong conceptual model** | CD/PD/RQ hierarchy is sound |
-| **Comprehensive protocols** | 9 mandatory protocols documented |
+| **Comprehensive protocols** | 12 mandatory protocols documented (expanded from 9) |
 | **Quality standards** | Deep Think guidance is excellent |
 | **Traceability intent** | Task Addition Log, reconciliation docs exist |
 | **Index pattern** | Quick lookup via index files works well |
