@@ -957,11 +957,28 @@ After completing the checklist, document the reconciliation:
 ## Protocol 10: Bias Analysis (MANDATORY)
 
 ### Trigger
-Before finalizing any recommendation that affects:
-- Product direction
-- Monetization strategy
-- Core user experience
-- Architecture decisions with multiple stakeholders
+
+Before finalizing any recommendation that affects product direction, monetization, core UX, or multi-stakeholder architecture **AND meets ONE of:**
+- Affects 3+ stakeholder groups (users, business, engineering, etc.)
+- Reversibility cost is HIGH (schema changes, API contracts, user-facing terminology)
+- Implementation effort is >5 tasks
+- Recommendation was contested or had multiple options
+
+**Quick Filter:**
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PROTOCOL 10 TRIGGER QUICK FILTER                                   │
+│                                                                     │
+│  Does this recommendation:                                          │
+│  □ Affect 3+ stakeholder groups?                                    │
+│  □ Have HIGH reversibility cost?                                    │
+│  □ Require >5 implementation tasks?                                 │
+│  □ Have contested alternatives?                                     │
+│                                                                     │
+│  If YES to ANY → Run Protocol 10                                    │
+│  If NO to ALL → Skip Protocol 10, proceed with standard confidence  │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ### Why This Protocol Exists
 AI agents naturally form biases based on training data, context, and the framing of questions. These biases can lead to overconfident recommendations that haven't been validated. Protocol 10 requires explicit bias identification BEFORE finalizing recommendations.
@@ -1008,6 +1025,20 @@ List which expert domains this recommendation spans:
 | **0-1** | Proceed with HIGH confidence |
 | **2-3** | Proceed with MEDIUM confidence, flag for validation |
 | **4+** | DEFER decision, create RQ to validate assumptions (→ Protocol 12) |
+
+**Hybrid Threshold Rule (Important):**
+```
+DEFER if ANY of:
+- 4+ LOW-validity assumptions, OR
+- >50% of assumptions rate LOW (minimum 3 assumptions required)
+
+Example:
+- 10 assumptions, 4 LOW (40%) → Check 4+ rule → DEFER ✓
+- 4 assumptions, 3 LOW (75%) → Check >50% rule → DEFER ✓
+- 2 assumptions, 2 LOW (100%) → Below minimum → Identify more assumptions first
+```
+
+**Minimum Assumption Requirement:** You must identify at least 3 assumptions before applying the threshold. If you can only identify 1-2, dig deeper — superficial analysis indicates more assumptions exist.
 
 **Step 5: Document Bias Analysis**
 
@@ -1081,8 +1112,25 @@ If NO to all → Research as single RQ
 Each sub-RQ MUST have:
 □ Single SME domain focus (not multi-domain)
 □ Clear, specific deliverable
-□ Independence from sibling sub-RQs (can be researched in any order)
+□ Independence from sibling sub-RQs where possible
 □ Parent RQ listed as dependency
+
+If dependencies between sub-RQs exist:
+□ Document with ↓ notation
+□ Note which sub-RQs benefit from sequencing
+□ Recommend research order
+```
+
+**Sub-RQ Dependency Documentation (if applicable):**
+```markdown
+### Sub-RQ Dependencies
+
+| Sub-RQ | Depends On | Nature |
+|--------|------------|--------|
+| 039f | 039a | Soft — premium builds on base earning |
+| 039e | 039a | Soft — crisis bypass needs earning context |
+
+**Research Order Recommendation:** 039a → (039b, 039c, 039d parallel) → 039e → 039f → 039g
 ```
 
 **Step 3: Assign Sub-RQ IDs**
@@ -1235,6 +1283,39 @@ Create new RQ (or sub-RQs via Protocol 11) to address the gap:
 | ✅ RESOLVED | Decision made, may become CD | Human decided |
 
 **CRITICAL:** DEFERRED is NOT the same as PENDING. DEFERRED means we COULD decide but CHOSE not to due to insufficient confidence.
+
+### PENDING vs DEFERRED Decision Tree
+
+Use this decision tree when uncertain about which status to apply:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PENDING vs DEFERRED DECISION TREE                                  │
+│                                                                     │
+│  Do you have enough information to make a decision?                 │
+│                                                                     │
+│  NO ──────────────────────────────────────────────────→ 🔴 PENDING  │
+│  │   (Research not complete, dependencies unresolved)               │
+│  │                                                                  │
+│  YES → Did you actively CHOOSE not to decide?                       │
+│        │                                                            │
+│        NO ────────────────────────────────────────────→ 🟢 READY    │
+│        │   (Decision can be made; waiting for human input)          │
+│        │                                                            │
+│        YES → Is there new research created to unblock?              │
+│              │                                                      │
+│              NO ──────────────────────────────────────→ ❌ ERROR    │
+│              │   (Cannot defer without unblocking path)             │
+│              │                                                      │
+│              YES ─────────────────────────────────────→ 🟡 DEFERRED │
+│                   (Deliberately delayed; RQ created)                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Distinction:**
+- **PENDING** = Passive waiting (can't decide yet — missing inputs)
+- **DEFERRED** = Active choice (could decide, chose not to — creating new inputs)
 
 ### Anti-Patterns (DO NOT)
 

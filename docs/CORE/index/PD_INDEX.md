@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 11 January 2026 (PD-119 DEFERRED pending RQ-039; PD-002, PD-003 READY)
+> **Last Updated:** 11 January 2026 (PD-126 Protocol Governance added; Protocol refinements applied)
 > **Full Details:** See `archive/` for RESOLVED items, `../PRODUCT_DECISIONS.md` for pending items
 
 ---
@@ -53,6 +53,7 @@
 | **PD-123** | Facet Typical Energy State Field | ✅ RESOLVED | — | Q1-2026 |
 | **PD-124** | Recommendation Card Staleness | ✅ RESOLVED | — | Q1-2026 |
 | **PD-125** | Content Library Size at Launch | ✅ RESOLVED | — | Q1-2026 |
+| **PD-126** | Protocol Governance & Consolidation | 🔴 PENDING | — | — |
 
 ---
 
@@ -60,7 +61,7 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total PDs** | 31 |
+| **Total PDs** | 32 |
 | **✅ RESOLVED** | 15 (48%) |
 | **🟢 READY** | 4 (13%) |
 | **🟡 RESHAPED** | 1 (3%) |

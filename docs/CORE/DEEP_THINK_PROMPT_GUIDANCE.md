@@ -198,6 +198,111 @@ PD-ZZZ (Third)
 
 ---
 
+## Sub-RQ Prompt Template (Protocol 11)
+
+When creating prompts for **sub-RQs** (e.g., RQ-039a, RQ-039b), use this modified template. Sub-RQs have narrower scope and require parent context.
+
+### Key Differences from Top-Level RQ Prompts
+
+| Aspect | Top-Level RQ | Sub-RQ |
+|--------|--------------|--------|
+| **Scope** | Multi-domain | Single SME domain |
+| **Context** | All relevant CDs/RQs | Parent RQ + sibling awareness |
+| **Deliverable** | Broad research output | Specific, bounded answer |
+| **Length** | 10+ page output expected | 2-5 page output expected |
+
+### Sub-RQ Prompt Template
+
+```markdown
+# Deep Think Prompt: [Sub-RQ ID] — [Title]
+
+> **Parent RQ:** RQ-XXX — [Parent Title]
+> **This Sub-RQ:** RQ-XXXy — [Sub-RQ Title]
+> **SME Domain:** [Single domain focus]
+> **Prepared:** [Date]
+> **For:** Google Deep Think / [External AI Tool]
+
+---
+
+## Your Role
+
+You are a **[Domain Expert Title]** specializing in [single SME domain].
+
+Focus ONLY on the specific question below. Do not expand scope to cover sibling sub-RQs.
+
+---
+
+## Parent Context
+
+### Parent RQ: RQ-XXX — [Title]
+[Brief summary of the parent question and why it was decomposed]
+
+### Sibling Sub-RQs (For Awareness Only — DO NOT Answer These)
+| Sub-RQ | Title | Status |
+|--------|-------|--------|
+| RQ-XXXa | [Title] | [Complete/Pending] |
+| RQ-XXXb | [Title] | [Complete/Pending] |
+| ... | ... | ... |
+
+**Your Focus:** RQ-XXXy ONLY
+
+---
+
+## The Question
+
+### RQ-XXXy: [Title]
+
+**Core Question:** [Single, focused question]
+
+**Why This Matters:** [Context for prioritization]
+
+**Constraints:**
+- [Domain-specific constraints]
+- [Integration constraints with parent/siblings]
+
+### Sub-Questions (Answer Each)
+| # | Question | Your Task |
+|---|----------|-----------|
+| 1 | ... | ... |
+| 2 | ... | ... |
+
+---
+
+## Output Required
+
+1. [Specific deliverable for this sub-RQ]
+2. Integration notes: How does this answer feed into the parent RQ?
+3. Confidence Assessment: HIGH/MEDIUM/LOW
+
+---
+
+## Architectural Constraints
+
+[Same as parent prompt — inherited]
+
+---
+
+*End of Sub-RQ Prompt*
+```
+
+### When to Use Sub-RQ Template
+
+Use this template when:
+- Protocol 11 (Sub-RQ Creation) was applied to a parent RQ
+- Sub-RQs have been defined with IDs (e.g., RQ-039a through RQ-039g)
+- Each sub-RQ needs independent research
+
+### Anti-Patterns for Sub-RQ Prompts
+
+```
+❌ Including all sub-RQs in one prompt (defeats decomposition purpose)
+❌ Omitting parent context (loses integration awareness)
+❌ Using multi-domain expert role (sub-RQs are single-domain)
+❌ Expecting 10+ page output (sub-RQs are bounded)
+```
+
+---
+
 ## Prompt Quality Checklist (Use Before Sending)
 
 Before sending ANY prompt to Deep Think or external AI:
