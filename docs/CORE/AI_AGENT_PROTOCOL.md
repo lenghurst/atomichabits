@@ -1277,3 +1277,16 @@ These protocols are **MANDATORY**. AI agents that skip these protocols will:
 
 **If you are an AI agent reading this:** Execute these protocols automatically. Do not wait to be asked.
 
+---
+
+## Revision History
+
+| Date | Author | Changes |
+|------|--------|---------|
+| **11 Jan 2026** | Claude (Opus 4.5) | Added Protocols 10 (Bias Analysis), 11 (Sub-RQ Creation), 12 (Decision Deferral); Enhanced Session Exit Protocol v2 with Tier 1.5a-d and Tier 3 Verification Checkpoint; Added Cross-File Consistency Checklist |
+| 10 Jan 2026 | Claude (Opus 4.5) | Updated Protocol 2 (Context-Adaptive Development) per RQ-008/RQ-009 |
+| 06 Jan 2026 | Claude (Opus 4.5) | Initial 9-protocol structure; Added Protocol 9 (External Research Reconciliation) |
+
+---
+
+*This document defines mandatory behaviors. Non-compliance creates downstream problems.*

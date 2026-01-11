@@ -1,6 +1,6 @@
 # Deep Think Prompt Guidance — Quality Assurance Framework
 
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 11 January 2026
 > **Purpose:** Ensure all prompts sent to external AI research tools (Google Deep Think, Claude, etc.) meet quality standards for maximum output value
 > **Scope:** Mandatory for ANY agent preparing research prompts
 
@@ -257,6 +257,25 @@ After receiving Deep Think output, the receiving agent MUST follow this exact se
 ```
 
 **Why Step 0 exists:** External AI tools don't have access to locked CDs, platform constraints, or existing code. Their proposals often conflict with reality. Reconciliation BEFORE integration prevents drift.
+
+### Step 0.5: Run Protocol 10 If Recommendations Made (MANDATORY)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  AFTER Protocol 9, BEFORE Task Extraction:                                   │
+│                                                                              │
+│  IF any recommendations affect product direction, monetization,              │
+│  core UX, or multi-stakeholder architecture:                                 │
+│                                                                              │
+│  □ Run Protocol 10 (Bias Analysis) from AI_AGENT_PROTOCOL.md                │
+│    - List all assumptions                                                    │
+│    - Rate validity (HIGH/MEDIUM/LOW)                                         │
+│    - If 4+ LOW → Consider Protocol 12 (Decision Deferral)                   │
+│                                                                              │
+│  WHY: External research may contain biases from the source AI.               │
+│  Protocol 10 surfaces these BEFORE they become implementation tasks.         │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
 
 ### Step 1: Extract Implementation Tasks (From ACCEPTED items only)
 ```
