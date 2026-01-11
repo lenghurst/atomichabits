@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 11 January 2026 (PD-002, PD-003, PD-119 now RESOLVABLE via RQ-037, RQ-033, RQ-025)
+> **Last Updated:** 11 January 2026 (PD-119 DEFERRED pending RQ-039; PD-002, PD-003 READY)
 > **Full Details:** See `archive/` for RESOLVED items, `../PRODUCT_DECISIONS.md` for pending items
 
 ---
@@ -13,6 +13,7 @@
 | ✅ RESOLVED | Decision made, becomes CD | `archive/PD_ARCHIVE_Q1_2026.md` |
 | 🟢 READY | Research complete, awaiting human decision | `../PRODUCT_DECISIONS.md` |
 | 🟡 RESHAPED | Partially resolved, needs refinement | `../PRODUCT_DECISIONS.md` |
+| 🟡 DEFERRED | Deliberately delayed pending new research | `../PRODUCT_DECISIONS.md` |
 | 🔴 PENDING | Awaiting research or decision | `../PRODUCT_DECISIONS.md` |
 
 ---
@@ -43,7 +44,7 @@
 | **PD-116** | Population Learning Privacy | 🔴 PENDING | RQ-023 | — |
 | **PD-117** | ContextSnapshot Real-time Data | ✅ RESOLVED | RQ-014 | Q1-2026 |
 | **PD-118** | Treaty Modification UX | ✅ RESOLVED | RQ-024 | Q1-2026 |
-| **PD-119** | Summon Token Economy | 🟢 READY | RQ-025 ✅ | — |
+| **PD-119** | Summon Token Economy | 🟡 DEFERRED | RQ-039 (7 sub-RQs) | — |
 | **PD-120** | The Chamber Visual Design | 🔴 PENDING | RQ-036 | — |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | — | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | — | — |
@@ -61,8 +62,9 @@
 |--------|-------|
 | **Total PDs** | 31 |
 | **✅ RESOLVED** | 15 (48%) |
-| **🟢 READY** | 5 (16%) |
+| **🟢 READY** | 4 (13%) |
 | **🟡 RESHAPED** | 1 (3%) |
+| **🟡 DEFERRED** | 1 (3%) |
 | **🔴 PENDING** | 10 (32%) |
 
 ---
@@ -104,7 +106,8 @@ UNBLOCKED BY RQ-024 (Resolved):
 UNBLOCKED BY RQ-037/RQ-033/RQ-025 (Ready for Decision):
 ├── PD-002 🟢 READY (Resilient Streak hybrid approach)
 ├── PD-003 🟢 READY (Holy Trinity → Shadow Cabinet validated)
-├── PD-119 🟢 READY (Council Seals economy defined)
+├── PD-119 🟡 DEFERRED (Council Seals defined, BUT earning mechanism needs RQ-039)
+│   └── Bias analysis revealed 8 unvalidated assumptions → Created RQ-039 with 7 sub-RQs
 └── PD-101 🟡 RESHAPED (RQ-037 complete, still needs RQ-034)
 
 BLOCKED BY PRIOR RESEARCH:

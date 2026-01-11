@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 10 January 2026 (RQ-008/009 Engineering Process reconciled, 8 tasks added)
+> **Last Updated:** 11 January 2026 (RQ-039 Token Economy Architecture created with 7 sub-RQs)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -398,15 +398,42 @@ F-10 (Architect scheduler)
 
 | Research | Blocks | Priority | Status |
 |----------|--------|----------|--------|
-| **RQ-028** (Archetype Definitions) | F-06, F-13, F-14, content pipeline | **CRITICAL** | 🔴 NEEDS RESEARCH |
-| RQ-029 (Dimension Curation) | F-13 content accuracy | HIGH | 🔴 NEEDS RESEARCH |
-| RQ-030 (Preference Embedding) | F-11 feedback implementation | MEDIUM | 🔴 NEEDS RESEARCH |
-| RQ-017 (Constellation UX) | Future dashboard work | HIGH | 🔴 NEEDS RESEARCH |
-| RQ-018 (Airlock Protocol) | State transition UI | HIGH | 🔴 NEEDS RESEARCH |
+| **RQ-039** (Token Economy) | E-12, E-14, PD-119 | **CRITICAL** | 🔴 NEW — 7 sub-RQs |
+| RQ-034 (Sherlock Architecture) | PD-101 (partial) | HIGH | 🔴 NEEDS RESEARCH |
+| RQ-035 (Sensitivity Detection) | PD-103 | HIGH | 🔴 NEEDS RESEARCH |
+| RQ-036 (Chamber Visual Design) | PD-120 | MEDIUM | 🔴 NEEDS RESEARCH |
+| RQ-010 (Permission Data) | JITAI refinement | MEDIUM | 🔴 NEEDS RESEARCH |
+
+**Recently Completed (11 Jan 2026):**
+- ✅ RQ-017 (Constellation UX) — Phase H tasks now defined
+- ✅ RQ-018 (Airlock Protocol) — Phase H tasks now defined
+- ✅ RQ-028-032 (Identity Coach Phase 2) — Phase G tasks defined
+- ✅ RQ-037/033/025 (Gamification) — Concepts defined, Decision 2 DEFERRED
 
 ---
 
 ## Recently Added Tasks
+
+### 11 January 2026 — RQ-039: Token Economy Architecture (Research)
+
+**Source:** Protocol 9 reconciliation exposed bias in original recommendation; decision DEFERRED
+**Status:** 🔴 NEEDS RESEARCH — 7 sub-RQs created
+
+| Sub-RQ | Question | Priority | Blocking |
+|--------|----------|----------|----------|
+| **RQ-039a** | Earning mechanism & intrinsic motivation | CRITICAL | E-12 |
+| **RQ-039b** | Optimal reflection cadence | HIGH | E-12 |
+| **RQ-039c** | Single vs multiple earning paths | HIGH | E-12 |
+| **RQ-039d** | Token cap vs decay alternatives | HIGH | E-12 |
+| **RQ-039e** | Crisis bypass threshold validation | HIGH | E-14 |
+| **RQ-039f** | Premium token allocation | MEDIUM | Subscription |
+| **RQ-039g** | Reflection quality thresholds | MEDIUM | E-12 |
+
+**Impact:** Decision 2 (Token Earning Mechanism) from escalated items DEFERRED pending research.
+**PD-119 Status:** Changed to DEFER (was PENDING)
+**Analysis:** `docs/analysis/RQ039_TOKEN_ECONOMY_DEEP_ANALYSIS.md`
+
+---
 
 ### 10 January 2026 — RQ-008/009: Engineering Process (8 Tasks)
 
