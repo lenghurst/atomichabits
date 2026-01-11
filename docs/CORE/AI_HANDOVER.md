@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 11 January 2026 (Protocol 9 Reconciliation: RQ-037, RQ-033, RQ-025)
+> **Last Updated:** 11 January 2026 (RQ-039 Token Economy Architecture + 7 sub-RQs created)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,12 +36,77 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `claude/setup-pact-deep-think-TqSKg` |
+| **Session ID** | `claude/setup-pact-deep-think-TqSKg` (continued) |
 | **Date** | 11 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Protocol 9 Reconciliation: RQ-037, RQ-033, RQ-025 (Gamification Deep Think) |
+| **Focus** | Decision Framework for Escalated Items + RQ-039 Token Economy Architecture |
 
 ### What Was Accomplished (This Latest Session)
+
+**20. Decision Framework & RQ-039 Token Economy Deep Analysis**
+
+**Root Document Updates:**
+| Document | Changes |
+|----------|---------|
+| **AI_CONTEXT.md** | Updated to 11 Jan, research status 31/38 (82%), added Session 19 completions |
+| **ROADMAP.md** | Updated Phase 2 (ready to build), psyOS Task Breakdown (all green), Track G complete |
+
+**Escalated Decision Framework Created:**
+- `docs/analysis/ESCALATED_DECISIONS_FRAMEWORK.md` — 628 lines
+- Decision 1: Shadow Cabinet terminology (3 options with branching scenarios)
+- Decision 2: Token earning mechanism (4 options including subscription model)
+- Decision 3: Consumable IAP policy (4 options with CD-010 compliance analysis)
+- Added Option D (Hybrid): Weekly Review + Premium token boost
+- Token economy integration map with schema requirements
+
+**RQ-039 Token Economy Architecture Created:**
+- `docs/analysis/RQ039_TOKEN_ECONOMY_DEEP_ANALYSIS.md` — 709 lines
+- Identified 7 SME domains (Behavioral Econ, SDT, Mental Health Ethics, etc.)
+- Exposed 8 biases in original recommendations
+- SWOT analysis for 5 earning mechanism options
+- Created 7 sub-RQs (039a-039g)
+
+**Biases Identified in Original Token Economy Recommendation:**
+| # | Bias | Validity Post-Analysis |
+|---|------|------------------------|
+| B1 | Pro-Reflection | 40% — may add friction |
+| B2 | Anti-Grinding | 30% — consistency-based earning is valid |
+| B3 | Premium-as-Acceleration | 50% — may not drive conversion |
+| B4 | CD-010 Overweight | Valid constraint |
+| B5 | Weekly Cadence | 20% — arbitrary |
+| B6 | 3-Token Cap | 20% — not validated |
+| B7 | 0.7 Threshold | Medium — needs validation |
+| B8 | Single Mechanism | 20% — multiple paths better for autonomy |
+
+**Revised Recommendation:**
+- **Decision 2 (Token Earning):** DEFER pending RQ-039 research
+- **MVP Fallback:** Option B (Consistency-based) as simplest CD-010 compliant option
+- **Confidence:** LOW — too many unvalidated assumptions
+
+**RQ-039 Sub-Questions Created:**
+| Sub-RQ | Question |
+|--------|----------|
+| **039a** | Earning mechanism & intrinsic motivation |
+| **039b** | Optimal reflection cadence |
+| **039c** | Single vs multiple earning paths |
+| **039d** | Token cap vs decay alternatives |
+| **039e** | Crisis bypass threshold validation |
+| **039f** | Premium token allocation |
+| **039g** | Reflection quality thresholds |
+
+**Governance Updates:**
+- `docs/CORE/index/RQ_INDEX.md` — Added RQ-039 + 7 sub-RQs (now 39 main + 7 sub)
+- Statistics updated: 31/39 main RQs complete (79%), 15 items needing research
+
+**Next Steps:**
+1. Human decision needed on Decision 1 (Shadow Cabinet) and Decision 3 (IAP Policy)
+2. Decision 2 (Token Earning) deferred to RQ-039 research
+3. Create Deep Think prompts for RQ-039a (earning mechanism) and RQ-039e (crisis threshold)
+4. Consider MVP fallback (consistency-based earning) if research timeline exceeds development
+
+---
+
+**Previous Session:**
 
 **19. Protocol 9 Reconciliation: RQ-037 + RQ-033 + RQ-025 (Gamification Deep Think)**
 
