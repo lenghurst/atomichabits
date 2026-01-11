@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 05 January 2026 (Full implementation confirmed; CD-016 AI Model Strategy)
+> **Last Updated:** 11 January 2026 (Research 82% complete; RQ-037/033/025 gamification strategy integrated)
 > **Current Strategy:** psyOS Full Implementation at Launch (NOT phased per PD-114)
 > **Target Launch:** TBD (Full psyOS scope requires significant build)
 > **Identity:** Psychological Operating System (psyOS)
@@ -70,10 +70,15 @@ On 05 January 2026, the decision was made to pursue **psyOS (Psychological Opera
 
 **Resolved:**
 - ~~RQ-011 (Multiple Identities)~~ → ✅ Resolved via CD-015
+- ~~RQ-005/006/007 (Proactive Guidance)~~ → ✅ Complete (PD-105, PD-107 now READY)
+- ~~RQ-012→022 (psyOS Core)~~ → ✅ Complete (Council AI, Treaties, Airlock)
+- ~~RQ-025/033/037 (Gamification)~~ → ✅ Complete (Council Seals, Resilient Streak, Shadow Cabinet)
 
 **Still Blocking:**
-- RQ-005/006 (Proactive Guidance) → Blocks Phase 2 intelligence
 - RQ-010 (Permission Data) → Blocks Phase 2 JITAI refinement
+- RQ-023 (Population Privacy) → Blocks PD-116
+- RQ-034 (Sherlock Architecture) → Blocks PD-101 (partially unblocked by RQ-037)
+- RQ-035/036/038 (Sensitivity, Chamber, JITAI Allocation) → Block various PDs
 
 **See:** `docs/CORE/RESEARCH_QUESTIONS.md` for full list
 
@@ -95,14 +100,14 @@ On 05 January 2026, the decision was made to pursue **psyOS (Psychological Opera
 ### Phase 2: Intelligence
 **What It Is:** The "brain" — systems that analyze, decide, recommend.
 
-| Component | Status | Blocking |
-|-----------|--------|----------|
+| Component | Status | Notes |
+|-----------|--------|-------|
 | JITAI Decision Engine | ✅ Done | — |
 | Thompson Sampling | ✅ Done | — |
 | V-O Calculator | ✅ Done | — |
-| Gap Analysis Engine | 🔴 Not done | RQ-005/006/007 |
-| Recommendation Engine | 🔴 Not done | RQ-005/006/007 |
-| Dimension Inference | 🟡 Partial | RQ-003 tasks |
+| Gap Analysis Engine | 🟡 Ready to build | RQ-005/006/007 ✅ complete |
+| Recommendation Engine | 🟡 Ready to build | RQ-005/006/007 ✅ complete |
+| Dimension Inference | ✅ Done | RQ-003 complete |
 
 ---
 
@@ -197,25 +202,25 @@ PHASE E: Airlock & Priming
 |-------|-----------|----|----|--------|----------|
 | **A** | `psychometric_roots` schema (pgvector) | RQ-012 ✅ | — | 🟢 Ready to build | N/A |
 | **A** | `psychological_manifestations` schema | RQ-012 ✅ | — | 🟢 Ready to build | N/A |
-| **A** | `treaties` schema (logic_hooks JSONB) | RQ-016 ✅ | PD-113 | 🟢 Ready to build | N/A |
+| **A** | `treaties` schema (logic_hooks JSONB) | RQ-016 ✅ | PD-113 ✅ | 🟢 Ready to build | N/A |
 | **A** | `identity_facets` with status | RQ-011 ✅ | — | 🟢 Ready to build | N/A |
-| **A** | `identity_topology` schema | RQ-013 | — | 🔴 Needs research |
-| **A** | `habit_facet_links` schema | RQ-015 | PD-111 | 🔴 Needs research |
+| **A** | `identity_topology` schema | RQ-013 ✅ | — | 🟢 Ready to build | N/A |
+| **A** | `habit_facet_links` schema | RQ-015 ✅ | PD-111 ✅ | 🟢 Ready to build | N/A |
 | **B** | Triangulation Protocol (Day 1→4→7) | RQ-012 ✅ | — | 🟢 Ready to build | Gemini 3 Flash |
 | **B** | Sherlock Day 7 root synthesis | RQ-012 ✅ | — | 🟢 Ready to build | **DeepSeek V3.2** |
 | **B** | Chronotype-JITAI Matrix | RQ-012 ✅ | — | 🟢 Ready to build | Hardcoded |
-| **B** | Topology inference | RQ-013 | — | 🔴 Needs research |
-| **B** | Energy State detection | RQ-014 | — | 🔴 Needs research |
-| **B** | Tension Score calculation | — | — | 🟡 Design ready |
+| **B** | Topology inference | RQ-013 ✅ | — | 🟢 Ready to build | N/A |
+| **B** | Energy State detection | RQ-014 ✅ | — | 🟢 Ready to build | N/A |
+| **B** | Tension Score calculation | — | — | 🟢 Ready to build | N/A |
 | **C** | Single-Shot Playwright prompt | RQ-016 ✅ | — | 🟢 Ready to build | **DeepSeek V3.2** |
 | **C** | Council UI (text bubbles, avatars) | RQ-016 ✅ | — | 🟢 Ready to build | N/A |
-| **C** | Treaty signing flow | RQ-016 ✅ | PD-109 | 🟡 PD ready | N/A |
-| **C** | Treaty enforcement in JITAI | RQ-016 ✅ | PD-113 | 🟡 PD pending | Hardcoded |
+| **C** | Treaty signing flow | RQ-016 ✅ | PD-109 ✅ | 🟢 Ready to build | N/A |
+| **C** | Treaty enforcement in JITAI | RQ-016 ✅ | PD-113 ✅ | 🟢 Ready to build | Hardcoded |
 | **C** | Audiobook Pattern TTS | RQ-016 ✅ | — | 🟢 Ready to build | Gemini 2.5 TTS |
-| **D** | Constellation visualization | RQ-017 | PD-108 | 🔴 Needs research |
-| **D** | Skill Tree migration | — | PD-108 | 🔴 Needs decision |
-| **E** | Airlock triggers | RQ-018 | PD-110 | 🔴 Needs research |
-| **E** | Identity Priming audio | RQ-018 | PD-112 | 🔴 Needs research |
+| **D** | Constellation visualization | RQ-017 ✅ | PD-108 ✅ | 🟢 Ready to build | N/A |
+| **D** | Skill Tree migration | — | PD-108 ✅ | 🟢 Ready to build | N/A |
+| **E** | Airlock triggers | RQ-018 ✅ | PD-110 ✅ | 🟢 Ready to build | N/A |
+| **E** | Identity Priming audio | RQ-018 ✅ | PD-112 ✅ | 🟢 Ready to build | Gemini 2.5 TTS |
 
 ### psyOS Schema Summary
 
@@ -237,51 +242,67 @@ identity_topology.switching_cost_minutes -- Bio-energetic recovery
 ### Critical Path for psyOS
 
 ```
-RQ-012 (Fractal Trinity) ─────┐
-RQ-016 (Council AI) ──────────┼──→ Phase A + C = Core psyOS Value
-RQ-013 (Topology) ────────────┘
+✅ ALL RESEARCH COMPLETE — READY TO BUILD
 
-RQ-017 (Constellation) ───────┐
-RQ-015 (Polymorphic) ─────────┼──→ Phase D + Habits = UX Differentiator
-                              │
-RQ-014 (State Economics) ─────┤
-RQ-018 (Airlock/Priming) ─────┴──→ Phase E = Full psyOS Experience
+RQ-012 (Fractal Trinity) ✅ ───┐
+RQ-016 (Council AI) ✅ ────────┼──→ Phase A + C = Core psyOS Value ✅
+RQ-013 (Topology) ✅ ──────────┘
+
+RQ-017 (Constellation) ✅ ─────┐
+RQ-015 (Polymorphic) ✅ ───────┼──→ Phase D + Habits = UX Differentiator ✅
+                               │
+RQ-014 (State Economics) ✅ ───┤
+RQ-018 (Airlock/Priming) ✅ ───┴──→ Phase E = Full psyOS Experience ✅
 ```
 
-**Research Status (Updated 05 Jan 2026):**
+**Research Status (Updated 11 Jan 2026):**
 
-| RQ | Topic | Status | Key Deliverables |
-|----|-------|--------|------------------|
-| RQ-012 | Fractal Trinity | ✅ COMPLETE | pgvector schema, Triangulation Protocol |
-| RQ-016 | Council AI | ✅ COMPLETE | Single-Shot Playwright, Treaty Protocol |
-| RQ-019 | pgvector Implementation | ✅ COMPLETE | gemini-embedding-001, HNSW, similarity queries |
-| RQ-020 | Treaty-JITAI Integration | ✅ COMPLETE | TreatyEngine, treaties schema, ContextSnapshot |
-| **RQ-021** | **Treaty Lifecycle & UX** | 🔴 NEW | Treaty creation flow, templates, management UI |
-| **RQ-022** | **Council Script Prompts** | 🔴 NEW | DeepSeek V3.2 prompt templates |
-| **RQ-023** | **Population Learning Privacy** | 🔴 NEW | Privacy framework, k-anonymity |
-| RQ-013 | Identity Topology | 🔴 NEEDS RESEARCH | Graph modeling, conflict detection |
-| RQ-014 | State Economics | 🔴 NEEDS RESEARCH | Energy states, bio-energetic conflicts |
-| RQ-015 | Polymorphic Habits | 🔴 NEEDS RESEARCH | Habit-facet linkage |
-| RQ-017 | Constellation UX | 🔴 NEEDS RESEARCH | Solar system visualization |
-| RQ-018 | Airlock Protocol | 🔴 NEEDS RESEARCH | Transition rituals, sensory priming |
+**Overall Progress:** 31/38 RQs Complete (82%)
 
-**Decisions Resolved This Session:**
-- ✅ **PD-109** (Council AI Activation) — 0.7 threshold, 6 turns, keywords confirmed
-- ✅ **PD-113** (Treaty Priority Hierarchy) — 5-level stack, breach escalation confirmed
+| Category | RQs | Status | Key Deliverables |
+|----------|-----|--------|------------------|
+| **Foundation** | RQ-001→009 | ✅ COMPLETE | Archetypes, Recommendations, Roadmap |
+| **psyOS Core** | RQ-012→022 | ✅ COMPLETE | Fractal Trinity, Council AI, Treaties, Airlock |
+| **Gamification** | RQ-025, 033, 037 | ✅ COMPLETE | Council Seals, Resilient Streak, Shadow Cabinet |
+| **Remaining** | 7 items | 🔴 NEEDS RESEARCH | See below |
 
-**New Decisions Pending:**
-- 🔴 **PD-115** (Treaty Creation UX) — Requires RQ-021
-- 🔴 **PD-116** (Population Learning Privacy) — Requires RQ-023
-- 🔴 **PD-117** (ContextSnapshot Real-time Data) — Requires RQ-014
+**Remaining Research Queue:**
+| RQ | Topic | Blocking | Priority |
+|----|-------|----------|----------|
+| RQ-010 | Permission Data Philosophy | JITAI refinement | Medium |
+| RQ-023 | Population Learning Privacy | PD-116 | Medium |
+| RQ-026 | Sound Design & Haptics | UX polish | Low |
+| RQ-027 | Treaty Template Versioning | Treaty maintenance | Low |
+| RQ-034 | Sherlock Conversation Architecture | PD-101 (partial) | High |
+| RQ-035 | Sensitivity Detection Framework | PD-103 | Medium |
+| RQ-036 | Chamber Visual Design Patterns | PD-120 | Medium |
+| RQ-038 | JITAI Component Allocation | PD-102 | Medium |
+
+**Decisions Now READY (Unblocked by Research):**
+- 🟢 **PD-002** (Streaks vs Rolling Consistency) — RQ-033 complete: Resilient Streak recommended
+- 🟢 **PD-003** (Holy Trinity Validity) — RQ-037 complete: Shadow Cabinet display layer validated
+- 🟢 **PD-119** (Summon Token Economy) — RQ-025 complete: Council Seals (1/week, 3 cap)
+- 🟢 **PD-105** (Unified AI Coaching) — RQ-005/006/007 complete
+- 🟢 **PD-107** (Proactive Guidance System) — RQ-005/006/007 complete
+
+**Decisions Still Pending (Blocked by Research):**
+- 🔴 **PD-101** (Sherlock Prompt Overhaul) — Partially unblocked, needs RQ-034
+- 🔴 **PD-102** (JITAI Hardcoded vs AI) — Needs RQ-038
+- 🔴 **PD-103** (Sensitivity Detection) — Needs RQ-035
+- 🔴 **PD-116** (Population Learning Privacy) — Needs RQ-023
+- 🔴 **PD-120** (Chamber Visual Design) — Needs RQ-036
 
 **Upstream/Downstream Impact Analysis:**
 | Existing Decision | Impact | Action |
 |-------------------|--------|--------|
 | **CD-015** (psyOS) | ✅ Validated | Implementation path now clear |
 | **CD-016** (AI Model) | ✅ Updated | gemini-embedding-001 for embeddings |
-| **PD-106** (Identity Architecture) | ⚠️ Ready to resolve | Schema finalized via CD-015 + RQ-012 |
-| **RQ-013** (Identity Topology) | ✅ Unblocked | Can use pgvector infrastructure |
-| **RQ-014** (State Economics) | ⚠️ New dependency | ContextSnapshot references energy_state |
+| **PD-106** (Identity Architecture) | ✅ RESOLVED → CD-015 | Archived to Q1-2026 |
+| **RQ-013** (Identity Topology) | ✅ COMPLETE | Graph modeling defined |
+| **RQ-014** (State Economics) | ✅ COMPLETE | Energy state detection ready |
+| **PD-002** (Streaks) | 🟢 READY | Resilient Streak via RQ-033 |
+| **PD-003** (Holy Trinity) | 🟢 READY | Shadow Cabinet via RQ-037 |
+| **PD-119** (Summon Tokens) | 🟢 READY | Council Seals via RQ-025 |
 
 ---
 
@@ -411,16 +432,16 @@ IMPLEMENTATION PHASE (After Research)
 
 | Task | Status | Depends On | Blocking |
 |------|--------|------------|----------|
-| **RQ-006 Research** | 🔴 NOT STARTED | — | All below |
-| Aspiration Extraction (research) | 🔴 NOT STARTED | — | Data Model |
-| Identity Roadmap Data Model | 🔴 NOT STARTED | Extraction | Matching |
-| Habit Matching Algorithm | 🔴 NOT STARTED | Data Model | Metrics |
-| Progress/Regression Metrics | 🔴 NOT STARTED | Matching | Coherence |
-| Coherence Engine | 🔴 NOT STARTED | Metrics | Implementation |
-| Sherlock Prompt Update | 🔴 NOT STARTED | RQ-006 complete | — |
-| Schema Migration | 🔴 NOT STARTED | Data Model | — |
-| Recommendation Engine | 🔴 NOT STARTED | Matching | Dashboard |
-| Dashboard Redesign | 🔴 NOT STARTED | Engine | Widgets |
+| **RQ-005/006/007 Research** | ✅ COMPLETE | — | None |
+| Aspiration Extraction (research) | ✅ COMPLETE | — | — |
+| Identity Roadmap Data Model | ✅ COMPLETE | Extraction | — |
+| Habit Matching Algorithm | ✅ COMPLETE | Data Model | — |
+| Progress/Regression Metrics | ✅ COMPLETE | Matching | — |
+| Coherence Engine | ✅ COMPLETE | Metrics | — |
+| Sherlock Prompt Update | 🟡 Ready to build | RQ-006 ✅ | — |
+| Schema Migration | 🟡 Ready to build | Data Model ✅ | — |
+| Recommendation Engine | 🟡 Ready to build | Matching ✅ | Dashboard |
+| Dashboard Redesign | 🟡 Ready to build | Engine | Widgets |
 | Widget Implementation | 🔴 NOT STARTED | Dashboard | — |
 
 **Reference:** See `docs/CORE/IDENTITY_COACH_SPEC.md` for full specification.
