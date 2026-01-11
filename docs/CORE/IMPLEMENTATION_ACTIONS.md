@@ -62,20 +62,16 @@ This document serves **three critical functions**:
 
 ## Agent Entry Point Routing
 
-### For Claude Code (Implementation Agent)
+> **AUTHORITATIVE SOURCE:** See `CLAUDE.md` for the official reading order (v2.0).
+> This document is at **Level 2** in the reading hierarchy.
 
-```
-SESSION START:
-1. Read CLAUDE.md (project root) ← PRIMARY ENTRY POINT
-   ↓
-2. Read AI_HANDOVER.md ← Previous session context
-   ↓
-3. Read index/CD_INDEX.md + index/PD_INDEX.md + index/RQ_INDEX.md ← Quick status
-   ↓
-4. Read THIS DOCUMENT (IMPLEMENTATION_ACTIONS.md) ← Task overview
-   ↓
-5. Read RESEARCH_QUESTIONS.md → Master Implementation Tracker ← Detailed tasks
-```
+### For All Agents
+
+Follow `CLAUDE.md` Reading Order v2.0:
+- **Level 0:** CLAUDE.md + AI_HANDOVER.md (always)
+- **Level 1:** Index files (most tasks)
+- **Level 2:** This document + PRODUCT_DEVELOPMENT_SHEET.md (complex tasks)
+- **Level 3:** Full documents (research/audit only)
 
 **When to update this document:**
 - After extracting tasks via Protocol 8

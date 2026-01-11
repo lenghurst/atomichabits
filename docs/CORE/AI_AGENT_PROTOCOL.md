@@ -15,36 +15,21 @@ AI agents are powerful but lack instinctive awareness of system-wide impacts. Th
 
 ## Session Entry Protocol (Starting Work)
 
-**Every session MUST begin with this checklist:**
+> **AUTHORITATIVE SOURCE:** See `CLAUDE.md` for the official reading order (v2.0).
+> This section provides supplementary guidance only.
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                        SESSION ENTRY PROTOCOL                                 │
-│                                                                              │
-│  STEP 1: Context Acquisition (Read in order)                                 │
-│  □ CLAUDE.md — Project overview, constraints, routing                       │
-│  □ AI_HANDOVER.md — What did the last agent do?                             │
-│  □ index/CD_INDEX.md + index/PD_INDEX.md — Quick decision status lookup     │
-│  □ index/RQ_INDEX.md — Quick research status lookup                         │
-│  □ IMPLEMENTATION_ACTIONS.md — Task quick status + navigation hub           │
-│  □ IMPACT_ANALYSIS.md — Cascade tracking ONLY (not task storage)            │
-│  □ PRODUCT_DECISIONS.md — Full details for PENDING decisions only           │
-│  □ RESEARCH_QUESTIONS.md — Master Task Tracker + ACTIVE research            │
-│  □ GLOSSARY.md — What do terms mean in this codebase?                       │
-│  □ AI_CONTEXT.md — What's the current architecture?                         │
-│  □ ROADMAP.md — What are the current priorities?                            │
-│                                                                              │
-│  STEP 2: Orientation                                                         │
-│  □ Identify session scope (docs? code? research? all?)                      │
-│  □ Check for blockers from previous session                                  │
-│  □ Verify no conflicting work in progress                                    │
-│                                                                              │
-│  STEP 3: Confirm with Human                                                  │
-│  □ State what you understand the task to be                                 │
-│  □ Identify any unclear requirements                                         │
-│  □ Flag any PENDING decisions that block this work                          │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+**Every session MUST begin with:**
+
+1. **Follow CLAUDE.md Reading Order v2.0** — Levels 0-3 based on task type
+2. **Complete Session Start Verification** — Required in first response
+3. **Orientation Check:**
+   - Identify session scope (docs? code? research? all?)
+   - Check for blockers from previous session
+   - Verify no conflicting work in progress
+4. **Confirm with Human:**
+   - State what you understand the task to be
+   - Identify any unclear requirements
+   - Flag any PENDING decisions that block this work
 
 **Why Entry Protocol Matters:**
 - Prevents duplicate work
