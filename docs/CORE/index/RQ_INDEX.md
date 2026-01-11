@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 10 January 2026
+> **Last Updated:** 10 January 2026 (RQ-037, RQ-033, RQ-025 COMPLETE via Deep Think)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -44,7 +44,7 @@
 | **RQ-022** | Council Script Generation Prompts | ✅ COMPLETE | RQ-016, RQ-021 | Q1-2026 |
 | **RQ-023** | Population Learning Privacy Framework | 🔴 NEEDS RESEARCH | RQ-019 | — |
 | **RQ-024** | Treaty Modification & Renegotiation Flow | ✅ COMPLETE | RQ-021 | Q1-2026 |
-| **RQ-025** | Summon Token Economy | 🔴 NEEDS RESEARCH | RQ-016 | — |
+| **RQ-025** | Summon Token Economy | ✅ COMPLETE | RQ-016 | Q1-2026 |
 | **RQ-026** | Sound Design & Haptic Specification | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-027** | Treaty Template Versioning Strategy | 🔴 NEEDS RESEARCH | RQ-021 | — |
 | **RQ-028** | Archetype Template Definitions | ✅ COMPLETE | RQ-005,6 | Q1-2026 |
@@ -52,11 +52,11 @@
 | **RQ-030** | Preference Embedding Update Mechanics | ✅ COMPLETE | RQ-005 | Q1-2026 |
 | **RQ-031** | Pace Car Threshold Validation | ✅ COMPLETE | RQ-005 | Q1-2026 |
 | **RQ-032** | ICS Integration with Existing Metrics | ✅ COMPLETE | RQ-007 | Q1-2026 |
-| **RQ-033** | Streak Philosophy & Gamification | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-033** | Streak Philosophy & Gamification | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-034** | Sherlock Conversation Architecture | 🔴 NEEDS RESEARCH | PD-003 | — |
 | **RQ-035** | Sensitivity Detection Framework | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-036** | Chamber Visual Design Patterns | 🔴 NEEDS RESEARCH | RQ-016 | — |
-| **RQ-037** | Holy Trinity Model Validation | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-037** | Holy Trinity Model Validation | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-038** | JITAI Component Allocation Strategy | 🔴 NEEDS RESEARCH | — | — |
 
 ---
@@ -66,8 +66,8 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs** | 38 |
-| **✅ COMPLETE** | 28 (74%) |
-| **🔴 NEEDS RESEARCH** | 10 (26%) |
+| **✅ COMPLETE** | 31 (82%) |
+| **🔴 NEEDS RESEARCH** | 7 (18%) |
 
 ---
 
@@ -93,10 +93,10 @@ FOUNDATIONAL (No dependencies):
 ├── RQ-009 (LLM Coding) ✅
 ├── RQ-010 (Permission Data) 🔴
 ├── RQ-011 (Multiple Identity) ✅
-├── RQ-033 (Streak Philosophy) 🔴  ← NEW (blocks PD-002)
+├── RQ-033 (Streak Philosophy) ✅  ← COMPLETE (unblocks PD-002)
 ├── RQ-035 (Sensitivity Detection) 🔴  ← NEW (blocks PD-103)
-├── RQ-037 (Holy Trinity Validation) 🔴  ← NEW (blocks PD-003)
-│   └── RQ-034 (Sherlock Architecture) 🔴  ← NEW (blocks PD-101)
+├── RQ-037 (Holy Trinity Validation) ✅  ← COMPLETE (unblocks PD-003)
+│   └── RQ-034 (Sherlock Architecture) 🔴  ← UNBLOCKED by RQ-037
 └── RQ-038 (JITAI Component Allocation) 🔴  ← NEW (blocks PD-102)
 
 PSYOS ARCHITECTURE (CD-015):
@@ -109,7 +109,7 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   │   ├── RQ-024 (Treaty Modification) ✅
 │   │   │   └── RQ-027 (Template Versioning) 🔴
 │   │   ├── RQ-022 (Council Scripts) ✅
-│   │   ├── RQ-025 (Summon Tokens) 🔴
+│   │   ├── RQ-025 (Summon Tokens) ✅  ← COMPLETE (unblocks PD-119)
 │   │   └── RQ-036 (Chamber Visual Design) 🔴  ← NEW (blocks PD-120)
 │   ├── RQ-017 (Constellation UX) ✅
 │   ├── RQ-018 (Airlock Protocol) ✅

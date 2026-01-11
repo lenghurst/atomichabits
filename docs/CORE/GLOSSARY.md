@@ -1,6 +1,6 @@
 # GLOSSARY.md — The Pact Terminology Bible
 
-> **Last Updated:** 10 January 2026 (Added RQ-008/009 terms: Vibe Coding, Contract-First, Safety Sandbox, Logic Leakage, Side Effect Pattern)
+> **Last Updated:** 10 January 2026 (Added RQ-037/033/025 terms: Shadow Cabinet, Resilient Streak, Council Seal, Narrative Triangulation)
 > **Purpose:** Universal terminology definitions for AI agents and developers
 > **Owner:** Product Team (update when new terms are introduced)
 
@@ -1405,6 +1405,158 @@ anchored = (0.7 × learned_preference) + (0.3 × trinity_seed)
 **Status:** ✅ DESIGN COMPLETE — RQ-007
 
 **Code References:** Extension to Sherlock onboarding flow (to be implemented)
+
+---
+
+## Deep Think Gamification Terms (RQ-037 + RQ-033 + RQ-025)
+
+> **Reference:** These terms were defined by Gemini Deep Think research on 10 January 2026 for RQ-037 (Holy Trinity Validation), RQ-033 (Streak Philosophy), and RQ-025 (Summon Token Economy). See `docs/analysis/DEEP_THINK_RECONCILIATION_RQ037_RQ033_RQ025.md`.
+
+### Shadow Cabinet
+**Definition:** The psyOS term for the Holy Trinity traits — the psychological "Opposition Party" that the user negotiates with. Frames traits not as defects, but as maladaptive protectors to be understood.
+
+**Components:**
+| Display Name | Internal Name | Psychological Basis |
+|--------------|---------------|---------------------|
+| **The Shadow** | `anti_identity_label` | Feared Possible Self (Markus & Nurius, 1986) |
+| **The Saboteur** | `failure_archetype` | IFS Protector / Attribution Style (Schwartz, Weiner) |
+| **The Script** | `resistance_lie_label` | Neutralization Technique / ANT (Sykes & Matza, Beck) |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-037 (⚠️ ESCALATE: Terminology adoption pending human approval)
+
+**Code References:** `identity_seeds` table stores internal names; display layer translates to Shadow Cabinet terminology
+
+---
+
+### The Shadow
+**Definition:** Display name for Anti-Identity — the person the user fears becoming if nothing changes. The primary motivational anchor.
+
+**Example:** "The Zombie" — someone who scrolls through life on autopilot, hits snooze 5 times, hates the mirror.
+
+**Extraction:** Turn 1 of Narrative Triangulation protocol.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-037
+
+**Code References:** `identity_seeds.anti_identity_label`, `identity_seeds.anti_identity_context`
+
+---
+
+### The Saboteur
+**Definition:** Display name for Failure Archetype — the maladaptive protector pattern that causes the user to quit. Defines *how* the user self-sabotages.
+
+**Archetypes:**
+| Saboteur | Behavior Pattern | Counter-Strategy |
+|----------|------------------|------------------|
+| PERFECTIONIST | Quits when imperfect | "99% is A+" messaging |
+| REBEL | Quits when told what to do | Choice-based framing |
+| MARTYR | Quits for others' needs | Boundary enforcement |
+| DRIFTER | Quits from boredom | Novelty injection |
+| OVERCOMMITTER | Quits from overwhelm | "One Domino" focus |
+
+**Extraction:** Turn 2 of Narrative Triangulation protocol.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-037
+
+**Code References:** `identity_seeds.failure_archetype`, `identity_seeds.failure_trigger_context`
+
+---
+
+### The Script
+**Definition:** Display name for Resistance Lie — the exact sentence the user's Saboteur whispers before they skip. Provides specific triggers for JITAI interventions.
+
+**Examples:**
+- "I'll do it tomorrow"
+- "It's not good enough yet"
+- "I need to do more research first"
+- "Just this once won't hurt"
+
+**Extraction:** Turn 3 of Narrative Triangulation protocol.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-037
+
+**Code References:** `identity_seeds.resistance_lie_label`, `identity_seeds.resistance_lie_context`
+
+---
+
+### Narrative Triangulation
+**Definition:** The 4-turn extraction protocol for the Shadow Cabinet. Anchors hope before probing fear, then systematically extracts mechanism and trigger.
+
+**Protocol:**
+| Turn | Target | Question Theme |
+|------|--------|----------------|
+| 1 | The Shadow | "Who are you afraid of becoming in 5 years?" |
+| 2 | The Saboteur | "When you quit before, was it perfectionism, boredom, or rebellion?" |
+| 3 | The Script | "What exact sentence does your Saboteur whisper before you skip?" |
+| 4 | Seal | "Profile locked. Shall we seal this Pact?" |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-037
+
+**Code References:** To be implemented in Sherlock Protocol V2
+
+---
+
+### Resilient Streak
+**Definition:** A streak that survives single-day misses but resets on 2+ consecutive misses. Based on the "Never Miss Twice" (NMT) philosophy.
+
+**Logic:**
+| Event | Resilient Streak | Traditional Streak |
+|-------|------------------|-------------------|
+| Complete | +1 day | +1 day |
+| Miss once | Streak continues (protected) | Reset to 0 |
+| Miss twice | Reset to 0 | Reset to 0 |
+
+**Visual States:**
+| State | Meaning | Visual |
+|-------|---------|--------|
+| Protected | Streak active, no misses | Solid shield |
+| At Risk | 1 miss, NMT active | Cracked shield |
+| Reset | 2+ consecutive misses | Shattered shield |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-033
+
+**Code References:** `consistency_service.dart` (to be extended)
+
+---
+
+### Council Seal
+**Definition:** The token currency for manually summoning Council AI when tension_score < 0.7. Branded as "proof of reflection" rather than gamification currency.
+
+**Economy:**
+| Parameter | Value |
+|-----------|-------|
+| Earn Rate | 1 per week (via Weekly Review) |
+| Cost | 1 per Council session |
+| Cap | 3 (soft cap) |
+| Expiry | Never |
+| New User Gift | 1 on Sherlock completion |
+
+**Status:** ✅ DESIGN COMPLETE — RQ-025 (⚠️ ESCALATE: Earning mechanism pending human choice)
+
+**Code References:** `user_tokens` table (to be created)
+
+---
+
+### Weekly Review
+**Definition:** A reflection activity (50+ char text entry) that earns Council Seals. Connects "doing" habits to "being" identity.
+
+**Purpose:** Primary token earning mechanism that reinforces reflection, not just engagement.
+
+**Anti-Gaming:** Requires minimum 50 characters to prevent trivial farming.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-025 (⚠️ ESCALATE: New feature, needs UI design)
+
+**Code References:** To be implemented
+
+---
+
+### Crisis Bypass
+**Definition:** Automatic free Council AI access when `tension_score > 0.7`. Ensures mental health support is never gated behind tokens.
+
+**Rationale:** Per CD-010 (No Dark Patterns) — never gate mental health support behind gamification.
+
+**Status:** ✅ DESIGN COMPLETE — RQ-025
+
+**Code References:** Council summon logic (to be implemented)
 
 ---
 
