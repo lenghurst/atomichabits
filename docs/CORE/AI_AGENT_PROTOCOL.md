@@ -3,7 +3,7 @@
 > **Last Updated:** 11 January 2026
 > **Purpose:** Codify reflexive behaviors that ALL AI agents must exhibit
 > **Scope:** Claude, Gemini, ChatGPT, any future AI agents working on The Pact
-> **Protocols:** 12 mandatory (1-9 operational, 10-12 meta-cognitive)
+> **Protocols:** 13 mandatory (1-9 operational, 10-12 meta-cognitive, 13 gate check)
 
 ---
 
@@ -1365,6 +1365,110 @@ MVP Fallback: Option B (Consistency-based) — simplest CD-010 compliant option
 
 ---
 
+## Protocol 13: Prerequisites Gate Check (MANDATORY)
+
+### Trigger
+Before executing any **implementation task** (A-XX, B-XX, etc.) or **Implementation Prompt**.
+
+### Why This Protocol Exists
+Tasks have prerequisites listed in the "Source" column of the Master Implementation Tracker. Without verification, an agent could attempt to execute A-03 (Create identity_facets) without verifying that RQ-011 (which defined the requirements) is actually COMPLETE.
+
+**Risk:** Implementing based on incomplete or stale research produces incorrect outputs.
+
+**Origin:** This protocol was created during Session 22 when codebase audit revealed that all 116 tasks were blocked, yet no formal verification mechanism existed to prevent premature execution.
+
+### Action
+
+**Step 1: Extract Prerequisites**
+```
+From Master Implementation Tracker:
+| # | Task | Priority | Status | Source | Component |
+| A-03 | Create identity_facets | CRITICAL | 🔴 | RQ-011, CD-015 | Database |
+
+Prerequisites: RQ-011, CD-015
+```
+
+**Step 2: Verify Each Prerequisite**
+
+| Type | Index File | Required Status |
+|------|------------|-----------------|
+| RQ-XXX | `RQ_INDEX.md` | ✅ COMPLETE |
+| PD-XXX | `PD_INDEX.md` | ✅ RESOLVED |
+| CD-XXX | `CD_INDEX.md` | ✅ CONFIRMED (always) |
+| Task-XX | Master Tracker | ✅ COMPLETE |
+
+**Step 3: Document Gate Check**
+
+In the Implementation Prompt or task context:
+
+```markdown
+## Prerequisites Gate Check
+
+| Prerequisite | Type | Required | Actual | Clear? |
+|--------------|------|----------|--------|--------|
+| RQ-011 | RQ | ✅ COMPLETE | ✅ COMPLETE | ✅ |
+| CD-015 | CD | ✅ CONFIRMED | ✅ CONFIRMED | ✅ |
+
+**Gate Status:** ✅ ALL PREREQUISITES MET — Proceed with implementation
+```
+
+**Step 4: Block or Proceed**
+
+| Result | Action |
+|--------|--------|
+| All ✅ | Proceed with implementation |
+| Any ❌ | STOP — Document blocker, do NOT proceed |
+
+### Template for Gate Check Table
+
+```markdown
+## Prerequisites Gate Check
+
+| Prerequisite | Type | Required | Actual | Clear? |
+|--------------|------|----------|--------|--------|
+| [ID] | [RQ/PD/CD/Task] | [Status] | [Status] | [✅/❌] |
+
+**Gate Status:** [✅ ALL PREREQUISITES MET / ❌ BLOCKED — [List blockers]]
+```
+
+### Integration Points
+
+- **Session Entry:** Check prerequisites before selecting tasks
+- **Implementation Prompts:** Include Gate Check section (mandatory)
+- **Protocol 8 (Task Extraction):** Populate Source column accurately
+- **Master Tracker:** Consider adding "Pre-Status" column for quick visibility
+
+### Anti-Patterns
+
+```
+❌ Proceeding with "I think RQ-011 is complete" without checking index
+❌ Skipping gate check for "simple" tasks
+❌ Assuming all CDs are relevant (verify only listed CDs)
+❌ Checking RESEARCH_QUESTIONS.md instead of RQ_INDEX.md (index is authoritative)
+```
+
+### Example: Blocked Task
+
+**Task B-01:** Create `embed-manifestation` Edge Function
+**Prerequisites:** A-01 (pgvector extension), RQ-019
+
+```markdown
+## Prerequisites Gate Check
+
+| Prerequisite | Type | Required | Actual | Clear? |
+|--------------|------|----------|--------|--------|
+| A-01 | Task | ✅ COMPLETE | 🔴 NOT STARTED | ❌ |
+| RQ-019 | RQ | ✅ COMPLETE | ✅ COMPLETE | ✅ |
+
+**Gate Status:** ❌ BLOCKED — A-01 (Enable pgvector) must complete first
+```
+
+**Action:** Do NOT proceed with B-01. Either:
+1. Execute A-01 first, OR
+2. Select a different task that passes gate check
+
+---
+
 ## Enforcement
 
 These protocols are **MANDATORY**. AI agents that skip these protocols will:
@@ -1381,6 +1485,7 @@ These protocols are **MANDATORY**. AI agents that skip these protocols will:
 
 | Date | Author | Changes |
 |------|--------|---------|
+| **11 Jan 2026** | Claude (Opus 4.5) | Added Protocol 13 (Prerequisites Gate Check); Added RQ-040 (Implementation Prompt Engineering) |
 | **11 Jan 2026** | Claude (Opus 4.5) | Added Protocols 10 (Bias Analysis), 11 (Sub-RQ Creation), 12 (Decision Deferral); Enhanced Session Exit Protocol v2 with Tier 1.5a-d and Tier 3 Verification Checkpoint; Added Cross-File Consistency Checklist |
 | 10 Jan 2026 | Claude (Opus 4.5) | Updated Protocol 2 (Context-Adaptive Development) per RQ-008/RQ-009 |
 | 06 Jan 2026 | Claude (Opus 4.5) | Initial 9-protocol structure; Added Protocol 9 (External Research Reconciliation) |

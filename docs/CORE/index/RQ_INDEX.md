@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 11 January 2026 (RQ-039 + 7 sub-RQs added for token economy research)
+> **Last Updated:** 11 January 2026 (RQ-040 added for Implementation Prompt Engineering)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -66,6 +66,7 @@
 | **RQ-039e** | ↳ Crisis Bypass Threshold Validation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039f** | ↳ Premium Token Allocation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039g** | ↳ Reflection Quality Thresholds | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-040** | Implementation Prompt Engineering for AI Agents | 🔴 NEEDS RESEARCH | — | — |
 
 ---
 
@@ -73,12 +74,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 39 |
+| **Total RQs (Main)** | 40 |
 | **Total Sub-RQs** | 7 (RQ-039a→g) |
-| **✅ COMPLETE** | 31 (79%) |
-| **🔴 NEEDS RESEARCH** | 8 main + 7 sub (15 items) |
+| **✅ COMPLETE** | 31 (78%) |
+| **🔴 NEEDS RESEARCH** | 9 main + 7 sub (16 items) |
 
-> **Note:** RQ-039 added 11 Jan 2026 with 7 sub-questions for token economy research
+> **Note:** RQ-040 added 11 Jan 2026 for Implementation Prompt Engineering
 
 ---
 
@@ -108,7 +109,8 @@ FOUNDATIONAL (No dependencies):
 ├── RQ-035 (Sensitivity Detection) 🔴  ← NEW (blocks PD-103)
 ├── RQ-037 (Holy Trinity Validation) ✅  ← COMPLETE (unblocks PD-003)
 │   └── RQ-034 (Sherlock Architecture) 🔴  ← UNBLOCKED by RQ-037
-└── RQ-038 (JITAI Component Allocation) 🔴  ← NEW (blocks PD-102)
+├── RQ-038 (JITAI Component Allocation) 🔴
+└── RQ-040 (Implementation Prompt Engineering) 🔴  ← NEW (enables IP governance)
 
 PSYOS ARCHITECTURE (CD-015):
 ├── RQ-012 (Fractal Trinity) ✅
