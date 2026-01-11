@@ -260,7 +260,7 @@ RQ-018 (Airlock/Priming) ✅ ───┴──→ Phase E = Full psyOS Experien
 
 **Research Status (Updated 11 Jan 2026):**
 
-**Overall Progress:** 31/39 RQs Complete (79%) + 7 sub-RQs pending
+**Overall Progress:** 31/40 RQs Complete (78%) + 7 sub-RQs pending + 1 DEFERRED
 
 | Category | RQs | Status | Key Deliverables |
 |----------|-----|--------|------------------|
@@ -268,6 +268,7 @@ RQ-018 (Airlock/Priming) ✅ ───┴──→ Phase E = Full psyOS Experien
 | **psyOS Core** | RQ-012→022 | ✅ COMPLETE | Fractal Trinity, Council AI, Treaties, Airlock |
 | **Gamification** | RQ-025, 033, 037 | ✅ COMPLETE | Council Seals, Resilient Streak, Shadow Cabinet |
 | **Remaining** | 8 main + 7 sub | 🔴 NEEDS RESEARCH | See below (includes RQ-039 Token Economy) |
+| **Deferred** | RQ-040 | 🟡 DEFERRED | Implementation Prompt Engineering (deferred per red team) |
 
 **Remaining Research Queue:**
 | RQ | Topic | Blocking | Priority |
@@ -284,7 +285,7 @@ RQ-018 (Airlock/Priming) ✅ ───┴──→ Phase E = Full psyOS Experien
 **Decisions Now READY (Unblocked by Research):**
 - 🟢 **PD-002** (Streaks vs Rolling Consistency) — RQ-033 complete: Resilient Streak recommended
 - 🟢 **PD-003** (Holy Trinity Validity) — RQ-037 complete: Shadow Cabinet display layer validated
-- 🟢 **PD-119** (Summon Token Economy) — RQ-025 complete: Council Seals (1/week, 3 cap)
+- 🟡 **PD-119** (Summon Token Economy) — DEFERRED pending RQ-039 research (7 sub-RQs)
 - 🟢 **PD-105** (Unified AI Coaching) — RQ-005/006/007 complete
 - 🟢 **PD-107** (Proactive Guidance System) — RQ-005/006/007 complete
 

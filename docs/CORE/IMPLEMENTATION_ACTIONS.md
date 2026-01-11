@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 11 January 2026 (RQ-039 Token Economy Architecture created with 7 sub-RQs)
+> **Last Updated:** 11 January 2026 (Reconciled: 13 protocols, 116 tasks, RQ-040 DEFERRED)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -118,7 +118,7 @@ QUICK CHECK:
 
 DEEP DIVE:
 → PRODUCT_DECISIONS.md: Full decision rationale
-→ RESEARCH_QUESTIONS.md: Master Implementation Tracker (77 tasks)
+→ RESEARCH_QUESTIONS.md: Master Implementation Tracker (116 tasks)
 → IMPACT_ANALYSIS.md: Cascade effects of recent decisions
 ```
 
@@ -147,7 +147,7 @@ docs/
 │   │   (Task quick status + cross-references)                 │
 │   │                                                          │
 │   ├── RESEARCH_QUESTIONS.md ← MASTER TASK TRACKER            │
-│   │   (77 tasks across 6 phases)                             │
+│   │   (116 tasks across 8 phases A-H)                        │
 │   │   Updates: Protocol 8, Protocol 9                        │
 │   │                                                          │
 │   ├── PRODUCT_DECISIONS.md ← Decision rationale              │
@@ -156,9 +156,10 @@ docs/
 │   ├── IMPACT_ANALYSIS.md ← Cascade tracking ONLY             │
 │   │   (Does NOT store tasks - references them)               │
 │   │                                                          │
-│   ├── AI_AGENT_PROTOCOL.md ← 12 mandatory protocols          │
+│   ├── AI_AGENT_PROTOCOL.md ← 13 mandatory protocols          │
 │   │   Protocols 1-9: Operational                             │
 │   │   Protocols 10-12: Meta-cognitive (Bias, Sub-RQ, Defer)  │
+│   │   Protocol 13: Gate Check (Prerequisites verification)   │
 │   │                                                          │
 │   ├── DEEP_THINK_PROMPT_GUIDANCE.md ← Prompt quality         │
 │   │   (For external research agent prompts)                  │

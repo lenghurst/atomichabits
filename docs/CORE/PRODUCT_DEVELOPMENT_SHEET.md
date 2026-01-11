@@ -11,9 +11,9 @@
 | Category | Complete | Pending | Status |
 |----------|----------|---------|--------|
 | **CDs** (Confirmed Decisions) | 18/18 | 0 | ✅ 100% |
-| **RQs** (Research Questions) | 31/39 | 8 + 7 sub | 🟢 79% |
-| **PDs** (Product Decisions) | 15/31 | 16 | 🟡 48% |
-| **Tasks** (Implementation) | 4/124 | 120 | 🟡 3% |
+| **RQs** (Research Questions) | 31/40 | 8 + 7 sub + 1 deferred | 🟢 78% |
+| **PDs** (Product Decisions) | 15/32 | 17 | 🟡 47% |
+| **Tasks** (Implementation) | 0/116 | 116 | 🔴 0% |
 
 **Critical Blocker:** Phase A schema (`identity_facets`, `identity_topology`) DOES NOT EXIST.
 
@@ -82,6 +82,7 @@ All 18 CDs are confirmed. These CANNOT change without explicit human approval.
 | **RQ-036** | Chamber Visual Design | MEDIUM | RQ-016 ✅ | UX/Polish |
 | **RQ-038** | JITAI Component Allocation | MEDIUM | None | Engineering Process |
 | **RQ-039** | Token Economy Architecture | **CRITICAL** | RQ-025 ✅ | Privacy/Economy |
+| **RQ-040** | Implementation Prompt Engineering | 🟡 DEFERRED | None | Engineering Process |
 
 **RQ-039 Sub-Questions (7):**
 | Sub-RQ | Question | Priority |
@@ -110,7 +111,7 @@ All 18 CDs are confirmed. These CANNOT change without explicit human approval.
 | **Privacy/Economy** | RQ-010, RQ-023, RQ-027, RQ-035 | LOW-MEDIUM — Post-launch |
 | **Engineering** | RQ-038 | MEDIUM — JITAI allocation |
 
-**Net Effect:** 31/39 (79%) main RQs COMPLETE. 8 main + 7 sub-RQs remain. HIGH priority: RQ-039 (Token Economy), RQ-034 (Sherlock).
+**Net Effect:** 31/40 (78%) main RQs COMPLETE. 8 NEEDS RESEARCH + 7 sub-RQs + 1 DEFERRED (RQ-040). HIGH priority: RQ-039 (Token Economy), RQ-034 (Sherlock).
 
 ---
 
