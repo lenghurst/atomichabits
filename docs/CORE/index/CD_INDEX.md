@@ -1,7 +1,7 @@
 # Confirmed Decisions Index
 
 > **Purpose:** Quick reference table for all Confirmed Decisions
-> **Last Updated:** 06 January 2026
+> **Last Updated:** 11 January 2026 (No CD changes; timestamp sync for consistency)
 > **Full Details:** See `archive/CD_ARCHIVE_Q1_2026.md` for rationale
 
 ---

@@ -1,7 +1,7 @@
 # AI_CONTEXT.md — The Pact
 
 > **Last Updated:** 11 January 2026
-> **Current Phase:** psyOS Full Implementation (Research 82% Complete)
+> **Current Phase:** psyOS Full Implementation (Research 79% Complete)
 > **Identity:** The Pact
 > **Domain:** thepact.co
 > **Core Concept:** Identity Evidence Engine
@@ -15,14 +15,14 @@ Before implementing features related to archetypes, JITAI, or behavioral segment
 
 ### Current Research Status
 
-**Research Progress:** 31/38 RQs Complete (82%)
+**Research Progress:** 31/39 RQs Complete (79%) + 7 sub-RQs pending
 
 | Category | Status | Key Items |
 |----------|--------|-----------|
 | Foundation (RQ-001→009) | ✅ COMPLETE | Archetypes, Recommendations, Roadmap |
 | psyOS Core (RQ-012→022) | ✅ COMPLETE | Fractal Trinity, Council AI, Treaties |
 | Gamification (RQ-025, 033, 037) | ✅ COMPLETE | Council Seals, Resilient Streak, Shadow Cabinet |
-| Remaining Research | 🔴 7 items | RQ-010, 023, 026, 027, 034, 035, 036, 038 |
+| Remaining Research | 🔴 8 main + 7 sub | RQ-010, 023, 026, 027, 034, 035, 036, 038, **RQ-039** (+7 sub-RQs) |
 
 **Recent Completions (Session 19 — 10-11 Jan 2026):**
 - RQ-037: Holy Trinity → Shadow Cabinet (display alias layer validated)

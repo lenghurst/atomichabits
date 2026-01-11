@@ -257,14 +257,14 @@ RQ-018 (Airlock/Priming) ✅ ───┴──→ Phase E = Full psyOS Experien
 
 **Research Status (Updated 11 Jan 2026):**
 
-**Overall Progress:** 31/38 RQs Complete (82%)
+**Overall Progress:** 31/39 RQs Complete (79%) + 7 sub-RQs pending
 
 | Category | RQs | Status | Key Deliverables |
 |----------|-----|--------|------------------|
 | **Foundation** | RQ-001→009 | ✅ COMPLETE | Archetypes, Recommendations, Roadmap |
 | **psyOS Core** | RQ-012→022 | ✅ COMPLETE | Fractal Trinity, Council AI, Treaties, Airlock |
 | **Gamification** | RQ-025, 033, 037 | ✅ COMPLETE | Council Seals, Resilient Streak, Shadow Cabinet |
-| **Remaining** | 7 items | 🔴 NEEDS RESEARCH | See below |
+| **Remaining** | 8 main + 7 sub | 🔴 NEEDS RESEARCH | See below (includes RQ-039 Token Economy) |
 
 **Remaining Research Queue:**
 | RQ | Topic | Blocking | Priority |
