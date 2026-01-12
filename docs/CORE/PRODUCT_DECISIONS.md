@@ -1,4 +1,30 @@
-# PRODUCT_DECISIONS.md — Product Philosophy & Pending Decisions
+# PRODUCT_DECISIONS.md — ⚠️ DEPRECATED
+
+> **⚠️ DEPRECATED:** This file has been migrated to domain-specific files.
+> **Migration Date:** 12 January 2026
+> **Reason:** Token limit exceeded (31k tokens); "lost in the middle" effect
+>
+> ## New Location
+>
+> See `decisions/MANIFEST.md` for loading rules and domain mapping:
+>
+> | Domain | File | Load When |
+> |--------|------|-----------|
+> | **CORE** | `decisions/PD_CORE.md` | Always (first) |
+> | **WITNESS** | `decisions/PD_WITNESS.md` | Witness features |
+> | **JITAI** | `decisions/PD_JITAI.md` | Intelligence layer |
+> | **IDENTITY** | `decisions/PD_IDENTITY.md` | Identity Coach |
+> | **UX** | `decisions/PD_UX.md` | Screens/Flows |
+>
+> **Quick Reference:** `index/PD_INDEX.md` (includes domain column)
+
+---
+
+# ARCHIVED CONTENT BELOW (Reference Only)
+
+---
+
+## Original Header (Deprecated)
 
 > **Last Updated:** 06 January 2026 (Archiving strategy implemented)
 > **Purpose:** Central source of truth for product decisions and open questions
