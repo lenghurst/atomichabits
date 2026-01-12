@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 12 January 2026 (RQ Audit: CRITICAL gaps identified in RESEARCH_QUESTIONS.md)
+> **Last Updated:** 12 January 2026 (RQ-039 to RQ-046 REMEDIATED + Protocol 8.5 created)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -39,9 +39,9 @@ This prevents:
 | **Session ID** | `claude/sync-main-audit-dataflows-0ieag` |
 | **Date** | 12 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Parallel Session RQ Audit — CRITICAL gaps identified |
+| **Focus** | Parallel Session RQ Audit + REMEDIATION + Prevention |
 | **Tier 3 Verification** | ✅ Complete |
-| **Mismatches Found** | 8 main RQs + 30 sub-RQs missing from RESEARCH_QUESTIONS.md |
+| **Gaps Found** | 8 main RQs + 30 sub-RQs were missing — **NOW FIXED** |
 
 > **Note on Tier 3 Verification:** This is **detection-based** (audit trail), not **prevention-based** (blocking).
 > If you skip verification, the next agent will see "❌ Skipped" and can investigate.
@@ -49,46 +49,54 @@ This prevents:
 
 ### What Was Accomplished (This Latest Session)
 
-**24. Parallel Session RQ Audit — CRITICAL Gaps Identified**
+**24. Parallel Session RQ Audit + REMEDIATION + Prevention**
 
-**Purpose:** User requested exhaustive audit of RQs across parallel sessions to ensure no missed research questions.
+**Purpose:** User requested exhaustive audit of RQs across parallel sessions, remediation of gaps, and prevention mechanism.
 
-**🔴 CRITICAL FINDING: 8 main RQs + 30 sub-RQs missing from RESEARCH_QUESTIONS.md**
+**✅ REMEDIATION COMPLETE**
 
-| RQ | Title | In RQ_INDEX | In RESEARCH_QUESTIONS | Impact |
-|----|-------|-------------|----------------------|--------|
-| **RQ-039** | Token Economy Architecture | ✅ | ❌ MISSING | HIGH |
-| **RQ-040** | Viral Witness Growth Strategy | ✅ | ❌ MISSING | **CRITICAL** |
-| **RQ-041** | Witness App Access Tiers | ✅ | ❌ MISSING | HIGH |
-| **RQ-042** | Invitation Variant Performance | ✅ | ❌ MISSING | HIGH |
-| **RQ-043** | Ceremony Skip Rate | ✅ | ❌ MISSING | MEDIUM |
-| **RQ-044** | Stakes vs Intrinsic Motivation | ✅ | ❌ MISSING | HIGH |
-| **RQ-045** | Witness Data Capture | ✅ | ❌ MISSING | HIGH |
-| **RQ-046** | Wearable Market Penetration | ✅ | ❌ MISSING | MEDIUM |
+| RQ | Title | Status |
+|----|-------|--------|
+| **RQ-039** | Token Economy Architecture + 7 sub-RQs | ✅ Added to RESEARCH_QUESTIONS.md |
+| **RQ-040** | Viral Witness Growth Strategy + 7 sub-RQs | ✅ Added |
+| **RQ-041** | Witness App Access Tiers + 3 sub-RQs | ✅ Added |
+| **RQ-042** | Invitation Variant Performance + 4 sub-RQs | ✅ Added |
+| **RQ-043** | Ceremony Skip Rate + 2 sub-RQs | ✅ Added |
+| **RQ-044** | Stakes vs Intrinsic Motivation + 4 sub-RQs | ✅ Added |
+| **RQ-045** | Witness Data Capture + 2 sub-RQs | ✅ Added |
+| **RQ-046** | Wearable Market Penetration + 4 sub-RQs | ✅ Added |
 
-**Dataflows Impacted:**
+**Prevention Mechanism Created:**
 
-1. **Research → Implementation Flow** — Tasks cannot be extracted from RQs that don't exist in canonical source
-2. **PD → RQ Blocking** — PD-130, PD-131, PD-133, PD-134 reference RQs agents cannot find
-3. **Agent Context Loading** — Incomplete RQ definitions cause agent confusion
+| Protocol | Purpose |
+|----------|---------|
+| **Protocol 8.5: RQ Consistency Enforcement** | Mandates RQs be added to BOTH RQ_INDEX.md AND RESEARCH_QUESTIONS.md |
 
-**Root Cause:**
+**Key Requirements (Protocol 8.5):**
+1. Add FULL definition to RESEARCH_QUESTIONS.md FIRST
+2. Add entry to RQ_INDEX.md SECOND
+3. Verify both files before session end
+4. Recovery procedure if gaps discovered
+
+**Root Cause Analysis:**
 - Parallel sessions added RQs to `RQ_INDEX.md` and domain files
 - BUT did not add full definitions to `RESEARCH_QUESTIONS.md` (canonical source)
-- Protocol 8 task extraction was NEVER performed for these RQs
-- ~30-50 implementation tasks are MISSING from Master Implementation Tracker
+- This broke the Research → Implementation dataflow
 
-**Remediation Required:**
-1. Add RQ-039 through RQ-046 full definitions to RESEARCH_QUESTIONS.md
-2. Run Protocol 8 task extraction for each
-3. Update Master Implementation Tracker with extracted tasks
+**Dataflows Now Restored:**
+1. ✅ Research → Implementation Flow — RQs now have full definitions for task extraction
+2. ✅ PD → RQ Blocking — PD-130, PD-131, PD-133, PD-134 can now find blocking RQ details
+3. ✅ Agent Context Loading — Agents can now find complete RQ definitions
 
-**Audit Document Created:**
-`docs/analysis/PARALLEL_SESSION_RQ_AUDIT_12JAN2026.md` — Full analysis with remediation plan
+**Next Steps:**
+- Protocol 8 task extraction for RQ-039 through RQ-046 (PENDING — ~30-50 tasks to extract)
 
 **Files Changed:**
 | File | Action |
 |------|--------|
+| `docs/CORE/RESEARCH_QUESTIONS.md` | Added RQ-039 to RQ-046 full definitions (~400 lines) |
+| `docs/CORE/AI_AGENT_PROTOCOL.md` | Added Protocol 8.5 (RQ Consistency Enforcement) |
+| `docs/CORE/IMPLEMENTATION_ACTIONS.md` | Added remediation notice |
 | `docs/analysis/PARALLEL_SESSION_RQ_AUDIT_12JAN2026.md` | Created — Full audit |
 | `AI_HANDOVER.md` | Updated — This session |
 

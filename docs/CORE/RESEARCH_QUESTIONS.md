@@ -3684,6 +3684,458 @@ ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
 
 ---
 
+### RQ-039: Token Economy Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | What token earning mechanism maximizes engagement without undermining intrinsic motivation? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core monetization and engagement strategy |
+| **Blocking** | PD-119 (Summon Token Economy) |
+| **Created** | 11 January 2026 |
+| **Source** | `docs/analysis/RQ039_TOKEN_ECONOMY_DEEP_ANALYSIS.md` |
+
+**Context:**
+- Tokens gate Council summons (therapeutic feature)
+- Premium users get token boost, free users earn through reflection
+- 7 SME domains identified: Behavioral Economics, Game Design, Subscription Economics, Self-Determination Theory, Mental Health Ethics, Habit Formation, Mobile Product
+- 8 biases identified in original recommendation that need validation
+
+**SME Domain Relevance:**
+| Domain | Relevance | Key Question |
+|--------|-----------|--------------|
+| Behavioral Economics | CRITICAL | Does earning mechanism crowd out intrinsic motivation? |
+| Self-Determination Theory | CRITICAL | Does mandated reflection feel controlling or supportive? |
+| Mental Health Ethics | HIGH | Is any gate on mental health support ethical? |
+| Subscription Economics | HIGH | What drives free-to-paid conversion? |
+| Game Design | MEDIUM | What's the "feel" of earning? |
+| Habit Formation | MEDIUM | Does weekly cadence match habit science? |
+| Mobile Product | MEDIUM | Does scarcity drive retention or churn? |
+
+**Sub-Questions:**
+
+#### RQ-039a: Earning Mechanism & Intrinsic Motivation
+| Field | Value |
+|-------|-------|
+| **Question** | Does token earning through reflection undermine intrinsic motivation per overjustification effect? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | CRITICAL — Foundational assumption |
+| **Scope** | Literature review + competitor analysis |
+
+#### RQ-039b: Optimal Reflection Cadence
+| Field | Value |
+|-------|-------|
+| **Question** | Is weekly reflection the optimal cadence, or should it be daily micro / monthly deep? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH |
+| **Scope** | Habit formation science (Wendy Wood), user preference data |
+
+#### RQ-039c: Single vs Multiple Earning Paths
+| Field | Value |
+|-------|-------|
+| **Question** | Should users have ONE earning path (reflection) or multiple options? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Scope** | SDT autonomy research, game design patterns |
+
+#### RQ-039d: Token Cap vs Decay Alternatives
+| Field | Value |
+|-------|-------|
+| **Question** | Why cap at 3 tokens? Are there better alternatives (decay, dynamic cap)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Scope** | Subscription economics, scarcity psychology |
+
+#### RQ-039e: Crisis Bypass Threshold Validation
+| Field | Value |
+|-------|-------|
+| **Question** | Is 0.7 tension threshold the right crisis bypass point? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Mental health ethics |
+| **Scope** | Clinical threshold research, ethics review |
+
+#### RQ-039f: Premium Token Allocation
+| Field | Value |
+|-------|-------|
+| **Question** | What premium token allocation optimizes conversion without feeling exploitative? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH |
+| **Scope** | Subscription economics, A/B test design |
+
+#### RQ-039g: Reflection Quality Thresholds
+| Field | Value |
+|-------|-------|
+| **Question** | How do we ensure reflection quality (50+ char minimum may produce garbage)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Scope** | NLP quality detection, user behavior patterns |
+
+---
+
+### RQ-040: Viral Witness Invitation Growth Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | How do we design witness invitation mechanics to achieve viral coefficient K > 1? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **STRATEGIC** — Foundational growth architecture |
+| **Blocking** | Entire Witness growth strategy |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md`, `docs/prompts/DEEP_THINK_PROMPT_VIRAL_WITNESS_GROWTH_RQ040.md` |
+
+**Context:**
+- "THE PACT" was named for witness-based accountability
+- Current viral coefficient K ≈ 0.24 (far below K > 1 threshold)
+- Current metrics: 42% add supporter, 22% witness-to-creator conversion, 1.1 avg witnesses
+- Goal: Design self-reinforcing growth engine where each user creates value that attracts more users
+
+**The Prize:**
+- K = 1.0: Growth becomes self-sustaining, CAC approaches zero
+- K = 1.5: Exponential growth unlocked (100 → 150 → 225 → 338 → 506 in 4 cycles)
+
+**Sub-Questions (Process in Order):**
+
+#### RQ-040a: Witness Value Proposition & Experience
+| Field | Value |
+|-------|-------|
+| **Question** | What value do witnesses get from the app, and how do we maximize it? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | CRITICAL — FIRST in dependency chain |
+| **Scope** | Witness journey mapping, value exchange analysis |
+
+#### RQ-040b: Invitation Channel Optimization
+| Field | Value |
+|-------|-------|
+| **Question** | Which invitation channels (SMS, WhatsApp, email, share_sheet) achieve highest conversion? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH |
+| **Scope** | Channel performance benchmarks, A/B test design |
+
+#### RQ-040c: Witness-to-Creator Conversion Triggers
+| Field | Value |
+|-------|-------|
+| **Question** | What triggers cause witnesses to become creators themselves? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | CRITICAL — Core to viral loop |
+| **Scope** | Behavioral psychology, conversion funnel analysis |
+
+#### RQ-040d: Multi-Witness Network Effects
+| Field | Value |
+|-------|-------|
+| **Question** | How do network effects amplify when creators have multiple witnesses? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH |
+| **Scope** | Network topology, social graph analysis |
+
+#### RQ-040e: Viral Coefficient Modeling & Targets
+| Field | Value |
+|-------|-------|
+| **Question** | What quantitative K-factor targets are realistic, and how do we model them? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH |
+| **Scope** | Growth modeling, cohort analysis design |
+
+#### RQ-040f: Witness Retention Without Conversion
+| Field | Value |
+|-------|-------|
+| **Question** | How do we keep witnesses engaged even if they don't convert to creators? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Scope** | Engagement mechanics, notification strategy |
+
+#### RQ-040g: High-Value User Quality Validation
+| Field | Value |
+|-------|-------|
+| **Question** | Does witness-sourced acquisition actually produce higher-quality users? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Validates strategic hypothesis |
+| **Scope** | Cohort comparison, LTV analysis design |
+
+---
+
+### RQ-041: Witness App Access Tier Progression
+
+| Field | Value |
+|-------|-------|
+| **Question** | What is the optimal witness access tier progression for maximizing conversion while minimizing friction? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — UX architecture decision |
+| **Blocking** | PD-130 (Witness App Access Model) |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md` |
+
+**Context:**
+- Options: Notification-only, Web PWA, Limited App Access, Full App Preview
+- Recommended model: Tiered access (PWA Days 0-7 → App Invitation Day 7+ → Conversion Prompt at milestone)
+- Trade-off: Install friction vs data capture vs engagement surface
+
+**JITAI Considerations:**
+| Principle | Implication |
+|-----------|-------------|
+| Context Capture | More access = more data = better personalization |
+| Timing Optimization | Need engagement signals to time conversion prompts |
+| Burden Calculation | Install friction is HIGH burden — may exceed value for early witnesses |
+| Adaptive Intervention | Can't adapt what we can't measure |
+
+**Sub-Questions:**
+
+#### RQ-041a: Engagement Threshold for App Install
+| Field | Value |
+|-------|-------|
+| **Question** | At what engagement threshold should witnesses be prompted to install the app? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Behavioral trigger analysis, threshold optimization |
+
+#### RQ-041b: PWA-First vs App-First Conversion
+| Field | Value |
+|-------|-------|
+| **Question** | Does PWA-first reduce or increase ultimate conversion vs app-first? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | A/B test design, funnel analysis |
+
+#### RQ-041c: Data Capture Loss PWA vs Native
+| Field | Value |
+|-------|-------|
+| **Question** | What's the data capture loss from PWA vs native app for witness behavior? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Technical capability comparison, JITAI input requirements |
+
+---
+
+### RQ-042: Invitation Variant Performance
+
+| Field | Value |
+|-------|-------|
+| **Question** | Which invitation message variant achieves highest open rate by relationship type? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Growth optimization |
+| **Blocking** | PD-131 (Invitation Message Strategy) |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md` |
+
+**Confirmed Variants:**
+| Variant | Psychological Lever | Underlying Belief |
+|---------|---------------------|-------------------|
+| A: Vulnerability | Authenticity, low-ask | "Vulnerability creates connection" |
+| B: The Contract | Ceremony, commitment device | "Formal contracts increase perceived stakes" |
+| C: The Story | Shared history, narrative | "Referencing past conversations increases trust" |
+| D: The Confidant | Exclusive access, intimacy | "Framing as privilege increases engagement" |
+
+**Sub-Questions:**
+
+#### RQ-042a: Contract Framing Burden Perception
+| Field | Value |
+|-------|-------|
+| **Question** | Does the "Contract" framing increase or decrease perceived burden for witnesses? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | User research, A/B testing |
+
+#### RQ-042b: Creator State Effect on Message Variant
+| Field | Value |
+|-------|-------|
+| **Question** | How does creator's current streak/state affect optimal message variant? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | JITAI context correlation analysis |
+
+#### RQ-042c: Optimal Message Length by Channel
+| Field | Value |
+|-------|-------|
+| **Question** | What is the optimal message length for each channel (SMS vs WhatsApp vs email)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Channel-specific optimization, industry benchmarks |
+
+#### RQ-042d: Archetype Name Inclusion Impact
+| Field | Value |
+|-------|-------|
+| **Question** | Does including the archetype name (e.g., "The Writer") increase or decrease click-through? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | A/B test design, copy optimization |
+
+---
+
+### RQ-043: Witness Invitation Skip Rate at Ceremony
+
+| Field | Value |
+|-------|-------|
+| **Question** | What is the witness invitation skip rate at Commitment Ceremony, and what predicts skipping? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Ceremony optimization |
+| **Blocking** | None (PD-132 already CONFIRMED) |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md` |
+
+**Context:**
+- Commitment Ceremony is the prime moment for witness invitation (peak commitment)
+- Skip rate impacts entire witness growth funnel
+- Need to understand predictors to reduce skip rate
+
+**Sub-Questions:**
+
+#### RQ-043a: "Invite Later" Option Impact
+| Field | Value |
+|-------|-------|
+| **Question** | Does offering "Invite Later" option increase or decrease ultimate invitation rate? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Behavioral economics, friction analysis |
+
+#### RQ-043b: Optimal Witness Count Prompt
+| Field | Value |
+|-------|-------|
+| **Question** | What is the optimal number of witnesses to prompt for at ceremony (1 vs 3 vs "up to 3")? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Choice architecture, anchoring effects |
+
+---
+
+### RQ-044: Stakes Mechanism vs Intrinsic Motivation
+
+| Field | Value |
+|-------|-------|
+| **Question** | What stakes mechanism achieves highest habit completion rate without damaging intrinsic motivation? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core accountability design |
+| **Blocking** | PD-133 (Witness Stakes & Punishment) |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md` |
+
+**Stakes Framework Options:**
+| Option | Mechanism | Risk |
+|--------|-----------|------|
+| A: Visibility Only | Witness sees streaks/failures | Can feel like surveillance |
+| B: Soft Stakes | Personal stakes, witness observes | Relies on honor system |
+| C: Escrow Stakes | Real money held, released on failure | High friction, high commitment |
+| D: Social Stakes | Failure triggers auto-post | Highest stakes, relationship risk |
+| E: Witness Challenges | Witnesses set mini-challenges | Reciprocal engagement, complexity |
+
+**Underlying Beliefs to Query:**
+- "Stakes increase commitment" — But: Does external punishment undermine intrinsic motivation?
+- "Public accountability works" — But: Does shame damage relationships?
+- "Witnesses want to help" — But: Are witnesses willing to be "enforcers"?
+- "Financial stakes are effective" — But: Does money attract different user segment?
+
+**Sub-Questions:**
+
+#### RQ-044a: Witness-Visible Failure Retention Impact
+| Field | Value |
+|-------|-------|
+| **Question** | Does witness-visible failure increase or decrease long-term retention? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Retention analysis, shame psychology |
+
+#### RQ-044b: Financial Escrow Adoption Rate
+| Field | Value |
+|-------|-------|
+| **Question** | What percentage of users would use financial escrow stakes? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | User research, StickK/Beeminder benchmarks |
+
+#### RQ-044c: Social Stakes Relationship Damage Risk
+| Field | Value |
+|-------|-------|
+| **Question** | Do social stakes (auto-post failure) damage witness relationships? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Relationship psychology, user research |
+
+#### RQ-044d: Witness Forgiveness Grace Period Value
+| Field | Value |
+|-------|-------|
+| **Question** | Should witnesses have power to "forgive" a failure (grace period)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Behavioral economics, game mechanics |
+
+---
+
+### RQ-045: Minimum Data Capture for Witness Insights
+
+| Field | Value |
+|-------|-------|
+| **Question** | What is the minimum data capture required to generate statistically significant witness insights? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — JITAI intelligence foundation |
+| **Blocking** | PD-134 (JITAI Witness Data Schema) |
+| **Created** | 12 January 2026 |
+| **Source** | `docs/CORE/WITNESS_INTELLIGENCE_LAYER.md` |
+
+**Context:**
+- WIL needs granular data to generate differentiated insights
+- Must balance data capture depth vs witness privacy/trust
+- Schema design affects all downstream analysis
+
+**Required Insight Categories:**
+1. Invitation optimization (variant performance)
+2. Timing optimization (notification timing)
+3. Conversion triggers (what causes witness → creator)
+4. Role effectiveness (confidant vs cheerleader vs mentor)
+5. Stakes effectiveness (which mechanics work)
+
+**Sub-Questions:**
+
+#### RQ-045a: Engagement Signals Predicting Conversion
+| Field | Value |
+|-------|-------|
+| **Question** | What engagement signals best predict witness conversion? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Predictive modeling, feature engineering |
+
+#### RQ-045b: Data Capture vs Privacy Balance
+| Field | Value |
+|-------|-------|
+| **Question** | How do we balance data capture depth vs witness privacy/trust? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Privacy research, trust building, GDPR compliance |
+
+---
+
+### RQ-046: Wearable Market Penetration Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | What wearable platform strategy optimizes market penetration while respecting CD-017 (Android-First)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Future growth vector |
+| **Blocking** | CD-017 (Android-First Development) |
+| **Created** | 12 January 2026 |
+
+**Context:**
+- CD-017 mandates Android-first, but wearables expand touchpoints
+- JITAI benefits from wearable sensor data (heart rate, activity, sleep)
+- Platform fragmentation: Wear OS, Galaxy Watch, Fitbit, Garmin, etc.
+- Must not compromise core Android-first mandate
+
+**Sub-Questions:**
+
+#### RQ-046a: Platform Prioritization
+| Field | Value |
+|-------|-------|
+| **Question** | Which wearable platform(s) should be prioritized (Wear OS, Galaxy Watch, Fitbit, etc.)? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Market share analysis, API capability comparison |
+
+#### RQ-046b: Wearable App Discovery Mechanics
+| Field | Value |
+|-------|-------|
+| **Question** | How do users discover and install wearable companion apps? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Distribution mechanics, install funnel |
+
+#### RQ-046c: Wearable Permission/API Access by Platform
+| Field | Value |
+|-------|-------|
+| **Question** | What permissions and APIs are available on each wearable platform? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Scope** | Technical capability mapping |
+
+#### RQ-046d: JITAI Wearable Sensor Integration
+| Field | Value |
+|-------|-------|
+| **Question** | How should wearable sensor data integrate with JITAI context snapshot? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — JITAI enhancement |
+| **Blocking** | RQ-038 (JITAI Component Allocation) |
+| **Scope** | Data schema design, real-time processing |
+
+---
+
 ### RQ-047: AI Orchestration Architecture Strategy
 
 | Field | Value |

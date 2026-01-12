@@ -1,9 +1,26 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 11 January 2026 (RQ-039 Token Economy Architecture created with 7 sub-RQs)
+> **Last Updated:** 12 January 2026 (RQ-039 to RQ-046 remediated in RESEARCH_QUESTIONS.md)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
+
+---
+
+## NOTICE: RQ Consistency Remediation (12 January 2026)
+
+**Issue Discovered:** Parallel sessions created RQ-039 through RQ-046 in `RQ_INDEX.md` but NOT in `RESEARCH_QUESTIONS.md`.
+
+**Remediation Complete:**
+- ✅ RQ-039 (Token Economy) + 7 sub-RQs added to RESEARCH_QUESTIONS.md
+- ✅ RQ-040 (Viral Witness Growth) + 7 sub-RQs added
+- ✅ RQ-041 through RQ-045 (Witness Intelligence) added with all sub-RQs
+- ✅ RQ-046 (Wearable Strategy) + 4 sub-RQs added
+- ✅ Protocol 8.5 (RQ Consistency Enforcement) created to prevent recurrence
+
+**Task Extraction Status:** RQ-039 to RQ-046 now have full definitions. Protocol 8 task extraction PENDING.
+
+**Reference:** `docs/analysis/PARALLEL_SESSION_RQ_AUDIT_12JAN2026.md`
 
 ---
 

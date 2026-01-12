@@ -771,7 +771,91 @@ F-01, F-02, ... (Identity Coach System)
 ❌ Add tasks without checking for duplicates
 ❌ Create tasks without source linkage
 ❌ Use free-form task IDs
+❌ Add RQ to RQ_INDEX.md without adding to RESEARCH_QUESTIONS.md (see Protocol 8.5)
 ```
+
+---
+
+## Protocol 8.5: RQ Consistency Enforcement (MANDATORY)
+
+> **Added:** 12 January 2026
+> **Reason:** Parallel sessions created 8 RQs (RQ-039 to RQ-046) that were added to RQ_INDEX.md but NOT to RESEARCH_QUESTIONS.md, breaking the Research → Implementation dataflow.
+
+### Trigger
+When creating ANY new Research Question (RQ).
+
+### Why This Protocol Exists
+RQs must exist in **TWO canonical locations** to enable proper task extraction:
+
+| Location | Purpose | What Happens If Missing |
+|----------|---------|------------------------|
+| `RQ_INDEX.md` | Quick reference, status tracking | Agents don't see research exists |
+| `RESEARCH_QUESTIONS.md` | **Full definition**, task extraction source | Tasks cannot be extracted, implementation blocked |
+
+**Without both:** The Research → Implementation dataflow breaks.
+
+### The Single Source of Truth Sync Rule
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    RQ CREATION CHECKLIST (MANDATORY)                          │
+│                                                                              │
+│  BEFORE creating a new RQ:                                                    │
+│  □ Check RQ_INDEX.md for next available number                               │
+│  □ Check RESEARCH_QUESTIONS.md to confirm number not used                    │
+│                                                                              │
+│  AFTER deciding on RQ content:                                               │
+│  □ Add FULL definition to RESEARCH_QUESTIONS.md FIRST                        │
+│     ├── Question, Status, Priority, Blocking fields                          │
+│     ├── Context section                                                      │
+│     ├── Sub-Questions (if Protocol 11 applies)                               │
+│     └── Code References (if applicable)                                      │
+│                                                                              │
+│  □ Add entry to RQ_INDEX.md SECOND                                           │
+│     ├── Main RQ row                                                          │
+│     └── Sub-RQ rows (if any)                                                 │
+│                                                                              │
+│  □ Update RQ_INDEX.md Statistics section                                     │
+│  □ Update RQ_INDEX.md Dependency Chain (if RQ has dependencies)              │
+│                                                                              │
+│  VERIFICATION:                                                               │
+│  □ grep "RQ-XXX" docs/CORE/RESEARCH_QUESTIONS.md → Should find definition    │
+│  □ grep "RQ-XXX" docs/CORE/index/RQ_INDEX.md → Should find entry             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Anti-Pattern (DO NOT)
+```
+❌ Add RQ to RQ_INDEX.md only (index without definition)
+❌ Add RQ to domain file only (e.g., WITNESS_INTELLIGENCE_LAYER.md) without RESEARCH_QUESTIONS.md
+❌ Create sub-RQs without parent RQ definition
+❌ Skip updating RQ_INDEX.md statistics
+```
+
+### Session Exit Verification
+
+Before ending ANY session that created new RQs, verify:
+
+```bash
+# Count RQs in both files (should match)
+grep -c "^### RQ-" docs/CORE/RESEARCH_QUESTIONS.md
+grep -c "^\| \*\*RQ-0[0-4][0-9]\*\*" docs/CORE/index/RQ_INDEX.md
+
+# If counts differ, investigate and fix before session end
+```
+
+### Recovery Procedure
+
+If you discover RQs exist in RQ_INDEX.md but NOT in RESEARCH_QUESTIONS.md:
+
+1. **STOP** current work
+2. **IDENTIFY** all missing RQ definitions
+3. **LOCATE** source of definitions (domain files, analysis docs, prompts)
+4. **ADD** full definitions to RESEARCH_QUESTIONS.md
+5. **RUN** Protocol 8 (Task Extraction) for each added RQ
+6. **DOCUMENT** the gap in AI_HANDOVER.md
+7. **RESUME** original work
 
 ---
 
