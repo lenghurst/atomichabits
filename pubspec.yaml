@@ -37,6 +37,10 @@ dependencies:
   
   # State management - Provider (simple and beginner-friendly)
   provider: 6.1.5+1
+
+  # P-06: Riverpod - Advanced state management for complex features
+  # Use for new features requiring: compile-time safety, testability, or scoped state
+  flutter_riverpod: ^2.6.1
   
   # Navigation - GoRouter (declarative routing)
   go_router: ^14.0.0
