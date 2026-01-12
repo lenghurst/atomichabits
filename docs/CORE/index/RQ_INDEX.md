@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 11 January 2026 (RQ-039 + 7 sub-RQs added for token economy research)
+> **Last Updated:** 12 January 2026 (RQ-040 + 5 sub-RQs added for AI orchestration architecture research)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -66,6 +66,12 @@
 | **RQ-039e** | ↳ Crisis Bypass Threshold Validation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039f** | ↳ Premium Token Allocation | 🔴 NEEDS RESEARCH | RQ-039 | — |
 | **RQ-039g** | ↳ Reflection Quality Thresholds | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-040** | AI Orchestration Architecture Strategy | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-040a** | ↳ MCP Formalization Requirements | 🔴 NEEDS RESEARCH | RQ-040 | — |
+| **RQ-040b** | ↳ A2A Protocol for Council AI | 🔴 NEEDS RESEARCH | RQ-040 | — |
+| **RQ-040c** | ↳ Kill Switch & Failover Enhancement | 🔴 NEEDS RESEARCH | RQ-040 | — |
+| **RQ-040d** | ↳ Protocol 9 Automation Feasibility | 🔴 NEEDS RESEARCH | RQ-040 | — |
+| **RQ-040e** | ↳ Migration Timing & Risk Assessment | 🔴 NEEDS RESEARCH | RQ-040 | — |
 
 ---
 
@@ -73,12 +79,12 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 39 |
-| **Total Sub-RQs** | 7 (RQ-039a→g) |
-| **✅ COMPLETE** | 31 (79%) |
-| **🔴 NEEDS RESEARCH** | 8 main + 7 sub (15 items) |
+| **Total RQs (Main)** | 40 |
+| **Total Sub-RQs** | 12 (RQ-039a→g, RQ-040a→e) |
+| **✅ COMPLETE** | 31 (78%) |
+| **🔴 NEEDS RESEARCH** | 9 main + 12 sub (21 items) |
 
-> **Note:** RQ-039 added 11 Jan 2026 with 7 sub-questions for token economy research
+> **Note:** RQ-040 added 12 Jan 2026 with 5 sub-questions for AI orchestration architecture research
 
 ---
 
@@ -136,6 +142,14 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   └── RQ-023 (Privacy Framework) 🔴
 │   └── RQ-020 (Treaty-JITAI) ✅
 └── RQ-026 (Sound Design) 🔴
+
+AI ORCHESTRATION ARCHITECTURE (CD-016):
+└── RQ-040 (AI Orchestration Strategy) 🔴  ← NEW (12 Jan 2026)
+    ├── RQ-040a (MCP Formalization) 🔴
+    ├── RQ-040b (A2A Protocol for Council AI) 🔴
+    ├── RQ-040c (Kill Switch Enhancement) 🔴
+    ├── RQ-040d (Protocol 9 Automation) 🔴
+    └── RQ-040e (Migration Timing) 🔴
 ```
 
 ---

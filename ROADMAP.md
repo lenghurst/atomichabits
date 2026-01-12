@@ -1,6 +1,6 @@
 # ROADMAP.md — The Pact
 
-> **Last Updated:** 11 January 2026 (Research 82% complete; RQ-037/033/025 gamification strategy integrated)
+> **Last Updated:** 12 January 2026 (RQ-040 added: AI Orchestration Architecture Strategy with 5 sub-RQs)
 > **Current Strategy:** psyOS Full Implementation at Launch (NOT phased per PD-114)
 > **Target Launch:** TBD (Full psyOS scope requires significant build)
 > **Identity:** Psychological Operating System (psyOS)
@@ -79,6 +79,7 @@ On 05 January 2026, the decision was made to pursue **psyOS (Psychological Opera
 - RQ-023 (Population Privacy) → Blocks PD-116
 - RQ-034 (Sherlock Architecture) → Blocks PD-101 (partially unblocked by RQ-037)
 - RQ-035/036/038 (Sensitivity, Chamber, JITAI Allocation) → Block various PDs
+- **RQ-040 (AI Orchestration Architecture)** → Informs future Council AI, Protocol 9 automation ← NEW 12 Jan 2026
 
 **See:** `docs/CORE/RESEARCH_QUESTIONS.md` for full list
 

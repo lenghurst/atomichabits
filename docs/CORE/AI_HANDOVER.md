@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 11 January 2026 (Protocols 10-12 codified, Session Exit Protocol v2 enhanced)
+> **Last Updated:** 12 January 2026 (RQ-040 AI Orchestration Architecture added with 5 sub-RQs)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,18 +36,71 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `claude/setup-pact-deep-think-TqSKg` (continued) |
-| **Date** | 11 January 2026 |
+| **Session ID** | `claude/review-docs-codebase-myuQ8` |
+| **Date** | 12 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Protocol Refinement — HIGH Confidence Validation |
+| **Focus** | Codebase Audit + MCP/SDK Tool Identification |
 | **Tier 3 Verification** | ✅ Complete |
-| **Mismatches Found** | None (all statistics consistent) |
-
-> **Note on Tier 3 Verification:** This is **detection-based** (audit trail), not **prevention-based** (blocking).
-> If you skip verification, the next agent will see "❌ Skipped" and can investigate.
-> Future automation (pre-commit hook) is tracked in PD-126.
+| **Mismatches Found** | None (all statistics updated correctly) |
 
 ### What Was Accomplished (This Latest Session)
+
+**22. AI Orchestration Architecture Audit & RQ-040 Creation**
+
+**Major Change: RQ-040 + 5 Sub-RQs Created**
+
+Comprehensive audit of Multi-AI Orchestration revealed:
+
+| Finding | Status | Notes |
+|---------|--------|-------|
+| DeepSeek wiring | ✅ FULLY WIRED | 5+ production flows, complete error handling, unit/integration tests |
+| Protocol 9 scope | ✅ CLARIFIED | For AI agent sessions only, not app runtime |
+| MCP/A2A standards | 🔴 NEEDS RESEARCH | Current architecture is functional but could be formalized |
+| Council AI | ❌ NOT BUILT | Documented but unimplemented |
+
+**New Research Questions Created:**
+
+| RQ | Title | Priority |
+|----|-------|----------|
+| **RQ-040** | AI Orchestration Architecture Strategy | MEDIUM |
+| RQ-040a | ↳ MCP Formalization Requirements | MEDIUM |
+| RQ-040b | ↳ A2A Protocol for Council AI | HIGH |
+| RQ-040c | ↳ Kill Switch & Failover Enhancement | MEDIUM |
+| RQ-040d | ↳ Protocol 9 Automation Feasibility | HIGH |
+| RQ-040e | ↳ Migration Timing & Risk Assessment | MEDIUM |
+
+**Key Insights:**
+1. **MCP vs A2A are complementary, not competing** — MCP for tool access, A2A for agent collaboration
+2. **Current architecture is sound** — No urgent need to migrate
+3. **Council AI maps to A2A** — Parliament of Selves concept aligns with A2A protocol vision
+4. **Protocol 9 automation is high-value** — RQ-040d specifically addresses this opportunity
+
+**Files Updated:**
+| File | Update |
+|------|--------|
+| `index/RQ_INDEX.md` | Added RQ-040 + 5 sub-RQs, updated statistics (40 main, 12 sub) |
+| `RESEARCH_QUESTIONS.md` | Added full RQ-040 specification with sub-questions |
+| `ROADMAP.md` | Updated timestamp, added RQ-040 to blocking research |
+| `AI_HANDOVER.md` | This session summary |
+
+**Recommendation Based on Analysis:**
+
+| Timeframe | Action |
+|-----------|--------|
+| Q1 2026 | Keep current architecture — it's functional |
+| Q2 2026 | Re-evaluate MCP dart_mcp stability |
+| Q3-Q4 2026 | Consider MCP if external integrations needed |
+| 2027+ | Monitor A2A for Council AI |
+
+**References Added:**
+- [MCP Specification 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25)
+- [Dart MCP Server Docs](https://docs.flutter.dev/ai/mcp-server)
+- [MCP vs A2A Guide](https://auth0.com/blog/mcp-vs-a2a/)
+- [Agent Framework Comparison 2025](https://www.datacamp.com/tutorial/crewai-vs-langgraph-vs-autogen)
+
+---
+
+### Previous Session (11 January 2026)
 
 **21. AI Agent Protocol Enhancement — Protocols 10, 11, 12**
 
