@@ -75,28 +75,66 @@ Comprehensive audit of Multi-AI Orchestration revealed:
 3. **Council AI maps to A2A** — Parliament of Selves concept aligns with A2A protocol vision
 4. **Protocol 9 automation is high-value** — RQ-040d specifically addresses this opportunity
 
+**Protocol 10 Bias Analysis Applied:**
+
+| # | Assumption | Validity |
+|---|------------|----------|
+| 1 | Current architecture is functional | **HIGH** |
+| 2 | MCP Dart SDK is experimental | **HIGH** |
+| 3 | A2A has no Dart SDK | **HIGH** |
+| 4 | Pre-launch speed > architecture purity | **MEDIUM** |
+| 5 | Council AI can wait for post-launch | **MEDIUM** |
+| 6 | MCP ecosystem stable by Q2 2026 | **LOW** |
+| 7 | A2A Dart SDK will emerge | **LOW** |
+| 8 | Enterprise sales require MCP | **LOW** |
+
+**Confidence:** MEDIUM (3 LOW-validity assumptions)
+
+**Pre-Launch vs Post-Launch Analysis:**
+
+| Aspect | Pre-Launch | Post-Launch |
+|--------|------------|-------------|
+| MCP Migration | 🔴 Delays launch 2-4 weeks | 🟢 Enables ecosystem integrations |
+| A2A/Council AI | 🔴 No Dart SDK available | 🟢 Core differentiator |
+| Kill Switch Enhancement | 🟢 **DO NOW** | 🟢 Continued value |
+| Protocol 9 Automation | 🟢 **DO NOW** | 🟢 Continued value |
+
+**Immediate Actions Identified:**
+1. RQ-040c: Document kill switches in CD-016 (0.5 days)
+2. RQ-040d: Implement Protocol 9 pre-commit hook (0.5 days)
+
 **Files Updated:**
 | File | Update |
 |------|--------|
 | `index/RQ_INDEX.md` | Added RQ-040 + 5 sub-RQs, updated statistics (40 main, 12 sub) |
-| `RESEARCH_QUESTIONS.md` | Added full RQ-040 specification with sub-questions |
+| `RESEARCH_QUESTIONS.md` | Full RQ-040 spec with Protocol 10 bias analysis, pre/post-launch relevance |
 | `ROADMAP.md` | Updated timestamp, added RQ-040 to blocking research |
 | `AI_HANDOVER.md` | This session summary |
 
-**Recommendation Based on Analysis:**
+**Recommendation Based on Deep Analysis (MEDIUM Confidence):**
 
-| Timeframe | Action |
-|-----------|--------|
-| Q1 2026 | Keep current architecture — it's functional |
-| Q2 2026 | Re-evaluate MCP dart_mcp stability |
-| Q3-Q4 2026 | Consider MCP if external integrations needed |
-| 2027+ | Monitor A2A for Council AI |
+| Phase | Timeframe | Action |
+|-------|-----------|--------|
+| **0** | NOW | Document current as "MCP-ready" |
+| **1** | Pre-Launch | Keep current, ship product |
+| **2** | Launch+3mo | Re-evaluate MCP Dart SDK stability |
+| **3** | Launch+6mo | Implement MCP IF triggers met |
+| **4** | Launch+12mo | Implement A2A/Council AI |
+
+**Decision Triggers for MCP Adoption:**
+- User/Customer requests Claude/Cursor integration
+- B2B partner requires MCP compliance
+- Dart MCP SDK marked "stable"
+- Competitor launches MCP-enabled features
 
 **References Added:**
 - [MCP Specification 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25)
+- [One Year of MCP](https://blog.modelcontextprotocol.io/posts/2025-11-25-first-mcp-anniversary/)
 - [Dart MCP Server Docs](https://docs.flutter.dev/ai/mcp-server)
+- [A2A Protocol Specification](https://a2a-protocol.org/latest/specification/)
+- [Google A2A Announcement](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/)
 - [MCP vs A2A Guide](https://auth0.com/blog/mcp-vs-a2a/)
-- [Agent Framework Comparison 2025](https://www.datacamp.com/tutorial/crewai-vs-langgraph-vs-autogen)
+- [Agentic MCP and A2A Architecture](https://medium.com/@anil.jain.baba/agentic-mcp-and-a2a-architecture-a-comprehensive-guide-0ddf4359e152)
 
 ---
 
