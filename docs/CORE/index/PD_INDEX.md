@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 12 January 2026 (Migration to domain-specific files)
+> **Last Updated:** 12 January 2026 (PD-119 RESOLVED, PD-133 READY via RQ-039/RQ-044)
 > **Full Details:** See `../decisions/MANIFEST.md` for loading rules, domain files for details
 > **Architecture:** Modular with Manifest — domain-isolated files with explicit loading rules
 
@@ -47,7 +47,7 @@
 | **PD-116** | Population Learning Privacy | 🔴 PENDING | JITAI | RQ-023 |
 | **PD-117** | ContextSnapshot Real-time Data | ✅ RESOLVED | JITAI | RQ-014 |
 | **PD-118** | Treaty Modification UX | ✅ RESOLVED | UX | RQ-024 |
-| **PD-119** | Summon Token Economy | 🟡 DEFERRED | IDENTITY | RQ-039 |
+| **PD-119** | Summon Token Economy | ✅ RESOLVED | IDENTITY | RQ-039 ✅ |
 | **PD-120** | The Chamber Visual Design | 🔴 PENDING | UX | RQ-036 |
 | **PD-121** | Archetype Template Count | ✅ RESOLVED | IDENTITY | RQ-028 |
 | **PD-122** | User Visibility of Preference Embedding | ✅ RESOLVED | IDENTITY | RQ-030 |
@@ -58,7 +58,7 @@
 | **PD-130** | Witness App Access Model | 🔵 OPEN | WITNESS | RQ-041 |
 | **PD-131** | Invitation Message Strategy | 🔵 OPEN | WITNESS | RQ-042 |
 | **PD-132** | Invitation Timing (Commitment Ceremony) | 🟢 CONFIRMED | WITNESS | — |
-| **PD-133** | Witness Stakes & Punishment | 🔵 OPEN | WITNESS | RQ-044 |
+| **PD-133** | Witness Stakes & Punishment | 🟢 READY | WITNESS | RQ-044 ✅ |
 | **PD-134** | JITAI Witness Data Schema | 🔵 OPEN | WITNESS | RQ-045 |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | UX | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | UX | — |
@@ -82,13 +82,13 @@
 | Metric | Count |
 |--------|-------|
 | **Total PDs** | 37 |
-| **✅ RESOLVED** | 15 (41%) |
-| **🟢 READY** | 4 (11%) |
+| **✅ RESOLVED** | 16 (43%) |
+| **🟢 READY** | 5 (14%) |
 | **🟢 CONFIRMED** | 1 (3%) |
 | **🟡 RESHAPED** | 1 (3%) |
-| **🟡 DEFERRED** | 1 (3%) |
+| **🟡 DEFERRED** | 0 (0%) |
 | **🔴 PENDING** | 10 (27%) |
-| **🔵 OPEN** | 5 (14%) |
+| **🔵 OPEN** | 4 (11%) |
 
 ### By Domain
 
@@ -139,9 +139,11 @@ UNBLOCKED BY RQ-024 (Resolved):
 UNBLOCKED BY RQ-037/RQ-033/RQ-025 (Ready for Decision):
 ├── PD-002 🟢 READY (Resilient Streak hybrid approach)
 ├── PD-003 🟢 READY (Holy Trinity → Shadow Cabinet validated)
-├── PD-119 🟡 DEFERRED (Council Seals defined, BUT earning mechanism needs RQ-039)
-│   └── Bias analysis revealed 8 unvalidated assumptions → Created RQ-039 with 7 sub-RQs
 └── PD-101 🟡 RESHAPED (RQ-037 complete, still needs RQ-034)
+
+RESOLVED BY RQ-039/RQ-044 (12 Jan 2026):
+├── PD-119 ✅ RESOLVED (Token Economy: Automatic base + optional bonus, soft cap, gain framing)
+└── PD-133 🟢 READY (Stakes: Visibility-only + Encouragement allowed; Financial prohibited)
 
 BLOCKED BY PRIOR RESEARCH:
 ├── PD-101 ← RQ-034 (Sherlock Architecture) — Partially unblocked
@@ -161,7 +163,7 @@ WITNESS INTELLIGENCE LAYER (New):
 ├── PD-130 🔵 OPEN (App Access Model) ← RQ-041
 ├── PD-131 🔵 OPEN (Invitation Message) ← RQ-042
 ├── PD-132 🟢 CONFIRMED (Commitment Ceremony timing)
-├── PD-133 🔵 OPEN (Stakes & Punishment) ← RQ-044
+├── PD-133 🟢 READY (Stakes & Punishment) ← RQ-044 ✅
 └── PD-134 🔵 OPEN (JITAI Data Schema) ← RQ-045
 ```
 

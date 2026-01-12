@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 12 January 2026 (RQ-047 AI Orchestration added; branch reconciliation complete)
+> **Last Updated:** 12 January 2026 (RQ-039, RQ-044 COMPLETE via Deep Think V2)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -58,14 +58,14 @@
 | **RQ-036** | Chamber Visual Design Patterns | 🔴 NEEDS RESEARCH | RQ-016 | — |
 | **RQ-037** | Holy Trinity Model Validation | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-038** | JITAI Component Allocation Strategy | 🔴 NEEDS RESEARCH | — | — |
-| **RQ-039** | Token Economy Architecture | 🔴 NEEDS RESEARCH | PD-119 | — |
-| **RQ-039a** | ↳ Earning Mechanism & Intrinsic Motivation | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039b** | ↳ Optimal Reflection Cadence | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039c** | ↳ Single vs Multiple Earning Paths | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039d** | ↳ Token Cap vs Decay Alternatives | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039e** | ↳ Crisis Bypass Threshold Validation | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039f** | ↳ Premium Token Allocation | 🔴 NEEDS RESEARCH | RQ-039 | — |
-| **RQ-039g** | ↳ Reflection Quality Thresholds | 🔴 NEEDS RESEARCH | RQ-039 | — |
+| **RQ-039** | Token Economy Architecture | ✅ COMPLETE | PD-119 | Q1-2026 |
+| **RQ-039a** | ↳ Earning Mechanism & Intrinsic Motivation | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039b** | ↳ Optimal Reflection Cadence | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039c** | ↳ Single vs Multiple Earning Paths | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039d** | ↳ Token Cap vs Decay Alternatives | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039e** | ↳ Crisis Bypass Threshold Validation | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039f** | ↳ Premium Token Allocation | ✅ COMPLETE | RQ-039 | Q1-2026 |
+| **RQ-039g** | ↳ Reflection Quality Thresholds | ✅ COMPLETE | RQ-039 | Q1-2026 |
 | **RQ-040** | Viral Witness Invitation Growth Strategy | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-040a** | ↳ Witness Value Proposition & Experience | 🔴 NEEDS RESEARCH | RQ-040 | — |
 | **RQ-040b** | ↳ Invitation Channel Optimization | 🔴 NEEDS RESEARCH | RQ-040 | — |
@@ -86,11 +86,11 @@
 | **RQ-043** | Witness Invitation Skip Rate at Ceremony | 🔴 NEEDS RESEARCH | — | — |
 | **RQ-043a** | ↳ "Invite Later" Option Impact | 🔴 NEEDS RESEARCH | RQ-043 | — |
 | **RQ-043b** | ↳ Optimal Witness Count Prompt | 🔴 NEEDS RESEARCH | RQ-043 | — |
-| **RQ-044** | Stakes Mechanism vs Intrinsic Motivation | 🔴 NEEDS RESEARCH | PD-133 | — |
-| **RQ-044a** | ↳ Witness-Visible Failure Retention Impact | 🔴 NEEDS RESEARCH | RQ-044 | — |
-| **RQ-044b** | ↳ Financial Escrow Adoption Rate | 🔴 NEEDS RESEARCH | RQ-044 | — |
-| **RQ-044c** | ↳ Social Stakes Relationship Damage Risk | 🔴 NEEDS RESEARCH | RQ-044 | — |
-| **RQ-044d** | ↳ Witness Forgiveness Grace Period Value | 🔴 NEEDS RESEARCH | RQ-044 | — |
+| **RQ-044** | Stakes Mechanism vs Intrinsic Motivation | ✅ COMPLETE | PD-133 | Q1-2026 |
+| **RQ-044a** | ↳ Witness-Visible Failure Retention Impact | ✅ COMPLETE | RQ-044 | Q1-2026 |
+| **RQ-044b** | ↳ Financial Escrow Adoption Rate | ✅ COMPLETE | RQ-044 | Q1-2026 |
+| **RQ-044c** | ↳ Social Stakes Relationship Damage Risk | ✅ COMPLETE | RQ-044 | Q1-2026 |
+| **RQ-044d** | ↳ Witness Forgiveness Grace Period Value | ✅ COMPLETE | RQ-044 | Q1-2026 |
 | **RQ-045** | Minimum Data Capture for Witness Insights | 🔴 NEEDS RESEARCH | PD-134 | — |
 | **RQ-045a** | ↳ Engagement Signals Predicting Conversion | 🔴 NEEDS RESEARCH | RQ-045 | — |
 | **RQ-045b** | ↳ Data Capture vs Privacy Balance | 🔴 NEEDS RESEARCH | RQ-045 | — |
@@ -114,11 +114,12 @@
 |--------|-------|
 | **Total RQs (Main)** | 47 |
 | **Total Sub-RQs** | 37 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e) |
-| **✅ COMPLETE** | 31 (37%) |
-| **🔴 NEEDS RESEARCH** | 16 main + 37 sub (53 items) |
+| **✅ COMPLETE** | 33 main + 12 sub (45 items, 54%) |
+| **🔴 NEEDS RESEARCH** | 14 main + 25 sub (39 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
+> **Note:** RQ-039 + 7 sub-RQs, RQ-044 + 4 sub-RQs completed 12 Jan 2026 via Deep Think V2
 
 ---
 
