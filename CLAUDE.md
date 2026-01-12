@@ -104,4 +104,39 @@ cd supabase && supabase db push # Push schema
 ```
 
 ## After Working
-Update `docs/CORE/AI_HANDOVER.md` with what you accomplished and what remains.
+
+**MANDATORY: Before ending session, ASK the human to confirm these metrics:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SESSION END METRICS (Agent must prompt human to confirm)       │
+├─────────────────────────────────────────────────────────────────┤
+│  □ Reading level reached: [0/1/2/3]                             │
+│  □ Tokens read (est.): [___] (aim for <40% of context)          │
+│  □ CD violations this session: [0/___]                          │
+│  □ Task outcome: [Success/Partial/Failed/Blocked]               │
+│  □ Blockers discovered: [none / list]                           │
+└─────────────────────────────────────────────────────────────────┘
+
+Human, please confirm or correct these metrics before I update AI_HANDOVER.md.
+```
+
+Then update `docs/CORE/AI_HANDOVER.md` with:
+1. What you accomplished
+2. What remains
+3. The confirmed metrics above
+
+---
+
+## Token Budget Rules
+
+> **Source:** [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [Kubiya Best Practices](https://www.kubiya.ai/blog/context-engineering-best-practices)
+
+| Constraint | Limit | Rationale |
+|------------|-------|-----------|
+| **CLAUDE.md max size** | 10,000 tokens | 40% of 25K file read limit |
+| **Context utilization target** | <40% | Prevents Context Rot |
+| **Reading Level 0-1** | ~3,000 tokens | Quick tasks shouldn't overload |
+| **Reading Level 2-3** | ~15,000 tokens | Complex tasks get more budget |
+
+**Current CLAUDE.md:** ~800 tokens ✅ (well under budget)

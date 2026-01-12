@@ -962,6 +962,54 @@ ref.listen(controller, (prev, next) {
 
 ---
 
+### Reflection Pattern (Agentic Design Pattern)
+**Definition:** A self-reviewing mechanism that allows an AI system to evaluate and refine its own outputs through a three-phase process: Initial Generation → Self-Reflection → Revision.
+
+**Industry Framework:** One of four agentic design patterns identified by Andrew Ng (Stanford/DeepLearning.AI):
+1. **Reflection** — Self-critique and improvement
+2. **Tool Use** — External capability invocation
+3. **Planning** — Multi-step reasoning
+4. **Multi-agent Collaboration** — Specialized agent coordination
+
+**Implementation in The Pact:**
+Protocol 10 (Bias Analysis) IS the Reflection Pattern applied to recommendations:
+- **Initial Generation:** First-pass recommendation
+- **Self-Reflection:** Assumption identification and validity rating
+- **Revision:** Apply confidence decision rule, defer if needed
+
+**Process:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  REFLECTION PATTERN PHASES                                   │
+├─────────────────────────────────────────────────────────────┤
+│  Phase 1: INITIAL GENERATION                                 │
+│  └── Generate first-pass output based on task/prompt        │
+│                                                              │
+│  Phase 2: SELF-REFLECTION (Critique Mode)                    │
+│  └── Evaluate against criteria (accuracy, quality, biases)  │
+│  └── Identify assumptions and rate validity                 │
+│  └── Check for missing perspectives                         │
+│                                                              │
+│  Phase 3: REVISION                                           │
+│  └── Incorporate critique into improved output              │
+│  └── Adjust confidence level based on findings              │
+│  └── Defer if insufficient confidence                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Sources:**
+- [DeepLearning.AI - Reflection Pattern](https://www.deeplearning.ai/the-batch/agentic-design-patterns-part-2-reflection/)
+- [AIMultiple - Agentic AI Design Patterns](https://research.aimultiple.com/agentic-ai-design-patterns/)
+- Shinn et al. (2023) — Reflexion: Language Agents with Verbal Reinforcement Learning
+
+**Status:** ✅ IMPLEMENTED — Via Protocol 10 in AI_AGENT_PROTOCOL.md
+
+**Related Terms:** Protocol 10 (Bias Analysis), Self-Critique, Assumption Validation, Multi-round Reasoning
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 10
+
+---
+
 ### Protocol 11: Sub-RQ Creation
 **Definition:** A mandatory protocol for decomposing complex Research Questions into 3-7 independent sub-questions when a single research effort would be insufficient.
 
@@ -1023,6 +1071,74 @@ ref.listen(controller, (prev, next) {
 **Origin:** AI Agent Process Audit (11 Jan 2026) identified 17 cross-file inconsistencies caused by missing verification step.
 
 **Code References:** AI_AGENT_PROTOCOL.md Session Exit Protocol v2, Tier 3
+
+---
+
+### Context Engineering
+**Definition:** The discipline of designing a system that provides the right information and tools, in the right format, to give an LLM everything it needs to accomplish a task.
+
+**Components:**
+| Technique | Description |
+|-----------|-------------|
+| **Context Offloading** | Move information to external system |
+| **Context Reduction** | Compress history (compaction/summarization) |
+| **Context Retrieval** | Add information dynamically (RAG) |
+| **Context Isolation** | Separate context between concerns |
+
+**Key Principle:** Context must be treated as a finite resource with diminishing marginal returns.
+
+**40% Rule:** Stay under 40% context utilization for optimal performance.
+
+**Sources:**
+- [Anthropic - Effective Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Kubiya - Context Engineering Best Practices](https://www.kubiya.ai/blog/context-engineering-best-practices)
+
+**Status:** ✅ IMPLEMENTED — Via CLAUDE.md Token Budget Rules
+
+**Related Terms:** Context Rot, Context Pollution, Context Confusion
+
+---
+
+### Context Rot
+**Definition:** The phenomenon where an LLM's performance degrades as the context window fills up, even if the total token count is well within the technical limit.
+
+**Symptoms:**
+- Decreasing response quality over long conversations
+- Forgetting earlier instructions
+- Increased hallucination rate
+- Loss of coherence in multi-step tasks
+
+**Prevention:** Progressive disclosure (Reading Order v2.0), context summarization, 40% utilization target.
+
+**Source:** [JetBrains Research - Smarter Context Management](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
+
+**Status:** ✅ ADDRESSED — Via Reading Order v2.0 stop conditions
+
+---
+
+### Context Pollution
+**Definition:** The presence of too much irrelevant, redundant, or conflicting information that distracts the LLM and degrades its reasoning accuracy.
+
+**Pre-v2.0 Example:** Three conflicting reading order specifications (CLAUDE.md, AI_AGENT_PROTOCOL.md, IMPLEMENTATION_ACTIONS.md) polluted agent context with contradictory instructions.
+
+**Prevention:** Single source of truth, hierarchical information disclosure, explicit ownership declarations.
+
+**Source:** [JetBrains Research - Smarter Context Management](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
+
+**Status:** ✅ ADDRESSED — Via single authoritative source (CLAUDE.md owns reading order)
+
+---
+
+### Context Confusion
+**Definition:** The failure mode where an LLM cannot distinguish between instructions, data, and structural markers, or encounters logically incompatible directives.
+
+**Example Trigger:** Providing 100+ tools leads to hallucinated parameters or wrong tool calls.
+
+**Prevention:** Hierarchical action space (Level 0-3 in Reading Order), explicit delineation between instruction types, ownership declarations.
+
+**Source:** [JetBrains Research - Smarter Context Management](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
+
+**Status:** ✅ ADDRESSED — Via Reading Order v2.0 levels and ownership
 
 ---
 
