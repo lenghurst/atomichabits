@@ -3684,6 +3684,193 @@ ICS_facet = AvgConsistency_facet × log10(TotalVotes_facet + 1)
 
 ---
 
+### RQ-047: AI Orchestration Architecture Strategy
+
+| Field | Value |
+|-------|-------|
+| **Question** | Should we formalize current AI orchestration with MCP/A2A standards, and what's the optimal timing? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM — Strategic positioning for 2026+ ecosystem |
+| **Blocking** | Future Council AI implementation, Protocol 9 automation |
+| **Created** | 12 January 2026 |
+| **Trigger** | Codebase audit revealed sophisticated orchestration that could be formalized |
+
+**Context:**
+- Current implementation: 3-tier routing (DeepSeek/Gemini Flash/Gemini Pro) with failover chain
+- AIServiceManager already follows "Host-to-Server" pattern that MCP standardizes
+- MCP focuses on agent-to-tool communication (your current architecture)
+- A2A focuses on agent-to-agent communication (your Council AI vision)
+- Official Dart/Flutter MCP support exists but is "experimental"
+
+**Current Architecture Assessment:**
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Multi-model routing | ✅ Complete | `AIServiceManager.selectProvider()` |
+| Failover chain | ✅ Complete | Tier 3 → 2 → 1 → Manual |
+| Kill switches | ✅ Complete | 4 switches via `AIModelConfig` |
+| Voice integration | ✅ Complete | WebSocket + native audio |
+| Protocol 9 automation | ❌ Manual | 6-phase checklist exists, no code |
+| Council AI | ❌ Not built | Documented but unimplemented |
+
+**Protocol 10 Bias Analysis (12 Jan 2026):**
+
+| # | Assumption | Validity | Basis |
+|---|------------|----------|-------|
+| 1 | Current architecture is functional | **HIGH** | Codebase audit confirmed 85% complete |
+| 2 | MCP Dart SDK is experimental | **HIGH** | Official Flutter docs state SDK requirements |
+| 3 | A2A has no Dart SDK | **HIGH** | Only Python SDK available on GitHub |
+| 4 | Pre-launch speed > architecture purity | **MEDIUM** | Industry consensus, not product-validated |
+| 5 | Council AI can wait for post-launch | **MEDIUM** | CD-008 says Identity Coach is critical |
+| 6 | MCP ecosystem stable by Q2 2026 | **LOW** | Trajectory prediction, no guarantee |
+| 7 | A2A Dart SDK will emerge | **LOW** | Speculation based on Google Flutter investment |
+| 8 | Enterprise sales require MCP | **LOW** | Gartner estimate, not validated data |
+
+**Confidence:** MEDIUM (3 LOW-validity assumptions)
+**Decision:** PROCEED with research (Protocol 12 not triggered)
+
+**Pre-Launch vs Post-Launch Analysis:**
+
+| Aspect | Pre-Launch Relevance | Post-Launch Relevance |
+|--------|---------------------|----------------------|
+| MCP Migration | 🔴 Delays launch 2-4 weeks | 🟢 Enables ecosystem integrations |
+| A2A/Council AI | 🔴 No Dart SDK available | 🟢 Core differentiator |
+| Kill Switch Enhancement | 🟢 **DO NOW** — low effort | 🟢 Continued value |
+| Protocol 9 Automation | 🟢 **DO NOW** — agent efficiency | 🟢 Continued value |
+
+**Ramifications:**
+- Pre-launch MCP: Would delay launch 2-4 weeks for uncertain benefit
+- Post-launch MCP: Enables Claude Desktop, VS Code, Cursor integrations
+- Pre-launch A2A: Impossible (no Dart SDK)
+- Post-launch A2A: Enables Parliament of Selves vision
+- Risk if delayed too long: Miss ecosystem integrations, enterprise sales friction
+
+**Sub-Questions:**
+
+#### RQ-047a: MCP Formalization Requirements
+| Field | Value |
+|-------|-------|
+| **Question** | What would it take to convert AIServiceManager to MCP standard? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Pre-Launch Relevance** | 🟡 LOW — delays launch |
+| **Post-Launch Relevance** | 🟢 HIGH — enables ecosystem |
+| **Scope** | Technical requirements, dart_mcp compatibility, breaking changes |
+| **Timeline** | Research Q2 2026 |
+
+Research Areas:
+- Dart SDK 3.9+ / Flutter 3.35+ requirements
+- dart_mcp package maturity assessment
+- WebSocket transport for GeminiLiveService
+- Breaking changes to existing integrations
+- Effort vs benefit analysis (estimated 2-3 weeks)
+
+#### RQ-047b: A2A Protocol for Council AI
+| Field | Value |
+|-------|-------|
+| **Question** | How should A2A (Agent2Agent) inform Council AI architecture? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Core to psyOS vision |
+| **Pre-Launch Relevance** | 🔴 NONE — no Dart SDK |
+| **Post-Launch Relevance** | 🟢 **CRITICAL** — core differentiator |
+| **Scope** | Multi-agent collaboration patterns for Parliament of Selves |
+| **Timeline** | Research when Dart SDK available (or via Edge Functions bridge) |
+
+Research Areas:
+- A2A Agent Card specification for facet agents
+- How facets would "negotiate" via A2A protocol
+- Integration with MCP tool access
+- No Dart SDK yet — timing implications
+- Supabase Edge Functions as A2A bridge option
+
+#### RQ-047c: Kill Switch & Failover Enhancement
+| Field | Value |
+|-------|-------|
+| **Question** | Should current kill switch/failover be documented as part of CD-016? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Pre-Launch Relevance** | 🟢 **HIGH** — low effort, high resilience |
+| **Post-Launch Relevance** | 🟢 HIGH — continued value |
+| **Scope** | Documentation, remote config patterns, monitoring |
+| **Timeline** | **DO NOW** (0.5 days effort) |
+
+Research Areas:
+- Current implementation audit (4 switches exist, verified)
+- Remote config integration patterns
+- Monitoring/alerting requirements
+- Should this become a CD or remain implementation detail?
+
+#### RQ-047d: Protocol 9 Automation Feasibility
+| Field | Value |
+|-------|-------|
+| **Question** | Can Protocol 9 (External Research Reconciliation) be automated? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | HIGH — Agent session efficiency |
+| **Pre-Launch Relevance** | 🟢 **HIGH** — affects every Claude session |
+| **Post-Launch Relevance** | 🟢 HIGH — continued value |
+| **Scope** | Automation feasibility, tool design, integration with docs |
+| **Timeline** | **DO NOW** (0.5-2 days effort) |
+
+Research Areas:
+- Parse external AI research outputs
+- Check against locked CDs automatically
+- Generate ACCEPT/MODIFY/REJECT/ESCALATE classifications
+- Create reconciliation documents programmatically
+- Implementation options:
+  1. Pre-commit hook (0.5 days) — **RECOMMENDED START**
+  2. Claude Skill `/reconcile` (1-2 days)
+  3. MCP tool (3-5 days) — only if MCP adopted
+
+#### RQ-047e: Migration Timing & Risk Assessment
+| Field | Value |
+|-------|-------|
+| **Question** | What's the optimal timing for any orchestration changes? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | MEDIUM |
+| **Pre-Launch Relevance** | 🟡 MEDIUM — decision point |
+| **Post-Launch Relevance** | 🟢 HIGH — quarterly re-evaluation |
+| **Scope** | Ecosystem maturity, risk analysis, phasing |
+| **Timeline** | Monitor quarterly |
+
+Research Areas:
+- MCP ecosystem maturity timeline (experimental → stable)
+- A2A Dart SDK availability timeline
+- Risk of early adoption vs late adoption
+- Phased migration approach if warranted
+- Industry predictions (Gartner: 75% API gateway MCP by 2026)
+
+**Recommendation Based on Deep Analysis (MEDIUM Confidence):**
+
+| Phase | Timeframe | Action | Effort |
+|-------|-----------|--------|--------|
+| **0** | NOW | Document current as "MCP-ready" | 1 day |
+| **1** | Pre-Launch | Keep current, ship product | 0 |
+| **2** | Launch+3mo | Re-evaluate MCP Dart SDK stability | 1 day |
+| **3** | Launch+6mo | Implement MCP IF triggers met | 2-3 weeks |
+| **4** | Launch+12mo | Implement A2A/Council AI | 3-4 weeks |
+
+**Decision Triggers for MCP Adoption:**
+- User/Customer requests Claude/Cursor integration
+- B2B partner requires MCP compliance
+- Dart MCP SDK marked "stable" (not experimental)
+- MCP Registry reaches GA
+- Competitor launches MCP-enabled features
+
+**Immediate Actions (Pre-Launch):**
+1. ✅ RQ-047c: Document kill switches in CD-016 (0.5 days)
+2. ✅ RQ-047d: Implement Protocol 9 pre-commit hook (0.5 days)
+
+**References:**
+- [MCP Specification 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25)
+- [One Year of MCP - Anniversary Blog](https://blog.modelcontextprotocol.io/posts/2025-11-25-first-mcp-anniversary/)
+- [Dart MCP Server Docs](https://docs.flutter.dev/ai/mcp-server)
+- [A2A Protocol Specification](https://a2a-protocol.org/latest/specification/)
+- [Google A2A Announcement](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/)
+- [MCP vs A2A Guide](https://auth0.com/blog/mcp-vs-a2a/)
+- [Agentic MCP and A2A Architecture](https://medium.com/@anil.jain.baba/agentic-mcp-and-a2a-architecture-a-comprehensive-guide-0ddf4359e152)
+- [Technical Debt in AI MVP Development](https://medium.com/@adnanmasood/rewriting-the-technical-debt-curve-how-generative-ai-vibe-coding-and-ai-driven-sdlc-transform-03129e81a25e)
+
+---
+
 ## Implementation Tasks from Research
 
 **Purpose:** Track actionable items generated by completed research.

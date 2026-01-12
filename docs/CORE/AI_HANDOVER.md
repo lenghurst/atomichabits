@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 11 January 2026 (Protocols 10-12 codified, Session Exit Protocol v2 enhanced)
+> **Last Updated:** 12 January 2026 (Branch reconciliation: Witness Intelligence + AI Orchestration merged)
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Owner:** Any AI agent (update at session end)
 
@@ -36,12 +36,12 @@ This prevents:
 ### Latest Session Summary
 | Field | Value |
 |-------|-------|
-| **Session ID** | `claude/setup-pact-deep-think-TqSKg` (continued) |
-| **Date** | 11 January 2026 |
+| **Session ID** | `claude/reconcile-doc-branches-RwcMt` |
+| **Date** | 12 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Focus** | Protocol Refinement — HIGH Confidence Validation |
+| **Focus** | Branch Reconciliation — Witness Intelligence + AI Orchestration |
 | **Tier 3 Verification** | ✅ Complete |
-| **Mismatches Found** | None (all statistics consistent) |
+| **Mismatches Found** | RQ-040 numbering conflict resolved |
 
 > **Note on Tier 3 Verification:** This is **detection-based** (audit trail), not **prevention-based** (blocking).
 > If you skip verification, the next agent will see "❌ Skipped" and can investigate.
@@ -49,7 +49,94 @@ This prevents:
 
 ### What Was Accomplished (This Latest Session)
 
-**21. AI Agent Protocol Enhancement — Protocols 10, 11, 12**
+**23. Branch Reconciliation — Witness Intelligence + AI Orchestration**
+
+**Branches Reconciled:**
+- `claude/read-markdown-files-HgiyZ` (Witness Intelligence Layer, Deep Think protocols)
+- `claude/review-docs-codebase-myuQ8` (AI Orchestration Architecture audit)
+
+**Conflict Resolution:**
+| Issue | Resolution |
+|-------|------------|
+| **RQ-040 numbering conflict** | AI Orchestration renumbered to RQ-047 (Witness RQ-040 preserved) |
+| **AI_HANDOVER.md divergence** | Session 22 content merged with renumbering |
+| **File overlap** | Only `RQ_INDEX.md` had true conflict; all other changes additive |
+
+**Integration Summary:**
+| Source | Files | Lines Added |
+|--------|-------|-------------|
+| read-markdown | 17 files | +5,910 |
+| review-docs | 4 files | +309 (renumbered) |
+| **Total unique** | **20 files** | **+6,219** |
+
+**New Content Integrated:**
+- Witness Intelligence Layer architecture (`WITNESS_INTELLIGENCE_LAYER.md`)
+- Deep Think Response Consumption Protocol (10-step, 1,122 lines)
+- Modular Decision Architecture (`decisions/MANIFEST.md` + 5 domain files)
+- Deep Think prompt critique and analysis files
+- RQ-047 (AI Orchestration) with 5 sub-RQs
+
+**Statistics After Reconciliation:**
+| Metric | Before | After |
+|--------|--------|-------|
+| Main RQs | 46 | 47 |
+| Sub-RQs | 32 | 37 |
+| Total RQ items | 78 | 84 |
+
+**Files Updated:**
+| File | Update |
+|------|--------|
+| `RESEARCH_QUESTIONS.md` | Added RQ-047 (AI Orchestration) section |
+| `index/RQ_INDEX.md` | Added RQ-047 + sub-RQs, updated statistics |
+| `AI_HANDOVER.md` | This session + Session 22 integration |
+
+---
+
+**22. AI Orchestration Architecture Audit & RQ-047 Creation** *(from branch review-docs)*
+
+**Major Change: RQ-047 + 5 Sub-RQs Created** *(renumbered from RQ-040)*
+
+Comprehensive audit of Multi-AI Orchestration revealed:
+
+| Finding | Status | Notes |
+|---------|--------|-------|
+| DeepSeek wiring | ✅ FULLY WIRED | 5+ production flows, complete error handling, unit/integration tests |
+| Protocol 9 scope | ✅ CLARIFIED | For AI agent sessions only, not app runtime |
+| MCP/A2A standards | 🔴 NEEDS RESEARCH | Current architecture is functional but could be formalized |
+| Council AI | ❌ NOT BUILT | Documented but unimplemented |
+
+**New Research Questions Created:**
+
+| RQ | Title | Priority |
+|----|-------|----------|
+| **RQ-047** | AI Orchestration Architecture Strategy | MEDIUM |
+| RQ-047a | ↳ MCP Formalization Requirements | MEDIUM |
+| RQ-047b | ↳ A2A Protocol for Council AI | HIGH |
+| RQ-047c | ↳ Kill Switch & Failover Enhancement | MEDIUM |
+| RQ-047d | ↳ Protocol 9 Automation Feasibility | HIGH |
+| RQ-047e | ↳ Migration Timing & Risk Assessment | MEDIUM |
+
+**Key Insights:**
+1. **MCP vs A2A are complementary, not competing** — MCP for tool access, A2A for agent collaboration
+2. **Current architecture is sound** — No urgent need to migrate
+3. **Council AI maps to A2A** — Parliament of Selves concept aligns with A2A protocol vision
+4. **Protocol 9 automation is high-value** — RQ-047d specifically addresses this opportunity
+
+**Recommendation Based on Deep Analysis (MEDIUM Confidence):**
+
+| Phase | Timeframe | Action |
+|-------|-----------|--------|
+| **0** | NOW | Document current as "MCP-ready" |
+| **1** | Pre-Launch | Keep current, ship product |
+| **2** | Launch+3mo | Re-evaluate MCP Dart SDK stability |
+| **3** | Launch+6mo | Implement MCP IF triggers met |
+| **4** | Launch+12mo | Implement A2A/Council AI |
+
+---
+
+### Previous Sessions
+
+**21. AI Agent Protocol Enhancement — Protocols 10, 11, 12** *(11 January 2026)*
 
 **Major Change: 12 Mandatory Protocols (up from 9)**
 

@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 12 January 2026 (RQ-040 through RQ-045 + sub-RQs added for Witness Intelligence Layer)
+> **Last Updated:** 12 January 2026 (RQ-047 AI Orchestration added; branch reconciliation complete)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -99,6 +99,12 @@
 | **RQ-046b** | ↳ Wearable App Discovery Mechanics | 🔴 NEEDS RESEARCH | RQ-046 | — |
 | **RQ-046c** | ↳ Wearable Permission/API Access by Platform | 🔴 NEEDS RESEARCH | RQ-046 | — |
 | **RQ-046d** | ↳ JITAI Wearable Sensor Integration | 🔴 NEEDS RESEARCH | RQ-046, RQ-038 | — |
+| **RQ-047** | AI Orchestration Architecture Strategy | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-047a** | ↳ MCP Formalization Requirements | 🔴 NEEDS RESEARCH | RQ-047 | — |
+| **RQ-047b** | ↳ A2A Protocol for Council AI | 🔴 NEEDS RESEARCH | RQ-047 | — |
+| **RQ-047c** | ↳ Kill Switch & Failover Enhancement | 🔴 NEEDS RESEARCH | RQ-047 | — |
+| **RQ-047d** | ↳ Protocol 9 Automation Feasibility | 🔴 NEEDS RESEARCH | RQ-047 | — |
+| **RQ-047e** | ↳ Migration Timing & Risk Assessment | 🔴 NEEDS RESEARCH | RQ-047 | — |
 
 ---
 
@@ -106,12 +112,13 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 46 |
-| **Total Sub-RQs** | 32 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d) |
-| **✅ COMPLETE** | 31 (40%) |
-| **🔴 NEEDS RESEARCH** | 15 main + 32 sub (47 items) |
+| **Total RQs (Main)** | 47 |
+| **Total Sub-RQs** | 37 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e) |
+| **✅ COMPLETE** | 31 (37%) |
+| **🔴 NEEDS RESEARCH** | 16 main + 37 sub (53 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
+> **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
 
 ---
 
@@ -206,6 +213,14 @@ WEARABLE STRATEGY (CD-017):
     ├── RQ-046b (App Discovery) 🔴
     ├── RQ-046c (Permission/API Access) 🔴
     └── RQ-046d (JITAI Sensor Integration) 🔴 → depends on RQ-038
+
+AI ORCHESTRATION (CD-016):
+└── RQ-047 (AI Orchestration Architecture) 🔴  ← NEW (branch reconciliation)
+    ├── RQ-047a (MCP Formalization) 🔴
+    ├── RQ-047b (A2A Protocol/Council AI) 🔴
+    ├── RQ-047c (Kill Switch Enhancement) 🔴
+    ├── RQ-047d (Protocol 9 Automation) 🔴
+    └── RQ-047e (Migration Timing) 🔴
 ```
 
 ---
