@@ -2,8 +2,46 @@
 
 > **Purpose:** Guide agents to load the RIGHT context at the RIGHT time
 > **Created:** 12 January 2026
+> **Updated:** 13 January 2026 (added token estimates + triggers)
 > **Model:** Modular with Manifest (Alternative E)
 > **Token Budget:** <15k per domain file, <25k total loaded context
+
+---
+
+## Quick Reference: Token Estimates & Triggers
+
+| File | Lines | Est. Tokens | Load Strategy | Keyword Triggers |
+|------|-------|-------------|---------------|------------------|
+| **CLAUDE.md** | 74 | ~1.5k | Always | — |
+| **AI_HANDOVER.md** | 142 | ~2.5k | Always | — |
+| **MANIFEST.md** | 300 | ~5k | Always | — |
+| **PD_CORE.md** | 256 | ~5k | Always | — |
+| **PD_WITNESS.md** | 265 | ~5k | On-demand | `witness`, `invitation`, `viral`, `stakes` |
+| **PD_JITAI.md** | 165 | ~3k | On-demand | `jitai`, `intervention`, `trigger`, `context` |
+| **PD_IDENTITY.md** | 280 | ~5.5k | On-demand | `identity`, `archetype`, `facet`, `sherlock`, `dimension` |
+| **PD_UX.md** | 304 | ~6k | On-demand | `screen`, `ui`, `flow`, `constellation`, `airlock` |
+| **RQ_INDEX.md** | 228 | ~4k | Always | — |
+| **PD_INDEX.md** | 170 | ~3k | Always | — |
+| **CD_INDEX.md** | 81 | ~1.5k | Always | — |
+
+**Total "Always Load":** ~22k tokens (fits in any context window)
+**With One Domain:** ~27k tokens (still safe)
+**With Two Domains:** ~32k tokens (monitor carefully)
+
+---
+
+## Trigger-Based Loading
+
+When a task description contains these keywords, auto-load the corresponding domain:
+
+```
+"witness" OR "invitation" OR "viral" → PD_WITNESS.md
+"jitai" OR "intervention" OR "trigger" → PD_JITAI.md
+"identity" OR "archetype" OR "facet" OR "sherlock" → PD_IDENTITY.md
+"screen" OR "ui" OR "flow" OR "constellation" → PD_UX.md
+```
+
+**Cross-Domain Tasks:** If task contains keywords from 2+ domains, load both.
 
 ---
 
