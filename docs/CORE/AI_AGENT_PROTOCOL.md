@@ -775,6 +775,68 @@ F-01, F-02, ... (Identity Coach System)
 
 ---
 
+## Large File Handling Protocol (MANDATORY)
+
+### Trigger
+When any file exceeds 25,000 tokens or returns a "token limit exceeded" error.
+
+### Why This Protocol Exists
+**Critical Issue (13 Jan 2026):** AI_HANDOVER.md grew to 25,371 tokens, exceeding the 25,000 token read limit. New sessions missed the handover checklist (buried at line 1611+), causing duplicate work.
+
+**Root Cause:** Files grow over time; critical info gets pushed to the end; pagination defaults to reading from the start.
+
+### Action: Chunked Reading Strategy
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    LARGE FILE READING PROTOCOL                                │
+│                                                                              │
+│  STEP 1: Read Header (Critical Status)                                       │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  Read offset=0, limit=100                                                     │
+│  Contains: Quick status, blockers, current session info                       │
+│                                                                              │
+│  STEP 2: Read Footer (Checklists & Instructions)                             │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  Read offset=(total_lines - 150), limit=150                                  │
+│  Contains: Handover checklist, session history, action items                  │
+│                                                                              │
+│  STEP 3: Targeted Search (If Needed)                                         │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  Use Grep to find specific content:                                           │
+│  - grep "BLOCKED" file.md                                                     │
+│  - grep "NOT STARTED" file.md                                                 │
+│  - grep "Session 22" file.md                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Files Requiring Special Handling
+
+| File | Est. Tokens | Strategy |
+|------|-------------|----------|
+| RESEARCH_QUESTIONS.md | ~35k | Header (1-100) + search for specific RQ |
+| PRODUCT_DECISIONS.md | ~22k | Header (1-50) + search for specific PD |
+| GLOSSARY.md | ~20k | Search by term, don't read fully |
+| AI_HANDOVER.md | <3k | Full read (restructured 13 Jan 2026) |
+
+### Prevention: Keep Files Under Limit
+
+When files approach 20,000 tokens:
+1. **Archive historical content** → `archive/` folder
+2. **Summarize, don't duplicate** → Reference other files
+3. **Inverted Pyramid structure** → Critical info at TOP
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Read large file fully and hit token limit
+❌ Skip footer when it contains checklists
+❌ Assume small file size — always check
+❌ Let AI_HANDOVER.md grow beyond 150 lines
+```
+
+---
+
 ## Protocol 9: External Research Reconciliation (MANDATORY)
 
 ### Trigger

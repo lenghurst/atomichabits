@@ -43,13 +43,27 @@ cd supabase && supabase db push # Push schema
 Full list: `docs/CORE/index/CD_INDEX.md`
 
 ## Before Working
-1. Read `docs/CORE/AI_HANDOVER.md` — session context from last agent
+
+### Step 0: Git State Check (MANDATORY — Prevents Duplicate Work)
+```bash
+git status                    # Uncommitted changes from stuck session?
+git log --oneline -3          # Task already in recent commits?
+git log origin/HEAD..HEAD     # Unpushed commits needing push?
+```
+
+### Steps 1-7: Context Acquisition
+1. Read `docs/CORE/AI_HANDOVER.md` — session context (~120 lines, always fits)
 2. Read `docs/CORE/decisions/MANIFEST.md` — **LOADING RULES** for domain-specific context
 3. Load `docs/CORE/decisions/PD_CORE.md` — always load CDs first
 4. Load domain-specific file based on task (see MANIFEST.md for mapping)
 5. Check `docs/CORE/index/` — current status of decisions (CD/PD) and research (RQ)
-6. Check `docs/CORE/IMPLEMENTATION_ACTIONS.md` — **includes BLOCKED tasks warning**
+6. Check `docs/CORE/IMPLEMENTATION_ACTIONS.md` (lines 1-50) — **BLOCKED tasks warning**
 7. **REALITY CHECK:** Verify schema tables exist before implementing (Phase H is BLOCKED)
+
+### Large File Handling
+If a file exceeds token limit, read in chunks:
+- **Header first:** `offset=0, limit=100` (status, blockers)
+- **Footer if needed:** `offset=(total-100), limit=100` (checklists, summaries)
 
 ## Before Processing External Research
 1. Read `docs/CORE/DEEP_THINK_PROMPT_GUIDANCE.md` — quality standards
