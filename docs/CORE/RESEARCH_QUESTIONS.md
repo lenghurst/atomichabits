@@ -3909,6 +3909,12 @@ Research Areas:
 | A-10 | Add chronotype question to onboarding flow | HIGH | 🔴 NOT STARTED | RQ-012 | Database | N/A |
 | A-11 | Create `treaty_history` table (amendment audit log) | HIGH | 🔴 NOT STARTED | RQ-024 | Database | N/A |
 | A-12 | Add `version`, `parent_treaty_id`, `last_amended_at` to treaties | HIGH | 🔴 NOT STARTED | RQ-024 | Database | N/A |
+| A-13 | Create `identity_topology` table (RECONCILED schema) | **CRITICAL** | 🔴 NOT STARTED | RQ-013, RQ-048c | Database | N/A |
+| A-14 | Create RLS policies for `identity_facets` | HIGH | 🔴 NOT STARTED | Deep Think | Database | N/A |
+| A-15 | Create RLS policies for `identity_topology` | HIGH | 🔴 NOT STARTED | Deep Think | Database | N/A |
+| A-16 | Create `facet_limit_trigger` function (soft limit 5, hard cap 10) | MEDIUM | 🔴 NOT STARTED | Deep Think | Database | N/A |
+| A-17 | Seed switching cost matrix defaults (4×4 asymmetric values) | HIGH | 🔴 NOT STARTED | RQ-048c | Database | N/A |
+| A-18 | Document switching cost matrix in GLOSSARY.md | MEDIUM | 🟡 READY | RQ-048c | Documentation | N/A |
 
 ---
 

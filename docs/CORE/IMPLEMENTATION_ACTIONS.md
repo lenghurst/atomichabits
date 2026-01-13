@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 13 January 2026 (Schema Deep Think reconciled; A-13 to A-16 added)
+> **Last Updated:** 13 January 2026 (RQ-048c reconciled; A-17, A-18 added; E-002 resolved)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -414,6 +414,28 @@ F-10 (Architect scheduler)
 
 ## Recently Added Tasks
 
+### 13 January 2026 — RQ-048c: Switching Cost Matrix (Research Complete)
+
+**Source:** Deep Think reconciliation via Protocol 9 + Protocol 10
+**Status:** ✅ RECONCILED — RQ-048c marked COMPLETE
+**Reconciliation Doc:** `docs/analysis/RECONCILIATION_RQ048c_SWITCHING_COSTS.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| A-17 | Seed switching cost matrix defaults (4×4 asymmetric) | HIGH | 🔴 NEW | RQ-048c |
+| A-18 | Document switching cost matrix in GLOSSARY.md | MEDIUM | 🟡 READY | RQ-048c |
+
+**Key Findings:**
+- ❌ Single "30 min default" is scientifically imprecise
+- ✅ Transitions are ASYMMETRIC (A→B ≠ B→A)
+- ✅ 4×4 matrix with 12 evidence-based values (15-30 min range)
+- ✅ Citations: Mark (2008), Chang et al. (2012), Walker (2017), Leroy (2009), Tassi (2000)
+- ✅ E-002 RESOLVED: Keep 4 states (CD-015 compliant), use 25 min compromise for recovery→focus
+
+**Unblocks:** JITAI timing logic, schedule feasibility calculation
+
+---
+
 ### 13 January 2026 — Schema Foundation: identity_facets & identity_topology
 
 **Source:** Deep Think reconciliation via Protocol 9 + Protocol 10
@@ -618,6 +640,7 @@ F-10 (Architect scheduler)
 
 | Date | Source | Phase | Tasks Added | Added By | Reconciliation Doc |
 |------|--------|-------|-------------|----------|-------------------|
+| 13 Jan 2026 | RQ-048c Switching Costs | A | A-17,A-18 (2 new tasks) | Claude (Opus 4.5) | `RECONCILIATION_RQ048c_SWITCHING_COSTS.md` |
 | 13 Jan 2026 | Schema Deep Think | A | A-13,A-14,A-15,A-16 (4 new tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_A01_A02_SCHEMA.md` |
 | 10 Jan 2026 | RQ-024 | A,B,C,D | A-11,A-12,B-16,B-17,C-13,D-11-D-14 (9 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ024.md` |
 | 10 Jan 2026 | RQ-028/029/030/031/032 | G | G-01 through G-14 (14 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |

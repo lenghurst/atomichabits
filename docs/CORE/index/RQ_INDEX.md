@@ -30,6 +30,14 @@
 | **RQ-008** | UI Logic Separation | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-009** | Optimal LLM Coding Approach | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-010** | Permission Data Philosophy | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-010a** | ↳ Permission-to-Accuracy Mapping | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010b** | ↳ Graceful Degradation Strategies | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010c** | ↳ Degradation Scenarios (20/40/60/80/100%) | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010d** | ↳ Progressive Permission Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010e** | ↳ JITAI Flexibility Architecture | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010f** | ↳ Privacy-Value Transparency | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010g** | ↳ Minimum Viable Permission Set | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010h** | ↳ Battery vs Accuracy Tradeoff | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-011** | Multiple Identity Architecture | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-012** | Fractal Trinity Architecture | ✅ COMPLETE | CD-015 | Q1-2026 |
 | **RQ-013** | Identity Topology & Graph Modeling | ✅ COMPLETE | RQ-012 | Q1-2026 |
@@ -117,8 +125,8 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs (Main)** | 48 |
-| **Total Sub-RQs** | 40 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 32 (36%) |
+| **Total Sub-RQs** | 48 (RQ-010a→h, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
+| **✅ COMPLETE** | 32 (33%) |
 | **🔴 NEEDS RESEARCH** | 17 main + 39 sub (56 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
