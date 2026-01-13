@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 12 January 2026 (RQ-047 AI Orchestration added; branch reconciliation complete)
+> **Last Updated:** 13 January 2026 (RQ-048 Schema Field Validation added; audit of reconciliation weak reasoning)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -105,6 +105,10 @@
 | **RQ-047c** | ↳ Kill Switch & Failover Enhancement | 🔴 NEEDS RESEARCH | RQ-047 | — |
 | **RQ-047d** | ↳ Protocol 9 Automation Feasibility | 🔴 NEEDS RESEARCH | RQ-047 | — |
 | **RQ-047e** | ↳ Migration Timing & Risk Assessment | 🔴 NEEDS RESEARCH | RQ-047 | — |
+| **RQ-048** | Identity Facets Schema Field Validation | 🔴 NEEDS RESEARCH | A-01, A-06 | — |
+| **RQ-048a** | ↳ Facet Domain Taxonomy | 🔴 NEEDS RESEARCH | RQ-048 | — |
+| **RQ-048b** | ↳ Cognitive Load Facet Limits | 🔴 NEEDS RESEARCH | RQ-048 | — |
+| **RQ-048c** | ↳ Energy State Switching Cost Defaults | 🔴 NEEDS RESEARCH | RQ-048 | — |
 
 ---
 
@@ -112,10 +116,10 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 47 |
-| **Total Sub-RQs** | 37 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e) |
-| **✅ COMPLETE** | 31 (37%) |
-| **🔴 NEEDS RESEARCH** | 16 main + 37 sub (53 items) |
+| **Total RQs (Main)** | 48 |
+| **Total Sub-RQs** | 40 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
+| **✅ COMPLETE** | 31 (35%) |
+| **🔴 NEEDS RESEARCH** | 17 main + 40 sub (57 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
