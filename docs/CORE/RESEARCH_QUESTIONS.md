@@ -1,9 +1,9 @@
 # RESEARCH_QUESTIONS.md — Active Research & Open Questions
 
-> **Last Updated:** 06 January 2026 (Archiving strategy implemented)
+> **Last Updated:** 13 January 2026 (Header sync; RQ-040-047 added via branch reconciliation)
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
-> **Status:** 12 RQs COMPLETE (archived), 15 RQs NEED RESEARCH
+> **Status:** 31 RQs COMPLETE, 53 RQs NEED RESEARCH (see RQ_INDEX.md for current counts)
 
 ---
 

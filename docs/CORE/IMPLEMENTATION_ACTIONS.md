@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 11 January 2026 (RQ-039 Token Economy Architecture created with 7 sub-RQs)
+> **Last Updated:** 13 January 2026 (P-03, P-04, P-06 completed; documentation restructure)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -445,12 +445,15 @@ F-10 (Architect scheduler)
 |---------|-------------|----------|--------|--------|
 | P-01 | Update AI_AGENT_PROTOCOL.md with Protocol 2 (Context-Adaptive) | **CRITICAL** | ✅ DONE | RQ-008,009 |
 | P-02 | Create Boundary Decision Tree documentation | HIGH | ✅ DONE | RQ-008 |
-| P-03 | Add linting rules to analysis_options.yaml | HIGH | 🔴 | RQ-008 |
-| P-04 | Create ChangeNotifier Controller template | HIGH | 🔴 | RQ-008 |
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | ✅ DONE (13 Jan) | RQ-008 |
+| P-04 | Create ChangeNotifier Controller template | HIGH | ✅ DONE (13 Jan) | RQ-008 |
 | P-05 | Document Side Effect pattern with code example | HIGH | ✅ DONE | RQ-008 |
-| P-06 | Add Riverpod to pubspec.yaml for new features | MEDIUM | 🔴 | RQ-008 |
+| P-06 | Add Riverpod to pubspec.yaml for new features | MEDIUM | ✅ DONE (13 Jan) | RQ-008 |
 | P-07 | Create "Logic vs Visual" task classification guide | HIGH | ✅ DONE | RQ-009 |
 | P-08 | Define "Logic Leakage" metric tracking | MEDIUM | 🔴 | RQ-008 |
+| P-09 | Restructure AI_HANDOVER.md (token overflow fix) | **CRITICAL** | ✅ DONE (13 Jan) | Audit |
+| P-10 | Create CONTEXT_MAP.md dependency graph | HIGH | ✅ DONE (13 Jan) | Audit |
+| P-11 | Add token estimates to MANIFEST.md | HIGH | ✅ DONE (13 Jan) | Audit |
 
 **Key Insight:** "Constraint Enables Creativity" — Strict UI/Logic separation creates a Safety Sandbox where AI can iterate freely on UI.
 

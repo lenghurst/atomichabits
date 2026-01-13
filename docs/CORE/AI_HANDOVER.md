@@ -61,9 +61,13 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 - ✅ P-03: Added linting rules to `analysis_options.yaml`
 - ✅ P-04: Created ChangeNotifier Controller template
 - ✅ P-06: Added `flutter_riverpod` to `pubspec.yaml`
-- ✅ Documentation audit completed (identified AI_HANDOVER.md token overflow)
-- ✅ Created `SESSION_ARCHIVE_Q1_2026.md` for historical sessions
-- ✅ Restructured AI_HANDOVER.md (1732 lines → ~120 lines)
+- ✅ P-09: Restructured AI_HANDOVER.md (1732 → 142 lines, token overflow fix)
+- ✅ P-10: Created CONTEXT_MAP.md with dependency graph
+- ✅ P-11: Added token estimates + triggers to MANIFEST.md
+- ✅ Created Gemini audio sourcing prompt (H-13)
+- ✅ Full CORE files audit against stated goals
+- ✅ Updated IMPLEMENTATION_ACTIONS.md with task completions
+- ✅ Fixed stale headers across multiple files
 
 **Not Done (Deferred):**
 - Audio sourcing (H-13) — requires external tool (ChatGPT + yt-dlp)
