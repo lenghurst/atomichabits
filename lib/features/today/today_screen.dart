@@ -195,6 +195,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
+          tooltip: 'Settings',
           onPressed: () => context.push(AppRoutes.settings),
         ),
       ],
