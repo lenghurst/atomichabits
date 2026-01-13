@@ -1427,6 +1427,109 @@ MVP Fallback: Option B (Consistency-based) — simplest CD-010 compliant option
 
 ---
 
+## Protocol 13: Task Completion Sync (MANDATORY)
+
+### Trigger
+Immediately after completing ANY task:
+- Engineering tasks (P-XX)
+- Implementation tasks (Phase A-H)
+- Research questions (RQ-XXX)
+- Documentation updates
+- Any work that has a corresponding tracker entry
+
+### Why This Protocol Exists
+Manual task updates cause drift between actual progress and documented status. Audit on 13 January 2026 revealed:
+- P-03, P-04, P-06 completed but still showed 🔴 NOT STARTED
+- IMPLEMENTATION_ACTIONS.md was 2 days out of sync
+- RESEARCH_QUESTIONS.md header was 7 days stale
+
+**Root Cause:** Agents complete work but don't update trackers, causing future agents to misunderstand project state.
+
+**Origin:** Goals audit revealed SG-3 (Task Tracking) at 40% effectiveness due to status drift.
+
+### Action
+
+**Step 1: Identify Affected Trackers**
+```
+□ IMPLEMENTATION_ACTIONS.md — Engineering/Implementation tasks
+□ RESEARCH_QUESTIONS.md — RQ status changes
+□ RQ_INDEX.md — Quick reference status
+□ CD_INDEX.md — Core Decision status
+□ PD_INDEX.md — Product Decision status
+□ AI_HANDOVER.md — Current session progress
+```
+
+**Step 2: Update Task Status Immediately**
+```
+Before commit:
+1. Open relevant tracker file
+2. Find task row/entry
+3. Update status: 🔴 NOT STARTED → 🟡 IN PROGRESS → ✅ DONE
+4. Add completion date: "(13 Jan)"
+5. Update "Last Updated" header timestamp
+```
+
+**Step 3: Verify Task Count Accuracy**
+```
+□ Count total tasks in phase
+□ Count completed tasks
+□ Verify Quick Status section matches reality
+□ If mismatch, correct and note discrepancy
+```
+
+**Step 4: Cross-Reference Dependencies**
+```
+□ Does completing this task unblock others?
+□ If yes, update blocked tasks' "Blocked By" field
+□ Update CONTEXT_MAP.md if dependency resolved
+```
+
+### Checklist (Run After Every Task Completion)
+
+```
+TASK SYNC CHECKLIST:
+
+□ Task status updated in primary tracker
+□ "Last Updated" timestamp refreshed
+□ Completion date added "(DD Mon)"
+□ Task count verified accurate
+□ Blocked tasks notified (if applicable)
+□ AI_HANDOVER.md reflects progress
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Commit code without updating task status
+❌ Complete session without syncing trackers
+❌ Leave task as 🔴 when actually ✅
+❌ Update status but not timestamp
+❌ Batch multiple task updates (sync immediately)
+❌ Assume another agent will update status
+```
+
+### Example
+
+**Before Protocol 13:**
+```markdown
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | 🔴 NOT STARTED | RQ-008 |
+| P-04 | Create ChangeNotifier Controller template | HIGH | 🔴 NOT STARTED | RQ-008 |
+| P-06 | Add Riverpod to pubspec.yaml | MEDIUM | 🔴 NOT STARTED | RQ-008 |
+
+Last Updated: 11 January 2026
+```
+
+**After Protocol 13:**
+```markdown
+| P-03 | Add linting rules to analysis_options.yaml | HIGH | ✅ DONE (13 Jan) | RQ-008 |
+| P-04 | Create ChangeNotifier Controller template | HIGH | ✅ DONE (13 Jan) | RQ-008 |
+| P-06 | Add Riverpod to pubspec.yaml | MEDIUM | ✅ DONE (13 Jan) | RQ-008 |
+
+Last Updated: 13 January 2026
+```
+
+---
+
 ## Enforcement
 
 These protocols are **MANDATORY**. AI agents that skip these protocols will:
@@ -1443,6 +1546,7 @@ These protocols are **MANDATORY**. AI agents that skip these protocols will:
 
 | Date | Author | Changes |
 |------|--------|---------|
+| **13 Jan 2026** | Claude (Opus 4.5) | Added Protocol 13 (Task Completion Sync) — addresses SG-3 task tracking drift discovered in goals audit |
 | **11 Jan 2026** | Claude (Opus 4.5) | Added Protocols 10 (Bias Analysis), 11 (Sub-RQ Creation), 12 (Decision Deferral); Enhanced Session Exit Protocol v2 with Tier 1.5a-d and Tier 3 Verification Checkpoint; Added Cross-File Consistency Checklist |
 | 10 Jan 2026 | Claude (Opus 4.5) | Updated Protocol 2 (Context-Adaptive Development) per RQ-008/RQ-009 |
 | 06 Jan 2026 | Claude (Opus 4.5) | Initial 9-protocol structure; Added Protocol 9 (External Research Reconciliation) |
