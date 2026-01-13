@@ -634,6 +634,7 @@ If only 7 generic messages exist:
   □ Default to final version, not phased MVP
   □ Analyze from both App and User perspectives
   □ Actively seek gaps and missing capabilities
+  □ Run Protocol 13 (Task Sync) after completing EACH task
 
 □ After Research/Decisions:
   □ Update IMPACT_ANALYSIS.md with cascade effects
@@ -648,6 +649,7 @@ If only 7 generic messages exist:
 
 □ Session End:
   □ Run Tier 3 Cross-File Consistency Check
+  □ Verify Protocol 13 compliance (all task statuses synced)
   □ Fix any mismatches before committing
   □ Update AI_HANDOVER.md
   □ Commit and push all changes

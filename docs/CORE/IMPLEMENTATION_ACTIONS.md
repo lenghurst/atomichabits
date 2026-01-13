@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 13 January 2026 (P-03, P-04, P-06 completed; documentation restructure)
+> **Last Updated:** 13 January 2026 (Schema Deep Think reconciled; A-13 to A-16 added)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -414,6 +414,32 @@ F-10 (Architect scheduler)
 
 ## Recently Added Tasks
 
+### 13 January 2026 — Schema Foundation: identity_facets & identity_topology
+
+**Source:** Deep Think reconciliation via Protocol 9 + Protocol 10
+**Status:** ✅ RECONCILED — Ready for implementation
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_A01_A02_SCHEMA.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| A-01 | Enable pgvector extension + create ENUMs | **CRITICAL** | 🟡 READY | Deep Think |
+| A-06 | Create `identity_facets` table (RECONCILED schema) | **CRITICAL** | 🟡 READY | Deep Think |
+| A-13 | Create `identity_topology` table (RECONCILED schema) | **CRITICAL** | 🔴 NEW | Deep Think |
+| A-14 | Create RLS policies for identity_facets | HIGH | 🔴 NEW | Deep Think |
+| A-15 | Create RLS policies for identity_topology | HIGH | 🔴 NEW | Deep Think |
+| A-16 | Create facet_limit trigger function | MEDIUM | 🔴 NEW | Deep Think |
+
+**Key Decisions:**
+- ✅ 4-domain enum (professional, physical, relational, temporal)
+- ✅ vector(3072) for embeddings (matches psychometric_roots)
+- ✅ Composite FK pattern for tenant isolation
+- ✅ 10 active facets hard cap (5 soft cap in UI)
+- ⚠️ ESCALATED: sort_order field (human decision pending)
+
+**Unblocks:** 30+ tasks in Phase G and Phase H
+
+---
+
 ### 11 January 2026 — RQ-039: Token Economy Architecture (Research)
 
 **Source:** Protocol 9 reconciliation exposed bias in original recommendation; decision DEFERRED
@@ -592,6 +618,7 @@ F-10 (Architect scheduler)
 
 | Date | Source | Phase | Tasks Added | Added By | Reconciliation Doc |
 |------|--------|-------|-------------|----------|-------------------|
+| 13 Jan 2026 | Schema Deep Think | A | A-13,A-14,A-15,A-16 (4 new tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_A01_A02_SCHEMA.md` |
 | 10 Jan 2026 | RQ-024 | A,B,C,D | A-11,A-12,B-16,B-17,C-13,D-11-D-14 (9 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ024.md` |
 | 10 Jan 2026 | RQ-028/029/030/031/032 | G | G-01 through G-14 (14 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ028_RQ029_RQ030_RQ031_RQ032.md` |
 | 10 Jan 2026 | RQ-005/006/007 | F | F-01 through F-20 (20 tasks) | Claude (Opus 4.5) | `DEEP_THINK_RECONCILIATION_RQ005_RQ006_RQ007.md` |

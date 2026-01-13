@@ -955,6 +955,12 @@ LOW — Nice to have, defer if needed
 - [ ] RQ-040 listed in PRODUCT_DEV_SHEET.md? ✅
 - [ ] All new tasks in IMPLEMENTATION_ACTIONS.md? ✅
 - [ ] All new terms in GLOSSARY.md? ✅
+
+### Protocol 13 Compliance (Task Sync)
+- [ ] All extracted tasks have status updated (🔴 → 🟡 → ✅)
+- [ ] Completion dates added "(DD Mon)"
+- [ ] Task counts verified accurate
+- [ ] Blocked tasks updated if dependencies resolved
 ```
 
 ### 10.2 Git Operations

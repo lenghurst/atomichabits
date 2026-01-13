@@ -1008,6 +1008,26 @@ ref.listen(controller, (prev, next) {
 
 ---
 
+### Protocol 13: Task Completion Sync
+**Definition:** A mandatory protocol requiring immediate task status synchronization after completing any trackable work (engineering tasks, RQs, implementation tasks).
+
+**Trigger:** Immediately after completing ANY task that has a tracker entry.
+
+**Key Actions:**
+1. Update task status in primary tracker (IMPLEMENTATION_ACTIONS.md or RESEARCH_QUESTIONS.md)
+2. Refresh "Last Updated" timestamp
+3. Add completion date "(DD Mon)" to status
+4. Verify task counts are accurate
+5. Update blocked tasks if dependency resolved
+
+**Status:** ✅ COMPLETE — Protocol 13 in AI_AGENT_PROTOCOL.md
+
+**Origin:** Goals audit (13 Jan 2026) revealed SG-3 (Task Tracking) at 40% effectiveness due to P-03/04/06 showing 🔴 NOT STARTED despite being completed.
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 13
+
+---
+
 ### Cross-File Consistency Checklist
 **Definition:** A verification checklist run before git commit to ensure statistics, cross-references, and timestamps are consistent across all documentation files.
 
