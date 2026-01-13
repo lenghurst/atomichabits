@@ -108,7 +108,7 @@
 | **RQ-048** | Identity Facets Schema Field Validation | 🔴 NEEDS RESEARCH | A-01, A-06 | — |
 | **RQ-048a** | ↳ Facet Domain Taxonomy | 🔴 NEEDS RESEARCH | RQ-048 | — |
 | **RQ-048b** | ↳ Cognitive Load Facet Limits | 🔴 NEEDS RESEARCH | RQ-048 | — |
-| **RQ-048c** | ↳ Energy State Switching Cost Defaults | 🔴 NEEDS RESEARCH | RQ-048 | — |
+| **RQ-048c** | ↳ Energy State Switching Cost Defaults | ✅ COMPLETE | RQ-048 | Q1-2026 |
 
 ---
 
@@ -118,8 +118,8 @@
 |--------|-------|
 | **Total RQs (Main)** | 48 |
 | **Total Sub-RQs** | 40 (RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 31 (35%) |
-| **🔴 NEEDS RESEARCH** | 17 main + 40 sub (57 items) |
+| **✅ COMPLETE** | 32 (36%) |
+| **🔴 NEEDS RESEARCH** | 17 main + 39 sub (56 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
