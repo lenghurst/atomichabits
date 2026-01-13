@@ -1,8 +1,14 @@
 # Documentation Index — The Pact
 
-> **Last Updated:** 26 December 2025
+> **Last Updated:** 13 January 2026
+> **Note:** For AI agent entry protocol, see `CLAUDE.md` in project root.
 
 This directory contains technical documentation for The Pact app.
+
+**Primary Entry Points:**
+- `CLAUDE.md` (root) — AI agent entry point, constraints, reading order
+- `CORE/AI_HANDOVER.md` — Session continuity protocol
+- `CORE/decisions/MANIFEST.md` — Domain-specific context routing
 
 ---
 
