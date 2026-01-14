@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 13 January 2026 (RQ-048 Schema Field Validation added; audit of reconciliation weak reasoning)
+> **Last Updated:** 14 January 2026 (RQ-010a/b reconciled via Protocol 9+10)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -29,9 +29,9 @@
 | **RQ-007** | Identity Roadmap Architecture | ✅ COMPLETE | RQ-005,6 | Q1-2026 |
 | **RQ-008** | UI Logic Separation | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-009** | Optimal LLM Coding Approach | ✅ COMPLETE | — | Q1-2026 |
-| **RQ-010** | Permission Data Philosophy | 🔴 NEEDS RESEARCH | — | — |
-| **RQ-010a** | ↳ Permission-to-Accuracy Mapping | 🔴 NEEDS RESEARCH | RQ-010 | — |
-| **RQ-010b** | ↳ Graceful Degradation Strategies | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010** | Permission Data Philosophy | 🟡 IN PROGRESS | — | — |
+| **RQ-010a** | ↳ Permission-to-Accuracy Mapping | ✅ COMPLETE | RQ-010 | Q1-2026 |
+| **RQ-010b** | ↳ Graceful Degradation Strategies | ✅ COMPLETE | RQ-010 | Q1-2026 |
 | **RQ-010c** | ↳ Degradation Scenarios (20/40/60/80/100%) | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010d** | ↳ Progressive Permission Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010e** | ↳ JITAI Flexibility Architecture | 🔴 NEEDS RESEARCH | RQ-010 | — |
@@ -126,8 +126,9 @@
 |--------|-------|
 | **Total RQs (Main)** | 48 |
 | **Total Sub-RQs** | 48 (RQ-010a→h, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 32 (33%) |
-| **🔴 NEEDS RESEARCH** | 17 main + 39 sub (56 items) |
+| **✅ COMPLETE** | 34 (35%) |
+| **🟡 IN PROGRESS** | 1 (RQ-010) |
+| **🔴 NEEDS RESEARCH** | 17 main + 37 sub (54 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
@@ -154,7 +155,9 @@ FOUNDATIONAL (No dependencies):
 │
 ├── RQ-008 (UI Logic) ✅
 ├── RQ-009 (LLM Coding) ✅
-├── RQ-010 (Permission Data) 🔴
+├── RQ-010 (Permission Data) 🟡 IN PROGRESS
+│   ├── RQ-010a (Accuracy Mapping) ✅
+│   └── RQ-010b (Fallback Strategies) ✅
 ├── RQ-011 (Multiple Identity) ✅
 ├── RQ-033 (Streak Philosophy) ✅  ← COMPLETE (unblocks PD-002)
 ├── RQ-035 (Sensitivity Detection) 🔴  ← NEW (blocks PD-103)
