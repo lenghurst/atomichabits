@@ -1,6 +1,6 @@
 # IMPLEMENTATION_ACTIONS.md — Canonical Task Tracker & Agent Routing
 
-> **Last Updated:** 13 January 2026 (RQ-048c reconciled; A-17, A-18 added; E-002 resolved)
+> **Last Updated:** 14 January 2026 (RQ-048a/b + RQ-014 + RQ-013 Schema Foundation reconciled)
 > **Purpose:** Single source of truth for implementation tasks + agent navigation hub
 > **Status:** Active — MUST be updated during Protocol 8 and Protocol 9
 > **Audience:** All AI agents (Claude, DeepSeek, Gemini, ChatGPT, future agents)
@@ -413,6 +413,30 @@ F-10 (Architect scheduler)
 ---
 
 ## Recently Added Tasks
+
+### 14 January 2026 — RQ-048a/b + RQ-014 + RQ-013: Schema Foundation (Research Complete)
+
+**Source:** Deep Think reconciliation via Protocol 9 + Protocol 10
+**Status:** ✅ RECONCILED — All 4 RQs marked COMPLETE
+**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md`
+
+| Task ID | Description | Priority | Status | Source |
+|---------|-------------|----------|--------|--------|
+| A-19 | Add `keystone_habit_id` FK to identity_facets | P1 | 🔴 NEW | RQ-048a/b |
+| A-20 | Add `sort_order` field to identity_facets (E-001 resolved) | P1 | 🔴 NEW | RQ-048a/b |
+| B-15 | Implement passive energy detection algorithm | P1 | 🔴 NEW | RQ-014 |
+
+**Key Decisions (ACCEPT/MODIFY from Protocol 9):**
+- ✅ 5-Domain Taxonomy: vocational, somatic, relational, intellectual, recovery (merged creative; dropped spiritual)
+- ✅ Cognitive Limits: Soft 5 / Safety 9 / Hard 12 (reduced from 15)
+- ✅ Switching Cost Matrix: 4×4 asymmetric values validated
+- ✅ Airlock Pattern: Composite FK for tenant isolation
+- ✅ `keystone_habit_id` + `sort_order` fields added to schema
+- ⚠️ **E-004**: 5-Domain vs 4-Domain taxonomy — ESCALATED (awaiting human approval)
+
+**Unblocks:** Phase A schema creation (A-01, A-06), Phase H Constellation/Airlock
+
+---
 
 ### 13 January 2026 — RQ-048c: Switching Cost Matrix (Research Complete)
 

@@ -1,7 +1,7 @@
 # Confirmed Decisions Index
 
 > **Purpose:** Quick reference table for all Confirmed Decisions
-> **Last Updated:** 11 January 2026 (No CD changes; timestamp sync for consistency)
+> **Last Updated:** 14 January 2026 (E-004 pending — 5-Domain Taxonomy awaiting human approval)
 > **Full Details:** See `archive/CD_ARCHIVE_Q1_2026.md` for rationale
 
 ---
@@ -75,6 +75,17 @@ CD-011 (Architecture Ramifications)
 | **HIGH Impact** | 3 |
 | **MEDIUM Impact** | 5 |
 | **LOW/NONE Impact** | 3 |
+
+---
+
+## Pending Escalations (May Become CDs)
+
+| ID | Proposal | Status | Impact | Source |
+|----|----------|--------|--------|--------|
+| **E-004** | 5-Domain Taxonomy (vocational, somatic, relational, intellectual, recovery) | AWAITING HUMAN | **CRITICAL** | RQ-048a reconciliation |
+| **E-001** | `sort_order` field inclusion | RECOMMENDED: Include | LOW | Schema design |
+
+*E-004 requires human decision before becoming CD-019 (5-Domain Taxonomy).*
 
 ---
 

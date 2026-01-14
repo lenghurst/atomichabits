@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 14 January 2026 (RQ-010a/b reconciled via Protocol 9+10)
+> **Last Updated:** 14 January 2026 (RQ-048a/b COMPLETE — Schema Foundation reconciled)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -114,8 +114,8 @@
 | **RQ-047d** | ↳ Protocol 9 Automation Feasibility | 🔴 NEEDS RESEARCH | RQ-047 | — |
 | **RQ-047e** | ↳ Migration Timing & Risk Assessment | 🔴 NEEDS RESEARCH | RQ-047 | — |
 | **RQ-048** | Identity Facets Schema Field Validation | 🔴 NEEDS RESEARCH | A-01, A-06 | — |
-| **RQ-048a** | ↳ Facet Domain Taxonomy | 🔴 NEEDS RESEARCH | RQ-048 | — |
-| **RQ-048b** | ↳ Cognitive Load Facet Limits | 🔴 NEEDS RESEARCH | RQ-048 | — |
+| **RQ-048a** | ↳ Facet Domain Taxonomy | ✅ COMPLETE | RQ-048 | Q1-2026 |
+| **RQ-048b** | ↳ Cognitive Load Facet Limits | ✅ COMPLETE | RQ-048 | Q1-2026 |
 | **RQ-048c** | ↳ Energy State Switching Cost Defaults | ✅ COMPLETE | RQ-048 | Q1-2026 |
 
 ---
@@ -126,9 +126,9 @@
 |--------|-------|
 | **Total RQs (Main)** | 48 |
 | **Total Sub-RQs** | 48 (RQ-010a→h, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 34 (35%) |
+| **✅ COMPLETE** | 36 (37%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 17 main + 37 sub (54 items) |
+| **🔴 NEEDS RESEARCH** | 17 main + 35 sub (52 items) |
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
@@ -142,10 +142,10 @@ Top priority RQs scored using 5-dimension framework (Value 25%, PD Unlock 30%, P
 
 | RQ | Score | Tier | Rationale | Deep Think Prompt |
 |----|-------|------|-----------|-------------------|
-| **RQ-048a/b** | 9.0 | 🔴 CRITICAL | Blocks ALL Phase A schema | ✅ Created |
-| **RQ-014** | 8.9 | 🔴 CRITICAL | Validates CD-015, blocks Airlock | ✅ Created |
+| **RQ-048a/b** | 9.0 | ✅ COMPLETE | Blocks ALL Phase A schema | ✅ Reconciled |
+| **RQ-014** | 8.9 | ✅ COMPLETE | Validates CD-015, blocks Airlock | ✅ Reconciled |
 | **RQ-010c-h** | 8.7 | 🔴 CRITICAL | Extends RQ-010a/b, blocks Phase B | ✅ Created |
-| **RQ-013** | 8.5 | 🔴 CRITICAL | Conflict detection, A-13 schema | ✅ Created |
+| **RQ-013** | 8.5 | ✅ COMPLETE | Conflict detection, A-13 schema | ✅ Reconciled |
 | **RQ-034** | 6.8 | 🟠 HIGH | Sherlock onboarding | — |
 | **RQ-038** | 6.5 | 🟠 HIGH | JITAI component allocation | — |
 | **RQ-035** | 6.3 | 🟠 HIGH | Sensitivity detection | — |
