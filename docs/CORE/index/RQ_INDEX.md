@@ -132,6 +132,26 @@
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
+> **Note:** Protocol 14 Scoring added 14 Jan 2026
+
+---
+
+## Protocol 14 Priority Scoring (14 Jan 2026)
+
+Top priority RQs scored using 5-dimension framework (Value 25%, PD Unlock 30%, Phase 20%, Depth 15%, Risk 10%):
+
+| RQ | Score | Tier | Rationale | Deep Think Prompt |
+|----|-------|------|-----------|-------------------|
+| **RQ-048a/b** | 9.0 | 🔴 CRITICAL | Blocks ALL Phase A schema | ✅ Created |
+| **RQ-014** | 8.9 | 🔴 CRITICAL | Validates CD-015, blocks Airlock | ✅ Created |
+| **RQ-010c-h** | 8.7 | 🔴 CRITICAL | Extends RQ-010a/b, blocks Phase B | ✅ Created |
+| **RQ-013** | 8.5 | 🔴 CRITICAL | Conflict detection, A-13 schema | ✅ Created |
+| **RQ-034** | 6.8 | 🟠 HIGH | Sherlock onboarding | — |
+| **RQ-038** | 6.5 | 🟠 HIGH | JITAI component allocation | — |
+| **RQ-035** | 6.3 | 🟠 HIGH | Sensitivity detection | — |
+| **RQ-039** | 6.1 | 🟠 HIGH | Token Economy | — |
+
+**Next Action:** Execute Deep Think prompts for CRITICAL tier RQs.
 
 ---
 
