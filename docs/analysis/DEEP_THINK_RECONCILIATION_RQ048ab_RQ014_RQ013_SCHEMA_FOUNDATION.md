@@ -118,11 +118,15 @@ The Deep Think response provided comprehensive architectural definitions for "Ph
 |---|----------|--------|
 | 1 | "spiritual" domain as separate | **OVER-ENGINEERED** for MVP. Can be added post-launch. Users seeking "spiritual" can use "relational" (service to others) or free-text labels. |
 
-### ESCALATE (1 proposal)
+### ESCALATE (1 proposal) → RESOLVED 14 Jan 2026
 
-| # | Proposal | Question | Options | Recommendation |
-|---|----------|----------|---------|----------------|
-| 1 | 5-Domain vs 4-Domain | Is "intellectual" distinct enough from "vocational" to warrant separate domain? | A) Keep 5 (vocational, somatic, relational, intellectual, creative-merged) B) Keep 4 (vocational absorbs intellectual) | **A (5 domains)** — "The Reader" is clearly distinct from "The Founder" |
+| # | Proposal | Question | Resolution | Outcome |
+|---|----------|----------|------------|---------|
+| 1 | 5-Domain vs 4-Domain | Is "intellectual" distinct enough from "vocational"? | **Option A ACCEPTED** by human | → **CD-019** |
+
+**CD-019: 5-Domain Facet Taxonomy**
+- Domains: `vocational`, `somatic`, `relational`, `intellectual`, `recovery`
+- Rationale: "The Reader" is clearly distinct from "The Founder"
 
 ---
 

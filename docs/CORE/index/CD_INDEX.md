@@ -1,7 +1,7 @@
 # Confirmed Decisions Index
 
 > **Purpose:** Quick reference table for all Confirmed Decisions
-> **Last Updated:** 14 January 2026 (E-004 pending — 5-Domain Taxonomy awaiting human approval)
+> **Last Updated:** 14 January 2026 (CD-019 added — 5-Domain Taxonomy CONFIRMED)
 > **Full Details:** See `archive/CD_ARCHIVE_Q1_2026.md` for rationale
 
 ---
@@ -28,6 +28,7 @@
 | **CD-016** | AI Model Strategy (DeepSeek V3.2) | 1 | **CRITICAL** | 05 Jan 2026 |
 | **CD-017** | Android-First Development Strategy | 1 | **CRITICAL** | 06 Jan 2026 |
 | **CD-018** | Engineering Threshold Framework | 1 | **CRITICAL** | 06 Jan 2026 |
+| **CD-019** | 5-Domain Facet Taxonomy | 1 | **CRITICAL** | 14 Jan 2026 |
 
 ---
 
@@ -70,8 +71,8 @@ CD-011 (Architecture Ramifications)
 
 | Metric | Count |
 |--------|-------|
-| **Total CDs** | 18 |
-| **CRITICAL Impact** | 7 |
+| **Total CDs** | 19 |
+| **CRITICAL Impact** | 8 |
 | **HIGH Impact** | 3 |
 | **MEDIUM Impact** | 5 |
 | **LOW/NONE Impact** | 3 |
@@ -82,10 +83,10 @@ CD-011 (Architecture Ramifications)
 
 | ID | Proposal | Status | Impact | Source |
 |----|----------|--------|--------|--------|
-| **E-004** | 5-Domain Taxonomy (vocational, somatic, relational, intellectual, recovery) | AWAITING HUMAN | **CRITICAL** | RQ-048a reconciliation |
-| **E-001** | `sort_order` field inclusion | RECOMMENDED: Include | LOW | Schema design |
+| **E-004** | 5-Domain Taxonomy | ✅ RESOLVED → CD-019 | **CRITICAL** | RQ-048a reconciliation |
+| **E-001** | `sort_order` field inclusion | ✅ RESOLVED (included in schema) | LOW | Schema design |
 
-*E-004 requires human decision before becoming CD-019 (5-Domain Taxonomy).*
+*No pending escalations. All resolved.*
 
 ---
 
