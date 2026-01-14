@@ -1028,6 +1028,37 @@ ref.listen(controller, (prev, next) {
 
 ---
 
+### Protocol 14: RQ Prioritization
+**Definition:** A mandatory protocol for scoring and prioritizing Research Questions using a 5-dimension framework: Value Impact, PD Unlock Score, Phase Criticality, Dependency Depth, and Risk if Skipped.
+
+**Trigger:** When creating, reviewing, or triaging Research Questions.
+
+**Why It Exists:** RQs inform PDs, which inform tasks. Poor prioritization leads to blocked implementation phases, wasted research effort, and critical path delays.
+
+**Components:**
+| Dimension | Weight | What It Measures |
+|-----------|--------|------------------|
+| Value Impact | 25% | Core value prop + business multipliers |
+| PD Unlock Score | 30% | How many/how critical PDs this enables |
+| Phase Criticality | 20% | Which implementation phase(s) this blocks |
+| Dependency Depth | 15% | Transitive blocking count |
+| Risk if Skipped | 10% | Consequence of not researching |
+
+**Priority Tiers:**
+- 🔴 CRITICAL (8.0-10.0) — Research immediately
+- 🟠 HIGH (6.0-7.9) — Research next
+- 🟡 MEDIUM (4.0-5.9) — Queue for appropriate phase
+- 🟢 LOW (2.0-3.9) — Research when convenient
+- ⚪ DEFER (0.0-1.9) — Post-launch or never
+
+**Status:** ✅ COMPLETE — Protocol 14 in AI_AGENT_PROTOCOL.md
+
+**Origin:** RQ-010a/b reconciliation (14 Jan 2026) revealed ad-hoc priority labels were insufficient; framework needed to systematically prioritize 58 outstanding RQs.
+
+**Code References:** AI_AGENT_PROTOCOL.md Protocol 14
+
+---
+
 ### Cross-File Consistency Checklist
 **Definition:** A verification checklist run before git commit to ensure statistics, cross-references, and timestamps are consistent across all documentation files.
 

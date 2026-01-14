@@ -63,16 +63,19 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 - ✅ **Digital Context = 0%** — Recommendation to DROP from MVP (CD-018 OVER-ENGINEERED)
 - ✅ **Baseline Accuracy = 40%** — Time + History validated via Wood & Neal (2007)
 - ✅ 9 new tasks extracted: B-20 through B-28
+- ✅ **Protocol 14 (RQ Prioritization)** created — 5-dimension scoring framework
 - ✅ RQ_INDEX.md updated (RQ-010a/b marked COMPLETE, RQ-010 IN PROGRESS)
-- ✅ Reconciliation document created
 
-**Next Action:** Execute RQ-010c/e/g research (Degradation Scenarios, JITAI Architecture, Minimum Viable)
+**Next Action:** Score top 15 outstanding RQs using Protocol 14; Execute RQ-010c/e/g research
 
-**Reconciliation Output:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+**Key Outputs:**
+- `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+- AI_AGENT_PROTOCOL.md Protocol 14 (RQ scoring framework)
+- GLOSSARY.md Protocol 14 entry
 
 **Escalated (Human Decision):**
-- E-001: `sort_order` field inclusion — Recommendation: Include (low cost, high flexibility)
-- **E-003: Sleep Proxy inference** — Recommendation: SKIP (privacy concern)
+- E-001: `sort_order` field inclusion — Recommendation: Include
+- **E-003: Sleep Proxy inference** — ACCEPTED (user overrode SKIP; needs RQ-010l)
 
 ---
 
@@ -83,7 +86,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 | Phase H tasks | READY TO UNBLOCK | Schema reconciled — execute A-01, A-06, A-13-A-16 |
 | Audio files | ✅ RESOLVED | Gemini acquired 6 files, merged from main |
 | E-001: sort_order | ESCALATED | Human approval needed (recommend: Include) |
-| **E-003: Sleep Proxy** | ESCALATED | Infer sleep from app timestamps? (recommend: SKIP) |
+| **E-003: Sleep Proxy** | ✅ RESOLVED | User accepted; needs RQ-010l for sophisticated inference |
 
 **See:** `IMPLEMENTATION_ACTIONS.md` lines 10-28 for full blocker details.
 
@@ -119,7 +122,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 
 | Date | Focus | Key Outcome |
 |------|-------|-------------|
-| 14 Jan | **RQ-010a/b reconciliation** | WiFi trap identified, 9 tasks extracted |
+| 14 Jan | **RQ-010a/b + Protocol 14** | WiFi trap, 9 tasks, RQ prioritization framework |
 | 13 Jan | Doc restructure + P-03/04/06 | AI_HANDOVER.md fixed |
 | 12 Jan | Branch reconciliation | WIL + AI Orch merged |
 | 11 Jan | Protocol 9 reconciliation | 3 RQs complete |
@@ -139,6 +142,8 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 | File | Change |
 |------|--------|
 | `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md` | NEW (340+ lines) |
+| `docs/CORE/AI_AGENT_PROTOCOL.md` | Protocol 14 (RQ Prioritization) added |
+| `docs/CORE/GLOSSARY.md` | Protocol 14 entry added |
 | `docs/CORE/index/RQ_INDEX.md` | Updated (RQ-010a/b → COMPLETE) |
 | `docs/CORE/AI_HANDOVER.md` | Updated (session summary) |
 

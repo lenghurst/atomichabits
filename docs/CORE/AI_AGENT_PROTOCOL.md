@@ -1,9 +1,9 @@
 # AI_AGENT_PROTOCOL.md — Mandatory Behaviors for AI Agents
 
-> **Last Updated:** 11 January 2026
+> **Last Updated:** 14 January 2026
 > **Purpose:** Codify reflexive behaviors that ALL AI agents must exhibit
 > **Scope:** Claude, Gemini, ChatGPT, any future AI agents working on The Pact
-> **Protocols:** 12 mandatory (1-9 operational, 10-12 meta-cognitive)
+> **Protocols:** 14 mandatory (1-9 operational, 10-12 meta-cognitive, 13-14 workflow)
 
 ---
 
@@ -646,6 +646,7 @@ If only 7 generic messages exist:
   □ Run Protocol 10 (Bias Analysis) for product-affecting recommendations
   □ If 4+ LOW assumptions → Defer via Protocol 12
   □ If complex RQ needed → Decompose via Protocol 11
+  □ If new RQ created → Score via Protocol 14 (RQ Prioritization)
 
 □ Session End:
   □ Run Tier 3 Cross-File Consistency Check
@@ -1532,6 +1533,254 @@ Last Updated: 13 January 2026
 
 ---
 
+## Protocol 14: RQ Prioritization (MANDATORY)
+
+### Trigger
+When creating, reviewing, or triaging Research Questions.
+
+### Why This Protocol Exists
+RQs inform PDs, which inform implementation tasks. Poorly prioritized RQs lead to:
+1. Blocked implementation phases (schema not ready)
+2. Wasted research effort on low-value topics
+3. Critical path delays
+4. Misallocation of AI research resources
+
+**Core Principle:** RQ Priority = How much does completing this unblock × How critical is what it unblocks
+
+### The Five Dimensions
+
+| Dimension | Weight | What It Measures |
+|-----------|--------|------------------|
+| **Value Impact** | 25% | Core value proposition contribution + business multipliers |
+| **PD Unlock Score** | 30% | How many/how critical PDs this enables |
+| **Phase Criticality** | 20% | Which implementation phase(s) this blocks |
+| **Dependency Depth** | 15% | Transitive blocking count |
+| **Risk if Skipped** | 10% | Consequence of not researching |
+
+### Dimension 1: Value Impact (25%)
+
+**Base Score:**
+
+| Category | Base | Examples |
+|----------|------|----------|
+| Core value proposition | 5 | JITAI quality, Identity architecture, Permissions |
+| Key differentiator | 4 | Council AI, Constellation UX, Token Economy |
+| Enhanced feature | 3 | Sound design, Chamber visuals, Wearables |
+| Supporting system | 2 | Template versioning, Population learning |
+| Technical debt/polish | 1 | Documentation, code cleanup |
+
+**Business Impact Multipliers (cumulative):**
+
+| Multiplier | Condition | Adjustment |
+|------------|-----------|------------|
+| Revenue-affecting | Directly impacts monetization | ×1.3 |
+| Retention-affecting | Directly impacts user retention | ×1.2 |
+| Acquisition-affecting | Directly impacts user acquisition | ×1.1 |
+
+**Example:** RQ-010 (Permissions) = Base 5 × 1.2 (retention) = **6.0**
+
+### Dimension 2: PD Unlock Score (30%)
+
+**Formula:** `PD_Unlock = Σ(PD_Importance × Blocked_By_This_RQ)`
+
+| PD Importance | Definition | Examples |
+|---------------|------------|----------|
+| **3** | CRITICAL — blocks implementation phases | PD-106, PD-107 |
+| **2** | HIGH — blocks significant features | PD-117, PD-119 |
+| **1** | MEDIUM/LOW — blocks polish/optional | PD-104, PD-120 |
+
+**Transitive Bonus:** Add +0.5 for each downstream task blocked (capped at +2.5).
+
+### Dimension 3: Phase Criticality (20%)
+
+Implementation phases form dependency cascade. Earlier = higher priority.
+
+| Phase | Score | Rationale |
+|-------|-------|-----------|
+| **Phase A** (Schema Foundation) | 5 | Everything depends on tables existing |
+| **Phase B** (Backend Core) | 5 | Core services must exist |
+| **Phase C** (AI Integration) | 4 | Intelligence layer |
+| **Phase D** (Identity Coach) | 4 | Key feature set |
+| **Phase E** (Witness Layer) | 3 | Extended feature |
+| **Phase F** (Treaties) | 3 | Extended feature |
+| **Phase G** (Intelligence Enhancement) | 2 | Enhancement layer |
+| **Phase H** (Polish/Audio) | 2 | Polish |
+| **Post-Launch** | 1 | Can ship without |
+
+**Multiple Phases:** Use **highest** blocked phase score.
+
+### Dimension 4: Dependency Depth (15%)
+
+Measures transitive blocking — what completing this RQ ultimately enables.
+
+**Formula:** `Depth = log₂(1 + Direct_Blocks + Indirect_Blocks)` (scaled 1-5)
+
+| Total Blocked Items | Score |
+|--------------------|-------|
+| 0 items | 1 |
+| 1-2 items | 2 |
+| 3-4 items | 3 |
+| 5-8 items | 4 |
+| 9+ items | 5 |
+
+**Why logarithmic?** Prevents runaway scores. Blocking 100 items ≠ 50× blocking 2.
+
+### Dimension 5: Risk if Skipped (10%)
+
+| Risk Level | Score | Definition |
+|------------|-------|------------|
+| Ship Broken | 5 | App fundamentally doesn't work |
+| Major UX Failure | 4 | Core feature unusable |
+| Poor Experience | 3 | Feature works but frustrating |
+| Minor Issue | 2 | Noticeable but acceptable |
+| Negligible | 1 | Users won't notice |
+
+### Priority Calculation
+
+```
+Raw_Score = (Value × 0.25) + (PD_Unlock × 0.30) + (Phase × 0.20) + (Depth × 0.15) + (Risk × 0.10)
+
+Priority = Normalize(Raw_Score) to 1-10 scale
+```
+
+### Priority Tiers
+
+| Score Range | Tier | Action |
+|-------------|------|--------|
+| 8.0-10.0 | 🔴 **CRITICAL** | Research immediately, blocks critical path |
+| 6.0-7.9 | 🟠 **HIGH** | Research next, significant value |
+| 4.0-5.9 | 🟡 **MEDIUM** | Queue for appropriate phase |
+| 2.0-3.9 | 🟢 **LOW** | Research when convenient |
+| 0.0-1.9 | ⚪ **DEFER** | Post-launch or never |
+
+### Action: When Creating a New RQ
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    RQ PRIORITIZATION CHECKLIST                               │
+│                                                                              │
+│  Step 1: Score Value Impact (25%)                                            │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Is this core value prop? (5) / differentiator? (4) / enhanced? (3) /     │
+│    supporting? (2) / polish? (1)                                             │
+│  □ Apply multipliers: Revenue (×1.3)? Retention (×1.2)? Acquisition (×1.1)? │
+│  □ Final Value Score: _____                                                  │
+│                                                                              │
+│  Step 2: Score PD Unlock (30%)                                               │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ List all PDs this RQ blocks: _____                                        │
+│  □ Rate each PD: CRITICAL (3) / HIGH (2) / MEDIUM-LOW (1)                   │
+│  □ Sum PD scores: _____                                                      │
+│  □ Add transitive task bonus (+0.5/task, max +2.5): _____                   │
+│  □ Final PD Unlock Score: _____ (normalize to 1-5)                          │
+│                                                                              │
+│  Step 3: Score Phase Criticality (20%)                                       │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Which phase(s) does this RQ block? _____                                  │
+│  □ Use highest blocked phase score: _____                                    │
+│                                                                              │
+│  Step 4: Score Dependency Depth (15%)                                        │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Count direct + indirect blocked items: _____                              │
+│  □ Apply log scale: 0→1, 1-2→2, 3-4→3, 5-8→4, 9+→5                          │
+│  □ Final Depth Score: _____                                                  │
+│                                                                              │
+│  Step 5: Score Risk if Skipped (10%)                                         │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ What happens if we never research this?                                   │
+│  □ Ship broken (5) / Major UX fail (4) / Poor UX (3) / Minor (2) / None (1) │
+│  □ Final Risk Score: _____                                                   │
+│                                                                              │
+│  Step 6: Calculate Priority                                                  │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Raw = (Value×0.25) + (PD×0.30) + (Phase×0.20) + (Depth×0.15) + (Risk×0.10)│
+│  □ Normalize to 1-10                                                         │
+│  □ Assign Tier: CRITICAL (8+) / HIGH (6-7.9) / MEDIUM (4-5.9) / LOW (2-3.9) │
+│                                                                              │
+│  Step 7: Document in RQ Entry                                                │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  □ Add Priority Score and Tier to RQ metadata                                │
+│  □ Add Priority Rationale section explaining scores                          │
+│  □ Update RQ_INDEX.md with priority indicator                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### RQ Entry Template (Updated)
+
+When creating new RQs, include prioritization:
+
+```markdown
+### RQ-XXX: [Title]
+
+| Field | Value |
+|-------|-------|
+| **Question** | [The research question] |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority Score** | X.X / 10 |
+| **Priority Tier** | 🔴 CRITICAL / 🟠 HIGH / 🟡 MEDIUM / 🟢 LOW |
+| **Blocking** | [PDs, Phases, Tasks blocked] |
+| **Assigned** | [Agent or session type] |
+
+**Priority Rationale:**
+| Dimension | Score | Rationale |
+|-----------|-------|-----------|
+| Value Impact | X | [Why] |
+| PD Unlock | X | [Which PDs] |
+| Phase Criticality | X | [Which phase] |
+| Dependency Depth | X | [Count] |
+| Risk if Skipped | X | [Consequence] |
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Create RQ without priority scoring
+❌ Use gut feeling instead of framework
+❌ Ignore phase dependencies when scoring
+❌ Treat all RQs as equally important
+❌ Skip business impact multipliers
+❌ Forget to update RQ_INDEX.md with priority tier
+❌ Score in isolation without checking dependency chain
+```
+
+### Example: Scoring RQ-010
+
+```
+RQ-010: Permission Data Philosophy
+
+Value Impact:
+- Base: 5 (Core value prop — JITAI quality depends on this)
+- Retention multiplier: ×1.2 (Poor permissions = poor suggestions = churn)
+- Final: 6.0 → normalized to 5
+
+PD Unlock:
+- Blocks: PD-117 (CRITICAL, 3)
+- Transitive tasks: B-10, B-11, B-20-B-28 (9 tasks = +2.5 bonus)
+- Final: 5.5 → normalized to 5
+
+Phase Criticality:
+- Blocks: Phase B (Backend), Phase G (Intelligence)
+- Highest: Phase B = 5
+
+Dependency Depth:
+- Direct: 1 PD + 9 tasks = 10 items
+- Indirect: Phase B enables Phase C-H
+- Score: 5 (9+ items)
+
+Risk if Skipped:
+- JITAI unusable without permissions research
+- Score: 5 (Ship broken)
+
+CALCULATION:
+Raw = (5×0.25) + (5×0.30) + (5×0.20) + (5×0.15) + (5×0.10)
+    = 1.25 + 1.50 + 1.00 + 0.75 + 0.50
+    = 5.0 → Normalized to ~9.5/10
+
+Priority Tier: 🔴 CRITICAL
+```
+
+---
+
 ## Enforcement
 
 These protocols are **MANDATORY**. AI agents that skip these protocols will:
@@ -1548,6 +1797,7 @@ These protocols are **MANDATORY**. AI agents that skip these protocols will:
 
 | Date | Author | Changes |
 |------|--------|---------|
+| **14 Jan 2026** | Claude (Opus 4.5) | Added Protocol 14 (RQ Prioritization) — 5-dimension scoring framework replacing ad-hoc priority labels |
 | **13 Jan 2026** | Claude (Opus 4.5) | Added Protocol 13 (Task Completion Sync) — addresses SG-3 task tracking drift discovered in goals audit |
 | **11 Jan 2026** | Claude (Opus 4.5) | Added Protocols 10 (Bias Analysis), 11 (Sub-RQ Creation), 12 (Decision Deferral); Enhanced Session Exit Protocol v2 with Tier 1.5a-d and Tier 3 Verification Checkpoint; Added Cross-File Consistency Checklist |
 | 10 Jan 2026 | Claude (Opus 4.5) | Updated Protocol 2 (Context-Adaptive Development) per RQ-008/RQ-009 |
