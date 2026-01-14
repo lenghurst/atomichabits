@@ -417,8 +417,8 @@ F-10 (Architect scheduler)
 ### 14 January 2026 — RQ-048a/b + RQ-014 + RQ-013: Schema Foundation (Research Complete)
 
 **Source:** Deep Think reconciliation via Protocol 9 + Protocol 10
-**Status:** ✅ RECONCILED — All 4 RQs marked COMPLETE
-**Reconciliation Doc:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md`
+**Status:** ✅ RECONCILED — All 4 RQs marked COMPLETE (RQ-048a, RQ-048b, RQ-014, RQ-013)
+**Reconciliation Doc:** `docs/CORE/RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md`
 
 | Task ID | Description | Priority | Status | Source |
 |---------|-------------|----------|--------|--------|
@@ -427,12 +427,13 @@ F-10 (Architect scheduler)
 | B-15 | Implement passive energy detection algorithm | P1 | 🔴 NEW | RQ-014 |
 
 **Key Decisions (ACCEPT/MODIFY from Protocol 9):**
-- ✅ 5-Domain Taxonomy: vocational, somatic, relational, intellectual, recovery (merged creative; dropped spiritual)
+- ✅ **4-Domain Taxonomy:** vocational, somatic, relational, intellectual (merged creative into intellectual; dropped spiritual as NICE-TO-HAVE)
 - ✅ Cognitive Limits: Soft 5 / Safety 9 / Hard 12 (reduced from 15)
-- ✅ Switching Cost Matrix: 4×4 asymmetric values validated
-- ✅ Airlock Pattern: Composite FK for tenant isolation
-- ✅ `keystone_habit_id` + `sort_order` fields added to schema
-- ⚠️ **E-004**: 5-Domain vs 4-Domain taxonomy — ESCALATED (awaiting human approval)
+- ✅ Switching Cost Matrix: 4×4 asymmetric values validated (RQ-014)
+- ✅ Chronotype Modifiers: Applied to high_focus transitions (RQ-012 integration)
+- ✅ Airlock Pattern: Composite FK for tenant isolation (security)
+- ✅ `keystone_habit_id` + `sort_order` + `psychometric_root_id` fields added to schema
+- ✅ Passive Energy Detection Algorithm delivered (4-tier confidence hierarchy)
 
 **Unblocks:** Phase A schema creation (A-01, A-06), Phase H Constellation/Airlock
 
