@@ -117,6 +117,10 @@
 | **RQ-048a** | ↳ Facet Domain Taxonomy | ✅ COMPLETE | RQ-048 | Q1-2026 |
 | **RQ-048b** | ↳ Cognitive Load Facet Limits | ✅ COMPLETE | RQ-048 | Q1-2026 |
 | **RQ-048c** | ↳ Energy State Switching Cost Defaults | ✅ COMPLETE | RQ-048 | Q1-2026 |
+| **RQ-049** | Transparent Intelligence Architecture | 🔴 NEEDS RESEARCH | PD-140, 141, 142 | — |
+| **RQ-049a** | ↳ Insight Prioritization Algorithms | 🔴 NEEDS RESEARCH | RQ-049 | — |
+| **RQ-049b** | ↳ Loading State Taxonomy | 🔴 NEEDS RESEARCH | RQ-049 | — |
+| **RQ-049c** | ↳ Witness Narrative Translation | 🔴 NEEDS RESEARCH | RQ-049 | — |
 
 ---
 
@@ -126,9 +130,11 @@
 |--------|-------|
 | **Total RQs (Main)** | 48 |
 | **Total Sub-RQs** | 48 (RQ-010a→h, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 36 (37%) |
+| **✅ COMPLETE** | 36 (36%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 17 main + 35 sub (52 items) |
+| **🔴 NEEDS RESEARCH** | 18 main + 38 sub (56 items) |
+
+> **Note:** RQ-049 added 15 Jan 2026 for Transparent Intelligence (Trust Bridge)
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
 > **Note:** RQ-047 added 12 Jan 2026 for AI Orchestration (renumbered from branch conflict)
@@ -211,6 +217,16 @@ PSYOS ARCHITECTURE (CD-015):
 │   │   └── RQ-023 (Privacy Framework) 🔴
 │   └── RQ-020 (Treaty-JITAI) ✅
 └── RQ-026 (Sound Design) 🔴
+
+TRANSPARENT INTELLIGENCE LAYER (RQ-049):
+└── RQ-049 (Transparent Intelligence Architecture) 🔴  ← NEW (The "Trust Bridge")
+    ├── RQ-049a (Insight Prioritization) 🔴
+    ├── RQ-049b (Loading State Taxonomy) 🔴
+    └── RQ-049c (Witness Narrative Translation) 🔴
+
+SYSTEM INTELLIGENCE (PD-145):
+└── PD-145 (Memory Boundary & RAG) 🟡 PENDING IMPLEMENTATION
+    └── See PD-145 in `PD_IDENTITY.md` (Deep Capture Strategy)
 
 WITNESS INTELLIGENCE LAYER (CD-002):
 ├── RQ-040 (Viral Witness Growth Strategy) 🔴

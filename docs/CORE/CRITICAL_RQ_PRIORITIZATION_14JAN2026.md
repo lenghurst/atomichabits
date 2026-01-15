@@ -20,8 +20,9 @@
 - **Tier 1 (CRITICAL):** RQ-039 + 7 sub-RQs (Token Economy) — Blocks PD-119
 - **Tier 1 (CRITICAL):** RQ-010c-h split into 2 prompts (Permission UX + Technical)
 - **Tier 2 (HIGH):** RQ-015 (Polymorphic Habits) — Now actionable, schema ready
-- **Tier 2 (HIGH):** RQ-034 (Sherlock Architecture) — UX polish, RQ-037 complete
-- **Tier 3 (MEDIUM):** RQ-007 (Identity Roadmap) — Now actionable, topology ready
+- **Tier 2 (HIGH)::** RQ-034 (Sherlock Architecture) — UX polish, RQ-037 complete
+- **Tier 2 (HIGH):** RQ-007 (Identity Roadmap) — Now actionable, topology ready
+- **Tier 2 (HIGH):** PD-145 (Personal RAG) — "Deep Capture" strategy defined, needs implementation specs
 
 ---
 

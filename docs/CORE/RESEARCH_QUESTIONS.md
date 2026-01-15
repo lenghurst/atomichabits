@@ -256,6 +256,33 @@ This happens for both the MetaLever (strategy) and individual arm (variant). Ove
 
 ---
 
+---
+
+### RQ-049: Transparent Intelligence Architecture
+
+| Field | Value |
+|-------|-------|
+| **Question** | How do we architect the "Trust Bridge" that explains the engine's work to users and witnesses? |
+| **Status** | 🔴 NEEDS RESEARCH |
+| **Priority** | **HIGH** — Critical for "Perceived ROI" and Trust |
+| **Blocking** | PD-140 (Glass Box Policy), PD-141 (Insight Hierarchy), PD-142 (Witness Voice) |
+| **Assigned** | Deep Think |
+| **Spec** | `research_spec_rq049.md` |
+
+**Concept:**
+> "Show the work. Not just to prove we did it, but to teach the user how to think."
+> The "Miyagi Effect": user internalizes the model (Context → Conflict → Resolution).
+
+**Sub-Questions to Answer:**
+*   **RQ-049a (Insight Prioritization):** When multiple insights exist (Drift + Friction + Opportunity), which one wins the "Hero Slot"?
+    *   *Hypothesis:* Score = (Magnitude * Urgency * Actionability) / CognitiveCost.
+*   **RQ-049b (Loading State Taxonomy):** What are the standard "Thinking Steps" to visualize?
+    *   *Candidates:* Syncing Evidence → Detecting Conflicts → Calibrating Willpower.
+*   **RQ-049c (Social Translation):** How to translate raw data (`did_habit=false`) into empathy-inducing narratives for witnesses?
+    *   *Goal:* "He's fighting a battle on two fronts" (not "He failed").
+
+---
+
 ### RQ-006: Content Library for Recommendations
 
 | Field | Value |
@@ -4538,6 +4565,12 @@ RQ-005 (Proactive Recommendation Algorithms) 🔴 NEEDS RESEARCH
         └── RQ-007 (Identity Roadmap Architecture) 🔴 NEEDS RESEARCH
             └── Blocks: CD-008, CD-009, CD-011, PD-105, PD-107
 
+PENDING RESEARCH (Transparent Intelligence - Trust Bridge):
+RQ-049 (Transparent Intelligence Architecture) 🔴 NEEDS RESEARCH
+    ├── RQ-049a (Insight Prioritization algorithms) 🔴
+    ├── RQ-049b (Loading State Taxonomy) 🔴
+    └── RQ-049c (Witness Narrative Translation) 🔴
+
 PENDING RESEARCH (Process/Code Quality):
 RQ-008 (UI Logic Separation) 🔴 NEEDS RESEARCH → Blocks CD-013
 RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
@@ -4559,7 +4592,8 @@ RQ-009 (LLM Coding Approach) 🔴 NEEDS RESEARCH → Blocks Protocol 2
 4. **HIGH:** RQ-005, RQ-006 (Proactive Guidance System — core value prop)
 5. **HIGH:** RQ-010 (Permission Data — affects all phases)
 6. **HIGH:** RQ-007 (Identity Roadmap Architecture)
-7. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
+7. **HIGH:** RQ-049 (Transparent Intelligence — Trust & "Miyagi Effect")
+8. **MEDIUM:** RQ-008, RQ-009 (Process improvements)
 
 ---
 

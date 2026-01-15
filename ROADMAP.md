@@ -132,6 +132,7 @@ These are parked until blocking decisions are made.
 | Conversational CLI | CD-004 rejected this |
 | Power Words / Lexicon | Content strategy TBD |
 | Shadow Dialogue | Now part of Council AI (CD-015) |
+| **Local LLM Migration (Phase L)** | PD-145 (Privacy/Cost constraints for Deep Memory) |
 
 ---
 

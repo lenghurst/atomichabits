@@ -17,6 +17,7 @@
 | PD-103 | Sensitivity Detection | F | PENDING | RQ-035 |
 | PD-105 | Unified AI Coaching Architecture | F, G | READY | RQ-005,6,7 ✅ |
 | PD-107 | Proactive Guidance System | F, G | READY | RQ-005,6,7 ✅ |
+| PD-145 | Scope of Memory | F | PENDING | — |
 | PD-121 | Archetype Template Count | G | RESOLVED | — |
 | PD-122 | Preference Embedding Visibility | G | RESOLVED | — |
 | PD-123 | Facet Typical Energy State | G | RESOLVED | — |
@@ -61,6 +62,44 @@ Adopt Shadow Cabinet terminology:
 - **Shadow:** Who user fears becoming
 - **Saboteur:** The pattern that causes failure
 - **Script:** The lie that justifies inaction
+
+---
+
+## PD-145: Scope of Memory ✅ RESOLVED
+
+| Field | Value |
+|-------|-------|
+| **Phase** | F |
+| **Date Proposed** | 15 January 2026 |
+| **Status** | RESOLVED |
+
+**The Decision:**
+**"Deep Capture" (Maximalist Strategy).** The system will ingest ALL available user data to form the deepest possible context window.
+
+**Scope of Capture:**
+1.  **Journal Entries**: Raw thoughts, emotional dumps, daily reflections.
+2.  **Chat Logs**: All conversations with Coach/Sherlock.
+3.  **Identity Evidence**: Crystallized actions and completion metrics.
+
+**The "Cold Start" Protocol:**
+We implement a **Historical Ingestion Phase** at signup. The engine scans available history (journals, logs) to vectorize a "Day 0" baseline profile.
+
+**Roadmap Note:**
+Transition to **Local LLM** (Phase L) is required for long-term privacy and cost scaling of this infinite memory model.
+
+**Visual Mapping:**
+```mermaid
+graph TD
+    User[User History/Actions] -->|Ingest All (PD-145)| VectorStore[(pgvector Deep Memory)]
+    
+    VectorStore -->|Retrieval| Context[Context Window]
+    
+    Context -->|Input| Council[Council AI]
+    Context -->|Input| Coach[Identity Coach]
+    
+    Council -->|Output| Narrative[Deeply Contextualized Audiobook]
+    Coach -->|Output| Insight[Hyper-Personalized Guidance]
+```
 
 ---
 
