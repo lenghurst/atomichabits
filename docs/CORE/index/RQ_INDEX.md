@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 15 January 2026 (RQ-010i-q + RQ-050 + RQ-055-061 added — Permission Architecture expansion)
+> **Last Updated:** 15 January 2026 (RQ-010r-u added — Deep Think Draft 3 implementation gaps)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -47,6 +47,10 @@
 | **RQ-010o** | ↳ Dense Urban Geofencing Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010p** | ↳ WiFi-Based Location Fallback Architecture | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010q** | ↳ Play Store Background Location Approval Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010r** | ↳ Health Connect Sleep API Kotlin Integration | 🔴 NEEDS RESEARCH | RQ-010g | — |
+| **RQ-010s** | ↳ ActivityTransitionReceiver BroadcastReceiver Implementation | 🔴 NEEDS RESEARCH | RQ-010g | — |
+| **RQ-010t** | ↳ GeofencingClient Registration Kotlin Setup | 🔴 NEEDS RESEARCH | RQ-010e | — |
+| **RQ-010u** | ↳ WorkManager Configuration (Expedited vs Periodic) | 🔴 NEEDS RESEARCH | RQ-010h | — |
 | **RQ-011** | Multiple Identity Architecture | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-012** | Fractal Trinity Architecture | ✅ COMPLETE | CD-015 | Q1-2026 |
 | **RQ-013** | Identity Topology & Graph Modeling | ✅ COMPLETE | RQ-012 | Q1-2026 |
@@ -162,11 +166,12 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs (Main)** | 61 |
-| **Total Sub-RQs** | 79 (RQ-010a→q, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e) |
-| **✅ COMPLETE** | 36 (26%) |
+| **Total Sub-RQs** | 83 (RQ-010a→u, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e) |
+| **✅ COMPLETE** | 36 (25%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 24 main + 67 sub (91 items) |
+| **🔴 NEEDS RESEARCH** | 24 main + 71 sub (95 items) |
 
+> **Note:** RQ-010r-u added 15 Jan 2026 — Implementation gaps from Deep Think Draft 3 Response (Sleep API, BroadcastReceiver, GeofencingClient, WorkManager)
 > **Note:** RQ-050, RQ-055-061 added 15 Jan 2026 for Permission Architecture expansion (Passive Context, App Usage Intelligence)
 > **Note:** RQ-010i-q added 15 Jan 2026 for Permission Technical sub-questions (Play Store, Sleep API, Geofencing)
 > **Note:** RQ-049 added 15 Jan 2026 for Transparent Intelligence (Trust Bridge)
@@ -228,7 +233,11 @@ FOUNDATIONAL (No dependencies):
 │   │   ├── RQ-010n (Sleep API Decision) 🔴
 │   │   ├── RQ-010o (Dense Urban Geofencing) 🔴
 │   │   ├── RQ-010p (WiFi Fallback) 🔴
-│   │   └── RQ-010q (Play Store Approval Strategy) 🔴 ← CRITICAL
+│   │   ├── RQ-010q (Play Store Approval Strategy) 🔴 ← CRITICAL
+│   │   ├── RQ-010r (Health Connect Sleep API) 🔴 ← Deep Think Gap
+│   │   ├── RQ-010s (ActivityTransitionReceiver) 🔴 ← Deep Think Gap
+│   │   ├── RQ-010t (GeofencingClient Setup) 🔴 ← Deep Think Gap
+│   │   └── RQ-010u (WorkManager Config) 🔴 ← Deep Think Gap
 │   ├── RQ-055 (Relapse Handling) 🔴 ← Red Team
 │   ├── RQ-057 (Abuse Prevention) 🔴 ← Red Team CRITICAL
 │   └── RQ-058 (Geofence Decay) 🔴
