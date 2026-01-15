@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 15 January 2026 (RQ-010r-u added — Deep Think Draft 3 implementation gaps)
+> **Last Updated:** 15 January 2026 (RQ-062 added — Implementation Governance)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -158,6 +158,13 @@
 | **RQ-061c** | ↳ Celebration Without Interruption UX | 🔴 NEEDS RESEARCH | RQ-061 | — |
 | **RQ-061d** | ↳ User Customization of App Mappings | 🔴 NEEDS RESEARCH | RQ-061 | — |
 | **RQ-061e** | ↳ Meaningful Usage Threshold Calibration | 🔴 NEEDS RESEARCH | RQ-061 | — |
+| **RQ-062** | Implementation Governance Process | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-062a** | ↳ Session-to-Session Continuity Protocol | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062b** | ↳ PD/CD Alignment Verification Checklist | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062c** | ↳ Code Review Against Research Specifications | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062d** | ↳ Implementation Drift Detection | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062e** | ↳ Handover Protocol for Partial Implementations | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062f** | ↳ Automated Spec-to-Code Traceability | 🔴 NEEDS RESEARCH | RQ-062 | — |
 
 ---
 
@@ -165,12 +172,13 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 61 |
-| **Total Sub-RQs** | 83 (RQ-010a→u, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e) |
-| **✅ COMPLETE** | 36 (25%) |
+| **Total RQs (Main)** | 62 |
+| **Total Sub-RQs** | 89 (RQ-010a→u, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e, RQ-062a→f) |
+| **✅ COMPLETE** | 36 (24%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 24 main + 71 sub (95 items) |
+| **🔴 NEEDS RESEARCH** | 25 main + 77 sub (102 items) |
 
+> **Note:** RQ-062 added 15 Jan 2026 — Implementation Governance (session continuity, PD/CD alignment, drift detection)
 > **Note:** RQ-010r-u added 15 Jan 2026 — Implementation gaps from Deep Think Draft 3 Response (Sleep API, BroadcastReceiver, GeofencingClient, WorkManager)
 > **Note:** RQ-050, RQ-055-061 added 15 Jan 2026 for Permission Architecture expansion (Passive Context, App Usage Intelligence)
 > **Note:** RQ-010i-q added 15 Jan 2026 for Permission Technical sub-questions (Play Store, Sleep API, Geofencing)
@@ -355,6 +363,15 @@ ENTERPRISE INTEGRATION (Post-MVP, B2B):
     ├── RQ-050b (Enterprise IT OAuth) 🔴
     ├── RQ-050c (BYOC Model) 🔴
     └── RQ-050d (Wellness TAM) 🔴
+
+IMPLEMENTATION GOVERNANCE (Meta-Process):
+└── RQ-062 (Implementation Governance Process) 🔴  ← NEW (15 Jan 2026)
+    ├── RQ-062a (Session-to-Session Continuity) 🔴
+    ├── RQ-062b (PD/CD Alignment Verification) 🔴
+    ├── RQ-062c (Code Review Against Specs) 🔴
+    ├── RQ-062d (Implementation Drift Detection) 🔴
+    ├── RQ-062e (Partial Implementation Handover) 🔴
+    └── RQ-062f (Spec-to-Code Traceability) 🔴
 ```
 
 ---
