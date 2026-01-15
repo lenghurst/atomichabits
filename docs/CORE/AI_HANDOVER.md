@@ -1,6 +1,6 @@
 # AI_HANDOVER.md — Session Continuity Protocol
 
-> **Last Updated:** 14 January 2026
+> **Last Updated:** 15 January 2026
 > **Purpose:** Ensure seamless context transfer between AI agent sessions
 > **Token Target:** <3,000 tokens (fits in any context window)
 
@@ -10,12 +10,12 @@
 
 | Field | Value |
 |-------|-------|
-| **Session ID** | `claude/split-permission-prompts-RC3it` |
-| **Date** | 14 January 2026 |
-| **Agent** | Claude (Sonnet 4.5) |
-| **Git State** | Pending commit — RQ-048a/b + RQ-014 + RQ-013 finalization |
-| **Focus** | Protocol 9/10 reconciliation finalization + RQ documentation updates |
-| **Status** | ✅ All research RQs marked COMPLETE, ready for commit |
+| **Session ID** | `claude/claude-md-instructions-RREJE` |
+| **Date** | 15 January 2026 |
+| **Agent** | Claude (Opus 4.5) |
+| **Git State** | Pending commit — RQ-010 expansion + Big Think Case |
+| **Focus** | Permission Architecture deep analysis + RQ expansion |
+| **Status** | 🟡 RQ tracking updated, Big Think Case created |
 
 ---
 
@@ -58,35 +58,33 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ## CURRENT SESSION
 
 **Accomplished (this session):**
-- ✅ **Protocol 9/10 Reconciliation Complete** — Processed Deep Think response for RQ-048a/b + RQ-014 + RQ-013
-- ✅ **Reconciliation Document Created** — `docs/CORE/RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md` (560 lines)
-- ✅ **RQ-048a + RQ-048b Added** — New RQ entries created in RESEARCH_QUESTIONS.md (~200 lines each)
-- ✅ **RQ-013 + RQ-014 Updated** — Both marked COMPLETE with full research outputs documented
-- ✅ **IMPLEMENTATION_ACTIONS Updated** — Corrected 4-domain taxonomy (not 5), updated key decisions
-- ✅ **Domain Taxonomy Decision** — **4 domains** (vocational, somatic, relational, intellectual) — merged creative into intellectual, rejected spiritual as NICE-TO-HAVE
-- ✅ **Cognitive Limits Finalized** — Soft 5 / Safety 9 / Hard 12 (modified from Deep Think's 15)
-- ✅ **Switching Cost Matrix Validated** — 4×4 asymmetric matrix with chronotype modifiers
-- ✅ **Airlock Pattern Approved** — Composite FK security pattern for tenant isolation
-- ✅ **Impact Analysis Created** — `IMPACT_ANALYSIS_RQ048_RQ014_RQ013.md` (560 lines) — 40 tasks unblocked
-- ✅ **Prioritization Framework Created** — `CRITICAL_RQ_PRIORITIZATION_14JAN2026.md` (350 lines) — Next 6 prompts identified
-- ✅ **All Changes Committed & Pushed** — 2 commits successfully pushed to remote
+- ✅ **Permission Architecture Deep Dive** — Comprehensive Protocol 9 analysis of RQ-010egh Deep Think response
+- ✅ **RQ Expansion: 25+ New RQs Added** — RQ-010i-q, RQ-050, RQ-055-061 with sub-questions
+- ✅ **Big Think Case Created** — `docs/analysis/BIG_THINK_CASE_BACKGROUND_LOCATION.md` (~500 lines)
+- ✅ **RQ_INDEX.md Updated** — All new RQs added with dependency chains
+- ✅ **Passive Context Intelligence Defined** — RQ-059 (Charging), RQ-060 (WiFi/Zero-Permission)
+- ✅ **Identity-Aligned App Usage** — RQ-061 (Kindle encouragement, doom-scroll detection)
+- ✅ **Enterprise Calendar Deprioritized** — RQ-050 moved to Post-MVP, B2B Phase
+- ✅ **Play Store Strategy Formalized** — RQ-010q as CRITICAL path item
+- ✅ **Addiction/Witness Use Case Documented** — Danger Zone + Witness integration
+- ✅ **Red Team Critique Incorporated** — Safety Mode (RQ-057), Abuse Prevention
 
-**Next Action:** Create 3 CRITICAL deep think prompts (RQ-039 + 2 permission splits)
+**Next Action:** Human review of Big Think Case, then proceed with Safety Mode (RQ-057) design
 
 **Key Outputs:**
-- `docs/CORE/RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md` (NEW — 560 lines)
-- `docs/CORE/IMPACT_ANALYSIS_RQ048_RQ014_RQ013.md` (NEW — 560 lines)
-- `docs/CORE/CRITICAL_RQ_PRIORITIZATION_14JAN2026.md` (NEW — 350 lines)
-- `docs/CORE/RESEARCH_QUESTIONS.md` (RQ-048a/b added ~400 lines, RQ-013/014 updated ~200 lines)
-- `docs/CORE/IMPLEMENTATION_ACTIONS.md` (4-domain taxonomy correction + key decisions update)
+- `docs/analysis/BIG_THINK_CASE_BACKGROUND_LOCATION.md` (NEW — ~500 lines)
+- `docs/CORE/index/RQ_INDEX.md` (25+ RQs added, 61 main RQs, 79 sub-RQs total)
 - `docs/CORE/AI_HANDOVER.md` (this file — session status update)
 
-**Key Decisions Made (Protocol 9 ACCEPT/MODIFY):**
-- ✅ 4-Domain Taxonomy (not 5 or 6) — vocational, somatic, relational, intellectual
-- ✅ Hard Cap reduced from 15 → 12 (Protocol 10 flagged LOW validity)
-- ✅ Added missing schema fields: keystone_habit_id, sort_order, psychometric_root_id
-- ❌ Rejected "spiritual" domain (OVER-ENGINEERED for MVP)
-- ✅ Merged "creative" into "intellectual" (both high_focus, self-actualization)
+**Key Decisions Made:**
+- ✅ Include Sleep API in MVP (RQ-010n resolved)
+- ✅ Zone-Based Mental Model for user privacy messaging
+- ✅ Progressive disclosure for permissions (tiered approach)
+- ✅ WiFi + Charging as fallback for location-denied users
+- ✅ UsageStatsManager (not Foreground Service) for app detection
+- ✅ Positive app encouragement (Kindle → Reader identity votes)
+- 🔴 Safety Mode (RQ-057) — CRITICAL, must complete before launch
+- 🟡 Play Store approval — MEDIUM risk, needs compliance assets
 
 ---
 
@@ -133,6 +131,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 
 | Date | Focus | Key Outcome |
 |------|-------|-------------|
+| 15 Jan | **Permission Architecture** | 25+ RQs added, Big Think Case for BG Location |
 | 14 Jan | **Schema Foundation Recovery** | RQ-048a/b COMPLETE, reconciliation doc created |
 | 14 Jan | RQ Audit + Deep Think Prompts | Protocol 14 scoring, 2 Deep Think prompts created |
 | 14 Jan | RQ-010a/b + Protocol 14 | WiFi trap, 9 tasks, RQ prioritization framework |
@@ -154,11 +153,9 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ### Files Modified This Session
 | File | Change |
 |------|--------|
-| `docs/analysis/DEEP_THINK_RECONCILIATION_RQ048ab_RQ014_RQ013_SCHEMA_FOUNDATION.md` | NEW (~650 lines) |
-| `docs/CORE/index/RQ_INDEX.md` | RQ-048a/b marked COMPLETE |
-| `docs/CORE/index/CD_INDEX.md` | E-004 pending escalation added |
-| `docs/CORE/IMPLEMENTATION_ACTIONS.md` | A-19, A-20, B-15 tasks added |
-| `docs/CORE/AI_HANDOVER.md` | Session recovery summary |
+| `docs/analysis/BIG_THINK_CASE_BACKGROUND_LOCATION.md` | NEW (~500 lines) — Strategic analysis |
+| `docs/CORE/index/RQ_INDEX.md` | 25+ RQs added (RQ-010i-q, RQ-050, RQ-055-061) |
+| `docs/CORE/AI_HANDOVER.md` | Session status update |
 
 ---
 

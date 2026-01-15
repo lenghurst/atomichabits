@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 14 January 2026 (RQ-048a/b COMPLETE — Schema Foundation reconciled)
+> **Last Updated:** 15 January 2026 (RQ-010i-q + RQ-050 + RQ-055-061 added — Permission Architecture expansion)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -38,6 +38,15 @@
 | **RQ-010f** | ↳ Privacy-Value Transparency | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010g** | ↳ Minimum Viable Permission Set | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-010h** | ↳ Battery vs Accuracy Tradeoff | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010i** | ↳ Geofencing Fine vs Coarse Location Verification | 🔴 NEEDS RESEARCH | RQ-010g | — |
+| **RQ-010j** | ↳ Play Store Background Location Policy Compliance | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010k** | ↳ Confidence Threshold Validation | 🔴 NEEDS RESEARCH | RQ-010e | — |
+| **RQ-010l** | ↳ Auto-Switch UX Consent Model | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010m** | ↳ Repair Sensors Cadence Optimization | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010n** | ↳ Sleep API Architecture Decision | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010o** | ↳ Dense Urban Geofencing Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010p** | ↳ WiFi-Based Location Fallback Architecture | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-010q** | ↳ Play Store Background Location Approval Strategy | 🔴 NEEDS RESEARCH | RQ-010 | — |
 | **RQ-011** | Multiple Identity Architecture | ✅ COMPLETE | — | Q1-2026 |
 | **RQ-012** | Fractal Trinity Architecture | ✅ COMPLETE | CD-015 | Q1-2026 |
 | **RQ-013** | Identity Topology & Graph Modeling | ✅ COMPLETE | RQ-012 | Q1-2026 |
@@ -121,6 +130,30 @@
 | **RQ-049a** | ↳ Insight Prioritization Algorithms | 🔴 NEEDS RESEARCH | RQ-049 | — |
 | **RQ-049b** | ↳ Loading State Taxonomy | 🔴 NEEDS RESEARCH | RQ-049 | — |
 | **RQ-049c** | ↳ Witness Narrative Translation | 🔴 NEEDS RESEARCH | RQ-049 | — |
+| **RQ-050** | Enterprise Calendar Integration Strategy | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-050a** | ↳ Direct API vs Device Calendar Data Comparison | 🔴 NEEDS RESEARCH | RQ-050 | — |
+| **RQ-050b** | ↳ Enterprise IT OAuth Concerns | 🔴 NEEDS RESEARCH | RQ-050 | — |
+| **RQ-050c** | ↳ Bring Your Own Calendar Model | 🔴 NEEDS RESEARCH | RQ-050 | — |
+| **RQ-050d** | ↳ Enterprise Wellness TAM Analysis | 🔴 NEEDS RESEARCH | RQ-050 | — |
+| **RQ-055** | Relapse Handling in JITAI Messaging | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-056** | Witness Privacy Tiers | 🔴 NEEDS RESEARCH | RQ-040 | — |
+| **RQ-057** | Abuse Prevention for Location Features | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-058** | Geofence Sensitivity Decay Algorithm | 🔴 NEEDS RESEARCH | RQ-010 | — |
+| **RQ-059** | Charging Pattern Intelligence | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-059a** | ↳ Home Location Inference from Charging | 🔴 NEEDS RESEARCH | RQ-059 | — |
+| **RQ-059b** | ↳ Doom-Scroll Detection via Battery Drain | 🔴 NEEDS RESEARCH | RQ-059 | — |
+| **RQ-059c** | ↳ Pattern Learning Curve (Days to Establish) | 🔴 NEEDS RESEARCH | RQ-059 | — |
+| **RQ-059d** | ↳ Anomaly Detection Thresholds | 🔴 NEEDS RESEARCH | RQ-059 | — |
+| **RQ-060** | Passive Context Intelligence (Zero-Permission Signals) | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-060a** | ↳ WiFi SSID Learning for Location | 🔴 NEEDS RESEARCH | RQ-060 | — |
+| **RQ-060b** | ↳ Time + Zone Heuristics Algorithm | 🔴 NEEDS RESEARCH | RQ-060 | — |
+| **RQ-060c** | ↳ Signal Fusion Architecture | 🔴 NEEDS RESEARCH | RQ-060 | — |
+| **RQ-061** | Identity-Aligned App Usage Intelligence | 🔴 NEEDS RESEARCH | — | — |
+| **RQ-061a** | ↳ Default App-to-Identity Mappings | 🔴 NEEDS RESEARCH | RQ-061 | — |
+| **RQ-061b** | ↳ Positive Usage Auto-Vote Strategy | 🔴 NEEDS RESEARCH | RQ-061 | — |
+| **RQ-061c** | ↳ Celebration Without Interruption UX | 🔴 NEEDS RESEARCH | RQ-061 | — |
+| **RQ-061d** | ↳ User Customization of App Mappings | 🔴 NEEDS RESEARCH | RQ-061 | — |
+| **RQ-061e** | ↳ Meaningful Usage Threshold Calibration | 🔴 NEEDS RESEARCH | RQ-061 | — |
 
 ---
 
@@ -128,12 +161,14 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total RQs (Main)** | 48 |
-| **Total Sub-RQs** | 48 (RQ-010a→h, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c) |
-| **✅ COMPLETE** | 36 (36%) |
+| **Total RQs (Main)** | 61 |
+| **Total Sub-RQs** | 79 (RQ-010a→q, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e) |
+| **✅ COMPLETE** | 36 (26%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 18 main + 38 sub (56 items) |
+| **🔴 NEEDS RESEARCH** | 24 main + 67 sub (91 items) |
 
+> **Note:** RQ-050, RQ-055-061 added 15 Jan 2026 for Permission Architecture expansion (Passive Context, App Usage Intelligence)
+> **Note:** RQ-010i-q added 15 Jan 2026 for Permission Technical sub-questions (Play Store, Sleep API, Geofencing)
 > **Note:** RQ-049 added 15 Jan 2026 for Transparent Intelligence (Trust Bridge)
 
 > **Note:** RQ-040 through RQ-046 added 12 Jan 2026 for Witness Intelligence Layer and Wearable Strategy
@@ -183,7 +218,20 @@ FOUNDATIONAL (No dependencies):
 ├── RQ-009 (LLM Coding) ✅
 ├── RQ-010 (Permission Data) 🟡 IN PROGRESS
 │   ├── RQ-010a (Accuracy Mapping) ✅
-│   └── RQ-010b (Fallback Strategies) ✅
+│   ├── RQ-010b (Fallback Strategies) ✅
+│   ├── RQ-010c-h (Permission Technical) 🔴  ← Deep Think created
+│   │   ├── RQ-010i (Fine vs Coarse Location) 🔴
+│   │   ├── RQ-010j (Play Store Policy) 🔴
+│   │   ├── RQ-010k (Confidence Thresholds) 🔴
+│   │   ├── RQ-010l (Auto-Switch UX) 🔴
+│   │   ├── RQ-010m (Repair Sensors Cadence) 🔴
+│   │   ├── RQ-010n (Sleep API Decision) 🔴
+│   │   ├── RQ-010o (Dense Urban Geofencing) 🔴
+│   │   ├── RQ-010p (WiFi Fallback) 🔴
+│   │   └── RQ-010q (Play Store Approval Strategy) 🔴 ← CRITICAL
+│   ├── RQ-055 (Relapse Handling) 🔴 ← Red Team
+│   ├── RQ-057 (Abuse Prevention) 🔴 ← Red Team CRITICAL
+│   └── RQ-058 (Geofence Decay) 🔴
 ├── RQ-011 (Multiple Identity) ✅
 ├── RQ-033 (Streak Philosophy) ✅  ← COMPLETE (unblocks PD-002)
 ├── RQ-035 (Sensitivity Detection) 🔴  ← NEW (blocks PD-103)
@@ -272,6 +320,32 @@ AI ORCHESTRATION (CD-016):
     ├── RQ-047c (Kill Switch Enhancement) 🔴
     ├── RQ-047d (Protocol 9 Automation) 🔴
     └── RQ-047e (Migration Timing) 🔴
+
+PASSIVE CONTEXT INTELLIGENCE (Zero-Permission):
+├── RQ-059 (Charging Pattern Intelligence) 🔴  ← NEW (15 Jan 2026)
+│   ├── RQ-059a (Home Location Inference) 🔴
+│   ├── RQ-059b (Doom-Scroll Detection) 🔴
+│   ├── RQ-059c (Pattern Learning Curve) 🔴
+│   └── RQ-059d (Anomaly Detection) 🔴
+└── RQ-060 (Passive Context Intelligence) 🔴  ← NEW (15 Jan 2026)
+    ├── RQ-060a (WiFi SSID Learning) 🔴
+    ├── RQ-060b (Time + Zone Heuristics) 🔴
+    └── RQ-060c (Signal Fusion) 🔴
+
+IDENTITY-ALIGNED APP USAGE (Guardian Mode):
+└── RQ-061 (Identity-Aligned App Usage Intelligence) 🔴  ← NEW (15 Jan 2026)
+    ├── RQ-061a (Default App-to-Identity Mappings) 🔴
+    ├── RQ-061b (Positive Usage Auto-Vote) 🔴
+    ├── RQ-061c (Celebration Without Interruption) 🔴
+    ├── RQ-061d (User Customization) 🔴
+    └── RQ-061e (Meaningful Usage Threshold) 🔴
+
+ENTERPRISE INTEGRATION (Post-MVP, B2B):
+└── RQ-050 (Enterprise Calendar Integration) 🔴  ← DEPRIORITIZED
+    ├── RQ-050a (Direct API vs Device) 🔴
+    ├── RQ-050b (Enterprise IT OAuth) 🔴
+    ├── RQ-050c (BYOC Model) 🔴
+    └── RQ-050d (Wellness TAM) 🔴
 ```
 
 ---
