@@ -1,7 +1,7 @@
 # Research Questions Index
 
 > **Purpose:** Quick reference table for all Research Questions
-> **Last Updated:** 15 January 2026 (RQ-010v-w added — RQ-010cdf Response gaps)
+> **Last Updated:** 15 January 2026 (RQ-062g added — Pre-Implementation Holistic Audit)
 > **Full Details:** See `archive/` for COMPLETE items, `../RESEARCH_QUESTIONS.md` for active items
 
 ---
@@ -167,6 +167,7 @@
 | **RQ-062d** | ↳ Implementation Drift Detection | 🔴 NEEDS RESEARCH | RQ-062 | — |
 | **RQ-062e** | ↳ Handover Protocol for Partial Implementations | 🔴 NEEDS RESEARCH | RQ-062 | — |
 | **RQ-062f** | ↳ Automated Spec-to-Code Traceability | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-062g** | ↳ Pre-Implementation Holistic Analysis Audit | 🔴 NEEDS RESEARCH | RQ-062 | — |
 
 ---
 
@@ -175,12 +176,13 @@
 | Metric | Count |
 |--------|-------|
 | **Total RQs (Main)** | 62 |
-| **Total Sub-RQs** | 91 (RQ-010a→w, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e, RQ-062a→f) |
+| **Total Sub-RQs** | 92 (RQ-010a→w, RQ-039a→g, RQ-040a→g, RQ-041a→c, RQ-042a→d, RQ-043a→b, RQ-044a→d, RQ-045a→b, RQ-046a→d, RQ-047a→e, RQ-048a→c, RQ-049a→c, RQ-050a→d, RQ-059a→d, RQ-060a→c, RQ-061a→e, RQ-062a→g) |
 | **✅ COMPLETE** | 36 (24%) |
 | **🟡 IN PROGRESS** | 1 (RQ-010) |
-| **🔴 NEEDS RESEARCH** | 25 main + 79 sub (104 items) |
+| **🔴 NEEDS RESEARCH** | 25 main + 80 sub (105 items) |
 
 > **Note:** RQ-010v-w added 15 Jan 2026 — UX gaps from Deep Think RQ-010cdf Response (TrustScore storage, A/B test metrics)
+> **Note:** RQ-062g added 15 Jan 2026 — Pre-Implementation Holistic Audit (cross-domain conflict detection, CD/PD alignment)
 > **Note:** RQ-062 added 15 Jan 2026 — Implementation Governance (session continuity, PD/CD alignment, drift detection)
 > **Note:** RQ-010r-u added 15 Jan 2026 — Technical gaps from Deep Think RQ-010egh Response (Sleep API, BroadcastReceiver, GeofencingClient, WorkManager)
 > **Note:** RQ-050, RQ-055-061 added 15 Jan 2026 for Permission Architecture expansion (Passive Context, App Usage Intelligence)
@@ -376,7 +378,8 @@ IMPLEMENTATION GOVERNANCE (Meta-Process):
     ├── RQ-062c (Code Review Against Specs) 🔴
     ├── RQ-062d (Implementation Drift Detection) 🔴
     ├── RQ-062e (Partial Implementation Handover) 🔴
-    └── RQ-062f (Spec-to-Code Traceability) 🔴
+    ├── RQ-062f (Spec-to-Code Traceability) 🔴
+    └── RQ-062g (Pre-Implementation Holistic Audit) 🔴 ← NEW
 ```
 
 ---
