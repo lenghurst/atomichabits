@@ -4,7 +4,7 @@
 > **Token Budget:** <12k
 > **Load:** When working on screens, onboarding, visual design, user flows
 > **Dependencies:** PD_CORE.md (always load first)
-> **Related RQs:** RQ-016-018, RQ-021, RQ-024, RQ-033, RQ-036
+> **Related RQs:** RQ-010cdf, RQ-016-018, RQ-021, RQ-024, RQ-033, RQ-036
 
 ---
 
@@ -24,6 +24,12 @@
 | PD-115 | Treaty Creation UX | D | RESOLVED | — |
 | PD-118 | Treaty Modification UX | D | RESOLVED | — |
 | PD-120 | The Chamber Visual Design | H | PENDING | RQ-036 |
+| PD-150 | Permission Ladder Sequence | D | 🔵 OPEN | RQ-010d |
+| PD-151 | Background Location Gating | D | 🔵 OPEN | RQ-010d |
+| PD-152 | TrustScore Permission Gating | D | 🔵 OPEN | RQ-010d |
+| PD-153 | Manual Mode First-Class Experience | D | 🔵 OPEN | RQ-010c |
+| PD-154 | Permission Re-Request Cooldowns | D | 🔵 OPEN | RQ-010d |
+| PD-155 | Privacy Messaging Mental Model | D | 🔵 OPEN | RQ-010f |
 | PD-201 | URL Scheme Migration | — | PENDING | — |
 | PD-202 | Archive Documentation Handling | — | PENDING | — |
 
@@ -287,10 +293,213 @@ Replace current dashboard with Constellation visualization:
 
 ---
 
+---
+
+## PD-150: Permission Ladder Sequence 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Permissions requested in ladder sequence: Notifications → Activity → Fine Location → Background Location → Calendar |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010d |
+
+**Rationale:** "Frustration-Driven" approach — let users feel manual friction first, then offer permissions as automation upgrades. Never request all permissions upfront.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §1.1
+
+**Sequence:**
+
+| Step | Permission | Trigger | Psychology |
+|------|------------|---------|------------|
+| 1 | Notifications | After first Pact signed | Commitment consistency |
+| 2 | Activity Recognition | After 3 manual "Run" logs | Effort reduction |
+| 3 | Fine Location | When creating gym habit | Feature enablement |
+| 4 | Background Location | After 3 foreground successes | Automation upsell |
+| 5 | Calendar | After missing habit due to meeting | Conflict resolution |
+
+**Alternatives Rejected:**
+- All-at-once permission request (current anti-pattern in `permissions_screen.dart`)
+- Random/as-needed ordering — loses psychological sequencing
+
+**CD-018 Tier:** ESSENTIAL
+
+---
+
+## PD-151: Background Location Gating 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Background Location request requires 3 successful foreground location interactions first |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010d |
+
+**Rationale:** Play Store policy favors progressive disclosure. Users who haven't benefited from foreground location won't value background location.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §1.2
+
+**Gate Criteria:**
+- User has Fine Location permission granted
+- User has triggered 3+ successful geofence/location interactions
+- TrustScore > 60 (see PD-152)
+
+**UI Flow:**
+1. Phase 1: Request `ACCESS_FINE_LOCATION` when setting up Zone
+2. Phase 2: Wait for 3 successful interactions
+3. Phase 3: Show "Upgrade to Guardian Mode" → Request `ACCESS_BACKGROUND_LOCATION`
+
+**Alternatives Rejected:** Request both together — higher denial rate, Play Store risk
+
+**CD-018 Tier:** ESSENTIAL
+
+---
+
+## PD-152: TrustScore Permission Gating 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Internal TrustScore (0-100) gates sensitive permission requests; threshold > 60 |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010d |
+
+**Rationale:** Users who have invested in the app are more likely to grant permissions. Requesting too early causes denials that are hard to recover from.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §2
+
+**Scoring:**
+
+| Action | Points |
+|--------|--------|
+| Completed onboarding | +10 |
+| Manually logged a habit | +20 |
+| Used app on 3 distinct days | +30 |
+| Denied a permission | -50 |
+
+**Threshold:** Score > 60 required for Background Location, Calendar requests.
+
+**Storage:** Local (SharedPreferences) — simpler, no sync needed; analytics optional via Supabase.
+
+**Alternatives Rejected:** No gating — premature requests lead to permanent denials
+
+**CD-018 Tier:** VALUABLE
+
+---
+
+## PD-153: Manual Mode First-Class Experience 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Manual Mode (Context Chips) is a first-class experience, not a degraded fallback |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010c |
+
+**Rationale:** Users who deny all permissions should have a great experience. Manual logging is valid, not punishment.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §4, §5
+
+**Context Chips UI:**
+```
+📍 WHERE ARE YOU?
+[🏠 Home]  [🏢 Work]  [💪 Gym]  [+]
+(Tapping sets context for 1hr — configurable)
+
+⚡ CURRENT VIBE?
+[💤 Tired]  [🏃 Active]  [🔥 Focused]
+```
+
+**Manual Fallback Mapping:**
+
+| Denied Permission | Manual Fallback |
+|-------------------|-----------------|
+| Location | Context Chips: [🏠 Home] [🏢 Work] [💪 Gym] [+] |
+| Activity | "Start Run" manual toggle with timer |
+| Calendar | "Focus Mode" (DND) toggle |
+| Notifications | In-app "Daily Briefing" card |
+
+**Alternatives Rejected:** Nag screens, degraded UI for non-permission users
+
+**CD-018 Tier:** VALUABLE
+
+---
+
+## PD-154: Permission Re-Request Cooldowns 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Permission re-requests follow cooldown schedule: 7 days → 14 days → never |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010d |
+
+**Rationale:** Respecting the "No" builds trust for a future "Yes." Nagging causes app deletion.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §6
+
+**Cooldown Schedule:**
+
+| Denial # | Response | Cooldown |
+|----------|----------|----------|
+| 1st | Snackbar: "Understood. Manual Mode active." | 7 days OR 3 manual interactions |
+| 2nd | Enhanced Rationale Screen (Glass Pane) | 14 days |
+| Permanent | Never ask again | Small "Fix" button in Habit Settings only |
+
+**Re-invite Trigger (after 1st denial):**
+- 7 days elapsed, OR
+- User manually logged same action 3 times
+- Copy: "You've manually logged 'Gym' 8 times. Want to automate?"
+
+**Alternatives Rejected:**
+- No cooldown — annoys users
+- Single denial = never ask — loses conversion opportunity
+
+**CD-018 Tier:** VALUABLE
+
+---
+
+## PD-155: Privacy Messaging Mental Model 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | D (UX) |
+| **Decision** | Location privacy messaging uses "Zones, not coordinates" mental model |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010f |
+
+**Rationale:** Users fear location tracking. Framing as "zone detection" rather than "GPS tracking" reduces anxiety.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §7
+
+**Primary Message:**
+> "We see ZONES, not coordinates."
+
+**Messaging per Permission:**
+
+| Permission | Privacy Note |
+|------------|--------------|
+| Fine Location | "🔒 We see ZONES (e.g., 'Gym'), not coordinates. Your location is converted to a label instantly." |
+| Background Location | "🔒 We do not track your commute. We only listen for entry/exit events at zones YOU defined." |
+| Activity Recognition | "🔒 Processed on-device. We see 'Walking' or 'Still' — we do not count steps or track fitness data." |
+| Calendar | "🔒 We only read 'Busy/Free' status. We do not read event titles." |
+
+**Play Store Justification (ready for Play Console):**
+> "The Pact requires background location to detect arrival at user-defined habit zones (e.g., Gym) for Just-In-Time interventions. This automation is core to the behavioral accountability model and functions when the app is closed."
+
+**Alternatives Rejected:** Technical language ("geofencing", "GPS coordinates") — increases anxiety
+
+**CD-018 Tier:** ESSENTIAL
+
+---
+
 ## Related Research Questions
 
 | RQ# | Title | Status | Blocks |
 |-----|-------|--------|--------|
+| RQ-010c | Degradation Scenarios | COMPLETE | PD-153 |
+| RQ-010d | Progressive Permission Strategy | COMPLETE | PD-150, PD-151, PD-152, PD-154 |
+| RQ-010f | Privacy-Value Transparency | COMPLETE | PD-155 |
 | RQ-016 | Council AI (Roundtable Simulation) | COMPLETE | PD-109 |
 | RQ-017 | Constellation UX | COMPLETE | PD-108 |
 | RQ-018 | Airlock Protocol | COMPLETE | PD-110, PD-112 |

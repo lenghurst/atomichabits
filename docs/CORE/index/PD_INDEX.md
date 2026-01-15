@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 12 January 2026 (Migration to domain-specific files)
+> **Last Updated:** 15 January 2026 (Protocol 15: PD Extraction from RQ-010 Analysis)
 > **Full Details:** See `../decisions/MANIFEST.md` for loading rules, domain files for details
 > **Architecture:** Modular with Manifest — domain-isolated files with explicit loading rules
 
@@ -60,6 +60,17 @@
 | **PD-132** | Invitation Timing (Commitment Ceremony) | 🟢 CONFIRMED | WITNESS | — |
 | **PD-133** | Witness Stakes & Punishment | 🔵 OPEN | WITNESS | RQ-044 |
 | **PD-134** | JITAI Witness Data Schema | 🔵 OPEN | WITNESS | RQ-045 |
+| **PD-140** | Activity Recognition uses Transition API | 🔵 OPEN | JITAI | RQ-010g |
+| **PD-141** | Activity Confidence Thresholds | 🔵 OPEN | JITAI | RQ-010g |
+| **PD-142** | V-O Opportunity Weight Modifiers | 🔵 OPEN | JITAI | RQ-010g |
+| **PD-143** | Doze Mode Priority Levels | 🔵 OPEN | JITAI | RQ-010h |
+| **PD-144** | Geofence Allocation Strategy | 🔵 OPEN | JITAI | RQ-010e |
+| **PD-150** | Permission Ladder Sequence | 🔵 OPEN | UX | RQ-010d |
+| **PD-151** | Background Location Gating | 🔵 OPEN | UX | RQ-010d |
+| **PD-152** | TrustScore Permission Gating | 🔵 OPEN | UX | RQ-010d |
+| **PD-153** | Manual Mode First-Class Experience | 🔵 OPEN | UX | RQ-010c |
+| **PD-154** | Permission Re-Request Cooldowns | 🔵 OPEN | UX | RQ-010d |
+| **PD-155** | Privacy Messaging Mental Model | 🔵 OPEN | UX | RQ-010f |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | UX | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | UX | — |
 
@@ -81,24 +92,24 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total PDs** | 37 |
-| **✅ RESOLVED** | 15 (41%) |
-| **🟢 READY** | 4 (11%) |
-| **🟢 CONFIRMED** | 1 (3%) |
-| **🟡 RESHAPED** | 1 (3%) |
-| **🟡 DEFERRED** | 1 (3%) |
-| **🔴 PENDING** | 10 (27%) |
-| **🔵 OPEN** | 5 (14%) |
+| **Total PDs** | 48 |
+| **✅ RESOLVED** | 15 (31%) |
+| **🟢 READY** | 4 (8%) |
+| **🟢 CONFIRMED** | 1 (2%) |
+| **🟡 RESHAPED** | 1 (2%) |
+| **🟡 DEFERRED** | 1 (2%) |
+| **🔴 PENDING** | 10 (21%) |
+| **🔵 OPEN** | 16 (33%) |
 
 ### By Domain
 
 | Domain | Count | File |
 |--------|-------|------|
-| **CORE** | 2 PDs + 18 CDs | PD_CORE.md |
+| **CORE** | 2 PDs + 19 CDs | PD_CORE.md |
 | **WITNESS** | 5 | PD_WITNESS.md |
-| **JITAI** | 3 | PD_JITAI.md |
+| **JITAI** | 8 (+5 new) | PD_JITAI.md |
 | **IDENTITY** | 11 | PD_IDENTITY.md |
-| **UX** | 14 | PD_UX.md |
+| **UX** | 20 (+6 new) | PD_UX.md |
 
 ---
 
@@ -163,6 +174,19 @@ WITNESS INTELLIGENCE LAYER (New):
 ├── PD-132 🟢 CONFIRMED (Commitment Ceremony timing)
 ├── PD-133 🔵 OPEN (Stakes & Punishment) ← RQ-044
 └── PD-134 🔵 OPEN (JITAI Data Schema) ← RQ-045
+
+PERMISSION & CONTEXT SYSTEM (Protocol 15 Extraction — 15 Jan 2026):
+├── PD-140 🔵 OPEN (Activity Recognition Transition API) ← RQ-010g
+├── PD-141 🔵 OPEN (Activity Confidence Thresholds) ← RQ-010g
+├── PD-142 🔵 OPEN (V-O Weight Modifiers) ← RQ-010g
+├── PD-143 🔵 OPEN (Doze Mode Priority Levels) ← RQ-010h
+├── PD-144 🔵 OPEN (Geofence Allocation Strategy) ← RQ-010e
+├── PD-150 🔵 OPEN (Permission Ladder Sequence) ← RQ-010d
+├── PD-151 🔵 OPEN (Background Location Gating) ← RQ-010d
+├── PD-152 🔵 OPEN (TrustScore Permission Gating) ← RQ-010d
+├── PD-153 🔵 OPEN (Manual Mode First-Class) ← RQ-010c
+├── PD-154 🔵 OPEN (Permission Re-Request Cooldowns) ← RQ-010d
+└── PD-155 🔵 OPEN (Privacy Messaging "Zones") ← RQ-010f
 ```
 
 ---

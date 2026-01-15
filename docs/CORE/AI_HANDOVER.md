@@ -10,12 +10,12 @@
 
 | Field | Value |
 |-------|-------|
-| **Session ID** | `claude/claude-md-instructions-RREJE` |
+| **Session ID** | `claude/extract-pd-data-Y959d` |
 | **Date** | 15 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Git State** | Clean — all changes pushed |
-| **Focus** | Deep Think Prompt refinement + Protocol 9 Response Analysis |
-| **Status** | ✅ Both Deep Think responses analyzed (RQ-010r-w created), all findings documented |
+| **Git State** | Changes pending push |
+| **Focus** | Protocol 15 — PD Extraction from Analysis Files |
+| **Status** | 🔵 11 PDs extracted from RQ-010 Analysis files — awaiting human review |
 
 ---
 
@@ -58,31 +58,36 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ## CURRENT SESSION
 
 **Accomplished (this session):**
-- ✅ **RQ-010egh Analysis** — Technical Architecture response reconciled, RQ-010r-u created
-- ✅ **RQ-010cdf Analysis** — Permission UX response reconciled, RQ-010v-w created
-- ✅ **Both Response Docs Created** — Technical + UX findings documented
-- ✅ **RQ-062 Created** — Implementation Governance Process (6 sub-RQs)
-- ✅ **Prompt Refinement** — RQ-010cdf Drafts 2 & 3 created with framework fixes
-- ✅ **"Frustration-Driven" Strategy Captured** — Permission ladder, TrustScore framework
-- ✅ **Context Chips UI Documented** — Manual Mode first-class experience
-- ✅ **Play Store Justification Ready** — Background location compliance text
+- ✅ **Protocol 15 Executed** — PD Extraction from Analysis Files complete
+- ✅ **5 JITAI PDs Created** — PD-140 to PD-144 (Technical Architecture)
+- ✅ **6 UX PDs Created** — PD-150 to PD-155 (Permission UX)
+- ✅ **Element-by-Element Review** — 13 sections reviewed, 11 extracted, 2 skipped
+- ✅ **CD Cross-Check Complete** — All PDs verified against CD-015, CD-016, CD-017, CD-018, CD-006
+- ✅ **PD_INDEX.md Updated** — Total PDs now 48 (was 37)
 
 **Key Decision (This Session):**
-> ⚠️ **NO IMPLEMENTATION YET** — Complete all RQs → Create PDs → THEN implement
+> 🔵 **11 PDs AWAITING HUMAN REVIEW** — All marked 🔵 OPEN, human must confirm to 🟢
 
-**Next Action:** Review combined Permission Architecture (Technical + UX) → Create PDs
+**Next Action:** Human reviews 11 new PDs → Confirms → Implementation can begin
 
 **Key Outputs:**
-- `docs/analysis/DEEP_THINK_RESPONSE_RQ010egh_ANALYSIS.md` (Technical findings)
-- `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` (UX findings)
-- `docs/prompts/DEEP_THINK_PROMPT_RQ010cdf_DRAFT3.md` (production-ready)
-- `docs/CORE/index/RQ_INDEX.md` (91 sub-RQs total, 104 items needing research)
+| PD# | Decision | Domain | Tier |
+|-----|----------|--------|------|
+| PD-140 | Activity Recognition Transition API | JITAI | ESSENTIAL |
+| PD-141 | Activity Confidence Thresholds | JITAI | VALUABLE |
+| PD-142 | V-O Opportunity Weight Modifiers | JITAI | VALUABLE |
+| PD-143 | Doze Mode Priority Levels | JITAI | ESSENTIAL |
+| PD-144 | Geofence Allocation Strategy | JITAI | VALUABLE |
+| PD-150 | Permission Ladder Sequence | UX | ESSENTIAL |
+| PD-151 | Background Location Gating | UX | ESSENTIAL |
+| PD-152 | TrustScore Permission Gating | UX | VALUABLE |
+| PD-153 | Manual Mode First-Class Experience | UX | VALUABLE |
+| PD-154 | Permission Re-Request Cooldowns | UX | VALUABLE |
+| PD-155 | Privacy Messaging Mental Model | UX | ESSENTIAL |
 
-**Key Specifications (Both Responses):**
-- **Technical:** ActivityContext, confidence thresholds, V-O weights, Doze strategy
-- **UX:** Permission ladder, TrustScore (>60 for sensitive), Context Chips, PermissionConfigs
-- **Privacy:** "Zones not coordinates" messaging, Play Store justification text
-- **Degradation:** Manual Mode → Basic → Activity → Location → Full Mode
+**Skipped (Not Decisions):**
+- §1.6 WiFi Fallback — Finding, not decision
+- §1.7 Zero-Permission Signals — List covered by Context Chips PD
 
 ---
 
@@ -129,6 +134,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 
 | Date | Focus | Key Outcome |
 |------|-------|-------------|
+| 15 Jan | **Protocol 15 — PD Extraction** | 11 PDs created (PD-140–144, PD-150–155), awaiting human review |
 | 15 Jan | **RQ-010cdf UX Response** | Protocol 9 done, RQ-010v-w, Context Chips, TrustScore |
 | 15 Jan | **RQ-010egh Tech Response** | Protocol 9 done, RQ-010r-u, ActivityContext spec |
 | 15 Jan | **Permission Architecture** | 25+ RQs added, Big Think Case for BG Location |
@@ -153,12 +159,10 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ### Files Modified This Session
 | File | Change |
 |------|--------|
-| `docs/analysis/DEEP_THINK_RESPONSE_RQ010egh_ANALYSIS.md` | NEW — Technical findings |
-| `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` | NEW — UX findings |
-| `docs/prompts/DEEP_THINK_PROMPT_RQ010cdf_DRAFT2.md` | NEW — Intermediate |
-| `docs/prompts/DEEP_THINK_PROMPT_RQ010cdf_DRAFT3.md` | NEW — Production prompt |
-| `docs/CORE/index/RQ_INDEX.md` | RQ-010v-w + RQ-062 added (91 sub-RQs) |
-| `docs/CORE/AI_HANDOVER.md` | Session status update |
+| `docs/CORE/decisions/PD_JITAI.md` | +5 PDs (PD-140–144) — Activity, Doze, Geofence |
+| `docs/CORE/decisions/PD_UX.md` | +6 PDs (PD-150–155) — Permission UX |
+| `docs/CORE/index/PD_INDEX.md` | Statistics updated (37→48 PDs), Resolution Chain |
+| `docs/CORE/AI_HANDOVER.md` | Protocol 15 session summary |
 
 ---
 
