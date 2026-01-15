@@ -13,9 +13,9 @@
 | **Session ID** | `claude/extract-pd-data-Y959d` |
 | **Date** | 15 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Git State** | Clean — all changes pushed (d57037b) |
-| **Focus** | Protocol 15 + 16 — PD Extraction & Traceability Audit |
-| **Status** | 🔵 17 PDs extracted (11 Protocol 15 + 6 Protocol 16) — awaiting human review |
+| **Git State** | Clean — all changes pushed (bd6d850) |
+| **Focus** | Executive Decisions + 3 New RQs |
+| **Status** | 🟢 2 PDs CONFIRMED (PD-150, PD-161) + 3 new RQs created |
 
 ---
 
@@ -58,41 +58,30 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ## CURRENT SESSION
 
 **Accomplished (this session):**
-- ✅ **Protocol 15 Executed** — 11 PDs from RQ-010cdf/egh Analysis files
-- ✅ **Protocol 16 Executed** — RQ-to-PD Traceability Audit completed
-- ✅ **6 More JITAI PDs Created** — PD-160 to PD-165 (RQ-010a/b gap fixed)
-- ✅ **All 13 Reconciliation Files Audited** — Only 1 major gap found (now fixed)
-- ✅ **PD_INDEX.md Updated** — Total PDs now 54 (was 37)
+- ✅ **PD-161 REVERSED** — Digital Context now INCLUDED (was "excluded")
+  - Rationale: Accountability tool, procrastination detection, identity-based blocking
+  - User quote: "8hrs YouTube = procrastination signal"
+- ✅ **PD-150 CONFIRMED** — Hybrid Permission Ladder (soft ask + context-triggered)
+- ✅ **3 New RQs Created** — Research needed for implementation decisions
+- ✅ **PD_INDEX.md Updated** — Statistics: 🟢 CONFIRMED 1→3, 🔵 OPEN 22→20
 
 **Key Decision (This Session):**
-> 🔵 **17 PDs AWAITING HUMAN REVIEW** — All marked 🔵 OPEN, human must confirm to 🟢
+> 🟢 **2 EXECUTIVE DECISIONS MADE** — PD-150 (Hybrid) and PD-161 (REVERSED to Include)
 
-**Next Action:** Human reviews 17 new PDs → Confirms → Implementation can begin
+**Next Action:** Research 3 new RQs (RQ-063, RQ-064, RQ-065) before implementation
 
-**Key Outputs (Protocol 15 — RQ-010cdf/egh Analysis):**
-| PD# | Decision | Domain | Tier |
-|-----|----------|--------|------|
-| PD-140 | Activity Recognition Transition API | JITAI | ESSENTIAL |
-| PD-141 | Activity Confidence Thresholds | JITAI | VALUABLE |
-| PD-142 | V-O Opportunity Weight Modifiers | JITAI | VALUABLE |
-| PD-143 | Doze Mode Priority Levels | JITAI | ESSENTIAL |
-| PD-144 | Geofence Allocation Strategy | JITAI | VALUABLE |
-| PD-150 | Permission Ladder Sequence | UX | ESSENTIAL |
-| PD-151 | Background Location Gating | UX | ESSENTIAL |
-| PD-152 | TrustScore Permission Gating | UX | VALUABLE |
-| PD-153 | Manual Mode First-Class Experience | UX | VALUABLE |
-| PD-154 | Permission Re-Request Cooldowns | UX | VALUABLE |
-| PD-155 | Privacy Messaging Mental Model | UX | ESSENTIAL |
+**Executive Decisions Made:**
+| PD# | Decision | Change | Domain |
+|-----|----------|--------|--------|
+| PD-150 | Permission Ladder Sequence | 🟢 CONFIRMED — Hybrid: soft ask + context-triggered | UX |
+| PD-161 | Digital Context | 🟢 CONFIRMED — **REVERSED**: Include for accountability | JITAI |
 
-**Key Outputs (Protocol 16 — RQ-010a/b Reconciliation Gap):**
-| PD# | Decision | Domain | Tier |
-|-----|----------|--------|------|
-| PD-160 | JITAI Accuracy Contribution Model (40% baseline) | JITAI | ESSENTIAL |
-| PD-161 | Digital Context Excluded from MVP | JITAI | ESSENTIAL |
-| PD-162 | Location Fallback Strategies | JITAI | VALUABLE |
-| PD-163 | Calendar Fallback Strategies | JITAI | ESSENTIAL |
-| PD-164 | Biometric Fallback Strategies | JITAI | VALUABLE |
-| PD-165 | WiFi SSID Invalid as Fallback | JITAI | ESSENTIAL |
+**New Research Questions Created:**
+| RQ# | Topic | Sub-RQs | Blocks |
+|-----|-------|---------|--------|
+| RQ-063 | Digital Context Inclusion Strategy | 6 | PD-161 implementation |
+| RQ-064 | TrustScore Architecture & Utility | 4 | PD-152 implementation |
+| RQ-065 | JITAI Baseline Accuracy Validation | 5 | PD-160 implementation |
 
 ---
 
@@ -139,6 +128,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 
 | Date | Focus | Key Outcome |
 |------|-------|-------------|
+| 15 Jan | **Executive Decisions** | PD-150 Hybrid, PD-161 REVERSED, +3 RQs (RQ-063-065) |
 | 15 Jan | **Protocol 15 + 16 — PD Extraction & Audit** | 17 PDs created (PD-140–144, PD-150–155, PD-160–165) |
 | 15 Jan | **RQ-010cdf UX Response** | Protocol 9 done, RQ-010v-w, Context Chips, TrustScore |
 | 15 Jan | **RQ-010egh Tech Response** | Protocol 9 done, RQ-010r-u, ActivityContext spec |
@@ -164,11 +154,11 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ### Files Modified This Session
 | File | Change |
 |------|--------|
-| `docs/CORE/decisions/PD_JITAI.md` | +11 PDs (PD-140–144, PD-160–165) |
-| `docs/CORE/decisions/PD_UX.md` | +6 PDs (PD-150–155) — Permission UX |
-| `docs/CORE/index/PD_INDEX.md` | Statistics updated (37→54 PDs) |
-| `docs/analysis/PROTOCOL_16_RQ_TO_PD_TRACEABILITY_AUDIT.md` | NEW — Full audit results |
-| `docs/CORE/AI_HANDOVER.md` | Protocol 15+16 session summary |
+| `docs/CORE/decisions/PD_JITAI.md` | PD-161 REVERSED to INCLUDED |
+| `docs/CORE/decisions/PD_UX.md` | PD-150 updated to Hybrid approach |
+| `docs/CORE/index/PD_INDEX.md` | Statistics: CONFIRMED 1→3, OPEN 22→20 |
+| `docs/CORE/index/RQ_INDEX.md` | +3 RQs (RQ-063, RQ-064, RQ-065) with 15 sub-RQs |
+| `docs/CORE/AI_HANDOVER.md` | Executive decisions session summary |
 
 ---
 
