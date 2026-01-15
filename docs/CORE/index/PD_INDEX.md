@@ -1,7 +1,7 @@
 # Pending Decisions Index
 
 > **Purpose:** Quick reference table for all Pending Decisions
-> **Last Updated:** 15 January 2026 (Protocol 15: PD Extraction from RQ-010 Analysis)
+> **Last Updated:** 15 January 2026 (Executive Decisions: PD-150 Hybrid, PD-161 REVERSED)
 > **Full Details:** See `../decisions/MANIFEST.md` for loading rules, domain files for details
 > **Architecture:** Modular with Manifest — domain-isolated files with explicit loading rules
 
@@ -65,14 +65,14 @@
 | **PD-142** | V-O Opportunity Weight Modifiers | 🔵 OPEN | JITAI | RQ-010g |
 | **PD-143** | Doze Mode Priority Levels | 🔵 OPEN | JITAI | RQ-010h |
 | **PD-144** | Geofence Allocation Strategy | 🔵 OPEN | JITAI | RQ-010e |
-| **PD-150** | Permission Ladder Sequence | 🔵 OPEN | UX | RQ-010d |
+| **PD-150** | Permission Ladder Sequence (Hybrid) | 🟢 CONFIRMED | UX | RQ-010d |
 | **PD-151** | Background Location Gating | 🔵 OPEN | UX | RQ-010d |
 | **PD-152** | TrustScore Permission Gating | 🔵 OPEN | UX | RQ-010d |
 | **PD-153** | Manual Mode First-Class Experience | 🔵 OPEN | UX | RQ-010c |
 | **PD-154** | Permission Re-Request Cooldowns | 🔵 OPEN | UX | RQ-010d |
 | **PD-155** | Privacy Messaging Mental Model | 🔵 OPEN | UX | RQ-010f |
 | **PD-160** | JITAI Accuracy Contribution Model | 🔵 OPEN | JITAI | RQ-010a |
-| **PD-161** | Digital Context Excluded from MVP | 🔵 OPEN | JITAI | RQ-010a |
+| **PD-161** | Digital Context INCLUDED (Accountability) | 🟢 CONFIRMED | JITAI | RQ-063 |
 | **PD-162** | Location Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
 | **PD-163** | Calendar Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
 | **PD-164** | Biometric Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
@@ -101,11 +101,11 @@
 | **Total PDs** | 54 |
 | **✅ RESOLVED** | 15 (28%) |
 | **🟢 READY** | 4 (7%) |
-| **🟢 CONFIRMED** | 1 (2%) |
+| **🟢 CONFIRMED** | 3 (6%) |
 | **🟡 RESHAPED** | 1 (2%) |
 | **🟡 DEFERRED** | 1 (2%) |
 | **🔴 PENDING** | 10 (19%) |
-| **🔵 OPEN** | 22 (41%) |
+| **🔵 OPEN** | 20 (37%) |
 
 ### By Domain
 
@@ -187,16 +187,16 @@ PERMISSION & CONTEXT SYSTEM (Protocol 15 Extraction — 15 Jan 2026):
 ├── PD-142 🔵 OPEN (V-O Weight Modifiers) ← RQ-010g
 ├── PD-143 🔵 OPEN (Doze Mode Priority Levels) ← RQ-010h
 ├── PD-144 🔵 OPEN (Geofence Allocation Strategy) ← RQ-010e
-├── PD-150 🔵 OPEN (Permission Ladder Sequence) ← RQ-010d
+├── PD-150 🟢 CONFIRMED (Permission Ladder — Hybrid) ← RQ-010d ✅
 ├── PD-151 🔵 OPEN (Background Location Gating) ← RQ-010d
-├── PD-152 🔵 OPEN (TrustScore Permission Gating) ← RQ-010d
+├── PD-152 🔵 OPEN (TrustScore Permission Gating) ← RQ-064
 ├── PD-153 🔵 OPEN (Manual Mode First-Class) ← RQ-010c
 ├── PD-154 🔵 OPEN (Permission Re-Request Cooldowns) ← RQ-010d
 └── PD-155 🔵 OPEN (Privacy Messaging "Zones") ← RQ-010f
 
 JITAI ACCURACY & FALLBACKS (Protocol 16 Extraction — 15 Jan 2026):
-├── PD-160 🔵 OPEN (JITAI Accuracy Contribution Model) ← RQ-010a
-├── PD-161 🔵 OPEN (Digital Context Excluded) ← RQ-010a
+├── PD-160 🔵 OPEN (JITAI Accuracy Contribution Model) ← RQ-065
+├── PD-161 🟢 CONFIRMED (Digital Context INCLUDED) ← RQ-063 ✅ REVERSED
 ├── PD-162 🔵 OPEN (Location Fallback Strategies) ← RQ-010b
 ├── PD-163 🔵 OPEN (Calendar Fallback Strategies) ← RQ-010b
 ├── PD-164 🔵 OPEN (Biometric Fallback Strategies) ← RQ-010b

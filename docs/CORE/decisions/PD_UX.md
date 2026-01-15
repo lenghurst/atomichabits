@@ -24,7 +24,7 @@
 | PD-115 | Treaty Creation UX | D | RESOLVED | — |
 | PD-118 | Treaty Modification UX | D | RESOLVED | — |
 | PD-120 | The Chamber Visual Design | H | PENDING | RQ-036 |
-| PD-150 | Permission Ladder Sequence | D | 🔵 OPEN | RQ-010d |
+| PD-150 | Permission Ladder Sequence (Hybrid) | D | 🟢 CONFIRMED | RQ-010d |
 | PD-151 | Background Location Gating | D | 🔵 OPEN | RQ-010d |
 | PD-152 | TrustScore Permission Gating | D | 🔵 OPEN | RQ-010d |
 | PD-153 | Manual Mode First-Class Experience | D | 🔵 OPEN | RQ-010c |
@@ -295,20 +295,32 @@ Replace current dashboard with Constellation visualization:
 
 ---
 
-## PD-150: Permission Ladder Sequence 🔵 OPEN
+## PD-150: Permission Ladder Sequence (Hybrid) 🟢 CONFIRMED
 
 | Field | Value |
 |-------|-------|
 | **Phase** | D (UX) |
-| **Decision** | Permissions requested in ladder sequence: Notifications → Activity → Fine Location → Background Location → Calendar |
-| **Status** | 🔵 OPEN |
+| **Decision** | HYBRID: Soft Ask in Onboarding + Context-Triggered Reinforcement |
+| **Status** | 🟢 CONFIRMED |
 | **Source RQ** | RQ-010d |
+| **Confirmed** | 15 Jan 2026 — Executive decision: "Can't we do both?" |
 
-**Rationale:** "Frustration-Driven" approach — let users feel manual friction first, then offer permissions as automation upgrades. Never request all permissions upfront.
+**Executive Decision (15 Jan 2026):** Hybrid approach — BOTH soft ask AND context-triggered
 
-**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §1.1
+**Hybrid Strategy:**
 
-**Sequence:**
+| Phase | Approach | When | Psychology |
+|-------|----------|------|------------|
+| **Onboarding** | Soft Ask (skippable) | During onboarding flow | Early adopters can grant upfront |
+| **In-App** | Context-Triggered | After friction experienced | "Frustration-driven" conversion |
+
+**Onboarding Soft Ask (NEW):**
+- Single screen explaining permission philosophy
+- "These permissions help The Pact work for you. Skip if unsure — we'll ask again when it matters."
+- Each permission shows 1-line value prop
+- **SKIPPABLE** — no blocking, no nag
+
+**Context-Triggered Sequence (unchanged):**
 
 | Step | Permission | Trigger | Psychology |
 |------|------------|---------|------------|
@@ -318,9 +330,17 @@ Replace current dashboard with Constellation visualization:
 | 4 | Background Location | After 3 foreground successes | Automation upsell |
 | 5 | Calendar | After missing habit due to meeting | Conflict resolution |
 
+**User Quote:**
+> "Can't we do both - a soft ask and context triggered?"
+
+**Play Store Friendly:** Both approaches avoid dark patterns. Soft ask is optional; context-triggered respects user journey.
+
+**Source:** `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` §1.1
+
 **Alternatives Rejected:**
-- All-at-once permission request (current anti-pattern in `permissions_screen.dart`)
+- All-at-once mandatory request (current anti-pattern in `permissions_screen.dart`)
 - Random/as-needed ordering — loses psychological sequencing
+- EITHER/OR approach — hybrid captures both early adopters and skeptics
 
 **CD-018 Tier:** ESSENTIAL
 

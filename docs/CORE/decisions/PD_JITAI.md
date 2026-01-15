@@ -21,7 +21,7 @@
 | PD-143 | Doze Mode Priority Levels | B | 🔵 OPEN | RQ-010h |
 | PD-144 | Geofence Allocation Strategy | B | 🔵 OPEN | RQ-010e |
 | PD-160 | JITAI Accuracy Contribution Model | B | 🔵 OPEN | RQ-010a |
-| PD-161 | Digital Context Excluded from MVP | B | 🔵 OPEN | RQ-010a |
+| PD-161 | Digital Context INCLUDED (Accountability) | B | 🟢 CONFIRMED | RQ-063 |
 | PD-162 | Location Fallback Strategies | B | 🔵 OPEN | RQ-010b |
 | PD-163 | Calendar Fallback Strategies | B | 🔵 OPEN | RQ-010b |
 | PD-164 | Biometric Fallback Strategies | B | 🔵 OPEN | RQ-010b |
@@ -336,24 +336,38 @@ From `lib/config/jitai_config.dart`:
 
 ---
 
-## PD-161: Digital Context Excluded from MVP 🔵 OPEN
+## PD-161: Digital Context INCLUDED (Accountability) 🟢 CONFIRMED
 
 | Field | Value |
 |-------|-------|
 | **Phase** | B (Backend) |
-| **Decision** | Digital Context (app usage tracking) excluded from MVP JITAI |
-| **Status** | 🔵 OPEN |
-| **Source RQ** | RQ-010a |
+| **Decision** | Digital Context (app usage tracking) INCLUDED for accountability surfacing |
+| **Status** | 🟢 CONFIRMED |
+| **Source RQ** | RQ-063 |
+| **Reversed** | 15 Jan 2026 — Executive decision to INCLUDE |
 
-**Rationale:** High privacy cost (PACKAGE_USAGE_STATS has 70-90% deny rate), high battery drain, ambiguous signal value (Instagram = recovery OR procrastination).
+**Executive Decision (15 Jan 2026):** REVERSED from "exclude" to "include"
 
-**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+**Rationale for Inclusion:**
+1. **Accountability Tool:** Surface screen time insights to users (not surveillance)
+2. **Procrastination Detection:** 8+ hours/day on YouTube = procrastination signal
+3. **Identity-Based Blocking:** Users can request app blocking aligned with identity (e.g., "Loyal Partner" blocks adult sites)
+4. **User Control:** Present as opt-in with clear value proposition
 
-**Decision:** Deprioritize `DigitalContext` from MVP JITAI calculations. May revisit post-launch if user research indicates value.
+**User Quotes:**
+> "If someone spends 8 hours a day on YouTube we can assume it might be a procrastination or avoiding"
+> "Identity-based app blocking... the idea of 'I am loyal partner (archetype) please block adult websites'"
 
-**Alternatives Rejected:** Include Digital Context with consent flow — over-engineered per CD-018
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md` (original exclusion rationale)
 
-**CD-018 Tier:** ESSENTIAL (to exclude)
+**Known Challenges (via RQ-063):**
+- PACKAGE_USAGE_STATS has 70-90% deny rate → needs optimized permission flow
+- Signal ambiguity (Instagram = recovery OR procrastination) → needs user intent tagging
+- Privacy perception → needs "accountability, not surveillance" messaging
+
+**Related:** RQ-063 (Digital Context Inclusion Strategy) — research underway
+
+**CD-018 Tier:** VALUABLE
 
 ---
 

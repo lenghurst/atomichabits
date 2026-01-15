@@ -168,6 +168,24 @@
 | **RQ-062e** | ↳ Handover Protocol for Partial Implementations | 🔴 NEEDS RESEARCH | RQ-062 | — |
 | **RQ-062f** | ↳ Automated Spec-to-Code Traceability | 🔴 NEEDS RESEARCH | RQ-062 | — |
 | **RQ-062g** | ↳ Pre-Implementation Holistic Analysis Audit | 🔴 NEEDS RESEARCH | RQ-062 | — |
+| **RQ-063** | Digital Context Inclusion Strategy | 🔴 NEEDS RESEARCH | PD-161 | — |
+| **RQ-063a** | ↳ App Usage Permission Grant Rate Optimization | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-063b** | ↳ Signal Disambiguation via User Intent Tagging | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-063c** | ↳ Identity-Based App Blocking Architecture | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-063d** | ↳ Procrastination Pattern Detection Thresholds | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-063e** | ↳ Screen Time Insight Surfacing UX | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-063f** | ↳ Digital Wellbeing API vs PACKAGE_USAGE_STATS | 🔴 NEEDS RESEARCH | RQ-063 | — |
+| **RQ-064** | TrustScore Architecture & Utility | 🔴 NEEDS RESEARCH | PD-152 | — |
+| **RQ-064a** | ↳ TrustScore Calculation Model | 🔴 NEEDS RESEARCH | RQ-064 | — |
+| **RQ-064b** | ↳ Beyond Permission Gating — Other TrustScore Uses | 🔴 NEEDS RESEARCH | RQ-064 | — |
+| **RQ-064c** | ↳ TrustScore Decay & Recovery Dynamics | 🔴 NEEDS RESEARCH | RQ-064 | — |
+| **RQ-064d** | ↳ TrustScore Threshold Validation | 🔴 NEEDS RESEARCH | RQ-064 | — |
+| **RQ-065** | JITAI Baseline Accuracy Validation | 🔴 NEEDS RESEARCH | PD-160 | — |
+| **RQ-065a** | ↳ Wood & Neal (2007) Applicability to Habit Apps | 🔴 NEEDS RESEARCH | RQ-065 | — |
+| **RQ-065b** | ↳ Time + History Signal Contribution Measurement | 🔴 NEEDS RESEARCH | RQ-065 | — |
+| **RQ-065c** | ↳ User Routine Consistency Variance | 🔴 NEEDS RESEARCH | RQ-065 | — |
+| **RQ-065d** | ↳ Cold Start Accuracy (New Users) | 🔴 NEEDS RESEARCH | RQ-065 | — |
+| **RQ-065e** | ↳ A/B Test Design for Baseline Validation | 🔴 NEEDS RESEARCH | RQ-065 | — |
 
 ---
 
