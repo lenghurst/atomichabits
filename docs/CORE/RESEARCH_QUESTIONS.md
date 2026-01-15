@@ -1,6 +1,8 @@
-# RESEARCH_QUESTIONS.md — Active Research & Open Questions
+# RESEARCH_QUESTIONS.md — Master Implementation Tracker & Research Log
 
-> **Last Updated:** 13 January 2026 (Header sync; RQ-040-047 added via branch reconciliation)
+> ⚠️ **AGENT WARNING:** "Status: COMPLETE" in this document means the **Research/Design** is finished. It does **NOT** mean code is deployed. Always verify existence via `IMPLEMENTATION_ACTIONS.md` or file checks before calling code.
+>
+> **Last Updated:** 14 January 2026 (Global Disclaimer Added)
 > **Purpose:** Track active research informing product/architecture decisions
 > **Owner:** Oliver (with AI agent research support)
 > **Status:** 31 RQs COMPLETE, 53 RQs NEED RESEARCH (see RQ_INDEX.md for current counts)
