@@ -20,6 +20,12 @@
 | PD-142 | V-O Opportunity Weight Modifiers | B | 🔵 OPEN | RQ-010g |
 | PD-143 | Doze Mode Priority Levels | B | 🔵 OPEN | RQ-010h |
 | PD-144 | Geofence Allocation Strategy | B | 🔵 OPEN | RQ-010e |
+| PD-160 | JITAI Accuracy Contribution Model | B | 🔵 OPEN | RQ-010a |
+| PD-161 | Digital Context Excluded from MVP | B | 🔵 OPEN | RQ-010a |
+| PD-162 | Location Fallback Strategies | B | 🔵 OPEN | RQ-010b |
+| PD-163 | Calendar Fallback Strategies | B | 🔵 OPEN | RQ-010b |
+| PD-164 | Biometric Fallback Strategies | B | 🔵 OPEN | RQ-010b |
+| PD-165 | WiFi SSID Invalid as Fallback | B | 🔵 OPEN | RQ-010a |
 
 ---
 
@@ -297,6 +303,161 @@ From `lib/config/jitai_config.dart`:
 - No dynamic zones — loses optimization opportunity
 
 **CD-018 Tier:** VALUABLE
+
+---
+
+## PD-160: JITAI Accuracy Contribution Model 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | JITAI accuracy model: 40% baseline (Time+History) + permission contributions |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010a |
+
+**Rationale:** Time + History alone achieves ~40% accuracy based on Wood & Neal (2007) habit research. Additional permissions provide marginal improvements.
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Contribution Model:**
+
+| Permission | Contribution | Rationale |
+|------------|--------------|-----------|
+| Time + History (baseline) | 40% | Always available, context-stable behavior |
+| Location | +20% | Enables energy state inference |
+| Calendar | +15% | "Don't get uninstalled" — interrupt avoidance |
+| Biometric (Health Connect) | +15% | Solves burnout detection; Android 14+ only |
+| Activity Recognition | +10% | Low battery, high safety value (IN_VEHICLE) |
+| Digital Context | 0% | DROPPED — high privacy cost, ambiguous signal |
+
+**Alternatives Rejected:** Equal weighting — doesn't reflect marginal value differences
+
+**CD-018 Tier:** ESSENTIAL
+
+---
+
+## PD-161: Digital Context Excluded from MVP 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | Digital Context (app usage tracking) excluded from MVP JITAI |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010a |
+
+**Rationale:** High privacy cost (PACKAGE_USAGE_STATS has 70-90% deny rate), high battery drain, ambiguous signal value (Instagram = recovery OR procrastination).
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Decision:** Deprioritize `DigitalContext` from MVP JITAI calculations. May revisit post-launch if user research indicates value.
+
+**Alternatives Rejected:** Include Digital Context with consent flow — over-engineered per CD-018
+
+**CD-018 Tier:** ESSENTIAL (to exclude)
+
+---
+
+## PD-162: Location Fallback Strategies 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | Three-tier fallback strategy when location permission denied |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010b |
+
+**Rationale:** Graceful degradation maintains JITAI value even without GPS permission.
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Fallback Strategies:**
+
+| Strategy | Recovery | Friction | Implementation |
+|----------|----------|----------|----------------|
+| Semantic Time Blocks | 30-40% | LOW | User defines schedule: "I work 9-5 M-F" in onboarding |
+| Manual Context Latch | 95% | HIGH | "I'm Here" button sets location context |
+| Pattern Mining | 30% | NONE | Learn from time-based patterns after 2 weeks |
+
+**Alternatives Rejected:** WiFi SSID inference — requires ACCESS_FINE_LOCATION on Android 8.1+
+
+**CD-018 Tier:** VALUABLE
+
+---
+
+## PD-163: Calendar Fallback Strategies 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | Three-tier fallback strategy when calendar permission denied |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010b |
+
+**Rationale:** Calendar is the "don't get uninstalled" permission — interrupting meetings causes app deletion.
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Fallback Strategies:**
+
+| Strategy | Recovery | Friction | Implementation |
+|----------|----------|----------|----------------|
+| Focus Mode Timer | 60% | MEDIUM | User sets DND manually |
+| Work-Hours Heuristic | 30% | NONE | Assume busy 9am-12pm, 2pm-5pm weekdays |
+| Conservative Mode | SAFETY | NONE | Silent notifications during inferred busy times |
+
+**CD-018 Tier:** ESSENTIAL (Conservative Mode prevents uninstalls)
+
+---
+
+## PD-164: Biometric Fallback Strategies 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | Two-tier fallback strategy when Health Connect unavailable |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010b |
+
+**Rationale:** Biometric data (sleep, HRV) is Android 14+ only. Must support older devices.
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Fallback Strategies:**
+
+| Strategy | Recovery | Friction | Implementation |
+|----------|----------|----------|----------------|
+| Energy Check Prompt | 80% | LOW (daily) | "How's your energy?" — 4-option picker matching CD-015 states |
+| Circadian Default | 20% | NONE | Time-based energy inference (morning=high_focus, evening=recovery) |
+
+**Energy Check Options:** `high_focus`, `high_physical`, `social`, `recovery` (per CD-015)
+
+**CD-018 Tier:** VALUABLE
+
+---
+
+## PD-165: WiFi SSID Invalid as Fallback 🔵 OPEN
+
+| Field | Value |
+|-------|-------|
+| **Phase** | B (Backend) |
+| **Decision** | WiFi SSID cannot be used as location fallback — requires ACCESS_FINE_LOCATION |
+| **Status** | 🔵 OPEN |
+| **Source RQ** | RQ-010a |
+
+**Rationale:** Since Android 8.1 (API 27), `WifiManager.getConnectionInfo()` requires `ACCESS_FINE_LOCATION`. If user denied location, they implicitly denied WiFi SSID access.
+
+**Source:** `docs/analysis/DEEP_THINK_RECONCILIATION_RQ010ab_PERMISSION_ACCURACY.md`
+
+**Technical Facts:**
+- Android 8.0 (API 26): WiFi SSID requires `ACCESS_COARSE_LOCATION`
+- Android 8.1 (API 27): WiFi SSID requires `ACCESS_FINE_LOCATION`
+- Android 10 (API 29): Returns `<unknown ssid>` without location permission
+
+**Decision:** REJECT WiFi SSID as location fallback. Use Semantic Time Blocks or Pattern Mining instead.
+
+**Alternatives Rejected:** WiFi-based location inference — invalid on target API range (26+)
+
+**CD-018 Tier:** ESSENTIAL (prevents invalid implementation)
 
 ---
 

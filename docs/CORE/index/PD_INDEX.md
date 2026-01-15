@@ -71,6 +71,12 @@
 | **PD-153** | Manual Mode First-Class Experience | 🔵 OPEN | UX | RQ-010c |
 | **PD-154** | Permission Re-Request Cooldowns | 🔵 OPEN | UX | RQ-010d |
 | **PD-155** | Privacy Messaging Mental Model | 🔵 OPEN | UX | RQ-010f |
+| **PD-160** | JITAI Accuracy Contribution Model | 🔵 OPEN | JITAI | RQ-010a |
+| **PD-161** | Digital Context Excluded from MVP | 🔵 OPEN | JITAI | RQ-010a |
+| **PD-162** | Location Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
+| **PD-163** | Calendar Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
+| **PD-164** | Biometric Fallback Strategies | 🔵 OPEN | JITAI | RQ-010b |
+| **PD-165** | WiFi SSID Invalid as Fallback | 🔵 OPEN | JITAI | RQ-010a |
 | **PD-201** | URL Scheme Migration | 🔴 PENDING | UX | — |
 | **PD-202** | Archive Documentation Handling | 🔴 PENDING | UX | — |
 
@@ -92,14 +98,14 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total PDs** | 48 |
-| **✅ RESOLVED** | 15 (31%) |
-| **🟢 READY** | 4 (8%) |
+| **Total PDs** | 54 |
+| **✅ RESOLVED** | 15 (28%) |
+| **🟢 READY** | 4 (7%) |
 | **🟢 CONFIRMED** | 1 (2%) |
 | **🟡 RESHAPED** | 1 (2%) |
 | **🟡 DEFERRED** | 1 (2%) |
-| **🔴 PENDING** | 10 (21%) |
-| **🔵 OPEN** | 16 (33%) |
+| **🔴 PENDING** | 10 (19%) |
+| **🔵 OPEN** | 22 (41%) |
 
 ### By Domain
 
@@ -107,7 +113,7 @@
 |--------|-------|------|
 | **CORE** | 2 PDs + 19 CDs | PD_CORE.md |
 | **WITNESS** | 5 | PD_WITNESS.md |
-| **JITAI** | 8 (+5 new) | PD_JITAI.md |
+| **JITAI** | 14 (+11 new from Protocol 16) | PD_JITAI.md |
 | **IDENTITY** | 11 | PD_IDENTITY.md |
 | **UX** | 20 (+6 new) | PD_UX.md |
 
@@ -187,6 +193,14 @@ PERMISSION & CONTEXT SYSTEM (Protocol 15 Extraction — 15 Jan 2026):
 ├── PD-153 🔵 OPEN (Manual Mode First-Class) ← RQ-010c
 ├── PD-154 🔵 OPEN (Permission Re-Request Cooldowns) ← RQ-010d
 └── PD-155 🔵 OPEN (Privacy Messaging "Zones") ← RQ-010f
+
+JITAI ACCURACY & FALLBACKS (Protocol 16 Extraction — 15 Jan 2026):
+├── PD-160 🔵 OPEN (JITAI Accuracy Contribution Model) ← RQ-010a
+├── PD-161 🔵 OPEN (Digital Context Excluded) ← RQ-010a
+├── PD-162 🔵 OPEN (Location Fallback Strategies) ← RQ-010b
+├── PD-163 🔵 OPEN (Calendar Fallback Strategies) ← RQ-010b
+├── PD-164 🔵 OPEN (Biometric Fallback Strategies) ← RQ-010b
+└── PD-165 🔵 OPEN (WiFi SSID Invalid as Fallback) ← RQ-010a
 ```
 
 ---

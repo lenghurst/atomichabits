@@ -14,8 +14,8 @@
 | **Date** | 15 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
 | **Git State** | Clean — all changes pushed |
-| **Focus** | Protocol 15 — PD Extraction from Analysis Files |
-| **Status** | 🔵 11 PDs extracted from RQ-010 Analysis files — awaiting human review |
+| **Focus** | Protocol 15 + 16 — PD Extraction & Traceability Audit |
+| **Status** | 🔵 17 PDs extracted (11 Protocol 15 + 6 Protocol 16) — awaiting human review |
 
 ---
 
@@ -58,19 +58,18 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ## CURRENT SESSION
 
 **Accomplished (this session):**
-- ✅ **Protocol 15 Executed** — PD Extraction from Analysis Files complete
-- ✅ **5 JITAI PDs Created** — PD-140 to PD-144 (Technical Architecture)
-- ✅ **6 UX PDs Created** — PD-150 to PD-155 (Permission UX)
-- ✅ **Element-by-Element Review** — 13 sections reviewed, 11 extracted, 2 skipped
-- ✅ **CD Cross-Check Complete** — All PDs verified against CD-015, CD-016, CD-017, CD-018, CD-006
-- ✅ **PD_INDEX.md Updated** — Total PDs now 48 (was 37)
+- ✅ **Protocol 15 Executed** — 11 PDs from RQ-010cdf/egh Analysis files
+- ✅ **Protocol 16 Executed** — RQ-to-PD Traceability Audit completed
+- ✅ **6 More JITAI PDs Created** — PD-160 to PD-165 (RQ-010a/b gap fixed)
+- ✅ **All 13 Reconciliation Files Audited** — Only 1 major gap found (now fixed)
+- ✅ **PD_INDEX.md Updated** — Total PDs now 54 (was 37)
 
 **Key Decision (This Session):**
-> 🔵 **11 PDs AWAITING HUMAN REVIEW** — All marked 🔵 OPEN, human must confirm to 🟢
+> 🔵 **17 PDs AWAITING HUMAN REVIEW** — All marked 🔵 OPEN, human must confirm to 🟢
 
-**Next Action:** Human reviews 11 new PDs → Confirms → Implementation can begin
+**Next Action:** Human reviews 17 new PDs → Confirms → Implementation can begin
 
-**Key Outputs:**
+**Key Outputs (Protocol 15 — RQ-010cdf/egh Analysis):**
 | PD# | Decision | Domain | Tier |
 |-----|----------|--------|------|
 | PD-140 | Activity Recognition Transition API | JITAI | ESSENTIAL |
@@ -85,9 +84,15 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 | PD-154 | Permission Re-Request Cooldowns | UX | VALUABLE |
 | PD-155 | Privacy Messaging Mental Model | UX | ESSENTIAL |
 
-**Skipped (Not Decisions):**
-- §1.6 WiFi Fallback — Finding, not decision
-- §1.7 Zero-Permission Signals — List covered by Context Chips PD
+**Key Outputs (Protocol 16 — RQ-010a/b Reconciliation Gap):**
+| PD# | Decision | Domain | Tier |
+|-----|----------|--------|------|
+| PD-160 | JITAI Accuracy Contribution Model (40% baseline) | JITAI | ESSENTIAL |
+| PD-161 | Digital Context Excluded from MVP | JITAI | ESSENTIAL |
+| PD-162 | Location Fallback Strategies | JITAI | VALUABLE |
+| PD-163 | Calendar Fallback Strategies | JITAI | ESSENTIAL |
+| PD-164 | Biometric Fallback Strategies | JITAI | VALUABLE |
+| PD-165 | WiFi SSID Invalid as Fallback | JITAI | ESSENTIAL |
 
 ---
 
@@ -134,7 +139,7 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 
 | Date | Focus | Key Outcome |
 |------|-------|-------------|
-| 15 Jan | **Protocol 15 — PD Extraction** | 11 PDs created (PD-140–144, PD-150–155), awaiting human review |
+| 15 Jan | **Protocol 15 + 16 — PD Extraction & Audit** | 17 PDs created (PD-140–144, PD-150–155, PD-160–165) |
 | 15 Jan | **RQ-010cdf UX Response** | Protocol 9 done, RQ-010v-w, Context Chips, TrustScore |
 | 15 Jan | **RQ-010egh Tech Response** | Protocol 9 done, RQ-010r-u, ActivityContext spec |
 | 15 Jan | **Permission Architecture** | 25+ RQs added, Big Think Case for BG Location |
@@ -159,10 +164,11 @@ git log origin/HEAD..HEAD     # Unpushed commits?
 ### Files Modified This Session
 | File | Change |
 |------|--------|
-| `docs/CORE/decisions/PD_JITAI.md` | +5 PDs (PD-140–144) — Activity, Doze, Geofence |
+| `docs/CORE/decisions/PD_JITAI.md` | +11 PDs (PD-140–144, PD-160–165) |
 | `docs/CORE/decisions/PD_UX.md` | +6 PDs (PD-150–155) — Permission UX |
-| `docs/CORE/index/PD_INDEX.md` | Statistics updated (37→48 PDs), Resolution Chain |
-| `docs/CORE/AI_HANDOVER.md` | Protocol 15 session summary |
+| `docs/CORE/index/PD_INDEX.md` | Statistics updated (37→54 PDs) |
+| `docs/analysis/PROTOCOL_16_RQ_TO_PD_TRACEABILITY_AUDIT.md` | NEW — Full audit results |
+| `docs/CORE/AI_HANDOVER.md` | Protocol 15+16 session summary |
 
 ---
 
