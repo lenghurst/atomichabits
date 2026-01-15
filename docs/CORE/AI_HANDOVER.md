@@ -13,7 +13,7 @@
 | **Session ID** | `claude/extract-pd-data-Y959d` |
 | **Date** | 15 January 2026 |
 | **Agent** | Claude (Opus 4.5) |
-| **Git State** | Clean — all changes pushed |
+| **Git State** | Clean — all changes pushed (d57037b) |
 | **Focus** | Protocol 15 + 16 — PD Extraction & Traceability Audit |
 | **Status** | 🔵 17 PDs extracted (11 Protocol 15 + 6 Protocol 16) — awaiting human review |
 
