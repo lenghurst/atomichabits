@@ -17,50 +17,100 @@ Ensure `claude/claude-md-instructions-RREJE` has been merged to `main`.
 - ❌ **No PDs created from Permission research** — This is the missing step
 - ❌ Workflow says "Research → Document → Decide → Implement" but stopped at Document
 
----
+### Why This Matters (Risk Matrix)
 
-## Your Task: Create Permission Architecture PDs
-
-### Input Files (Read These First)
-1. `docs/analysis/DEEP_THINK_RESPONSE_RQ010egh_ANALYSIS.md` — Technical specifications
-2. `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` — UX specifications
-
-### Output: Create These PDs
-
-| PD ID | Topic | Source |
-|-------|-------|--------|
-| **PD-XXX** | Permission Ladder Sequence | RQ-010cdf Analysis §1.1 |
-| **PD-XXX** | Activity Recognition Confidence Thresholds | RQ-010egh Analysis §1.2 |
-| **PD-XXX** | V-O Opportunity Weight Modifiers | RQ-010egh Analysis §1.3 |
-| **PD-XXX** | Doze Mode Strategy (Critical/High/Medium/Low) | RQ-010egh Analysis §1.4 |
-| **PD-XXX** | TrustScore Framework (gating mechanism) | RQ-010cdf Analysis §2 |
-| **PD-XXX** | Geofence Allocation Strategy | RQ-010egh Analysis §1.5 |
-| **PD-XXX** | Privacy Messaging ("Zones not coordinates") | RQ-010cdf Analysis §3 |
-| **PD-XXX** | Manual Mode First-Class Experience | RQ-010cdf Analysis §4 |
-
-### Format
-Add to `docs/CORE/decisions/PD_UX.md` and/or `PD_JITAI.md` per MANIFEST.md routing.
-
-### Constraints
-- DO NOT implement any code
-- Mark PDs as 🔵 OPEN (awaiting human confirmation) unless directly derived from CD
-- Reference source Analysis file and section number
-- Update `PD_INDEX.md` with new PDs
+| If We Skip PDs | Consequence |
+|----------------|-------------|
+| No human sign-off | AI decides what to build — violates governance |
+| No scope control | Implementer builds EVERYTHING including optional items |
+| No single source of truth | "Where's the decision?" — buried in 300-line Analysis file |
+| Cross-agent confusion | Gemini reads one section, Claude another — divergent implementations |
 
 ---
 
-## Secondary Tasks (If Time Permits)
+## Your Task: Extract PDs Using Protocol
 
-1. **Start RQ-062 Deep Think Prompt** — Implementation Governance Process
-   - How should agents verify implementation matches specs?
-   - What checklist ensures PD/CD alignment during coding?
+### Step 0: Read the Protocol
+**MANDATORY:** Read `docs/CORE/protocols/PROTOCOL_PD_EXTRACTION.md` FIRST.
 
-2. **Review RQ-039 readiness** — Token Economy (Gemini may have started this)
+This protocol defines:
+- What patterns indicate extractable decisions
+- PD template format
+- Quality checklist
+- Anti-patterns to avoid
+
+### Step 1: Read Analysis File Summaries
+
+| File | Focus |
+|------|-------|
+| `docs/analysis/DEEP_THINK_RESPONSE_RQ010egh_ANALYSIS.md` | Technical (Activity Recognition, Doze, Geofencing) |
+| `docs/analysis/DEEP_THINK_RESPONSE_RQ010cdf_ANALYSIS.md` | UX (Permission Ladder, TrustScore, Privacy Messaging) |
+
+**Scan for these patterns:**
+- "We will use X" → ✅ Extract as PD
+- Threshold/config values → ✅ Extract as PD
+- Sequence definitions → ✅ Extract as PD
+- "Consider X" / "Future work" → ❌ Skip (not a decision)
+
+### Step 2: Draft PDs Using Template
+
+Each PD must have:
+```markdown
+| **PD-XXX** | [One-line decision] | 🔵 OPEN | [DOMAIN] | [Source RQ] |
+
+**Rationale:** [WHY this decision]
+**Source:** [Analysis file + section]
+**Alternatives Rejected:** [What we chose NOT to do]
+```
+
+### Step 3: Expected PDs (~8-10)
+
+| Topic | Source | Route To |
+|-------|--------|----------|
+| Permission Ladder Sequence | RQ-010cdf §1.1 | PD_UX.md |
+| Activity Recognition Confidence Thresholds | RQ-010egh §1.2 | PD_JITAI.md |
+| V-O Opportunity Weight Modifiers | RQ-010egh §1.3 | PD_JITAI.md |
+| Doze Mode Strategy (Critical/High/Medium/Low) | RQ-010egh §1.4 | PD_JITAI.md |
+| TrustScore Framework (gating mechanism) | RQ-010cdf §2 | PD_UX.md |
+| Geofence Allocation Strategy | RQ-010egh §1.5 | PD_JITAI.md |
+| Privacy Messaging ("Zones not coordinates") | RQ-010cdf §3 | PD_UX.md |
+| Manual Mode First-Class Experience | RQ-010cdf §4 | PD_UX.md |
+| PermissionGlassPane Configs (benefit + privacyNote) | RQ-010cdf §3.1 | PD_UX.md |
+
+### Step 4: Verify and Update Indexes
+
+- [ ] Cross-check each PD against `CD_INDEX.md` — no conflicts
+- [ ] Add all PDs to `PD_INDEX.md`
+- [ ] Update PD count in index header
+- [ ] Mark all PDs as 🔵 OPEN (human confirms to 🟢)
+
+---
+
+## Quality Checklist (Per PD)
+
+- [ ] Decision is ACTIONABLE (implementer knows exactly what to do)
+- [ ] Decision is SCOPED (no ambiguous "and more")
+- [ ] Decision references SOURCE (Analysis file + section)
+- [ ] Decision does NOT contradict any CD
+- [ ] Decision starts as 🔵 OPEN
+
+---
+
+## Session Completion Checklist
+
+- [ ] All Analysis files processed
+- [ ] ~8-10 PDs created with source references
+- [ ] No CD conflicts detected
+- [ ] PD_INDEX.md updated
+- [ ] AI_HANDOVER.md updated: "PDs created, awaiting human review"
+- [ ] All changes committed and pushed
 
 ---
 
 ## Do NOT
 
 - ❌ Write any implementation code
-- ❌ Create prompts for RQs already covered (RQ-010 is DONE)
-- ❌ Duplicate work from Analysis files — PDs should REFERENCE them, not repeat content
+- ❌ Copy entire Analysis sections as PDs (extract ONE decision per PD)
+- ❌ Mark any PD as 🟢 CONFIRMED (human must approve)
+- ❌ Create PDs for "future consideration" items
+- ❌ Duplicate prose from Analysis files — PDs should REFERENCE, not repeat
