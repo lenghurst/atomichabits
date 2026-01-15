@@ -1,9 +1,9 @@
 # AI_AGENT_PROTOCOL.md — Mandatory Behaviors for AI Agents
 
-> **Last Updated:** 14 January 2026
+> **Last Updated:** 15 January 2026
 > **Purpose:** Codify reflexive behaviors that ALL AI agents must exhibit
 > **Scope:** Claude, Gemini, ChatGPT, any future AI agents working on The Pact
-> **Protocols:** 14 mandatory (1-9 operational, 10-12 meta-cognitive, 13-14 workflow)
+> **Protocols:** 15 mandatory (1-9 operational, 10-12 meta-cognitive, 13-15 workflow)
 
 ---
 
@@ -1793,10 +1793,138 @@ These protocols are **MANDATORY**. AI agents that skip these protocols will:
 
 ---
 
+## Protocol 15: PD Extraction from Analysis Files (MANDATORY)
+
+### Trigger
+After Protocol 9 (External Research Reconciliation) completes, BEFORE any implementation begins.
+
+**Sequence:** Research → Protocol 9 → **Protocol 15** → Implementation
+
+### Why This Protocol Exists
+
+Analysis files contain approved specifications but are NOT implementation-ready:
+
+| Analysis Files | Product Decisions (PDs) |
+|---------------|------------------------|
+| Prose, specs, code examples | Single-line decisions with rationale |
+| AI-verified only | Human-confirmed (🟢 CONFIRMED) |
+| Research findings (may include "nice-to-have") | Scoped to what we WILL build |
+| Scattered in `/analysis/` | Centralized in `PD_INDEX.md` |
+| ❌ No formal gate | ✅ "Only implement 🟢 CONFIRMED PDs" |
+
+**Risk if skipped:**
+- AI decides what to build — violates governance
+- Scope creep (nice-to-have becomes mandatory)
+- Cross-agent divergence (Gemini reads one section, Claude another)
+- No single source of truth
+
+### Action
+
+**Step 1: Identify Analysis Files Pending PD Extraction**
+```
+□ Check docs/analysis/ for files with "Implementation: DEFERRED"
+□ Verify Protocol 9 was completed on each file
+□ Read PROTOCOL_PD_EXTRACTION.md for detailed procedure
+```
+
+**Step 2: Scan for Extractable Decisions**
+For each Analysis file section, identify patterns:
+```
+✅ EXTRACT as PD:
+  - "We will use X"
+  - Threshold/config values (e.g., "TrustScore > 60")
+  - Sequence definitions (e.g., "Permission Ladder: A → B → C")
+  - Architecture choices (e.g., "Push-based, not polling")
+
+❌ DO NOT extract:
+  - "Consider X" / "Could use Y"
+  - "Future work" / "Nice to have"
+  - Implementation details (code belongs in implementation, not PD)
+```
+
+**Step 3: Element-by-Element Review**
+For EACH candidate decision:
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ELEMENT REVIEW TEMPLATE                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ Source: [Analysis file + section number]                        │
+│ Raw Text: "[Exact quote from Analysis file]"                    │
+│                                                                 │
+│ REASONING:                                                      │
+│ □ Is this a decision or just information? → [DECISION/INFO]     │
+│ □ Is this actionable for implementer? → [YES/NO + why]          │
+│ □ Does this contradict any CD? → [Check CD_INDEX.md]            │
+│ □ Does this contradict existing PD? → [Check PD_INDEX.md]       │
+│ □ CD-018 Tier: → [ESSENTIAL/VALUABLE/NICE-TO-HAVE]              │
+│                                                                 │
+│ VERDICT: → [EXTRACT AS PD / SKIP / ESCALATE]                    │
+│                                                                 │
+│ If EXTRACT, draft PD:                                           │
+│ | PD-XXX | [One-line decision] | 🔵 OPEN | [DOMAIN] | [RQ] |    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Step 4: Draft PD with Full Traceability**
+```markdown
+| **PD-XXX** | [One-line decision statement] | 🔵 OPEN | [DOMAIN] | [Source RQ] |
+
+**Rationale:** [1-2 sentences WHY this decision]
+**Source:** [Analysis file path + section number]
+**Alternatives Rejected:** [What we chose NOT to do]
+**CD-018 Tier:** [ESSENTIAL/VALUABLE/NICE-TO-HAVE]
+```
+
+**Step 5: Verify Against Locked Decisions**
+```
+□ Cross-check against CD_INDEX.md — PD MUST NOT violate any CD
+□ Cross-check against PD_INDEX.md — Flag contradictions
+□ If conflict detected → ESCALATE (do not proceed)
+```
+
+**Step 6: Update Indexes**
+```
+□ Add PD row to PD_INDEX.md
+□ Update PD count in index header
+□ Route to correct PD_*.md file per MANIFEST.md
+□ Mark status as 🔵 OPEN (human must confirm)
+```
+
+### Checklist (Run After Protocol 15)
+
+```
+PROTOCOL 15 COMPLETION CHECKLIST:
+
+□ All Analysis files in docs/analysis/ processed
+□ Each candidate decision reviewed element-by-element
+□ Reasoning documented for each EXTRACT/SKIP verdict
+□ No CD conflicts detected (or escalated if found)
+□ All PDs marked 🔵 OPEN
+□ PD_INDEX.md updated with new count
+□ AI_HANDOVER.md updated: "PDs created, awaiting human review"
+```
+
+### Anti-Patterns (DO NOT)
+
+```
+❌ Skip element-by-element review (batch processing causes errors)
+❌ Copy entire Analysis sections as PDs (one decision per PD)
+❌ Mark PD as 🟢 CONFIRMED without human approval
+❌ Create PD for "future consideration" items
+❌ Extract implementation details as PDs (code belongs in code)
+❌ Proceed to implementation with Analysis files but no PDs
+```
+
+### Reference
+Full procedure: `docs/CORE/protocols/PROTOCOL_PD_EXTRACTION.md`
+
+---
+
 ## Revision History
 
 | Date | Author | Changes |
 |------|--------|---------|
+| **15 Jan 2026** | Claude (Opus 4.5) | Added Protocol 15 (PD Extraction) — mandatory step after Protocol 9, element-by-element review, bridges Analysis files to PDs |
 | **14 Jan 2026** | Claude (Opus 4.5) | Added Protocol 14 (RQ Prioritization) — 5-dimension scoring framework replacing ad-hoc priority labels |
 | **13 Jan 2026** | Claude (Opus 4.5) | Added Protocol 13 (Task Completion Sync) — addresses SG-3 task tracking drift discovered in goals audit |
 | **11 Jan 2026** | Claude (Opus 4.5) | Added Protocols 10 (Bias Analysis), 11 (Sub-RQ Creation), 12 (Decision Deferral); Enhanced Session Exit Protocol v2 with Tier 1.5a-d and Tier 3 Verification Checkpoint; Added Cross-File Consistency Checklist |
