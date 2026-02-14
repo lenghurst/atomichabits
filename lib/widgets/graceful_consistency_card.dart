@@ -35,31 +35,36 @@ class GracefulConsistencyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _getScoreColor().shade400,
-              _getScoreColor().shade600,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: _getScoreColor().withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _getScoreColor().shade400,
+            _getScoreColor().shade600,
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _getScoreColor().withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // Header with title and emoji
             Row(
               children: [
@@ -239,7 +244,9 @@ class GracefulConsistencyCard extends StatelessWidget {
                 ),
               ),
             ],
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -324,21 +331,26 @@ class GracefulConsistencyCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              _getScoreColor().shade300,
-              _getScoreColor().shade500,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getScoreColor().shade300,
+            _getScoreColor().shade500,
+          ],
         ),
-        child: Row(
-          children: [
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
             Text(
               metrics.scoreEmoji,
               style: const TextStyle(fontSize: 24),
@@ -385,9 +397,11 @@ class GracefulConsistencyCompact extends StatelessWidget {
                     color: Colors.white60,
                   ),
                 ),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
