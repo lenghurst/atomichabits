@@ -5,8 +5,6 @@
 A philosophical identity engine that turns daily actions into evidence of who you are becoming.
 Built on **Flutter** (Mobile) with a hybrid AI architecture.
 
-**Live URL:** [thepact.co](https://thepact.co)
-
 ---
 
 ## AI Agents: Start Here
