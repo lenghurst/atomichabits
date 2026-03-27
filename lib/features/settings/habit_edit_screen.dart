@@ -158,6 +158,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.edit),
                           ),
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -169,6 +170,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             prefixIcon: Icon(Icons.timer),
                             helperText: 'Make it so easy you can\'t say no',
                           ),
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                       ],
                     ),
@@ -191,6 +193,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.location_on),
                           ),
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                         const SizedBox(height: 16),
                         ListTile(
@@ -244,6 +247,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             helperText: 'Pair with something you enjoy',
                           ),
                           maxLines: 2,
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -256,6 +260,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             helperText: 'A 30-second ritual to get started',
                           ),
                           maxLines: 2,
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                       ],
                     ),
@@ -280,6 +285,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             helperText: 'Make it obvious',
                           ),
                           maxLines: 2,
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -292,6 +298,7 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                             helperText: 'Make bad habits invisible',
                           ),
                           maxLines: 2,
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                       ],
                     ),
